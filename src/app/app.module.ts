@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MdlModule } from "@angular-mdl/core";
+import { ClarityModule } from "clarity-angular";
 
 import { AppRoutingModule } from './app-routing.module';
 import { RdfMappingModule } from "./rdf-mapping/rdf-mapping.module";
@@ -17,6 +18,7 @@ import { AppComponent } from './app.component';
   imports: [
     BrowserModule,
     MdlModule,
+    ClarityModule.forRoot(),
     TabularTransformationModule,
     RdfMappingModule,
     TabularAnnotationModule,

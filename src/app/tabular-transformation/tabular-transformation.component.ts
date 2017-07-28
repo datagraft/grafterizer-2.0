@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ProfilingComponent } from "./profiling/profiling.component";
 
 @Component({
   selector: 'tabular-transformation',

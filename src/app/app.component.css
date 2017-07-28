@@ -1,0 +1,9 @@
+* {
+    box-sizing: border-box;
+}
+
+.title {
+  padding-top: 3px;
+  padding-left: 15px;
+  size: 130%;
+}

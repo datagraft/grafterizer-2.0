@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TabularTransformationComponent } from "./tabular-transformation.component";
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
+import { ProfilingComponent } from './profiling/profiling.component';
 
 @NgModule({
   imports: [
@@ -11,7 +12,8 @@ import { TabularTransformationRoutingModule } from "./tabular-transformation-rou
     TabularTransformationRoutingModule
   ],
   declarations: [
-    TabularTransformationComponent
+    TabularTransformationComponent,
+    ProfilingComponent
   ]
 })
 
