@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ProfilingComponent } from "./profiling/profiling.component";
+import { HandsontableComponent } from "./handsontable/handsontable.component";
 
 @Component({
   selector: 'tabular-transformation',

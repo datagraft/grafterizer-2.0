@@ -5,6 +5,7 @@ import { TabularTransformationComponent } from "./tabular-transformation.compone
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { ProfilingComponent } from './profiling/profiling.component';
+import { HandsontableComponent } from './handsontable/handsontable.component';
 
 @NgModule({
   imports: [
@@ -13,7 +14,8 @@ import { ProfilingComponent } from './profiling/profiling.component';
   ],
   declarations: [
     TabularTransformationComponent,
-    ProfilingComponent
+    ProfilingComponent,
+    HandsontableComponent
   ]
 })
 
