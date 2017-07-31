@@ -1,0 +1,7 @@
+.chart{
+    position: relative;
+}
+
+#visual-container{
+   overflow: hidden;
+}
