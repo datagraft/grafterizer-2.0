@@ -1,3 +1,33 @@
-<p>
-  Cris: visual data profiling component (put code/ html here) - Ok , I will !
-</p>
+<ngl-form-element class="slds-m-top--small">
+  <input nglFormControl type="text" placeholder="Column header" (keyup.enter)="getHeader($event.target.value)">
+</ngl-form-element>
+
+<div *ngIf="header" id="visual-container">
+<div fxLayout='column' class="container">
+
+  <div fxFlex="100%" [fxLayout]="direction" class="innerContainer">
+
+    <div fxFlex="50%" class="chart">
+       <!-- <piechart (done)='onPiechartDone()' [chartData] = "chartData"></piechart> -->
+        <!-- <filled-piechart (done) ='onPiechartDone()' [chartData] = "column" ></filled-piechart>  -->
+        <!-- <line-chart (done)='onPiechartDone()' [chartData]="lineChartData"></line-chart>  -->
+        <stacked-bar-chart [chartData]="lineChartData" (done)="onPiechartDone()"> </stacked-bar-chart> 
+    </div>
+
+    <div fxFlex="0%" class="chart">
+      <statistic-table *ngIf="pieChartDone" (done)="onStatisticsDone()" [column] = "column"></statistic-table>
+    </div>
+
+    <div fxFlex="30%" class="chart">
+      <histogram *ngIf="statisticsDone" (done)="onHistogramDone()" [header] = "header" [column] = "column"></histogram>
+    </div>
+
+    <div fxFlex="20%" class="chart">
+     <boxplot *ngIf="histogramDone" [column] = "column" ></boxplot>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
