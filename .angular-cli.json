@@ -20,15 +20,15 @@
       "prefix": "app",
       "styles": [
         "styles.css",
-        "../node_modules/material-design-lite/material.min.css",
         "../node_modules/clarity-icons/clarity-icons.min.css",
-        "../node_modules/clarity-ui/clarity-ui.min.css"
+        "../node_modules/clarity-ui/clarity-ui.min.css",
+        "../node_modules/material-design-lite/material.min.css"
       ],
       "scripts": [
-        "../node_modules/material-design-lite/material.min.js",
         "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
         "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-        "../node_modules/clarity-icons/clarity-icons.min.js"
+        "../node_modules/clarity-icons/clarity-icons.min.js",
+        "../node_modules/material-design-lite/material.min.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
