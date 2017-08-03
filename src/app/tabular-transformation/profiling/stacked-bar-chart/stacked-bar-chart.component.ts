@@ -9,22 +9,19 @@ import * as datalib from 'datalib';
 })
 export class StackedBarChartComponent implements OnInit {
 
-  view: any[] = undefined;
-
-  data = [];
-
   @Output()
   done : EventEmitter<any> = new EventEmitter();
 
+  view: any[] = undefined;
+  data = [];
   showXAxis = true;
   showYAxis = true;
   gradient = false;
-  showLegend = true;
+  showLegend = false;
   showXAxisLabel = true;
-  xAxisLabel ;
+  xAxisLabel;
   showYAxisLabel = true;
   yAxisLabel ;
-
   colorScheme = {
     domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA', '#5B5393', '#FFE0AA']
   };

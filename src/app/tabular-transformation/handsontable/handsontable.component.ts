@@ -18,7 +18,7 @@ export class HandsontableComponent implements OnInit {
   constructor() {
     // init table
     this.data = [];
-    for (let i = 0; i <= 20; i++) {
+    for (let i = 0; i <= 10; i++) {
       this.data.push(["-", "-", "-", "-", "-"]);
     }
    }
@@ -53,7 +53,7 @@ export class HandsontableComponent implements OnInit {
           "redo": {}
         },
       },
-      height: 540,
+      height: 282,
       stretchH: 'all',
       className: 'htCenter htMiddle',
       afterSelection: (r, c, r2, c2) => {

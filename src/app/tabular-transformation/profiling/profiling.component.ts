@@ -21,13 +21,14 @@ export class ProfilingComponent implements OnInit {
   private lineChartData : Object = null;
   private timePeriod = [];
 
+
   constructor(private statisticService : StatisticService ) {}
 
   ngOnInit(): void {
-    
   }
 
   getHeader(header : string) {
+
     this.csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/seattle-weather.csv');
     this.column=[];
     this.timePeriod = [];
@@ -35,6 +36,7 @@ export class ProfilingComponent implements OnInit {
       this.column.push(o[header]);
       this.timePeriod.push(o['date']);
     }
+    this.validateChartData();
     this.validateLineChartData(header);
     this.header = header;
   }
