@@ -1,11 +1,11 @@
-import { NgModule }              from '@angular/core';
-import { RouterModule, Routes }  from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 import { TabularTransformationComponent } from './tabular-transformation/tabular-transformation.component';
 
 const appRoutes: Routes = [
   { path: 'tabular-transformation', component: TabularTransformationComponent },
-  { path: '',   redirectTo: '/tabular-transformation', pathMatch: 'full' },
+  { path: '', redirectTo: '/tabular-transformation', pathMatch: 'full' },
 ];
 
 @NgModule({
@@ -19,4 +19,4 @@ const appRoutes: Routes = [
     RouterModule
   ]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

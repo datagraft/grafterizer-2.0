@@ -8,9 +8,9 @@ describe('TabularTransformationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TabularTransformationComponent ]
+      declarations: [TabularTransformationComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
