@@ -18,17 +18,20 @@ export class AdvPieChartComponent implements OnInit {
     domain: ['#5AA454', '#A10A28']
   };
 
-  constructor() { }
+  constructor() {
+   }
 
   ngOnInit() {
   
     //setting the charts height based on window size height
     let height = window.screen.height;
-    let chartHeight = height/3;
+    let width = document.getElementById("visual-container").getBoundingClientRect().width;
     let charts = document.getElementsByClassName("chart") as HTMLCollectionOf<HTMLElement>;
     for ( let c in charts){
-      if( charts[c].style != undefined )
-        charts[c].style.height = height/3 + "px";
+      if( charts[c].style != undefined ){
+         charts[c].style.height = height/3 + "px";
+         charts[c].style.width = width/3 + "px";
+      }
     }
   
   }

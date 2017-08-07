@@ -26,7 +26,7 @@
     "@ngrx/core": "^1.2.0",
     "@ngrx/effects": "^2.0.4",
     "@ngrx/store": "^2.2.3",
-    "@swimlane/ngx-charts": "git+https://github.com/rotaricristian/ngx-charts.git",
+    "@swimlane/ngx-charts": "git+https://github.com/rotaricristian/ngx-charts",
     "@swimlane/ngx-datatable": "^9.3.1",
     "@webcomponents/custom-elements": "^1.0.0-alpha.3",
     "clarity-angular": "^0.10.0-alpha.5",
