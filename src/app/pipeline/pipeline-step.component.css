@@ -1,0 +1,22 @@
+
+.sin-functions-list {
+  text-align: left;
+  border-radius: 0;
+  margin: 0;
+  
+  line-height: 20px;
+
+}
+
+
+.sin-functions-list  clr-stack-content {
+padding-left: -20px;
+}
+
+.sin-functions-list clr-stack-block {
+
+ flex: 0; 
+ line-height: 20px;
+padding-left: -20px;
+    
+}
