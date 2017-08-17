@@ -10,10 +10,20 @@ import { TabularAnnotationModule } from "./tabular-annotation/tabular-annotation
 import { TabularTransformationModule } from "./tabular-transformation/tabular-transformation.module";
 
 import { AppComponent } from './app.component';
+import { PipelineComponent } from './pipeline/pipeline.component';
+import { PipelineStepComponent } from './pipeline/pipeline-step.component';
+import { PipelineFunctionFilterPipe } from './pipeline-function-filter.pipe';
+import { MakeDatasetComponent } from './pipeline/make-dataset.component';
+import { FormsModule }   from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
+    PipelineComponent,
+    PipelineStepComponent,
+    PipelineFunctionFilterPipe,
+    MakeDatasetComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -22,7 +32,8 @@ import { AppComponent } from './app.component';
     TabularTransformationModule,
     RdfMappingModule,
     TabularAnnotationModule,
-    AppRoutingModule
+    AppRoutingModule,
+     FormsModule 
   ],
   providers: [],
   bootstrap: [AppComponent]

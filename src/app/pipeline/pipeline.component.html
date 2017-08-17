@@ -1,0 +1,40 @@
+  <ul class="pipeline">
+    <div class="row" *ngFor="let pipelineFunction of pipeline.functions">
+<li class="col-xs"
+      [class.selected]="pipelineFunction.isPreviewed"
+      (click)="clickEditFunction(pipelineFunction)">
+       {{pipelineFunction.name}}
+</li>
+             <div class="btn-group btn-link btn-icon-link">
+    <button class="btn" *ngIf="pipelineFunction.isPreviewed">
+        <clr-icon shape="eye"></clr-icon>
+        <span class="clr-icon-title">Preview until this step</span>
+    </button>
+      <button class="btn" *ngIf="!pipelineFunction.isPreviewed">
+        <clr-icon shape="eye-hide"></clr-icon>
+        <span class="clr-icon-title">Reset preview</span>
+    </button>
+    <button class="btn" (click)="clickAddFunction()">
+        <clr-icon shape="add"></clr-icon>
+        <span class="clr-icon-title">Add new pipeline function after the current</span>
+    </button>
+    <button class="btn">
+        <clr-icon shape="remove"></clr-icon>
+        <span class="clr-icon-title">Remove the current pipeline function</span>
+    </button>
+
+</div>
+    </div>
+
+        </ul>
+ 
+  <clr-modal [(clrModalOpen)]="addOrEditFunction">
+    <h3 class="modal-title">Edit {{(selectedStep?selectedStep.name:"")}} function</h3>
+     <div class="modal-body">
+   <pipeline-step [function] = "selectedStep"></pipeline-step>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="addOrEditFunction = false">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="addOrEditFunction = false">Ok</button>
+    </div>
+</clr-modal>

@@ -24,7 +24,23 @@
             <router-outlet></router-outlet>
         </div>
         <nav class="sidenav">
-            Sidebar for 'suggested transformation' component and 'steps pipeline' component
+ <section class="sidenav-content">
+            
+<div class="row">
+    <div class="col-xs">
+         <span class="title"><strong>Suggested transformation</strong></span>
+    </div>
+</div>
+ </section>
+ <section class="sidenav-content">
+<div class="row">
+    <div class="col-xs">
+        <span class="title"><strong>Pipeline steps</strong></span>
+        <pipeline-steps [pipeline]="testPipeline"></pipeline-steps>
+    </div>
+</div>
+ </section>
+
         </nav>
     </div>
 </div>
