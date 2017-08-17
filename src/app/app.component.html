@@ -13,42 +13,35 @@
       <a routerLink="/tabular-annotation" routerLinkActive="active" class="nav-link"><span class="nav-text">Tabular Annotation</span></a>
     </div>
     <div class="header-actions">
-<<<<<<< HEAD
       <a href="..." class="nav-link nav-icon">
         <clr-icon shape="cog"></clr-icon>
       </a>
-=======
-        <a href="..." class="nav-link nav-icon">
-            <clr-icon shape="cog"></clr-icon>
-        </a>
-    </div>
-</header>
-    <div class="content-container">
-        <div class="content-area">
-            <router-outlet></router-outlet>
-        </div>
-        <nav class="sidenav">
- <section class="sidenav-content">
-            
-<div class="row">
-    <div class="col-xs">
-         <span class="title"><strong>Suggested transformation</strong></span>
-    </div>
-</div>
- </section>
- <section class="sidenav-content">
-<div class="row">
-    <div class="col-xs">
-        <span class="title"><strong>Pipeline steps</strong></span>
-        <pipeline-steps [pipeline]="testPipeline"></pipeline-steps>
-    </div>
-</div>
- </section>
-
-        </nav>
->>>>>>> pipelineSteps
     </div>
   </header>
+  <div class="content-container">
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+    <nav class="sidenav">
+      <section class="sidenav-content">
+
+        <div class="row">
+          <div class="col-xs">
+            <span class="title"><strong>Suggested transformation</strong></span>
+          </div>
+        </div>
+      </section>
+      <section class="sidenav-content">
+        <div class="row">
+          <div class="col-xs">
+            <span class="title"><strong>Pipeline steps</strong></span>
+            <pipeline-steps [pipeline]="testPipeline"></pipeline-steps>
+          </div>
+        </div>
+      </section>
+
+    </nav>
+  </div>
 
   <router-outlet></router-outlet>
 
