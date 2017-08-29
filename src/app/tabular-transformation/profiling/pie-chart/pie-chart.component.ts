@@ -2,7 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { StatisticService } from '../statistic-service/statistic.service';
 
 @Component({
-  selector: 'pie-chart',
+  selector: 'filled-piechart',
   templateUrl: './pie-chart.component.html',
   styleUrls: ['./pie-chart.component.css']
 })
