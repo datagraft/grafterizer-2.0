@@ -1,4 +1,4 @@
-<div class="row">
+<div class="flex-container">
 
 
   <div class="col-xs" *ngIf="!function">
@@ -43,14 +43,14 @@
   </div>
   <div class="col-xs  pipelineFunctionDialog">
 
-    <!--add-columns-function [transformation]="transformation" ng-if="selectedFunctionName ==='add-columns'"></add-columns-function>
-      <columns-function transformation="transformation" ng-if="selectedFunctionName === 'columns'"></columns-function>
+    <add-columns [function]="function" (newfunction)="newFunctionChanged($event)" *ngIf="selectedFunctionName === 'add-columns'"></add-columns>
+    <!--columns-function transformation="transformation" ng-if="selectedFunctionName === 'columns'"></columns-function>
       <derive-column-function transformation="transformation" ng-if="selectedFunctionName === 'derive-column'" ></derive-column-function>
       <merge-columns-function transformation="transformation" ng-if="selectedFunctionName === 'merge-columns'" ></merge-columns-function>
       <shift-row-function transformation="transformation" ng-if="selectedFunctionName === 'shift-row'"></shift-row-function>
-      <shift-column-function transformation="transformation" ng-if="selectedFunctionName === 'shift-column'"></shift-column-function>
-      <add-row-function transformation="transformation" ng-if="selectedFunctionName === 'add-row'"></add-row-function>
-      <group-rows transformation="transformation" ng-if="selectedFunctionName === 'group-rows'"></group-rows>
+      <shift-column-function transformation="transformation" ng-if="selectedFunctionName === 'shift-column'"></shift-column-function-->
+    <add-row [function]="function" (newfunction)="newFunctionChanged($event)" *ngIf="selectedFunctionName === 'add-row'"></add-row>
+    <!--group-rows transformation="transformation" ng-if="selectedFunctionName === 'group-rows'"></group-rows>
       <drop-rows-function transformation="transformation" ng-if="selectedFunctionName === 'drop-rows'"></drop-rows-function>
       <grep-function transformation="transformation" ng-if="selectedFunctionName === 'grep'"></grep-function-->
     <make-dataset [function]="function" (newfunction)="newFunctionChanged($event)" *ngIf="selectedFunctionName === 'make-dataset'"></make-dataset>

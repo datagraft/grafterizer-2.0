@@ -4,9 +4,10 @@
             {{pipelineFunction.name}}
         </li>
         <div class="btn-group btn-link btn-icon-link">
-            <button class="btn" *ngIf="pipelineFunction.isPreviewed">
-        <clr-icon shape="eye"></clr-icon>
-        <span class="clr-icon-title">Preview until this step</span>
+
+            <button class="ui btn" *ngIf="pipelineFunction.isPreviewed">
+        <clr-icon shape="eye" ></clr-icon>
+        <span  class="clr-icon-title">Preview until this step</span>
     </button>
             <button class="btn" *ngIf="!pipelineFunction.isPreviewed">
         <clr-icon shape="eye-hide"></clr-icon>
@@ -27,7 +28,7 @@
 </ul>
 
 
-<clr-modal [(clrModalOpen)]="addFunction || editFunction" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="addFunction || editFunction" [clrModalSize]="'lg'" [clrModalClosable]="false">
 
     <h3 class="modal-title">Edit {{(selectedStep?selectedStep.name:"")}} function</h3>
     <div class="modal-body">

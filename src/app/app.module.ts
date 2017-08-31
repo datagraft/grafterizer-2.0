@@ -15,8 +15,11 @@ import { PipelineComponent } from './pipeline/pipeline.component';
 import { PipelineStepComponent } from './pipeline/pipeline-step.component';
 import { PipelineFunctionFilterPipe } from './pipeline-function-filter.pipe';
 import { MakeDatasetComponent } from './pipeline/make-dataset.component';
+import { AddColumnsComponent } from './pipeline/add-columns.component';
 import { FormsModule } from '@angular/forms';
 import { RlTagInputModule } from 'angular2-tag-input';
+import { AddRowComponent } from './pipeline/add-row.component';
+
 
 @NgModule({
   declarations: [
@@ -25,6 +28,8 @@ import { RlTagInputModule } from 'angular2-tag-input';
     PipelineStepComponent,
     PipelineFunctionFilterPipe,
     MakeDatasetComponent,
+    AddColumnsComponent,
+    AddRowComponent,
 
   ],
   imports: [

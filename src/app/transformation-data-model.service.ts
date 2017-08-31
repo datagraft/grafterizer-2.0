@@ -82,6 +82,17 @@ export class RDFVocabulary {
 }
 
 @Injectable()
+export class NewColumnSpec {
+  private __type = 'NewColumnSpec';
+
+  revive(data: any): NewColumnSpec {
+    return new NewColumnSpec(data.colName, data.colValue, data.specValue, data.expression);
+  };
+  constructor(colName: string, colValue: string, specValue: string, expression: string) {
+  }
+}
+
+@Injectable()
 export class MakeDatasetFunction extends PipelineFunction {
   constructor(public columnsArray: string[], public useLazy: boolean, public numberOfColumns: number, public moveFirstRowToHeader: boolean, public docstring: string) {
     super("make-dataset", "MakeDatasetFunction");
@@ -137,6 +148,113 @@ export class MakeDatasetFunction extends PipelineFunction {
     }
   };
 }
+
+
+@Injectable()
+export class AddColumnsFunction extends PipelineFunction {
+  constructor(public columnsArray: any[], public docstring: string) {
+    super("add-columns", "AddColumnsFunction");
+    var i = 0;
+    for (let colSpec of columnsArray) {
+      i++;
+      if (!(colSpec instanceof NewColumnSpec) && colSpec.__type === 'NewColumnSpec') {
+
+        columnsArray[i] = colSpec.revive(colSpec);
+      }
+    }
+  }
+  revive(data: any) {
+
+    return new AddColumnsFunction(data.columnsArray, data.docstring);
+  };
+  generateClojure() {
+    var i;
+    var newRownumMap = new jsedn.Map([]);
+    var newColMap = new jsedn.Map([]);
+    var ds = [];
+
+    for (i = 0; i < this.columnsArray.length; ++i) {
+      switch (this.columnsArray[i].specValue) {
+        case ('Dataset filename'):
+          ds.push(new jsedn.List([
+            new jsedn.sym('add-filename-to-column'),
+            new jsedn.kw(':' + this.columnsArray[i].colName)
+          ]));
+          break;
+        case ('Current date'):
+          newColMap.set(
+            new jsedn.kw(':' + this.columnsArray[i].colName),
+            new jsedn.List([
+              new jsedn.sym('new'),
+              new jsedn.sym('java.util.Date')
+            ])
+          );
+          break;
+        case ('Row number'):
+          newRownumMap.set(
+            new jsedn.kw(':' + this.columnsArray[i].colName),
+            new jsedn.sym('(fn [_] (grafter.sequences/integers-from 1))')
+          );
+          break;
+        case ('Custom expression'):
+          newColMap.set(
+            new jsedn.kw(':' + this.columnsArray[i].colName),
+            new jsedn.sym(this.columnsArray[i].expression)
+          );
+          break;
+        default:
+          newColMap.set(
+            new jsedn.kw(':' + this.columnsArray[i].colName),
+            this.columnsArray[i].colValue
+          );
+          break;
+      }
+
+    }
+
+    var pipe = [new jsedn.sym('->')];
+
+    if (ds.length !== 0) {
+      if (ds.length === 1) {
+        return ds[0];
+      } else {
+        pipe = pipe.concat(ds);
+        return new jsedn.List(pipe);
+      }
+    }
+
+    pipe = pipe.concat(ds);
+    pipe.push(new jsedn.List([jsedn.sym('add-columns'), newColMap]));
+
+    if (newRownumMap.keys.length !== 0) {
+      pipe.push(new jsedn.List([jsedn.sym('apply-columns'), newRownumMap]));
+      return new jsedn.List(pipe);
+    } else {
+      return new jsedn.List([jsedn.sym('add-columns'), newColMap]);
+    }
+  };
+}
+
+@Injectable()
+export class AddRowFunction extends PipelineFunction {
+  constructor(public position: number, public values: string[], public docstring: string) {
+    super("add-row", "AddRowFunction");
+
+  }
+
+  revive(data: any) {
+
+    return new AddRowFunction(data.position, data.values, data.docstring);
+  };
+  generateClojure() {
+    var values = new jsedn.Vector([]);
+    for (var i = 0; i < this.values.length; ++i)
+      values.val.push(this.values[i]);
+    return new jsedn.List([jsedn.sym('new-tabular/add-row'), values]);
+  };
+}
+
+
 
 @Injectable()
 export class Transformation {

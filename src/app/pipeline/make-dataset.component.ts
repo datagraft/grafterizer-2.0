@@ -22,7 +22,7 @@ export class MakeDatasetComponent implements OnInit, DoCheck, OnChanges {
   ngOnChanges() {
     if (!this.function) {
       this.function = new MakeDatasetFunction([], null, null, null, null);
-
+      this.isNewFunction = true;
 
     }
     else {
@@ -39,7 +39,7 @@ export class MakeDatasetComponent implements OnInit, DoCheck, OnChanges {
   ngOnInit() {
 
 
-    this.isNewFunction = true;
+
     this.differ = {};
     this.differ['function'] = this.differs.find(this.function).create(null);
   };

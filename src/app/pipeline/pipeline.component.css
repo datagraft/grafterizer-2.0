@@ -13,10 +13,11 @@
   position: relative;
   left: 0;
   background-color: #EEE;
-  margin: .5em;
+  margin: .9em;
   padding: .3em .8em;
   height: 1.6em;
   border-radius: 4px;
+  
 }
 .pipeline li:hover {
   color: #607D8B;

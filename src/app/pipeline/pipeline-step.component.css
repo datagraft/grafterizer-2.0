@@ -29,3 +29,8 @@ padding-left: -20px;
 .pipelineStepDialog{
   flex:40% 0;
 }
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+}
