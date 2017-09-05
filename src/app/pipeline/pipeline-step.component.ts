@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnChanges, SimpleChange } from '@angular/core';
+import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { PipelineFunction } from './pipelineFunction';
 
 
@@ -12,9 +12,11 @@ export class PipelineStepComponent implements OnChanges {
   @Input() function: PipelineFunction;
   //TODO: pass the transformations
   @Input() transformation: string;
+  @Output() newFunction = new EventEmitter<PipelineFunction>();
   selectedFunctionName: string;
   onSelect(selectedFunction: AvailableFunction): void {
     this.selectedFunctionName = selectedFunction.name;
+
   };
   constructor() {
 
@@ -22,11 +24,12 @@ export class PipelineStepComponent implements OnChanges {
   }
 
   ngOnChanges(changes: { [propKey: string]: SimpleChange }) {
-console.log(this.function);
-
     if (!changes["function"].isFirstChange())
       if (changes["function"].currentValue) this.selectedFunctionName = changes["function"].currentValue.name;
       else this.selectedFunctionName = "";
+  }
+  newFunctionChanged(newFunction: PipelineFunction) {
+    this.newFunction.emit(newFunction);
   }
 
 }

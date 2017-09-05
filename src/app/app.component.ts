@@ -17,7 +17,7 @@ export class AppComponent {
    new PipelineFunction("make-dataset","MakeDatasetFunction"),
    new PipelineFunction("drop-rows","DropRowsFunction")
   ];*/
-  testPipeline: Pipeline = new Pipeline([new MakeDatasetFunction(["a", "b", "c"], false, 0, true, "docstring:string"), new MakeDatasetFunction(["a", "b", "c"], false, 0, true, "docstring:string")]);
+  testPipeline: Pipeline = new Pipeline([new MakeDatasetFunction([], false, 0, true, "docstring:string"), new MakeDatasetFunction(["a", "b", "c"], false, 0, false, "docstring:string")]);
 }
 /*const testPipeline: PipelineFunction[] = [
  new PipelineFunction("make-dataset"),

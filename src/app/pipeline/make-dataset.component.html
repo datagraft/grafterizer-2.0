@@ -1,4 +1,36 @@
-<p>
-  make-dataset works!
-</p>
-    <input [(ngModel)]="function.columnsArray[0]" placeholder="columnname" />
+<form action="">
+
+  <div class="radio">
+    <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="colnames" (change)="modeChange()" id="mode_1">
+    <label for="mode_1">Specify column names</label>
+  </div>
+  <div class="radio">
+    <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="firstrow" (change)="modeChange()" id="mode_2">
+    <label for="mode_2">Use the first row as header</label>
+  </div>
+
+  <div class="radio">
+    <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="ncolumns" (change)="modeChange()" id="mode_3">
+    <label for="mode_3">Specify a number of columns to fetch</label>
+  </div>
+</form>
+<br>
+
+<div *ngIf="makedatasetmode=='colnames'">
+  <label for="colnames">Column names:</label>
+  <rl-tag-input [(ngModel)]="function.columnsArray" placeholder="Column names" id="colnames"></rl-tag-input>
+
+</div>
+<div *ngIf="makedatasetmode=='ncolumns'">
+  <label for="colnancolumnsmes">Number of columns:</label>
+  <input type="number" id="ncolumns" [(ngModel)]="function.numberOfColumns" placeholder="Number of columns" size="25">
+
+</div>
+
+<br>
+
+<div>
+  <label for="comment">Comment:</label>
+  <input type="text" id="comment" [(ngModel)]="function.docstring" placeholder="Comment" size="125">
+
+</div>
