@@ -35,6 +35,9 @@
       <section class="sidenav-content">
         <div class="row">
           <div class="col-xs">
+            <div id="btn">
+              <button (click)="generateClojure()">Generate clojure</button>
+            </div>
             <span class="title"><strong>Pipeline steps</strong></span>
             <pipeline-steps [pipeline]="testPipeline"></pipeline-steps>
           </div>
