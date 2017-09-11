@@ -7,7 +7,7 @@ import * as generateClojure from '../assets/generateclojure.js';
 import * as data from '../assets/data.json';
 
 /*TODO:remove pipeline functions when done with components*/
-import { Pipeline, MakeDatasetFunction } from "./transformation-data-model.service";
+import { Pipeline, MakeDatasetFunction } from './transformation-data-model.service';
 import { ColumnName } from './pipeline/column-name';
 
 @Component({
@@ -28,7 +28,3 @@ export class AppComponent {
   ];*/
   testPipeline: Pipeline = new Pipeline([new MakeDatasetFunction([], false, 0, true, "docstring:string"), new MakeDatasetFunction(["a", "b", "c"], false, 0, false, "docstring:string")]);
 }
-/*const testPipeline: PipelineFunction[] = [
- new PipelineFunction("make-dataset"),
- new PipelineFunction("drop-rows")
-];*/
