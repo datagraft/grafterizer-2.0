@@ -30,7 +30,7 @@
     "@swimlane/ngx-datatable": "^9.3.1",
     "@webcomponents/custom-elements": "^1.0.0-alpha.3",
     "angular2-tag-input": "1.2.3",
-    "bootstrap": "^4.0.0-alpha.6",
+    "bootstrap": "4.0.0-alpha.6",
     "clarity-angular": "^0.10.0-alpha.5",
     "clarity-icons": "^0.10.0-alpha.5",
     "clarity-ui": "^0.10.0-alpha.5",
