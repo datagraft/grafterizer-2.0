@@ -18,6 +18,9 @@ import { ColumnName } from './pipeline/column-name';
   providers: [Pipeline, MakeDatasetFunction]
 })
 export class AppComponent {
+
+  constructor(public router: Router) {
+  }
   private title = 'Click to generate clojure';
   generateClojure() {
     console.log(generateClojure.fromTransformation(transformationDataModel.Transformation.revive(data)));
