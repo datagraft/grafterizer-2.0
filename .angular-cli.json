@@ -20,6 +20,7 @@
       "prefix": "app",
       "styles": [
         "styles.css",
+        "../node_modules/datavoyager/lib-test/style.css",
         "../node_modules/clarity-icons/clarity-icons.min.css",
         "app/clr-overrides.scss"
       ],

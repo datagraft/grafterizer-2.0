@@ -5,7 +5,9 @@
     "module": "es2015",
     "allowJs": true,
     "baseUrl": "",
-    "types": []
+    "types": [
+      "node"
+    ]
   },
   "exclude": [
     "test.ts",

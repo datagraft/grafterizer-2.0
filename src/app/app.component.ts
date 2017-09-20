@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { PipelineFunction } from './pipeline/pipelineFunction';
 import { PipelineComponent } from './pipeline/pipeline.component';
+import { Router } from '@angular/router';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';

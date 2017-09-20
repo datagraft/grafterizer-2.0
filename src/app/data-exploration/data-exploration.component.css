@@ -1,0 +1,4 @@
+ /* necessary for datavoyager to take the whole container-height */
+ #voyager-container {
+    height: 100%;
+}

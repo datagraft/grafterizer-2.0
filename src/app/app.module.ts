@@ -18,6 +18,7 @@ import { AddColumnsComponent } from './pipeline/add-columns.component';
 import { FormsModule } from '@angular/forms';
 import { RlTagInputModule } from 'angular2-tag-input';
 import { AddRowComponent } from './pipeline/add-row.component';
+import { DataExplorationComponent } from './data-exploration/data-exploration.component';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import { AddRowComponent } from './pipeline/add-row.component';
     MakeDatasetComponent,
     AddColumnsComponent,
     AddRowComponent,
+    DataExplorationComponent,
 
   ],
   imports: [
