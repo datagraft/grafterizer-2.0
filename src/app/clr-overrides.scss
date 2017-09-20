@@ -1,0 +1,13 @@
+$clr-blue: #5264AE; // #006a91;
+$clr-action-blue-lightest: #CBD1E7; // #e1f1f6;
+$clr-action-blue-lighter: #A9B2D7; // #89cbdf;
+$clr-action-blue-light: #8693C6; // #49afd9;
+$clr-action-blue-light-midtone: #6C7BBA; // #0094d2;
+$clr-action-blue: #5264AE; // #007cbb;
+$clr-action-blue-dark-midtone: #5264AE; // #007cbb;
+$clr-action-blue-dark: #5264AE; // #004a70;
+$clr-action-blue-darker: #5264AE; // #003a59;
+$clr-action-blue-darkest: #5264AE; // #ffffff;
+
+// Override the default Clarity styles
+@import "node_modules/clarity-ui/src/main.scss";
