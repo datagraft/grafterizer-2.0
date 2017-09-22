@@ -21,7 +21,7 @@ import { TabularTransformationRoutingModule } from "./tabular-transformation-rou
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { MakeDatasetComponent } from './make-dataset/make-dataset.component';
+import { MakeDatasetComponent } from './functions/make-dataset/make-dataset.component';
 
 @NgModule({
   imports: [
