@@ -1144,7 +1144,7 @@ RemoveDuplicatesFunction.prototype.generateClojure = function () {
 };
 this.RemoveDuplicatesFunction = RemoveDuplicatesFunction;
 
-var MakeDatasetFunction = function (columnsArray, useLazy, numberOfColumns, moveFirstRowToHeader, docstring) {
+export var MakeDatasetFunction = function (columnsArray, useLazy, numberOfColumns, moveFirstRowToHeader, docstring) {
   // array of column names
   this.name = 'make-dataset';
   this.displayName = 'make-dataset';

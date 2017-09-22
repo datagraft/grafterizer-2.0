@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
-import * as data from '../assets/data.json';
+import * as data from '../assets/data-test.json';
 
 /*TODO:remove pipeline functions when done with components*/
 import { Pipeline, MakeDatasetFunction } from './transformation-data-model.service';
@@ -19,10 +19,16 @@ import { ColumnName } from './pipeline/column-name';
 })
 export class AppComponent {
 
-  constructor(public router: Router) {
+  constructor(public router: Router) { }
+
+  tester() {
+    return new transformationDataModel.MakeDatasetFunction(
+      [], true, 0, true, null);
   }
+
   private title = 'Click to generate clojure';
   generateClojure() {
+    console.log(this.tester());
     console.log(generateClojure.fromTransformation(transformationDataModel.Transformation.revive(data)));
     console.log(transformationDataModel.Transformation.revive(data));
   };
