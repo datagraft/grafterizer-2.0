@@ -1,0 +1,51 @@
+{
+  "customFunctionDeclarations": [],
+  "prefixers": [],
+  "pipelines": [{
+    "functions": [{
+      "name": "make-dataset",
+      "displayName": "make-dataset",
+      "isPreviewed": false,
+      "columnsArray": [{
+        "id": 0,
+        "value": "county"
+      }, {
+        "id": 1,
+        "value": "industry"
+      }, {
+        "id": 2,
+        "value": "gender"
+      }, {
+        "id": 3,
+        "value": "age"
+      }, {
+        "id": 4,
+        "value": "year1"
+      }, {
+        "id": 5,
+        "value": "year2"
+      }, {
+        "id": 6,
+        "value": "year3"
+      }, {
+        "id": 7,
+        "value": "year4"
+      }, {
+        "id": 8,
+        "value": "year5"
+      }, {
+        "id": 9,
+        "value": "year6"
+      }, {
+        "id": 10,
+        "value": "year7"
+      }],
+      "useLazy": null,
+      "moveFirstRowToHeader": null,
+      "__type": "MakeDatasetFunction",
+      "docstring": "Make dataset"
+    }],
+    "__type": "Pipeline"
+  }],
+  "rdfVocabs": []
+}
