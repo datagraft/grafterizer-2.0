@@ -16,7 +16,7 @@ export class RecommenderService {
     first: 0 // selection is the first row or a subset of cells of the first row
   }
 
-  // 1: compulrsory condition, 0 : don't care, -1: forbidden condition
+  // 1: compulsory condition, 0 : don't care, -1: forbidden condition
   conditionMatrix = [
     [0, 0, -1, 0, 0, 0, 0, 1],	//Set first row as header
     [1, 0, 1, -1, 1, 0, 0, 0],  //Set to uppercase
@@ -27,7 +27,7 @@ export class RecommenderService {
     [0, -1, 1, -1, 0, 0, 1, 0],	//Sort
     [0, 1, 1, -1, 0, 0, 0, 0],	//Melt
     [0, -1, 1, -1, 0, 0, 0, 0],	//Cast
-    [0, 0, 1, -1, 0, 0, 0],     //Group and Aggregate
+    [0, 0, 1, -1, 0, 0, 0, 0],     //Group and Aggregate
     [0, 0, 1, -1, 0, 0, 0, 0],	//Take columns
     [0, 0, 1, -1, 0, 0, 0, 0],  //Derive columns
     [0, 0, 1, -1, 0, 0, 0, 0],  //Shift columns

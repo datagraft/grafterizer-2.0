@@ -9,9 +9,9 @@ import { StatisticService } from '../statistic-service/statistic.service';
 export class LineChartComponent implements OnInit {
 
   @Output()
-  done : EventEmitter<any> = new EventEmitter();
+  done: EventEmitter<any> = new EventEmitter();
 
-  data : any =[];
+  data: any = [];
 
   view: any[] = undefined;
 
@@ -22,7 +22,7 @@ export class LineChartComponent implements OnInit {
   showLegend = false;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  yAxisLabel ;
+  yAxisLabel;
   showRefLines = true;
   showRefLabels = true;
   referenceLines = undefined;
@@ -33,47 +33,49 @@ export class LineChartComponent implements OnInit {
 
   autoScale = true;
 
-  constructor(private statisticService :  StatisticService) { }
+  constructor(private statisticService: StatisticService) { }
 
   ngOnInit() {
   }
 
-   @Input()
-  set chartData(data: Object){
-    if ( data ) { 
+  @Input()
+  set chartData(data: Object) {
+    if (data) {
       this.data = [];
       let series = [];
       this.referenceLines = [];
+      //data contains one column with time period, and another with values 
       let timePeriod = data['info']['period'];
+      //dates
       timePeriod = timePeriod.map(date => {
-                                return  new Date(date);
-                              });
+        return new Date(date);
+      });
       let values = data['info']['values'];
-      for(let i in timePeriod){
+      for (let i in timePeriod) {
         series.push({
-          "name" : timePeriod[i],
-          "value" : values[i]
+          "name": timePeriod[i],
+          "value": values[i]
         });
       }
       this.yAxisLabel = data['name'];
       this.data.push({
         "name": data['name'],
-        "series" : series
+        "series": series
       })
 
       this.referenceLines.push({
-        "name" : "min",
-        "value" : this.statisticService.getMin(values)
+        "name": "min",
+        "value": this.statisticService.getMin(values)
       });
 
       this.referenceLines.push({
-        "name" : "max",
-        "value" : this.statisticService.getMax(values)
+        "name": "max",
+        "value": this.statisticService.getMax(values)
       });
 
       this.referenceLines.push({
-        "name" : "mean",
-        "value" : this.statisticService.getMean(values)
+        "name": "mean",
+        "value": this.statisticService.getMean(values)
       });
 
       this.done.emit(null);

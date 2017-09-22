@@ -9,79 +9,66 @@ declare var Plotly;
 })
 export class BoxplotComponent implements OnInit {
 
-
-  private dataInfo = {
-  y: [],
-  type: 'box',
-  name:" ",
-  marker: {
-    color: 'rgb(0,0,0)',
-    outliercolor: 'rgb(255, 0, 0)',
-    line: {
-      outliercolor: 'rgb(255, 0, 0)',
-      outlierwidth: 0
-    }
-  },
-  boxpoints: 'suspectedoutliers'
-};
-
-  private layout={
+  private layout = {
+    paper_bgcolor: 'rgba(0,0,0,0)', //transparent
+    plot_bgcolor: 'rgba(0,0,0,0', //transparent
     autosize: true,
-     margin: {
-        t: 30,
-        b: 50
-      }
+    margin: {
+      t: 30,
+      b: 50
+    }
   };
 
   private d3;
   private gd3;
   private gd;
-  private data = [this.dataInfo];
   private created: boolean = false;
 
-  constructor() { 
-    
+  constructor() {
+
     window.onresize = () => {
-          Plotly.Plots.resize(this.gd);
-      };
+      Plotly.Plots.resize(this.gd);
+    };
   }
 
   ngOnInit() {
   }
 
-  @Input() set column(values : Array<Number>){
+  @Input() set column(values: Array<Number>) {
 
-    if( values ) {
+    if (values) {
 
-      if(this.created)
-        Plotly.deleteTraces('box-plot', 0); 
+      // for auto-resize
+      if (this.created)
+        Plotly.deleteTraces('box-plot', 0);
       else {
-          this.d3 = Plotly.d3;
-          this.gd3 = this.d3.select('#box-plot')
-            .style({
-                width: 100 + '%',
-                'margin-left': 0 + '%',
+        this.d3 = Plotly.d3;
+        this.gd3 = this.d3.select('#box-plot')
+          .style({
+            width: 100 + '%',
+            'margin-left': 0 + '%',
 
-                height: 100 + '%',
-                'margin-top': 0 + '%'
-            });
-          this.gd = this.gd3.node();
-        }
-    
+            height: 100 + '%',
+            'margin-top': 0 + '%'
+          });
+        this.gd = this.gd3.node();
+      }
+
       Plotly.plot(this.gd, [{
-          type: 'box',
-          y: values,
-          marker: {
-            color: 'rgb(0,0,0)',
+        type: 'box',
+        y: values,
+        name: ' ',
+        marker: {
+          color: 'rgb(0,0,0)',
+          outliercolor: 'rgb(255, 0, 0)',
+          line: {
             outliercolor: 'rgb(255, 0, 0)',
-            line: {
-              outliercolor: 'rgb(255, 0, 0)',
-              outlierwidth: 0
-            },
+            outlierwidth: 0
           },
-          boxpoints: 'suspectedoutliers'
-      }], this.layout, {displayModeBar: false});
-        this.created= true;
+        },
+        boxpoints: 'suspectedoutliers'
+      }], this.layout, { displayModeBar: false });
+      this.created = true;
 
     }
   }

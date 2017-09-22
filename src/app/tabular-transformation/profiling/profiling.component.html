@@ -7,10 +7,10 @@
   <div fxFlex="100%" [fxLayout]="direction" class="innerContainer">
 
     <div fxFlex="33%" class="chart">
-        <!-- <adv-pie-chart (done)='onPiechartDone()' [chartData]="chartData"></adv-pie-chart>  -->
-         <filled-piechart (done) ='onPiechartDone()' [chartData] = "column" ></filled-piechart>  
-         <!-- <line-chart (done)='onPiechartDone()' [chartData]="lineChartData"></line-chart>   -->
-         <!-- <stacked-bar-chart [chartData]="lineChartData" (done)="onPiechartDone()"> </stacked-bar-chart>   -->
+      <!-- <adv-pie-chart (done)='onPiechartDone()' [chartData]="chartData"></adv-pie-chart>  -->
+      <filled-piechart (done)='onPiechartDone()' [chartData]="column"></filled-piechart>
+      <!-- <line-chart (done)='onPiechartDone()' [chartData]="lineChartData"></line-chart>   -->
+      <!-- <stacked-bar-chart [chartData]="lineChartData" (done)="onPiechartDone()"> </stacked-bar-chart> -->
     </div>
 
     <!-- <div fxFlex="10%" class="chart">
@@ -18,14 +18,13 @@
     </div> -->
 
     <div fxFlex="33%" class="chart">
-      <histogram  (done)="onHistogramDone()" [header] = "header" [column] = "column"></histogram>
+      <histogram (done)="onHistogramDone()" [header]="header" [column]="column"></histogram>
     </div>
 
     <div fxFlex="33%" class="chart">
-     <boxplot  [column] = "column" ></boxplot>
+      <boxplot [column]="column"></boxplot>
     </div>
 
   </div>
 
 </div>
-

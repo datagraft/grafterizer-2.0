@@ -13,10 +13,10 @@ export class PieChartComponent implements OnInit {
     domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA', '#5B5393', '#FFE0AA']
   };
 
-  data : any[];
+  data: any[];
 
-  @Output() 
-  done :EventEmitter<any> = new EventEmitter();
+  @Output()
+  done: EventEmitter<any> = new EventEmitter();
 
 
   // options
@@ -27,26 +27,27 @@ export class PieChartComponent implements OnInit {
   explodeSlices = false;
   doughnut = false;
 
-  constructor(private statisticService : StatisticService) { }
+  constructor(private statisticService: StatisticService) { }
 
   ngOnInit() {
   }
 
   @Input()
-  set chartData(data: any){
+  set chartData(data: any) {
 
     let chartData = this.statisticService.getCountMap(data);
-    this.data=[];
-    for( let key in chartData){
+    this.data = [];
+    for (let key in chartData) {
       this.data.push(
-        {"name" : key,
-        "value" : chartData[key]
-      });
+        {
+          "name": key,
+          "value": chartData[key]
+        });
     }
-  
-  this.done.emit(null);
-}
 
-  
+    this.done.emit(null);
+  }
+
+
 
 }
