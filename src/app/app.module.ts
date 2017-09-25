@@ -1,5 +1,6 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { ClarityModule } from 'clarity-angular';
 import { SuiModule } from 'ng2-semantic-ui';
@@ -22,6 +23,7 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     ClarityModule.forRoot(),
     TabularTransformationModule,
     RdfMappingModule,

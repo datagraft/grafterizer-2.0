@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
-import * as data from '../assets/data-test.json';
+import * as data from '../assets/data.json';
 
 @Component({
   selector: 'app-root',

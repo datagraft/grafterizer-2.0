@@ -1,8 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { FlexLayoutModule } from "@angular/flex-layout";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
+import { FlexLayoutModule } from "@angular/flex-layout";
+import { ClarityModule } from 'clarity-angular';
+import { ListboxModule } from 'primeng/primeng';
+import { RlTagInputModule } from 'angular2-tag-input';
 
 import { TabularTransformationComponent } from "./tabular-transformation.component";
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -15,23 +19,27 @@ import { PieChartComponent } from './profiling/pie-chart/pie-chart.component';
 import { StackedBarChartComponent } from './profiling/stacked-bar-chart/stacked-bar-chart.component';
 import { StatisticTableComponent } from './profiling/statistic-table/statistic-table.component';
 import { SelectboxComponent } from './sidebar/selectbox/selectbox.component';
+import { MakeDatasetComponent } from './sidebar/pipeline-functions/make-dataset/make-dataset.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { MakeDatasetComponent } from './functions/make-dataset/make-dataset.component';
 
 @NgModule({
   imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
     CommonModule,
+    FormsModule,
     TabularTransformationRoutingModule,
     NglModule.forRoot(),
-    BrowserModule,
     FlexLayoutModule,
+    ClarityModule,
     NgxChartsModule,
-    BrowserAnimationsModule,
-    NgxDatatableModule
+    NgxDatatableModule,
+    ListboxModule,
+    RlTagInputModule
   ],
   declarations: [
     TabularTransformationComponent,

@@ -21,7 +21,7 @@
   </header>
   <div class="content-container">
     <!-- Conditional CSS class attachment to the element -->
-    <div [ngClass]="{'content-area' : router.url != '/data-exploration', 'datavoyager': router.url == '/data-exploration'  }">
+    <div [ngClass]="{'content-area-no-padding': router.url == '/tabular-transformation' || '/data-exploration'}">
       <router-outlet></router-outlet>
     </div>
   </div>
