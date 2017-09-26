@@ -15,10 +15,14 @@ import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
 
 
+
+
 @NgModule({
   declarations: [
     AppComponent,
     DataExplorationComponent,
+
+
 
   ],
   imports: [

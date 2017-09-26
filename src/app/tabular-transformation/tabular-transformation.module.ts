@@ -7,6 +7,8 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
 import { RlTagInputModule } from 'angular2-tag-input';
+import { SuiModule } from 'ng2-semantic-ui';
+
 
 import { TabularTransformationComponent } from "./tabular-transformation.component";
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -20,6 +22,9 @@ import { StackedBarChartComponent } from './profiling/stacked-bar-chart/stacked-
 import { StatisticTableComponent } from './profiling/statistic-table/statistic-table.component';
 import { SelectboxComponent } from './sidebar/selectbox/selectbox.component';
 import { MakeDatasetComponent } from './sidebar/pipeline-functions/make-dataset/make-dataset.component';
+import { TakeRowsComponent } from './sidebar/pipeline-functions/take-rows/take-rows.component';
+import { TakeColumnsComponent } from './sidebar/pipeline-functions/take-columns/take-columns.component';
+import { SplitColumnsComponent } from './sidebar/pipeline-functions/split-columns/split-columns.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -39,7 +44,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     NgxChartsModule,
     NgxDatatableModule,
     ListboxModule,
-    RlTagInputModule
+    RlTagInputModule,
+    SuiModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -53,7 +59,10 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     StackedBarChartComponent,
     StatisticTableComponent,
     SelectboxComponent,
-    MakeDatasetComponent
+    MakeDatasetComponent,
+    TakeRowsComponent,
+    TakeColumnsComponent,
+    SplitColumnsComponent,
   ]
 })
 

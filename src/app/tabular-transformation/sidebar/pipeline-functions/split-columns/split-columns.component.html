@@ -1,0 +1,28 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Split column</h3>
+  <div class="modal-body">
+    <!-- TODO: Find better autocomplete component -->
+    <sui-select [(ngModel)]="colName" [isSearchable]="true" [options]="columns">
+      <sui-select-option *ngFor="let column of columns" [value]="column">{{column}}</sui-select-option>
+    </sui-select>
+
+
+
+    <label for="sep">Separator:</label>
+    <input type="text" id="sep" [(ngModel)]="separator" placeholder="separator" size="25">
+
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+  </div>
+
+
+
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>

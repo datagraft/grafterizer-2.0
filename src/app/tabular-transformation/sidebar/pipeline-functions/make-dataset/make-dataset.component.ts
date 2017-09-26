@@ -10,6 +10,7 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class MakeDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
+
   private tdm: any;
   private makedatasetmode: String = "";
   private columnsArray: any = [];

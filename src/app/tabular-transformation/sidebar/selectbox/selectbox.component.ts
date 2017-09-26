@@ -16,7 +16,9 @@ export class SelectboxComponent implements OnInit {
     this.transformations = [];
     this.transformations.push({ label: 'Make dataset', value: 'make-dataset' });
     this.transformations.push({ label: 'Add columns', value: 'add-columns' });
-    this.transformations.push({ label: 'Option 3', value: 'Option 3' });
+    this.transformations.push({ label: 'Take rows', value: 'take-rows' });
+    this.transformations.push({ label: 'Take columns', value: 'take-columns' });
+    this.transformations.push({ label: 'Split columns', value: 'split-columns' });
     this.transformations.push({ label: 'Option 4', value: 'Option 4' });
     this.transformations.push({ label: 'Option 5', value: 'Option 5' });
   }
@@ -24,8 +26,8 @@ export class SelectboxComponent implements OnInit {
   ngOnInit() { }
 
   onChange($event) {
-    this.modalEnabled = true;
-    console.log('Test OK');
+    //this.modalEnabled = true;
+
   }
 
 }
