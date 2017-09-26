@@ -5,4 +5,5 @@
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px','height':'250px'}"></p-listbox>
 </div>
 
-<make-dataset [modalEnabled]="modalEnabled"></make-dataset>
+<make-dataset></make-dataset>
+<add-columns [modalEnabled]="modalEnabled" [function]="function"></add-columns>
