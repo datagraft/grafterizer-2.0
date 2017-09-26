@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 
 @Component({
@@ -12,6 +12,8 @@ export class SelectboxComponent implements OnInit {
   private selected: String;
   private modalEnabled: boolean = false;
 
+  @Output() emitter = new EventEmitter();
+
   constructor() {
     this.transformations = [];
     this.transformations.push({ label: 'Make dataset', value: 'make-dataset' });
@@ -23,9 +25,12 @@ export class SelectboxComponent implements OnInit {
 
   ngOnInit() { }
 
+  emitFunction(value: any) {
+    this.emitter.emit(value);
+  }
+
   onChange($event) {
     this.modalEnabled = true;
-    console.log('Test OK');
   }
 
 }

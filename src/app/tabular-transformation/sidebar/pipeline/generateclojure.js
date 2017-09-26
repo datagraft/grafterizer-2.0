@@ -1,5 +1,5 @@
 import * as jsedn from 'jsedn';
-import * as transformationDataModel from './transformationdatamodel.js';
+import * as transformationDataModel from '../pipeline-functions/transformationdatamodel.js';
 
 /***************************************************************************
  * Main Grafter/Clojure generation variables and functions.
@@ -314,7 +314,7 @@ function constructConditionalNodeVectorJsEdn(node, currentNodeJsEdn) {
   return modifCurrentNodeJsEdn;
 }
 /* Constructs and returns the RDF creation function. */
-function constructRDFGraphFunction(transformation) {
+export function constructRDFGraphFunction(transformation) {
   //var prefixersInGUI = transformation.prefixers;
   var i;
   var j;
