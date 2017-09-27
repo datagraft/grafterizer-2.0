@@ -67,18 +67,18 @@ DropRowsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym('drop-rows'), this.indexTo]);
   var values = [jsedn.sym('rows')];
   if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
-    this.indexFrom,
-    this.indexTo + 1
+  this.indexFrom,
+  this.indexTo + 1
   ]));
   else values.push(new jsedn.List([jsedn.sym('concat'),
-    new jsedn.List([jsedn.sym('range'),
-      0,
-      this.indexFrom
-    ]),
-    new jsedn.List([jsedn.sym('drop'),
-      this.indexTo + 1,
-      new jsedn.List([jsedn.sym('range')])
-    ])
+  new jsedn.List([jsedn.sym('range'),
+    0,
+  this.indexFrom
+  ]),
+  new jsedn.List([jsedn.sym('drop'),
+  this.indexTo + 1,
+  new jsedn.List([jsedn.sym('range')])
+  ])
   ]));
 
   return new jsedn.List(values);
@@ -338,7 +338,7 @@ GrepFunction.prototype.generateClojure = function () {
 
         if (!this.take) {
           values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
-            new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym('(str cell)')])
+          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym('(str cell)')])
           ])]));
 
         } else {
@@ -560,7 +560,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   }
 
   var values = [jsedn.sym('derive-column'),
-    this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
+  this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
     colsToDeriveFromClj
   ];
   var deriveFuncts = [];
@@ -571,7 +571,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
       deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
-        new jsedn.List(functWithParams)
+      new jsedn.List(functWithParams)
       ]));
     }
   }
@@ -897,21 +897,21 @@ MapcFunction.prototype.generateClojure = function () {
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
     else
-    if (this.keyFunctionPairs[i].funcParams.length > 0) {
-      var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
-      funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-      var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
+      if (this.keyFunctionPairs[i].funcParams.length > 0) {
+        var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
+        funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
+        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
         new jsedn.List(funcWithParams)
-      ]);
-      mkeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-        mapcFunc);
-    } else {
-      mkeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-        new jsedn.sym(this.keyFunctionPairs[i].func.name)
-      );
-    }
+        ]);
+        mkeyFunctionPairsClj.set(
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          mapcFunc);
+      } else {
+        mkeyFunctionPairsClj.set(
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          new jsedn.sym(this.keyFunctionPairs[i].func.name)
+        );
+      }
   }
 
   var mapc;
@@ -1040,7 +1040,7 @@ SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
 };
 this.SortDatasetFunction = SortDatasetFunction;
 
-var AddRowFunction = function (position, values, docstring) {
+export var AddRowFunction = function (position, values, docstring) {
   this.name = 'add-row';
   this.displayName = 'add-row';
   GenericFunction.call(this);
@@ -1186,11 +1186,11 @@ MakeDatasetFunction.prototype.generateClojure = function () {
         jsedn.sym('->'),
         new jsedn.List([jsedn.sym('make-dataset'), jsedn.sym('move-first-row-to-header')]),
         new jsedn.List([jsedn.sym('rename-columns'),
-          new jsedn.List([
-            jsedn.sym('comp'),
-            jsedn.sym('keyword'),
-            jsedn.sym('new-tabular/string-as-keyword')
-          ])
+        new jsedn.List([
+          jsedn.sym('comp'),
+          jsedn.sym('keyword'),
+          jsedn.sym('new-tabular/string-as-keyword')
+        ])
         ])
       ]);
     } else {
@@ -1205,15 +1205,15 @@ MakeDatasetFunction.prototype.generateClojure = function () {
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-      new jsedn.List([jsedn.parse('into []'),
-        new jsedn.List([jsedn.sym('map'),
-          jsedn.sym('keyword'),
-          new jsedn.List([jsedn.sym('take'),
-            this.numberOfColumns,
-            new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
-          ])
-        ])
-      ])
+    new jsedn.List([jsedn.parse('into []'),
+    new jsedn.List([jsedn.sym('map'),
+    jsedn.sym('keyword'),
+    new jsedn.List([jsedn.sym('take'),
+    this.numberOfColumns,
+    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
+    ])
+    ])
+    ])
     ]);
   }
 };
@@ -1282,10 +1282,10 @@ ColumnsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
   } else {
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-        new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
-      ]) :
+    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
+    ]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
-        this.indexFrom, this.indexTo
+      this.indexFrom, this.indexTo
       ]);
   }
 
@@ -2083,7 +2083,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 
     var partialPipeline = new Pipeline(partialPipelineFunctions);
 
-    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */ ], this.rdfVocabs);
+    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */], this.rdfVocabs);
 
     return partialTransformation;
   } catch (e) {
