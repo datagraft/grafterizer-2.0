@@ -19,8 +19,9 @@ export class SelectboxComponent implements OnInit {
     this.transformations.push({ label: 'Take rows', value: 'take-rows' });
     this.transformations.push({ label: 'Take columns', value: 'take-columns' });
     this.transformations.push({ label: 'Split columns', value: 'split-columns' });
-    this.transformations.push({ label: 'Option 4', value: 'Option 4' });
-    this.transformations.push({ label: 'Option 5', value: 'Option 5' });
+    this.transformations.push({ label: 'Sort dataset', value: 'sort-dataset' });
+    this.transformations.push({ label: 'Shift row', value: 'shift-row' });
+    this.transformations.push({ label: 'Shift column', value: 'shift-column' });
   }
 
   ngOnInit() { }

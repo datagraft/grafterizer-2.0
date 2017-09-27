@@ -950,7 +950,7 @@ MapcFunction.prototype.removeKeyFunctionPair = function (kfPair) {
 };
 this.MapcFunction = MapcFunction;
 
-var ColnameSorttype = function (colname, sorttype, order) {
+export var ColnameSorttype = function (colname, sorttype, order) {
   this.colname = colname;
   this.sorttype = sorttype;
   this.order = order;
@@ -961,7 +961,7 @@ ColnameSorttype.revive = function (data) {
 };
 this.ColnameSorttype = ColnameSorttype;
 
-var SortDatasetFunction = function (colnamesSorttypesMap, docstring) {
+export var SortDatasetFunction = function (colnamesSorttypesMap, docstring) {
   // array of column names
   this.name = 'sort-dataset';
   this.displayName = 'sort-dataset';
@@ -1060,7 +1060,7 @@ AddRowFunction.prototype.generateClojure = function () {
 };
 this.AddRowFunction = AddRowFunction;
 
-var ShiftRowFunction = function (indexFrom, indexTo, shiftrowmode, docstring) {
+export var ShiftRowFunction = function (indexFrom, indexTo, shiftrowmode, docstring) {
   this.name = 'shift-row';
   this.displayName = 'shift-row';
   GenericFunction.call(this);
@@ -1083,7 +1083,7 @@ ShiftRowFunction.prototype.generateClojure = function () {
 };
 this.ShiftRowFunction = ShiftRowFunction;
 
-var ShiftColumnFunction = function (colFrom, indexTo, shiftcolmode, docstring) {
+export var ShiftColumnFunction = function (colFrom, indexTo, shiftcolmode, docstring) {
   this.name = 'shift-column';
   this.displayName = 'shift-column';
   GenericFunction.call(this);

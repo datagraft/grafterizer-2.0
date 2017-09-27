@@ -46,6 +46,7 @@
     "ng2-semantic-ui": "~0.9.6",
     "primeng": "^4.2.1",
     "rxjs": "^5.1.0",
+    "ng2-completer": "1.6.3",
     "zone.js": "^0.8.4"
   },
   "devDependencies": {

@@ -16,14 +16,10 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
 
 
 
-
 @NgModule({
   declarations: [
     AppComponent,
     DataExplorationComponent,
-
-
-
   ],
   imports: [
     BrowserModule,

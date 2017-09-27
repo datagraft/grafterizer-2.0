@@ -8,7 +8,7 @@ import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
 import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
-
+import { Ng2CompleterModule } from "ng2-completer";
 
 import { TabularTransformationComponent } from "./tabular-transformation.component";
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -25,6 +25,9 @@ import { MakeDatasetComponent } from './sidebar/pipeline-functions/make-dataset/
 import { TakeRowsComponent } from './sidebar/pipeline-functions/take-rows/take-rows.component';
 import { TakeColumnsComponent } from './sidebar/pipeline-functions/take-columns/take-columns.component';
 import { SplitColumnsComponent } from './sidebar/pipeline-functions/split-columns/split-columns.component';
+import { SortDatasetComponent } from './sidebar/pipeline-functions/sort-dataset/sort-dataset.component';
+import { ShiftRowComponent } from './sidebar/pipeline-functions/shift-row/shift-row.component';
+import { ShiftColumnComponent } from './sidebar/pipeline-functions/shift-column/shift-column.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -45,7 +48,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     NgxDatatableModule,
     ListboxModule,
     RlTagInputModule,
-    SuiModule
+    SuiModule,
+    Ng2CompleterModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -63,6 +67,9 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     TakeRowsComponent,
     TakeColumnsComponent,
     SplitColumnsComponent,
+    SortDatasetComponent,
+    ShiftRowComponent,
+    ShiftColumnComponent,
   ]
 })
 

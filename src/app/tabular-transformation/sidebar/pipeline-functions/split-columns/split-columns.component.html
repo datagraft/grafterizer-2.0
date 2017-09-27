@@ -5,7 +5,8 @@
     <sui-select [(ngModel)]="colName" [isSearchable]="true" [options]="columns">
       <sui-select-option *ngFor="let column of columns" [value]="column">{{column}}</sui-select-option>
     </sui-select>
-
+    <ng2-completer [(ngModel)]="colName" [datasource]="columns" [minSearchLength]="0" [selectOnFocus]="true" [autoHighlight]="true"
+      [openOnClick]="true" [autoMatch]="true"></ng2-completer>
 
 
     <label for="sep">Separator:</label>

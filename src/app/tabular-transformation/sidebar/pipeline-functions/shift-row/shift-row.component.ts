@@ -5,31 +5,33 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 
 @Component({
-  selector: 'split-columns',
-  templateUrl: './split-columns.component.html',
-  styleUrls: ['./split-columns.component.css']
+  selector: 'shift-row',
+  templateUrl: './shift-row.component.html',
+  styleUrls: ['./shift-row.component.css']
 })
 
-export class SplitColumnsComponent implements OnInit {
+export class ShiftRowComponent implements OnInit {
 
   @Input() modalEnabled;
   @Input() function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3", "zzz", "aaa", "qqq"];
-  private colName: String;
-  private separator: String;
+  private indexFrom: Number;
+  private indexTo: Number;
+  private shiftrowmode: String;
+
 
   private docstring: String;
 
   constructor() {
     if (!this.function) {
-      this.function = new transformationDataModel.SplitFunction(
-        this.colName, this.separator, this.docstring);
+      this.function = new transformationDataModel.ShiftRowFunction(
+        this.indexFrom, this.indexTo, this.shiftrowmode, this.docstring);
     }
     else {
-      this.colName = this.function.colName;
-      this.separator = this.function.separator;
+      this.indexFrom = this.function.indexFrom;
+      this.indexTo = this.function.indexTo;
+      this.shiftrowmode = this.function.shiftrowmode;
       this.docstring = this.function.docstring;
 
     }
@@ -40,8 +42,9 @@ export class SplitColumnsComponent implements OnInit {
   }
 
   accept() {
-    this.function.colName = this.colName;
-    this.function.separator = this.separator;
+    this.function.indexFrom = this.indexFrom;
+    this.function.indexTo = this.indexTo;
+    this.function.shiftrowmode = this.shiftrowmode;
     this.function.docstring = this.docstring;
 
     this.modalEnabled = false;
