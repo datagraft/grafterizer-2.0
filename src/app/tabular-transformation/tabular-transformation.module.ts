@@ -26,6 +26,7 @@ import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { AddRowComponent } from './sidebar/pipeline-functions/add-row/add-row.component';
+import { DeduplicateComponent } from './sidebar/pipeline-functions/deduplicate/deduplicate.component';
 
 @NgModule({
   imports: [
@@ -55,7 +56,8 @@ import { AddRowComponent } from './sidebar/pipeline-functions/add-row/add-row.co
     StatisticTableComponent,
     SelectboxComponent,
     MakeDatasetComponent,
-    AddRowComponent
+    AddRowComponent,
+    DeduplicateComponent
   ]
 })
 

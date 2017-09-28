@@ -1110,14 +1110,13 @@ ShiftColumnFunction.prototype.generateClojure = function () {
 };
 this.ShiftColumnFunction = ShiftColumnFunction;
 
-var RemoveDuplicatesFunction = function (mode, colNames, separator, docstring) {
+export var RemoveDuplicatesFunction = function (mode, colNames, docstring) {
   // array of column names
   this.name = 'remove-duplicates';
   this.displayName = 'remove-duplicates';
   GenericFunction.call(this);
   this.mode = mode;
   this.colNames = colNames;
-  this.separator = separator;
   this.__type = 'RemoveDuplicatesFunction';
   if (!docstring) {
     this.docstring = 'Remove duplicates';
