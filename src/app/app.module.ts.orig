@@ -1,7 +1,11 @@
+<<<<<<< Updated upstream
+=======
 import { APP_INITIALIZER } from '@angular/core';
-import { AppConfig } from './app.config';
-import { HttpModule } from '@angular/http';
+import { AppConfig }       from './app.config';
+import { HttpModule }      from '@angular/http';
 
+import { BrowserModule } from '@angular/platform-browser';
+>>>>>>> Stashed changes
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,9 +22,6 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
 
-export function initConfig(config: AppConfig) {
-  return () => config.load();
-}
 
 @NgModule({
   declarations: [
@@ -37,17 +38,17 @@ export function initConfig(config: AppConfig) {
     TabularAnnotationModule,
     AppRoutingModule,
     FormsModule,
+<<<<<<< Updated upstream
+    SuiModule
+=======
     SuiModule,
+    RlTagInputModule,
     HttpModule
   ],
   providers: [
     AppConfig,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initConfig,
-      deps: [AppConfig],
-      multi: true
-    }
+    { provide: APP_INITIALIZER, useFactory: (config: AppConfig) => () => config.load(), deps: [AppConfig], multi: true }
+>>>>>>> Stashed changes
   ],
   bootstrap: [AppComponent]
 })

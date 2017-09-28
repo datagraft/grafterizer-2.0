@@ -13,6 +13,9 @@ import * as data from '../assets/data.json';
   providers: []
 })
 export class AppComponent {
+<<<<<<< Updated upstream
+
+  constructor(public router: Router) { }
 
   tester() {
     return new transformationDataModel.MakeDatasetFunction(
@@ -21,6 +24,20 @@ export class AppComponent {
 
   private title = 'Click to generate clojure';
   private basic = true;
+=======
+  private title = 'Click to generate clojure';
+  testPipeline: Pipeline = new Pipeline(
+    [
+      new MakeDatasetFunction([], false, 0, true, 'docstring:string'),
+      new MakeDatasetFunction(['a', 'b', 'c'], false, 0, false, 'docstring:string')
+    ]
+  );
+  constructor(public router: Router, private config: AppConfig) {
+    console.log(config.getConfig('jarfter-path'));
+    console.log(config.getConfig('dispatch-path'));
+    console.log(config.getConfig('graftwerk-cache-path'));
+  }
+>>>>>>> Stashed changes
   generateClojure() {
     console.log("Makedataset function:");
     console.log(this.tester());
@@ -29,9 +46,4 @@ export class AppComponent {
     console.log("transformationDataModel.Transformation.revive:");
     console.log(transformationDataModel.Transformation.revive(data));
   };
-  constructor(public router: Router, private config: AppConfig) {
-    console.log(config.getConfig('jarfter-path'));
-    console.log(config.getConfig('dispatch-path'));
-    console.log(config.getConfig('graftwerk-cache-path'));
-  }
 }

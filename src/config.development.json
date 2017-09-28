@@ -1,0 +1,5 @@
+{
+  "jarfter-path": "http://localhost:8081",
+  "dispatch-path": "http://localhost:8082",
+  "graftwerk-cache-path": "http://localhost:8083"
+}
