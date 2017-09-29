@@ -463,7 +463,7 @@ FunctionWithArgs.revive = function (data) {
 };
 this.FunctionWithArgs = FunctionWithArgs;
 
-var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
+export var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colsToDeriveFrom = colsToDeriveFrom;

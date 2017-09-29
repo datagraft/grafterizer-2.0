@@ -27,6 +27,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { AddRowComponent } from './sidebar/pipeline-functions/add-row/add-row.component';
 import { DeduplicateComponent } from './sidebar/pipeline-functions/deduplicate/deduplicate.component';
+import { DeriveColumnComponent } from './sidebar/pipeline-functions/derive-column/derive-column.component';
 
 @NgModule({
   imports: [
@@ -57,7 +58,8 @@ import { DeduplicateComponent } from './sidebar/pipeline-functions/deduplicate/d
     SelectboxComponent,
     MakeDatasetComponent,
     AddRowComponent,
-    DeduplicateComponent
+    DeduplicateComponent,
+    DeriveColumnComponent
   ]
 })
 
