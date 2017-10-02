@@ -9,14 +9,15 @@
         <button class="btn btn-link btn-icon-link removablePropertyButton" [disabled]="sortings.length === 1"> 
            <clr-icon  suiPopup popupText="Remove sorting" popupPlacement="left top" shape="remove" size="22"  (click)="removeSorting(idx)"></clr-icon> 
        </button>
+        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.colname" [datasource]="columns" [openOnFocus]="true"
+          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
 
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.colname" [datasource]="columns" [minSearchLength]="0"
-          [selectOnFocus]="true" [autoHighlight]="true" [openOnClick]="true" [autoMatch]="true"></ng2-completer>
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.sorttype" [datasource]="sortTypes" [minSearchLength]="0"
-          [selectOnFocus]="true" [autoHighlight]="true" [openOnClick]="true" [autoMatch]="true"></ng2-completer>
+        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.sorttype" [datasource]="sortTypes" [openOnFocus]="true"
+          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
+
         <div class="checkbox removablePropertyFields">
-          <input type="checkbox" [(ngModel)]="sorting.order" id="checkrads_1">
-          <label for="checkrads_1">Reverse order</label>
+          <input type="checkbox" [(ngModel)]="sorting.order" id="{{'checkrads_1'+idx}}">
+          <label for="{{'checkrads_1'+idx}}">Reverse order</label>
         </div>
 
       </div>

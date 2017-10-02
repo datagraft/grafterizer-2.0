@@ -22,13 +22,17 @@ export class SelectboxComponent implements OnInit {
     this.transformations.push({ label: 'Sort dataset', value: 'sort-dataset' });
     this.transformations.push({ label: 'Shift row', value: 'shift-row' });
     this.transformations.push({ label: 'Shift column', value: 'shift-column' });
+    this.transformations.push({ label: 'Reshape dataset', value: 'reshape-dataset' });
+    this.transformations.push({ label: 'Rename columns', value: 'rename-columns' });
+    this.transformations.push({ label: 'Merge columns', value: 'merge-columns' });
   }
 
   ngOnInit() { }
 
   onChange($event) {
     //this.modalEnabled = true;
-
+    console.log("Modelchange");
+    console.log(this.selected);
   }
 
 }

@@ -395,7 +395,7 @@ GrepFunction.prototype.generateClojure = function () {
 };
 this.GrepFunction = GrepFunction;
 
-var MergeColumnsFunction = function (colsToMerge, separator, newColName, docstring) {
+export var MergeColumnsFunction = function (colsToMerge, separator, newColName, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colsToMerge = colsToMerge;
@@ -641,7 +641,7 @@ GroupRowsFunction.prototype.generateClojure = function () {
 };
 this.GroupRowsFunction = GroupRowsFunction;
 
-var RenameColumnsFunction = function (functionsToRenameWith, mappings, docstring) {
+export var RenameColumnsFunction = function (functionsToRenameWith, mappings, docstring) {
   GenericFunction.call(this);
   this.name = 'rename-columns';
   this.displayName = 'rename-columns';
@@ -1288,8 +1288,8 @@ var ChangeColtype = function (columnName, datatype) {
 }
 this.ChangeColtype = ChangeColtype;
 
-
-var MeltFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
+// Melt function in old Grafterizer. Name changed for consistency
+export var ReshapeDatasetFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
   // array of column names
   this.name = 'melt';
   this.displayName = variable ? 'cast' : 'melt';
@@ -1299,14 +1299,14 @@ var MeltFunction = function (columnsArray, variable, value, aggrFunction, separa
   this.value = value;
   this.aggrFunction = aggrFunction;
   this.separator = separator;
-  this.__type = 'MeltFunction';
+  this.__type = 'ReshapeDatasetFunction';
   if (!docstring) {
     this.docstring = 'Reshape dataset';
   } else {
     this.docstring = docstring;
   }
 };
-MeltFunction.revive = function (data) {
+ReshapeDatasetFunction.revive = function (data) {
   var variable, value, aggrFunction, separator;
   var columnsArray = [];
   if (data.columnsArray.length > 0 && !data.columnsArray[0].hasOwnProperty('id')) {
@@ -1323,10 +1323,10 @@ MeltFunction.revive = function (data) {
   value = data.hasOwnProperty('value') ? data.value : null;
   aggrFunction = data.hasOwnProperty('aggrFunction') ? data.aggrFunction : null;
   separator = data.hasOwnProperty('separator') ? data.separator : null;
-  return new MeltFunction(columnsArray, variable, value, aggrFunction, separator, data.docstring);
+  return new ReshapeDatasetFunction(columnsArray, variable, value, aggrFunction, separator, data.docstring);
 };
-MeltFunction.prototype = Object.create(GenericFunction.prototype);
-MeltFunction.prototype.generateClojure = function () {
+ReshapeDatasetFunction.prototype = Object.create(GenericFunction.prototype);
+ReshapeDatasetFunction.prototype.generateClojure = function () {
   var i;
   var returnValue;
   if (this.columnsArray.length > 0) {
@@ -1341,7 +1341,7 @@ MeltFunction.prototype.generateClojure = function () {
   }
   return returnValue;
 };
-this.MeltFunction = MeltFunction;
+this.ReshapeDatasetFunction = ReshapeDatasetFunction;
 
 var Pipeline = function (functions) {
   // functions that make up the pipeline
@@ -1413,8 +1413,8 @@ var Pipeline = function (functions) {
         functions[i] = TakeColumnsFunction.revive(funct);
       }
 
-      if (funct.__type === 'MeltFunction') {
-        functions[i] = MeltFunction.revive(funct);
+      if (funct.__type === 'ReshapeDatasetFunction') {
+        functions[i] = ReshapeDatasetFunction.revive(funct);
       }
 
       if (funct.__type === 'GrepFunction') {
@@ -2017,7 +2017,7 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
           availableColumnKeys.push(currentFunction.columnsArray[k].colName);
       }
 
-      if (currentFunction instanceof MeltFunction) {
+      if (currentFunction instanceof ReshapeDatasetFunction) {
         availableColumnKeys.push('variable');
         availableColumnKeys.push('value');
       }

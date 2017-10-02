@@ -28,6 +28,9 @@ import { SplitColumnsComponent } from './sidebar/pipeline-functions/split-column
 import { SortDatasetComponent } from './sidebar/pipeline-functions/sort-dataset/sort-dataset.component';
 import { ShiftRowComponent } from './sidebar/pipeline-functions/shift-row/shift-row.component';
 import { ShiftColumnComponent } from './sidebar/pipeline-functions/shift-column/shift-column.component';
+import { ReshapeDatasetComponent } from './sidebar/pipeline-functions/reshape-dataset/reshape-dataset.component';
+import { RenameColumnsComponent } from './sidebar/pipeline-functions/rename-columns/rename-columns.component';
+import { MergeColumnsComponent } from './sidebar/pipeline-functions/merge-columns/merge-columns.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -70,6 +73,9 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     SortDatasetComponent,
     ShiftRowComponent,
     ShiftColumnComponent,
+    ReshapeDatasetComponent,
+    RenameColumnsComponent,
+    MergeColumnsComponent,
   ]
 })
 
