@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { PipelineGeneratorService } from './pipeline-generator.service';
 
-import * as generateClojure from './generateclojure.js';
-import * as transformationDataModel from '../pipeline-functions/transformationdatamodel.js';
+import * as generateClojure from '../../../../assets/generateclojure.js';
+import * as transformationDataModel from '../../../../assets/transformationdatamodel.js';
 
 @Component({
   selector: 'pipeline',

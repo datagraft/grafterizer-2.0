@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
-import * as transformationDataModel from '../transformationdatamodel.js';
+import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
 @Component({
   selector: 'make-dataset',

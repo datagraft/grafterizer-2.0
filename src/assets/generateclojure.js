@@ -1,5 +1,5 @@
 import * as jsedn from 'jsedn';
-import * as transformationDataModel from '../pipeline-functions/transformationdatamodel.js';
+import * as transformationDataModel from './transformationdatamodel.js';
 
 /***************************************************************************
  * Main Grafter/Clojure generation variables and functions.

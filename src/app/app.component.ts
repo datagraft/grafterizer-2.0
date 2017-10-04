@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 
-import * as transformationDataModel from './tabular-transformation/sidebar/pipeline-functions/transformationdatamodel.js';
-import * as generateClojure from './tabular-transformation/sidebar/pipeline/generateclojure.js';
+import * as transformationDataModel from '../assets/transformationdatamodel.js';
+import * as generateClojure from '../assets/generateclojure.js';
 import * as data from '../assets/data.json';
 
 @Component({
