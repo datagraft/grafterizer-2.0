@@ -26,6 +26,7 @@ import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
+import { AddColumnsComponent } from './sidebar/pipeline-functions/add-columns/add-columns.component';
 
 @NgModule({
   imports: [
@@ -55,7 +56,8 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     StatisticTableComponent,
     SelectboxComponent,
     MakeDatasetComponent,
-    PipelineComponent
+    PipelineComponent,
+    AddColumnsComponent
   ]
 })
 
