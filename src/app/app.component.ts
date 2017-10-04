@@ -108,7 +108,17 @@ export class AppComponent {
       (error) => {
         console.log("Error getting the user's filestores!");
         console.log(error);
-      })
+      });
+    this.dispatch.getAllSparqlEndpoints()
+    .then(
+    (result) => {
+      console.log("Successfully got the user's SPARQL endpoints!");
+      console.log(result);
+    },
+    (error) => {
+      console.log("Error getting user's SPARQL endpoints!");
+      console.log(error);
+    })
   }
 
   fileChange(event) {

@@ -33,13 +33,61 @@ export interface Filestore {
   modified: Date;
 }
 
+export interface SparqlEndpoint {
+  id: string;
+  id_num: number;
+  title: string;
+  publisher: string;
+  public: boolean;
+  created: Date;
+  modified: Date;
+}
+
 @Injectable()
 export class DispatchService {
+  private dispatchPath;
 
-  constructor(private http: Http, private config: AppConfig) { }
+  constructor(private http: Http, private config: AppConfig) {
+    this.dispatchPath = this.config.getConfig('dispatch-path');
+  }
+
+  public getAllSparqlEndpoints(): Promise<any> {
+    const url = `${this.dispatchPath}/myassets/sparql_endpoints`;
+    const options = new RequestOptions({ withCredentials: true });
+
+    return this.http
+      .get(url, options)
+      .map((response: Response) => response.json())
+      .toPromise()
+      .then(
+      (result) => this.mapSparqlEndpoints(result),
+      (error) => this.errorHandler(error)
+    );
+  }
+
+  private mapSparqlEndpoints(result: JSON): Array<SparqlEndpoint> {
+    const sparqlEndpoints = [];
+    result['dcat:record'].forEach((record) => {
+      sparqlEndpoints.push(this.mapSparqlEndpoint(record));
+    });
+    console.log(result);
+    return sparqlEndpoints;
+  }
+
+  private mapSparqlEndpoint(dcatSerialisation: JSON): SparqlEndpoint {
+    return {
+      id: dcatSerialisation['id'],
+      id_num: dcatSerialisation['id_num'],
+      title: dcatSerialisation['dct:title'],
+      public: dcatSerialisation['dcat:public'],
+      publisher: dcatSerialisation['foaf:publisher'],
+      modified: new Date(dcatSerialisation['dct:modified']),
+      created: new Date(dcatSerialisation['dct:issued'])
+    };
+  }
 
   public uploadFile(file: File): Promise<any> {
-    const url = `${this.config.getConfig('dispatch-path')}/myassets/filestores`;
+    const url = `${this.dispatchPath}/myassets/filestores`;
     const options = new RequestOptions({ withCredentials: true});
 
     const formData: FormData = new FormData();
@@ -56,7 +104,7 @@ export class DispatchService {
 
   // Get all filestores from DataGraft
   public getAllFilestores(): Promise<any> {
-    const url = `${this.config.getConfig('dispatch-path')}/myassets/filestores`;
+    const url = `${this.dispatchPath}/myassets/filestores`;
     const options = new RequestOptions({ withCredentials: true });
     return this.http
       .get(url, options)
@@ -128,7 +176,7 @@ export class DispatchService {
   		"dct:issued": <Date created - e.g., "2017-05-30T15:15:03.204Z">
   	}
    */
-  private mapFilestore(dcatSerialisation: string): Filestore {
+  private mapFilestore(dcatSerialisation: JSON): Filestore {
     return {
       id: dcatSerialisation['id'],
       title: dcatSerialisation['dct:title'],
@@ -188,7 +236,7 @@ export class DispatchService {
           },
           (error) => this.errorHandler(error))
       },
-      (error) => {this.errorHandler(error)}
+      (error) => this.errorHandler(error)
     );
 
   }
@@ -209,31 +257,28 @@ export class DispatchService {
                             keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
     // According to the API, first we create the transformation asset...
     return this.submitTransformation(name, isPublic)
-      .then((response: Response) => {
-      // ...then, after we get the ID and publisher ID from the response, we add the metadata and configuration
-      const id = response['id'];
-      const publisher = response['foaf:publisher'];
-      return Promise.all([
-        this.postMetadata(id, publisher, description, keywords),
-        this.postConfiguration(id, publisher, configuration)
-      ]).then(
-        () => {
-          // both metadata and configuration requests pass - we resolve the promise by returning the values
-          return Promise.resolve({id: id, publisher: publisher})
-        },
-        (error) => {
-          // could not submit metadata and/or configuration for the transformation
-          this.errorHandler(error)
-        })
-    }, (error) => {
-      // could not create transformation
-      this.errorHandler(error)
-    });
+      .then(
+      (response: Response) => {
+        // ...then, after we get the ID and publisher ID from the response, we add the metadata and configuration
+        const id = response['id'];
+        const publisher = response['foaf:publisher'];
+        return Promise.all([
+          this.postMetadata(id, publisher, description, keywords),
+          this.postConfiguration(id, publisher, configuration)
+        ]).then(
+          () => {
+            // both metadata and configuration requests pass - we resolve the promise by returning the values
+            return Promise.resolve({id: id, publisher: publisher})
+          },
+          (error) =>  this.errorHandler(error)
+        )
+      }, (error) => this.errorHandler(error)
+    );
   }
 
   // Helper method. Creates Transformation asset in DataGraft and returns a promise
   private submitTransformation(name: string, isPublic: boolean): Promise<any> {
-    const url = `${this.config.getConfig('dispatch-path')}/myassets/transformations`;
+    const url = `${this.dispatchPath}/myassets/transformations`;
     const requestPayload = {
       'name': name,
       'public': String(isPublic)
@@ -299,7 +344,7 @@ export class DispatchService {
 
   // Helper method. Computes the transformation URL
   private computeTransformationURL(publisher: string, id: string): string {
-    return `${this.config.getConfig('dispatch-path')}/${encodeURIComponent(publisher)}/transformations/${encodeURIComponent(id)}`;
+    return `${this.dispatchPath}/${encodeURIComponent(publisher)}/transformations/${encodeURIComponent(id)}`;
   }
 
   // Get all transformations from DataGraft
@@ -310,7 +355,7 @@ export class DispatchService {
       }
     };
     const options = new RequestOptions({ params: params, withCredentials: true });
-    const url = `${this.config.getConfig('dispatch-path')}/${showPublic ? 'public_assets' : 'myassets'}/transformations`;
+    const url = `${this.dispatchPath}/${showPublic ? 'public_assets' : 'myassets'}/transformations`;
     return this.http
       .get(url, options)
       .map((response: Response) => response.json())
@@ -379,7 +424,7 @@ export class DispatchService {
   		"dct:issued": <Date created - e.g., "2017-05-30T15:15:03.204Z">
   	}
    */
-  private mapTransformation(dcatSerialisation: string): TransformationMetadata {
+  private mapTransformation(dcatSerialisation: JSON): TransformationMetadata {
     return {
       id: dcatSerialisation['id'],
       title: dcatSerialisation['dct:title'],
@@ -393,7 +438,7 @@ export class DispatchService {
   }
 
   // Handles errors thrown from requests from resources to the Dispatch Service
-  private errorHandler(error: any): Promise<any> {
+  private errorHandler(error: any) {
     let message = '';
     if (error._body && error._body.error) {
       if (typeof error._body.error === 'string') {
@@ -404,7 +449,8 @@ export class DispatchService {
     } else if (error.status) {
       if (error.status === 401 || error.status === 403 || error.status < 100) {
         // if Forbidden, then begin OAuth flow
-        window.location.href = `${this.config.getConfig('dispatch-path')}/oauth/begin`;
+        window.location.href = `${this.dispatchPath}/oauth/begin`;
+        return Promise.resolve('Beginning OAuth Flow');
       } else {
         message = 'Error ' + error.status + ' while contacting server';
       }
