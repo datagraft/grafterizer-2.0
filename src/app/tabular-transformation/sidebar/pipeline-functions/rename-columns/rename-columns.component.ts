@@ -76,14 +76,13 @@ export class RenameColumnsComponent implements OnInit {
     this.mappings.splice(idx, 2);
   }
   accept() {
-    console.log(this.test);
     this.function.mappings = this.mappings;
     this.function.functionsToRenameWith = [];
     for (let functionToRenameWith of this.test) {
       this.function.functionsToRenameWith.push(this.transformation.findPrefixerOrCustomFunctionByName(functionToRenameWith));
     }
     this.function.docstring = this.docstring;
-    console.log(this.function);
+
     this.modalEnabled = false;
   }
 

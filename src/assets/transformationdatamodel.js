@@ -132,7 +132,7 @@ UtilityFunction.prototype.generateClojure = function () {
 };
 this.UtilityFunction = UtilityFunction;
 
-var AddColumnsFunction = function (columnsArray, docstring) {
+export var AddColumnsFunction = function (columnsArray, docstring) {
   GenericFunction.call(this);
   this.name = 'add-columns';
   this.displayName = 'add-columns';
@@ -252,7 +252,7 @@ AddColumnFunction.prototype.generateClojure = function () {
 };
 this.AddColumnFunction = AddColumnFunction;
 
-var GrepFunction = function (take, grepmode, colsToFilter, functionsToFilterWith, filterText, filterRegex, ignoreCase, docstring) {
+export var GrepFunction = function (take, grepmode, colsToFilter, functionsToFilterWith, filterText, filterRegex, ignoreCase, docstring) {
   GenericFunction.call(this);
   this.take = take;
   this.grepmode = grepmode;
@@ -298,10 +298,8 @@ GrepFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToFilter.length > 0 && data.colsToFilter[0] && !data.colsToFilter[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToFilter.length; ++i) {
-      var colname = {
-        id: i,
-        value: data.colsToFilter[i]
-      };
+      var colname = data.colsToFilter[i]
+
       columnsArray.push(colname);
     }
   } else {
@@ -318,7 +316,7 @@ GrepFunction.prototype.generateClojure = function () {
   var filterFunc;
   var i;
   for (i = 0; i < this.colsToFilter.length; ++i) {
-    colsToFilter.val.push(new jsedn.kw(':' + this.colsToFilter[i].value));
+    colsToFilter.val.push(new jsedn.kw(':' + this.colsToFilter[i]));
     flag = true;
   }
 
@@ -409,7 +407,7 @@ export var MergeColumnsFunction = function (colsToMerge, separator, newColName, 
   if (!docstring && colsToMerge[0]) {
     this.docstring = 'Merge columns ';
     for (var i = 0; i < colsToMerge.length; ++i) {
-      this.docstring += '' + colsToMerge[i].value + ' ';
+      this.docstring += '' + colsToMerge[i] + ' ';
     }
   } else {
     this.docstring = docstring;
@@ -425,7 +423,7 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   var i;
 
   for (i = 0; i < this.colsToMerge.length; ++i) {
-    colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i].value));
+    colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i]));
   }
   var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.parse('"' + this.separator + '"')];
   if (this.newColName)
@@ -436,7 +434,7 @@ MergeColumnsFunction.prototype.generateClojure = function () {
 };
 this.MergeColumnsFunction = MergeColumnsFunction;
 
-var FunctionWithArgs = function (funct, functParams) {
+export var FunctionWithArgs = function (funct, functParams) {
   this.funct = funct;
   this.functParams = functParams;
   this.__type = 'FunctionWithArgs';
@@ -459,7 +457,7 @@ FunctionWithArgs.revive = function (data) {
 };
 this.FunctionWithArgs = FunctionWithArgs;
 
-var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
+export var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colsToDeriveFrom = colsToDeriveFrom;
@@ -502,7 +500,7 @@ var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDe
   if (!docstring) {
     this.docstring = 'Derive column ' + newColName + ' from column(s) ';
     for (i = 0; i < colsToDeriveFrom.length; ++i) {
-      this.docstring += '' + colsToDeriveFrom[i].value + ' ';
+      this.docstring += '' + colsToDeriveFrom[i] + ' ';
     }
   } else {
     this.docstring = docstring;
@@ -512,10 +510,7 @@ DeriveColumnFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToDeriveFrom.length > 0 && !data.colsToDeriveFrom[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToDeriveFrom.length; ++i) {
-      var colname = {
-        id: i,
-        value: data.colsToDeriveFrom[i]
-      };
+      var colname = data.colsToDeriveFrom[i];
       columnsArray.push(colname);
     }
   } else columnsArray = data.colsToDeriveFrom;
@@ -551,7 +546,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   var functWithParams = [];
   var i;
   for (i = 0; i < this.colsToDeriveFrom.length; ++i) {
-    colsToDeriveFromClj.val.push(new jsedn.kw(':' + this.colsToDeriveFrom[i].value));
+    colsToDeriveFromClj.val.push(new jsedn.kw(':' + this.colsToDeriveFrom[i]));
     flag = true;
   }
 
@@ -599,7 +594,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
 };
 this.DeriveColumnFunction = DeriveColumnFunction;
 
-var GroupRowsFunction = function (colnames, colnamesFunctionsSet, separatorSet, docstring) {
+export var GroupRowsFunction = function (colnames, colnamesFunctionsSet, separatorSet, docstring) {
   GenericFunction.call(this);
   this.name = 'group-rows';
   this.displayName = 'group-rows';
@@ -611,7 +606,7 @@ var GroupRowsFunction = function (colnames, colnamesFunctionsSet, separatorSet, 
     this.docstring = 'Group rows by column(s): ';
     if (colnames.length > 0) {
       for (var i = 0; i < colnames.length; ++i) {
-        this.docstring += colnames[i].value + ' ';
+        this.docstring += colnames[i] + ' ';
       }
     }
   } else {
@@ -627,12 +622,12 @@ GroupRowsFunction.prototype.generateClojure = function () {
   var i;
 
   for (i = 0; i < this.colnames.length; ++i) {
-    colnames.val.push(jsedn.kw(':' + this.colnames[i].value));
+    colnames.val.push(jsedn.kw(':' + this.colnames[i]));
   }
   var set = new jsedn.Set([]);
   for (i = 0; i < this.colnamesFunctionsSet.length; i += 2) {
     var colnameFunctionPair = new jsedn.Map([]);
-    colnameFunctionPair.set(new jsedn.kw(':' + this.colnamesFunctionsSet[i].value),
+    colnameFunctionPair.set(new jsedn.kw(':' + this.colnamesFunctionsSet[i]),
       (this.colnamesFunctionsSet[i + 1] === "MERGE" ? this.separatorSet[i] : this.colnamesFunctionsSet[i + 1]));
     set.val.push(colnameFunctionPair);
   }
@@ -735,7 +730,7 @@ RenameColumnsFunction.prototype.generateClojure = function () {
     //rename with mapping
     var mapPairs = new jsedn.Map([]);
     for (i = 0; i < this.mappings.length; i += 2)
-      mapPairs.set(new jsedn.kw(':' + this.mappings[i].value),
+      mapPairs.set(new jsedn.kw(':' + this.mappings[i]),
         new jsedn.kw(':' + this.mappings[i + 1])
       );
     return new jsedn.List([jsedn.sym('rename-columns'), mapPairs]);
@@ -748,7 +743,7 @@ RenameColumnsFunction.prototype.removeRenameFunction = function (index) {
 };
 this.RenameColumnsFunction = RenameColumnsFunction;
 
-var KeyFunctionPair = function (key, funcName, funcParams) {
+export var KeyFunctionPair = function (key, funcName, funcParams) {
   this.key = key;
   this.func = funcName;
   this.funcParams = funcParams;
@@ -784,7 +779,7 @@ KeyFunctionPair.prototype.getParams = function () {
 };
 this.KeyFunctionPair = KeyFunctionPair;
 
-var NewColumnSpec = function (colName, colValue, specValue, expression) {
+export var NewColumnSpec = function (colName, colValue, specValue, expression) {
   this.colName = colName;
   this.colValue = colValue;
   this.specValue = specValue;
@@ -853,7 +848,7 @@ ApplyColumnsFunction.prototype.removeKeyFunctionPair = function (kfPair) {
 };
 this.ApplyColumnsFunction = ApplyColumnsFunction;
 
-var MapcFunction = function (keyFunctionPairs, docstring) {
+export var MapcFunction = function (keyFunctionPairs, docstring) {
   // array of obj with [key, function]
   GenericFunction.call(this);
   this.name = 'mapc';
@@ -889,7 +884,7 @@ MapcFunction.prototype.generateClojure = function () {
     //TODO: Group functions by type
     if (this.keyFunctionPairs[i].func.name === 'fill-when')
       ackeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key),
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
     else
@@ -900,11 +895,11 @@ MapcFunction.prototype.generateClojure = function () {
         new jsedn.List(funcWithParams)
         ]);
         mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key),
           mapcFunc);
       } else {
         mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key),
           new jsedn.sym(this.keyFunctionPairs[i].func.name)
         );
       }
@@ -1012,7 +1007,7 @@ SortDatasetFunction.prototype.generateClojure = function () {
         sort = null;
     }
 
-    newColnamesSorttypesMap.set(new jsedn.kw(':' + this.colnamesSorttypesMap[i].colname.value),
+    newColnamesSorttypesMap.set(new jsedn.kw(':' + this.colnamesSorttypesMap[i].colname),
       new jsedn.kw(':' + sort));
     values.val.push(newColnamesSorttypesMap);
   }
@@ -1036,7 +1031,7 @@ SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
 };
 this.SortDatasetFunction = SortDatasetFunction;
 
-var AddRowFunction = function (position, values, docstring) {
+export var AddRowFunction = function (position, values, docstring) {
   this.name = 'add-row';
   this.displayName = 'add-row';
   GenericFunction.call(this);
@@ -1100,20 +1095,19 @@ ShiftColumnFunction.revive = function (data) {
 };
 ShiftColumnFunction.prototype = Object.create(GenericFunction.prototype);
 ShiftColumnFunction.prototype.generateClojure = function () {
-  var values = [jsedn.sym('new-tabular/shift-column'), jsedn.kw(':' + this.colFrom.value)];
+  var values = [jsedn.sym('new-tabular/shift-column'), jsedn.kw(':' + this.colFrom)];
   if (this.shiftcolmode === 'position') values.push(this.indexTo);
   return new jsedn.List(values);
 };
 this.ShiftColumnFunction = ShiftColumnFunction;
 
-var RemoveDuplicatesFunction = function (mode, colNames, separator, docstring) {
+export var RemoveDuplicatesFunction = function (mode, colNames, docstring) {
   // array of column names
   this.name = 'remove-duplicates';
   this.displayName = 'remove-duplicates';
   GenericFunction.call(this);
   this.mode = mode;
   this.colNames = colNames;
-  this.separator = separator;
   this.__type = 'RemoveDuplicatesFunction';
   if (!docstring) {
     this.docstring = 'Remove duplicates';
@@ -1128,7 +1122,7 @@ RemoveDuplicatesFunction.prototype.generateClojure = function () {
   if (this.mode !== 'full') {
     var colNamesClj = new jsedn.Vector([]);
     for (var i = 0; i < this.colNames.length; ++i) {
-      colNamesClj.val.push(new jsedn.kw(':' + this.colNames[i].value));
+      colNamesClj.val.push(new jsedn.kw(':' + this.colNames[i]));
     }
 
     values.push(colNamesClj);
@@ -1192,7 +1186,7 @@ MakeDatasetFunction.prototype.generateClojure = function () {
     } else {
       if (this.columnsArray.length > 0) {
         for (i = 0; i < this.columnsArray.length; ++i) {
-          colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
+          colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i]));
         }
 
         return new jsedn.List([jsedn.sym('make-dataset'), colNamesClj]);
@@ -1332,12 +1326,12 @@ ReshapeDatasetFunction.prototype.generateClojure = function () {
   if (this.columnsArray.length > 0) {
     var colNamesClj = new jsedn.Vector([]);
     for (i = 0; i < this.columnsArray.length; ++i) {
-      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
+      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i]));
     }
     returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
   } else {
 
-    returnValue = new jsedn.List([jsedn.sym('new-tabular/cast'), jsedn.kw(':' + this.variable.value), jsedn.kw(':' + this.value.value), this.separator ? this.separator : this.aggrFunction]);
+    returnValue = new jsedn.List([jsedn.sym('new-tabular/cast'), jsedn.kw(':' + this.variable), jsedn.kw(':' + this.value), this.separator ? this.separator : this.aggrFunction]);
   }
   return returnValue;
 };
@@ -2027,7 +2021,7 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
       if (currentFunction instanceof MakeDatasetFunction) {
         if (!currentFunction.useLazy)
           for (k = 0; k < currentFunction.columnsArray.length; ++k) {
-            availableColumnKeys.push(currentFunction.columnsArray[k].value);
+            availableColumnKeys.push(currentFunction.columnsArray[k]);
           }
 
         // else //TODO:For lazy naming + for "move-first-row-to-header"
@@ -2036,7 +2030,7 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
 
       if (currentFunction instanceof ColumnsFunction) {
         for (k = 0; k < currentFunction.columnsArray.length; ++k) {
-          availableColumnKeys.push(currentFunction.columnsArray[k].value);
+          availableColumnKeys.push(currentFunction.columnsArray[k]);
         }
 
       }

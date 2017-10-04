@@ -31,6 +31,13 @@ import { ShiftColumnComponent } from './sidebar/pipeline-functions/shift-column/
 import { ReshapeDatasetComponent } from './sidebar/pipeline-functions/reshape-dataset/reshape-dataset.component';
 import { RenameColumnsComponent } from './sidebar/pipeline-functions/rename-columns/rename-columns.component';
 import { MergeColumnsComponent } from './sidebar/pipeline-functions/merge-columns/merge-columns.component';
+import { AddRowComponent } from './sidebar/pipeline-functions/add-row/add-row.component';
+import { DeriveColumnComponent } from './sidebar/pipeline-functions/derive-column/derive-column.component';
+import { DeduplicateComponent } from './sidebar/pipeline-functions/deduplicate/deduplicate.component';
+import { AddColumnsComponent } from './sidebar/pipeline-functions/add-columns/add-columns.component';
+import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/map-columns.component';
+import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
+import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -67,6 +74,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     StatisticTableComponent,
     SelectboxComponent,
     MakeDatasetComponent,
+
     TakeRowsComponent,
     TakeColumnsComponent,
     SplitColumnsComponent,
@@ -76,6 +84,14 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     ReshapeDatasetComponent,
     RenameColumnsComponent,
     MergeColumnsComponent,
+    DeriveColumnComponent,
+    DeduplicateComponent,
+    AddRowComponent,
+    AddColumnsComponent,
+    MapColumnsComponent,
+    GroupDatasetComponent,
+    FilterRowsComponent
+
   ]
 })
 
