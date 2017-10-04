@@ -17,10 +17,6 @@ import { TabularTransformationModule } from './tabular-transformation/tabular-tr
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
-import { DropRowsComponent } from './drop-rows/drop-rows.component';
-
-
-
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -29,8 +25,7 @@ export function initConfig(config: AppConfig) {
 @NgModule({
   declarations: [
     AppComponent,
-    DataExplorationComponent,
-    DropRowsComponent,
+    DataExplorationComponent
   ],
   imports: [
     BrowserModule,
