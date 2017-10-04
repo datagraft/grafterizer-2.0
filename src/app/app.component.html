@@ -20,9 +20,6 @@
     </div>
   </header>
   <div class="content-container">
-    <button (click)="getAllTransformations()" class="btn btn-link">Regular</button>
-    <input type="file" (change)="fileChange($event)" placeholder="Upload file" accept=".csv">
-
     <!-- Conditional CSS class attachment to the element -->
     <div [ngClass]="{'content-area-no-padding': router.url == '/tabular-transformation' || '/data-exploration'}">
       <router-outlet></router-outlet>
