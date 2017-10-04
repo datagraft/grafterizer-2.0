@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
+import { TransformationService } from './transformation.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -11,7 +12,7 @@ import * as data from '../assets/data.json';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [DispatchService]
+  providers: [DispatchService, TransformationService]
 })
 export class AppComponent {
 
@@ -110,15 +111,15 @@ export class AppComponent {
         console.log(error);
       });
     this.dispatch.getAllSparqlEndpoints()
-    .then(
-    (result) => {
-      console.log("Successfully got the user's SPARQL endpoints!");
-      console.log(result);
-    },
-    (error) => {
-      console.log("Error getting user's SPARQL endpoints!");
-      console.log(error);
-    })
+      .then(
+      (result) => {
+        console.log("Successfully got the user's SPARQL endpoints!");
+        console.log(result);
+      },
+      (error) => {
+        console.log("Error getting user's SPARQL endpoints!");
+        console.log(error);
+      })
   }
 
   fileChange(event) {
@@ -138,8 +139,56 @@ export class AppComponent {
     }
   }
 
+  transformData(){
+    const transformationID = 'patients-data';
+    const filestoreID = 'patients-csv';
+    const transformationType = 'pipe';
 
-  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService) {
+    this.transformationSvc.transformFile(filestoreID, transformationID, 'pipe')
+      .then(
+      (result) => {
+        console.log("Successfully transformed (PIPELINE)!");
+        console.log(result);
+      },
+      (error) => console.log(error));
+
+
+    this.transformationSvc.transformFile(filestoreID, transformationID, 'graft', 'nt')
+      .then(
+      (result) => {
+        console.log("Successfully transformed (GRAFT)!");
+      },
+      (error) => console.log(error));
+
+    let publisher = 'nvnikolov';
+    let existingTransformationID = 'patients-data';
+    this.dispatch.getTransformationJson(existingTransformationID, publisher)
+      .then(
+      (result) => {
+        console.log("Got transformation JSON");
+        const clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(result));
+        console.log("Generated Clojure!");
+        this.transformationSvc.previewTransformation(filestoreID, clojure)
+          .then(
+          (result) => {
+            console.log("Successfully previewed transformation!");
+            //            console.log(result);
+          },
+          (error) => console.log("Error previewing transformation!"));
+      }, 
+      error => console.log(error));
+
+    this.transformationSvc.getOriginalData(filestoreID)
+      .then(
+      (result) => {
+        console.log("Successfully obtained original filestore!");
+        console.log(result);
+      },
+      (error) => console.log("Error obtaining original file!"))
+
+  }
+
+  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService) {
     console.log(config.getConfig('jarfter-path'));
     console.log(config.getConfig('dispatch-path'));
     console.log(config.getConfig('graftwerk-cache-path'));
