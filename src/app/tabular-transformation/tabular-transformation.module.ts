@@ -25,6 +25,7 @@ import { TabularTransformationRoutingModule } from "./tabular-transformation-rou
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 
 @NgModule({
   imports: [
@@ -53,7 +54,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     StackedBarChartComponent,
     StatisticTableComponent,
     SelectboxComponent,
-    MakeDatasetComponent
+    MakeDatasetComponent,
+    PipelineComponent
   ]
 })
 

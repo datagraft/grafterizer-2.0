@@ -1,8 +1,8 @@
+<div id="label">
+  <label for="label"><strong>TRANSFORMATIONS</strong></label>
+</div>
 <div class="selectbox">
-  <div id="label">
-    <label for="label"><strong>Transformations</strong></label>
-  </div>
-  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px','height':'250px'}"></p-listbox>
+  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'238px','height':'250px'}"></p-listbox>
 </div>
 
-<make-dataset [modalEnabled]="modalEnabled"></make-dataset>
+<make-dataset [modalEnabled]="modalEnabled" (emitter)="emitFunction($event)"></make-dataset>

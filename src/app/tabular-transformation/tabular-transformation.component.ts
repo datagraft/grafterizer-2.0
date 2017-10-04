@@ -13,12 +13,18 @@ export class TabularTransformationComponent implements OnInit {
 
   constructor(private recommenderService: RecommenderService) { }
 
-  ngOnInit() {
-    //recommender testing
+  private function: any;
 
+  ngOnInit() {
+    // recommender testing
     // let time1 = performance.now();
     // console.log(this.recommenderService.getRecommendation((this.recommenderService.getDataProfile(0, 0, 20, 0, 20, 4))));
     // console.log(performance.now() - time1 + " ms");
+  }
+
+  emitFunction(value: any) {
+    this.function = value;
+    console.log(value)
   }
 
 }
