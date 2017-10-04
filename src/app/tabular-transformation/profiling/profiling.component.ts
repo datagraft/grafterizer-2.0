@@ -15,9 +15,9 @@ export class ProfilingComponent implements OnInit {
   private csvData: any;
   private header: String = null;
   private column = [];
-  private pieChartDone: boolean = false;
-  private statisticsDone: boolean = false;
-  private histogramDone: boolean = false;
+  private pieChartDone = false;
+  private statisticsDone = false;
+  private histogramDone = false;
   private lineChartData: Object = null;
   private timePeriod = [];
 
@@ -32,7 +32,7 @@ export class ProfilingComponent implements OnInit {
     this.csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/seattle-weather.csv');
     this.column = [];
     this.timePeriod = [];
-    for (let o of this.csvData) {
+    for (const o of this.csvData) {
       this.column.push(o[header]);
       this.timePeriod.push(o['date']);
     }
@@ -42,7 +42,7 @@ export class ProfilingComponent implements OnInit {
     this.header = header;
   }
 
-  //validate advanced-pie-chart data
+  // validate advanced-pie-chart data
   validateChartData() {
     this.chartData = {
       valid: this.statisticService.getValidCount(this.column),
@@ -53,15 +53,15 @@ export class ProfilingComponent implements OnInit {
 
   validateLineChartData(header: string) {
     this.lineChartData = {
-      "name": header,
-      "info": {
-        "period": this.timePeriod,
-        "values": this.column
+      'name': header,
+      'info': {
+        'period': this.timePeriod,
+        'values': this.column
       }
     }
   }
 
-  //for consecutive validating 
+  // for consecutive validating
   onPiechartDone() {
     setTimeout(() => { this.pieChartDone = true; }, 0);
   }
