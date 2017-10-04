@@ -15,7 +15,7 @@ export class DataExplorationComponent implements OnInit {
 
     const container = document.getElementById('voyager-container');
     const config = {
-      showDataSourceSelector: true,
+      showDataSourceSelector: false,
       serverUrl: null,
       manualSpecificationOnly: false,
       hideHeader: true,

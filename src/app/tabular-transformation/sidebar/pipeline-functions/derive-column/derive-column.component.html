@@ -1,0 +1,30 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Derive Column</h3>
+  <div class="modal-body">
+
+    <div>
+      <label for="comment">Name of new column:</label>
+      <input type="text" id="name" [(ngModel)]="newColName" placeholder="New column name" size="125">
+    </div>
+
+    <br>
+    <label for="colnames">Column names:</label>
+    <rl-tag-input [(ngModel)]="colsToDeriveFrom" [autocomplete]="true" [autocompleteItems]="colnames" [autocompleteMustMatch]="true"
+      placeholder="Column names" id="colnames"></rl-tag-input>
+
+
+
+
+
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>
