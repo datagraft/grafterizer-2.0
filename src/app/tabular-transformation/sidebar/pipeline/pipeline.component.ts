@@ -17,9 +17,12 @@ export class PipelineComponent implements OnChanges {
 
   @Input() function: any;
   private clojure: any;
+  private activePipelineStep: boolean;
+
 
   generateClojure() {
     this.clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.pipelineGenerator.pipeline));
+    console.log(this.function);
     return this.clojure;
   }
 
@@ -39,6 +42,12 @@ export class PipelineComponent implements OnChanges {
       promise.then(function (result) {
         console.log(result);
       });
+    }
+  }
+
+  getPipelineStepLabel() {
+    if (this.function.__type == 'MakeDatasetFunction') {
+      return 'Created header';
     }
   }
 }

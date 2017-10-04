@@ -18,10 +18,10 @@ export class HandsontableComponent implements OnInit {
   constructor() {
     // init table
     this.data = [];
-    for (let i = 0; i <= 10; i++) {
+    for (let i = 0; i <= 12; i++) {
       this.data.push(["-", "-", "-", "-", "-"]);
     }
-   }
+  }
 
   ngOnInit() {
     this.container = document.getElementById('handsontable');
@@ -53,13 +53,13 @@ export class HandsontableComponent implements OnInit {
           "redo": {}
         },
       },
-      height: 282,
+      height: 330,
       stretchH: 'all',
       className: 'htCenter htMiddle',
       afterSelection: (r, c, r2, c2) => {
-            console.log('OK');        
+        console.log('OK');
       }
     }
     this.hot = new Handsontable(this.container, this.settings);
-    }
+  }
 }

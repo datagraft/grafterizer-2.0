@@ -5,8 +5,8 @@ export class PipelineGeneratorService {
 
   constructor() { }
 
-  public generatePipeline(transformationDataModelFunction) {
-    this.pipeline.pipelines["0"].functions.push(transformationDataModelFunction);
+  public generatePipeline(_function) {
+    this.pipeline.pipelines["0"].functions.push(_function);
   }
 
   public pipeline: any = {
