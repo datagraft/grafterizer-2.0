@@ -1,0 +1,38 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Shift row</h3>
+  <div class="modal-body">
+    <!-- TODO: Find better autocomplete component -->
+    <div>
+      <label for="indexfrom">Index from:</label>
+      <input type="number" id="indexfrom" [(ngModel)]="indexFrom" placeholder="From" size="25">
+    </div>
+    <form action="">
+      <div class="radio">
+        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="position" id="mode_1">
+        <label for="mode_1">Shift to index</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="eods" id="mode_2">
+        <label for="mode_2">Shift to the end of dataset</label>
+      </div>
+
+    </form>
+    <div *ngIf="shiftrowmode=='position'">
+      <label for="indexTo">Index to:</label>
+      <input type="number" id="position" [(ngModel)]="indexTo" placeholder="To" size="25">
+    </div>
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+  </div>
+
+
+
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>

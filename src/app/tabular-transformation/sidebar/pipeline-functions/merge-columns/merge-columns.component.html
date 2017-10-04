@@ -1,0 +1,33 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Merge columns</h3>
+  <div class="modal-body">
+
+
+
+
+
+    <div>
+      <label for="colnames">Columns to merge:</label>
+      <rl-tag-input [(ngModel)]="colsToMerge" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
+        placeholder="Column names" id="colnames"></rl-tag-input>
+    </div>
+    <br>
+    <div>
+      <label for="sep">Separator:</label>
+      <input type="text" id="sep" [(ngModel)]="separator" placeholder="separator" size="10">
+
+      <label for="new">Name of new column:</label>
+      <input type="text" id="new" [(ngModel)]="newColName" placeholder="new name" size="25">
+    </div>
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>

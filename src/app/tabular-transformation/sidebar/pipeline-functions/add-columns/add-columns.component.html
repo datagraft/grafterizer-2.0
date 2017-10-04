@@ -1,30 +1,39 @@
 <clr-modal [(clrModalOpen)]="modalEnabled">
-  <h3 class="modal-title">Add Columns</h3>
+  <h3 class="modal-title">Add columns</h3>
   <div class="modal-body">
 
+    <p>
+      Columns to add</p>
+    <br>
     <div *ngFor="let columnSpec of columnsArray; let idx = index">
 
+
       <div class="row ">
-        <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1">
-            <clr-icon  suiPopup popupText="Remove column" popupPlacement="left top" shape="remove" size="22"  (click)="removeColumn(idx)"></clr-icon>
-        </button>
+        <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1"> 
+                <clr-icon  suiPopup popupText="Remove column" popupPlacement="left top" shape="remove" size="22"  (click)="removeColumn(idx)"></clr-icon> 
+         
+            </button>
 
         <div class="removablePropertyName">
           <label for="{{'colname'+idx}}">Name of new column:</label>
           <input type="text" id="{{'colname'+idx}}" [(ngModel)]="columnSpec.colName" placeholder="Column name" size="35">
-        </div>
-      </div>
 
+        </div>
+
+      </div>
       <form action="" class="removablePropertyFields">
+
         <div class="radio-inline ">
-          <input type="radio" [(ngModel)]="addcolumnsmode[idx]" name="{{'mode'+idx}}" value="text" (change)="modeChange(idx)" id="{{'mode1'+idx}}">
+          <input type="radio" [(ngModel)]="addcolumnsmode[idx]" name="{{'mode'+idx}}" value="text" id="{{'mode1'+idx}}">
           <label for="{{'mode1'+idx}}">Text value</label>
         </div>
-
         <div class="radio-inline">
-          <input type="radio" [(ngModel)]="addcolumnsmode[idx]" name="{{'mode'+idx}}" value="expr" (change)="modeChange(idx)" id="{{'mode2'+idx}}">
+
+          <input type="radio" [(ngModel)]="addcolumnsmode[idx]" name="{{'mode'+idx}}" value="expr" id="{{'mode2'+idx}}">
           <label for="{{'mode2'+idx}}">Expression</label>
+
         </div>
+
       </form>
 
       <div *ngIf="addcolumnsmode[idx] == 'text'" class="removablePropertyFields">
@@ -36,33 +45,31 @@
       <div class="select" *ngIf="addcolumnsmode[idx] == 'expr'" class="removablePropertyFields">
         <br>
         <label for="{{'exprType'+idx}}"> Expression type</label>
-        <select id="{{'exprType'+idx}}" [(ngModel)]="columnSpec.specValue">
-                        <option>Dataset filename</option>
-                        <option>Current date</option>
-                        <option>Row number</option>
-                        <option>Custom expression</option>
-                    </select>
+        <select id="{{'exprType'+idx}}" [(ngModel)]="columnSpec.specValue"> 
+                            <option>Dataset filename</option> 
+                            <option>Current date</option> 
+                            <option>Row number</option> 
+                            <option>Custom expression</option> 
+                        </select>
       </div>
 
       <div *ngIf="columnSpec.specValue == 'Custom expression' && addcolumnsmode[idx] == 'expr'" class="removablePropertyFields">
         <br>
         <label for="{{'customExpr'+idx}}">Expression:</label>
         <input type="text" id="{{'customExpr'+idx}}" [(ngModel)]="columnSpec.expression" placeholder="Expression" size="35">
+
       </div>
-      <br>
 
     </div>
-
     <button class="btn btn-primary" (click)="addColumn()">More columns</button>
     <div>
       <label for="comment">Comment:</label>
       <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+
     </div>
   </div>
-
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
   </div>
-
 </clr-modal>

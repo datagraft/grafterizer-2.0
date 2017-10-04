@@ -1,0 +1,48 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Group and aggregate</h3>
+
+  <div class="modal-body">
+
+    <label for="colnames">Group by columns:</label>
+    <rl-tag-input [(ngModel)]="colnames" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true" placeholder="Column names"
+      id="colnames"></rl-tag-input>
+    <br>
+    <div *ngFor="let idx of getsetlength()">
+
+
+      <div class="row ">
+        <button class="btn btn-link btn-icon-link removablePropertyButton" [disabled]="colnamesFunctionsSet.length === 1"> 
+             <clr-icon  suiPopup popupText="Remove aggregation" popupPlacement="left top" shape="remove" size="22"  (click)="removeAggregation(idx)"></clr-icon> 
+         </button>
+        <ng2-completer class="removablePropertyFields" [(ngModel)]="colnamesFunctionsSet[idx]" [datasource]="columns" [openOnFocus]="true"
+          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
+
+        <ng2-completer class="removablePropertyFields" [(ngModel)]="colnamesFunctionsSet[idx+1]" [datasource]="aggrTypes" [openOnFocus]="true"
+          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
+
+        <div class="removablePropertyFields" *ngIf="colnamesFunctionsSet[idx+1]=='MERGE'">
+
+          <input type="text" [(ngModel)]="separatorSet[idx]" id="{{'sep'+idx}}" size="10" placeholder="Separator">
+
+        </div>
+
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="addAggregation()">Add column</button>
+
+
+
+
+
+
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>
