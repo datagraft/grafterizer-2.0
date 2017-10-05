@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 import { TransformationService } from './transformation.service';
+import { DataGraftMessageService } from './data-graft-message.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -12,7 +13,7 @@ import * as data from '../assets/data.json';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [DispatchService, TransformationService]
+  providers: [DispatchService, TransformationService, DataGraftMessageService]
 })
 export class AppComponent {
 
@@ -152,7 +153,7 @@ export class AppComponent {
       },
       (error) => console.log(error));
 
-
+    // Transform (pipe and graft) and store result in a DB
     this.transformationSvc.transformFile(filestoreID, transformationID, 'graft', 'nt')
       .then(
       (result) => {
@@ -160,6 +161,7 @@ export class AppComponent {
       },
       (error) => console.log(error));
 
+    // preview transformation that is saved on DataGraft
     let publisher = 'nvnikolov';
     let existingTransformationID = 'patients-data';
     this.dispatch.getTransformationJson(existingTransformationID, publisher)
@@ -178,6 +180,7 @@ export class AppComponent {
       }, 
       error => console.log(error));
 
+    // get original data of a distribution
     this.transformationSvc.getOriginalData(filestoreID)
       .then(
       (result) => {
@@ -188,7 +191,7 @@ export class AppComponent {
 
   }
 
-  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService) {
+  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
     console.log(config.getConfig('jarfter-path'));
     console.log(config.getConfig('dispatch-path'));
     console.log(config.getConfig('graftwerk-cache-path'));

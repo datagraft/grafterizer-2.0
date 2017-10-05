@@ -17,20 +17,35 @@ export class TransformationService {
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
   }
 
-  /*private transformEdnResponseToCsv (data: string) {
-    try {
-      debugger;
-      const javascriptData = jsedn.toJS(jsedn.parse(data));
-      let output = javascriptData[':column-names'].join(',');
-      javascriptData[':rows'].forEach((row) => {
-        output += '\n';
-        output += row.join(',');
-      })
-      return output;
-    } catch (e) {
-      throw new Error('Could not convert EDN data!');
-    }
-  };*/
+  public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {
+    const url = this.dispatchPath + '/fillWizard';
+    const options = new RequestOptions({ withCredentials: true });
+    const requestPayload = {
+      distribution: filestoreID,
+      transformation: transformationID,
+      wizardId: wizardID,
+      type: transformationType
+    };
+
+    return this.http.post(url, requestPayload, options)
+    .map(result => result.json())
+    .toPromise();
+  }
+
+  // DO NOT USE - doesn't work for now
+  private fillRdfRepo(filestoreID: string, transformationID: string, repoAccessUrl: string): Promise<any> {
+    const url = this.dispatchPath + '/fillRDFrepo';
+    const options = new RequestOptions({ withCredentials: true });
+    const requestPayload = {
+      distribution: filestoreID,
+      transformation: transformationID,
+      queriabledatastore: repoAccessUrl,
+      ontotext: true
+    };
+    return this.http.post(url, requestPayload, options)
+      .map(response => response.json())
+      .toPromise();
+  }
 
   public getOriginalData(filestoreID: string, page?: number, pageSize?: number): Promise<any> {
     const url = this.dispatchPath + '/preview_original/' + encodeURIComponent(filestoreID);
@@ -115,12 +130,6 @@ export class TransformationService {
             sub.unsubscribe();
             this.http.get(resultUrl, options)
               .map((responseCache) => jsedn.toJS(jsedn.parse(responseCache.text())))
-              /*(responseCache) => {
-                if (responseCache.headers.get('content-type') === 'application/edn') {
-                  return this.transformEdnResponseToCsv(responseCache.text());
-                }
-                return responseCache.text();
-              }*/
               .toPromise()
               .then(
               (transformationResult) => {
