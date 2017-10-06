@@ -29,7 +29,7 @@ export class HandsontableComponent implements OnInit {
       rowHeaders: true,
       colHeaders: [],
       columnSorting: false,
-      viewportColumnRenderingOffset: 40,
+      preventOverflow: 'horizontal',
       contextMenu: {
         callback: (key, options) => {
           if (key === 'row_above' || 'row_below' || 'remove_col'
@@ -53,12 +53,12 @@ export class HandsontableComponent implements OnInit {
           redo: {}
         },
       },
-      height: 330,
       stretchH: 'all',
-      className: 'htCenter htMiddle',
       afterSelection: (r, c, r2, c2) => {
         console.log('OK');
-      }
+      },
+      manualColumnResize: true,
+      manualRowResize: true
     }
     this.hot = new Handsontable(this.container, this.settings);
   }

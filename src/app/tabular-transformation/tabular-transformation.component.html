@@ -1,19 +1,33 @@
-<div class="content-container">
-  <div class="content-area">
-    <div class="row">
-      <div class="col-xs">
+<split direction="horizontal">
+  <split-area [size]="20" class="sin-left-menu">
+    <selectbox (emitter)="emitFunction($event)" class="sin-suggested-transformations"></selectbox>
+    <pipeline [function]="function" class="sin-pipeline"></pipeline>
+  </split-area>
+  <split-area [size]="80">
+    <split direction="vertical">
+      <split-area [size]="70">
         <app-handsontable></app-handsontable>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-xs">
+      </split-area>
+      <split-area [size]="30">
         <profiling></profiling>
-      </div>
-    </div>
-  </div>
-  <nav class="sidenav">
-    <selectbox (emitter)="emitFunction($event)"></selectbox>
-    <pipeline [function]="function"></pipeline>
-  </nav>
+      </split-area>
+    </split>
+  </split-area>
+</split>
+
+<!--<div class="row">
+<div class="col-xs">
+
 </div>
+</div>-->
+<!--
+<div class="row">
+<div class="col-xs">
+
+</div>
+</div>-->
+<!--
+<nav class="sidenav">
+
+</nav>
+-->
