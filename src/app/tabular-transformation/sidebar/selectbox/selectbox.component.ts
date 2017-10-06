@@ -16,6 +16,11 @@ export class SelectboxComponent implements OnInit {
 
   constructor() {
     this.transformations = [];
+
+
+    this.transformations.push({ label: 'Custom function', value: 'utility-function' });
+
+
     this.transformations.push({ label: 'Add row', value: 'add-row' });
     this.transformations.push({ label: 'Add columns', value: 'add-columns' });
     this.transformations.push({ label: 'Deduplicate', value: 'deduplicate' });

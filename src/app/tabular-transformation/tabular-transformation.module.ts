@@ -9,6 +9,7 @@ import { ListboxModule } from 'primeng/primeng';
 import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from "ng2-completer";
+import { CodemirrorModule } from 'ng2-codemirror';
 
 import { TabularTransformationComponent } from "./tabular-transformation.component";
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -38,6 +39,9 @@ import { AddColumnsComponent } from './sidebar/pipeline-functions/add-columns/ad
 import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/map-columns.component';
 import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
+import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
+
+import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 
 import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -60,7 +64,8 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     ListboxModule,
     RlTagInputModule,
     SuiModule,
-    Ng2CompleterModule
+    Ng2CompleterModule,
+    CodemirrorModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -74,10 +79,10 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     StackedBarChartComponent,
     StatisticTableComponent,
     SelectboxComponent,
-    MakeDatasetComponent,
+    CustomFunctionModalComponent,
     PipelineComponent,
-    AddColumnsComponent,
-    AddRowComponent,
+    //Pipeline functions
+    MakeDatasetComponent,
     TakeRowsComponent,
     TakeColumnsComponent,
     SplitColumnsComponent,
@@ -93,7 +98,9 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     AddColumnsComponent,
     MapColumnsComponent,
     GroupDatasetComponent,
-    FilterRowsComponent
+    FilterRowsComponent,
+    UtilityFunctionComponent,
+
 
   ]
 })

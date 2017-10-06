@@ -17,7 +17,7 @@ export class SplitColumnsComponent implements OnInit {
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3", "zzz", "aaa", "qqq"];
-  private colName: String;
+  private colName: any = { id: 0, value: "" };
   private separator: String;
 
   private docstring: String;

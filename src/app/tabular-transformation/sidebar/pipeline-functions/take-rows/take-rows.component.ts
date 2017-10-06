@@ -20,7 +20,7 @@ export class TakeRowsComponent implements OnInit {
 
   constructor() {
     if (!this.function) {
-      this.function = new transformationDataModel.TakeRowsFunction(
+      this.function = new transformationDataModel.DropRowsFunction(
         this.indexFrom, this.indexTo, this.take, this.docstring);
     }
     else {

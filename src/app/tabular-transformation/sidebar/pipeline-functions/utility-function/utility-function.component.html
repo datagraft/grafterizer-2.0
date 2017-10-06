@@ -1,0 +1,32 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Custom function</h3>
+  <div class="modal-body">
+
+
+
+    <br>
+
+
+    <div class="row" style=" padding-left: 0.5em;">
+      <label for="df">Function:</label>
+      <ng2-completer [(ngModel)]="fn" [datasource]="dataService" [openOnFocus]="true" [minSearchLength]="0" [autoHighlight]="true"
+        [selectOnFocus]="true" (selected)="onFunctionSelected($event)" [fillHighlighted]=" false "></ng2-completer>
+
+      <div *ngFor="let param of functionName.getParams(); index as i; ">
+        <label for="{{ 'param'+i}} ">{{param}}</label>
+        <input type="text " id="{{ 'param'+i}} " [(ngModel)]="functionName.functParams[i] " size="10 ">
+
+      </div>
+    </div>
+    <br>
+    <div>
+      <label for="comment ">Comment:</label>
+      <input type="text " id="comment " [(ngModel)]="docstring " placeholder="Comment " size="125 ">
+    </div>
+
+  </div>
+  <div class="modal-footer ">
+    <button type="button " class="btn btn-outline " (click)="cancel() ">Cancel</button>
+    <button type="button " class="btn btn-primary " (click)="accept() ">OK</button>
+  </div>
+</clr-modal>

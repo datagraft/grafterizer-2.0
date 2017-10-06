@@ -29,7 +29,7 @@ export class ReshapeDatasetComponent implements OnInit {
 
   constructor() {
     if (!this.function) {
-      this.function = new transformationDataModel.ReshapeDatasetFunction(
+      this.function = new transformationDataModel.MeltFunction(
         this.columnsArray, this.variable, this.value, this.aggrFunction, this.separator, this.docstring);
     }
     else {

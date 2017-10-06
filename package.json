@@ -49,6 +49,8 @@
     "rxjs": "^5.4.3",
     "semantic-ui": "^2.2.13",
     "zone.js": "^0.8.18"
+    "codemirror": "^5.30.0",
+    "ng2-codemirror": "^1.0.1"
   },
   "devDependencies": {
     "@angular/cli": "^1.4.4",

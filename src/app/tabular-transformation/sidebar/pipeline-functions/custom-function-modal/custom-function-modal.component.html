@@ -1,0 +1,38 @@
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'xl'">
+  <h3 class="modal-title">Edit custom functions</h3>
+  <div class="modal-body container">
+
+    <div class="row  ">
+      <p-listbox [options]="functions" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'250px'}" [listStyle]="{'max-height':'350px'}">
+        <ng-template let-cf let-i="index" pTemplate="item">
+          <div class="ui-helper-clearfix">
+            <span>{{cf.label}}</span>
+            <button *ngIf="cf.value==selected" class="btn  btn-link btn-icon btn-sm" style="float:right"> 
+                <clr-icon  shape="remove" size="18" style="fill:white" (click)="removeFunction(i)"></clr-icon> 
+       
+          </button>
+          </div>
+        </ng-template>
+      </p-listbox>
+
+
+      <codemirror #editor name="myCode" [(ngModel)]="selected.clojureCode" [config]="{lineNumbers: true, theme: 'mdn-like', mode: 'text/x-clojure', autofocus: true, height: '500px',width: '200px', matchBrackets: true}"
+        (ngModelChange)="onCodeChange($event)"></codemirror>
+      <clr-alert *ngIf="nameWarning" [clrAlertType]="'alert-warning'" [clrAlertClosable]="false" (clrAlertClosedChange)="onClose()">
+        <div class="alert-item">
+          <span class="alert-text">
+            A function already exists with the same name
+              </span>
+        </div>
+      </clr-alert>
+    </div>
+    <button class="btn btn-icon btn-primary"> 
+      <clr-icon  shape="plus" size="18"  (click)="addFunction()"></clr-icon> 
+
+</button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>

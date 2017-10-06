@@ -8,7 +8,7 @@
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
     [listStyle]="{'max-height':'250px'}"></p-listbox>
 </div>
-
+<button class="btn btn-primary" (click)="selected='custom-functions'">Edit custom functions</button>
 
 <make-dataset [modalEnabled]="selected=='make-dataset'"></make-dataset>
 <take-rows [modalEnabled]="selected=='take-rows'"></take-rows>
@@ -27,3 +27,5 @@
 <map-columns [modalEnabled]="selected=='map-columns'"></map-columns>
 <group-dataset [modalEnabled]="selected=='group-dataset'"></group-dataset>
 <filter-rows [modalEnabled]="selected=='filter-rows'"></filter-rows>
+<utility-function [modalEnabled]="selected=='utility-function'"></utility-function>
+<custom-function-modal [modalEnabled]="selected=='custom-functions'"></custom-function-modal>
