@@ -314,7 +314,7 @@ function constructConditionalNodeVectorJsEdn(node, currentNodeJsEdn) {
   return modifCurrentNodeJsEdn;
 }
 /* Constructs and returns the RDF creation function. */
-function constructRDFGraphFunction(transformation) {
+export function constructRDFGraphFunction(transformation) {
   //var prefixersInGUI = transformation.prefixers;
   var i;
   var j;

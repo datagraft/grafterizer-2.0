@@ -25,8 +25,7 @@ export function initConfig(config: AppConfig) {
 @NgModule({
   declarations: [
     AppComponent,
-    DataExplorationComponent,
-
+    DataExplorationComponent
   ],
   imports: [
     BrowserModule,

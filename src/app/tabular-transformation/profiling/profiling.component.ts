@@ -25,6 +25,9 @@ export class ProfilingComponent implements OnInit {
   constructor(private statisticService: StatisticService) { }
 
   ngOnInit(): void {
+    setTimeout(() => {
+      this.getHeader("weather");
+    }, 200);
   }
 
   getHeader(header: string) {

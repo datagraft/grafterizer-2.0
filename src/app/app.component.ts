@@ -33,7 +33,7 @@ export class AppComponent {
     console.log(transformationDataModel.Transformation.revive(data));
   };
 
-  getAllTransformations () {
+  getAllTransformations() {
     let publisher = 'nvnikolov';
     let existingTransformationID = 'patients-data';
     this.dispatch.getAllTransformations('', true).then(result => console.log(result), error => console.log(error));
@@ -54,8 +54,8 @@ export class AppComponent {
     this.dispatch.newTransformation(newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration)
       .then(
       (result) => {
-        console.log('Created Transformation Success!'); 
-        console.log(result); 
+        console.log('Created Transformation Success!');
+        console.log(result);
         newTransformationID = result.id;
         return this.dispatch.updateTransformation(newTransformationID, publisher, newTransformationName + '-new', !isPublic, newTransformationDescription + ' new', newTransformationKeywords.concat('four'), newTransformationConfiguration).then(
           (result) => {
@@ -88,7 +88,7 @@ export class AppComponent {
                     console.log(error)
                   })
               },
-              (error) => {}
+              (error) => { }
             )
 
           },
@@ -98,8 +98,8 @@ export class AppComponent {
           })
 
       },
-      (error) => {console.log('Woops!'); console.log(error); }
-    );
+      (error) => { console.log('Woops!'); console.log(error); }
+      );
 
     this.dispatch.getAllFilestores()
       .then(
@@ -125,7 +125,7 @@ export class AppComponent {
 
   fileChange(event) {
     let fileList: FileList = event.target.files;
-    if(fileList.length > 0) {
+    if (fileList.length > 0) {
       let file: File = fileList[0];
       this.dispatch.uploadFile(file)
         .then(

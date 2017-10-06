@@ -1,58 +1,59 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
 @Component({
   selector: 'make-dataset',
   templateUrl: './make-dataset.component.html',
-  styleUrls: ['./make-dataset.component.css']
+  styleUrls: ['./make-dataset.component.css'],
+  providers: []
 })
 export class MakeDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
-  private tdm: any;
-  private makedatasetmode: String = "";
+  private function: any;
+  private makedatasetmode: String = '';
   private columnsArray: any = [];
   private numberOfColumns: Number = 0;
-  private docstring: String;
+  private docstring: String = '';
+
+  @Output() emitter = new EventEmitter();
 
   constructor() {
-    this.tdm = new transformationDataModel.MakeDatasetFunction(
+    this.function = new transformationDataModel.MakeDatasetFunction(
       [], null, 0, null, null);
   }
 
-  ngOnInit() {
-    this.modalEnabled = false;
-  }
+  ngOnInit() { }
 
   accept() {
     switch (this.makedatasetmode) {
       case 'colnames': {
-        this.tdm.columnsArray = this.columnsArray;
-        this.tdm.useLazy = false;
-        this.tdm.numberOfColumns
-        this.tdm.moveFirstRowToHeader = false;
-        this.tdm.docstring = this.docstring;
+        this.function.columnsArray = this.columnsArray;
+        this.function.useLazy = true;
+        this.function.numberOfColumns;
+        this.function.moveFirstRowToHeader = false;
+        this.function.docstring = this.docstring;
         break;
       }
       case 'ncolumns': {
-        this.tdm.columnsArray = this.columnsArray;
-        this.tdm.useLazy = true;
-        this.tdm.numberOfColumns
-        this.tdm.moveFirstRowToHeader = false;
-        this.tdm.docstring = this.docstring;
+        this.function.columnsArray = this.columnsArray;
+        this.function.useLazy = true;
+        this.function.numberOfColumns;
+        this.function.moveFirstRowToHeader = false;
+        this.function.docstring = this.docstring;
         break;
       }
       case 'firstrow': {
-        this.tdm.columnsArray = this.columnsArray;
-        this.tdm.useLazy = false;
-        this.tdm.numberOfColumns
-        this.tdm.moveFirstRowToHeader = true;
-        this.tdm.docstring = this.docstring;
+        this.function.columnsArray = this.columnsArray;
+        this.function.useLazy = false;
+        this.function.numberOfColumns;
+        this.function.moveFirstRowToHeader = true;
+        this.function.docstring = this.docstring;
         break;
       }
     }
-    console.log(this.tdm);
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

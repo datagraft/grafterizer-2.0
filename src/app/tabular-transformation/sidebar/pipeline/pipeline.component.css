@@ -1,0 +1,14 @@
+.container {
+  width: 260px;
+  height: 900px;
+  padding-top: 5px;
+  margin-left: -10px;
+}
+
+.side-by-side {
+  float: left;
+}
+
+#label {
+  padding-bottom: 10px;
+}

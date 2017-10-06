@@ -1,8 +1,29 @@
+<div id="label">
+  <label for="label"><strong>TRANSFORMATIONS</strong></label>
+</div>
 <div class="selectbox">
   <div id="label">
     <label for="label"><strong>Transformations</strong></label>
   </div>
-  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px','height':'250px'}"></p-listbox>
+  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
+    [listStyle]="{'max-height':'250px'}"></p-listbox>
 </div>
 
-<make-dataset [modalEnabled]="modalEnabled"></make-dataset>
+
+<make-dataset [modalEnabled]="selected=='make-dataset'"></make-dataset>
+<take-rows [modalEnabled]="selected=='take-rows'"></take-rows>
+<take-columns [modalEnabled]="selected=='take-columns'"></take-columns>
+<split-columns [modalEnabled]="selected=='split-columns'"></split-columns>
+<sort-dataset [modalEnabled]="selected=='sort-dataset'"></sort-dataset>
+<shift-row [modalEnabled]="selected=='shift-row'"></shift-row>
+<shift-column [modalEnabled]="selected=='shift-column'"></shift-column>
+<reshape-dataset [modalEnabled]="selected=='reshape-dataset'"></reshape-dataset>
+<rename-columns [modalEnabled]="selected=='rename-columns'"></rename-columns>
+<merge-columns [modalEnabled]="selected=='merge-columns'"></merge-columns>
+<derive-column [modalEnabled]="selected=='derive-column'"></derive-column>
+<deduplicate [modalEnabled]="selected=='deduplicate'"></deduplicate>
+<add-row [modalEnabled]="selected=='add-row'"></add-row>
+<add-columns [modalEnabled]="selected=='add-columns'"></add-columns>
+<map-columns [modalEnabled]="selected=='map-columns'"></map-columns>
+<group-dataset [modalEnabled]="selected=='group-dataset'"></group-dataset>
+<filter-rows [modalEnabled]="selected=='filter-rows'"></filter-rows>

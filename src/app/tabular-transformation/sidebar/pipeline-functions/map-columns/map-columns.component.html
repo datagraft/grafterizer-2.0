@@ -1,0 +1,45 @@
+<clr-modal [(clrModalOpen)]="modalEnabled">
+  <h3 class="modal-title">Map Columns</h3>
+  <div class="modal-body">
+
+
+
+    <div id="df" *ngFor="let kfpair of keyFunctionPairs; index as idx;">
+      <div class="row">
+        <button class="btn btn-link btn-icon-link removablePropertyButton"> 
+          <clr-icon  shape="remove" size="22"  (click)="removeMapping(idx)"></clr-icon> 
+   
+      </button>
+        <div class="row">
+          <div>
+            <label for="{{'key'+idx}}">Column:</label>
+            <ng2-completer id="{{'key'+idx}}" class="removablePropertyFields" [(ngModel)]="keys[idx]" [datasource]="columns" [openOnFocus]="true"
+              [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false" (selected)="onFunctionSelected($event, idx)"></ng2-completer>
+          </div>
+          <div>
+            <label for="{{'function'+idx}}">Function:</label>
+            <ng2-completer id="{{'function'+idx}}" class="removablePropertyFields" [(ngModel)]="functionsToMapWith[idx]" [datasource]="dataService"
+              [openOnFocus]="true" [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"
+              (selected)="onFunctionSelected($event, idx)"></ng2-completer>
+          </div>
+          <div class="removablePropertyFields" *ngFor="let param of getparams(idx); index as i;">
+            <label for="{{'param'+i}}">{{param}}</label>
+            <input type="text" id="{{'param'+i}}" [(ngModel)]="keyFunctionPairs[idx].funcParams[i]" size="10">
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="addMapping()">Compose with</button>
+    <br>
+    <div>
+      <label for="comment">Comment:</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>
