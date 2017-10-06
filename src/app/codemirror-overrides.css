@@ -1,0 +1,8 @@
+.CodeMirror {
+    border: 1px solid #eee;
+    padding-left: 1em;
+    height: auto;
+    max-width: 800px;
+  }
+
+@import "../../node_modules/codemirror/lib/codemirror.css";

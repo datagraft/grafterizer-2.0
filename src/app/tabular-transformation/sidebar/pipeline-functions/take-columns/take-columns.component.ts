@@ -25,7 +25,7 @@ export class TakeColumnsComponent implements OnInit {
 
   constructor() {
     if (!this.function) {
-      this.function = new transformationDataModel.TakeColumnsFunction(this.columnsArray,
+      this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
         this.indexFrom, this.indexTo, this.take, this.docstring);
     }
     else {

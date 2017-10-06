@@ -47,7 +47,9 @@
     "primeng": "^4.2.1",
     "rxjs": "^5.1.0",
     "ng2-completer": "1.6.3",
-    "zone.js": "^0.8.4"
+    "zone.js": "^0.8.4",
+    "codemirror": "^5.30.0",
+    "ng2-codemirror": "^1.0.1"
   },
   "devDependencies": {
     "@angular/cli": "^1.4.2",

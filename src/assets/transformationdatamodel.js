@@ -23,7 +23,7 @@ var GenericFunction = function () {
   this.isPreviewed = false;
 };
 
-var CustomFunctionDeclaration = function (name, clojureCode, group, docstring) {
+export var CustomFunctionDeclaration = function (name, clojureCode, group, docstring) {
   this.name = name;
   this.clojureCode = clojureCode;
   this.group = group;
@@ -35,8 +35,7 @@ CustomFunctionDeclaration.revive = function (data) {
 };
 this.CustomFunctionDeclaration = CustomFunctionDeclaration;
 
-// DropRows function in old Grafterizer. Name changed for consistency
-export var TakeRowsFunction = function (indexFrom, indexTo, take, docstring) {
+export var DropRowsFunction = function (indexFrom, indexTo, take, docstring) {
   GenericFunction.call(this);
   this.indexFrom = indexFrom;
   this.indexTo = indexTo;
@@ -46,9 +45,9 @@ export var TakeRowsFunction = function (indexFrom, indexTo, take, docstring) {
   if (!docstring) this.docstring = (take ? 'Take ' : 'Drop ') + 'rows with indices from ' + indexFrom + ' to ' + indexTo;
   else this.docstring = docstring;
   this.take = take;
-  this.__type = 'TakeRowsFunction';
+  this.__type = 'DropRowsFunction';
 };
-TakeRowsFunction.revive = function (data) {
+DropRowsFunction.revive = function (data) {
   var indexFrom;
   var indexTo;
 
@@ -60,17 +59,16 @@ TakeRowsFunction.revive = function (data) {
     indexTo = data.indexTo;
   }
 
-  return new TakeRowsFunction(indexFrom, indexTo, data.take, data.docstring);
+  return new DropRowsFunction(indexFrom, indexTo, data.take, data.docstring);
 };
-TakeRowsFunction.prototype = Object.create(GenericFunction.prototype);
-TakeRowsFunction.prototype.generateClojure = function () {
+DropRowsFunction.prototype = Object.create(GenericFunction.prototype);
+DropRowsFunction.prototype.generateClojure = function () {
   if (this.take === false && this.indexFrom === 0)
     return new jsedn.List([jsedn.sym('drop-rows'), this.indexTo]);
   var values = [jsedn.sym('rows')];
   if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
   this.indexFrom,
-  this.indexTo + 1
-  ]));
+  this.indexTo + 1]));
   else values.push(new jsedn.List([jsedn.sym('concat'),
   new jsedn.List([jsedn.sym('range'),
     0,
@@ -78,13 +76,11 @@ TakeRowsFunction.prototype.generateClojure = function () {
   ]),
   new jsedn.List([jsedn.sym('drop'),
   this.indexTo + 1,
-  new jsedn.List([jsedn.sym('range')])
-  ])
-  ]));
+  new jsedn.List([jsedn.sym('range')])])]));
 
   return new jsedn.List(values);
 };
-this.TakeRowsFunction = TakeRowsFunction;
+this.DropRowsFunction = DropRowsFunction;
 
 export var SplitFunction = function (colName, separator, docstring) {
   GenericFunction.call(this);
@@ -92,43 +88,87 @@ export var SplitFunction = function (colName, separator, docstring) {
   this.separator = separator;
   this.name = 'split';
   this.displayName = 'split';
-  if (!docstring) this.docstring = 'Split column ' + colName + ' on' + separator;
+  if (!docstring) this.docstring = 'Split column ' + colName.value + ' on' + separator;
   else this.docstring = docstring;
   this.__type = 'SplitFunction';
 };
 SplitFunction.revive = function (data) {
-  var colName = data.colName;
+  var colName;
+  if (!data.colName.hasOwnProperty('id')) colName = { id: 0, value: data.colName }; else colName = data.colName;
   return new SplitFunction(colName, data.separator, data.docstring);
 };
 SplitFunction.prototype = Object.create(GenericFunction.prototype);
 SplitFunction.prototype.generateClojure = function () {
 
   var regex = new jsedn.List([jsedn.sym('read-string'), '#\"' + this.separator + '\"']);
-  return new jsedn.List([jsedn.sym('new-tabular/split-column'), jsedn.kw(':' + this.colName), regex]);
+  return new jsedn.List([jsedn.sym('new-tabular/split-column'), jsedn.kw(':' + this.colName.value), regex]);
 };
 this.SplitFunction = SplitFunction;
 
-var UtilityFunction = function (functionName, docstring) {
-  GenericFunction.call(this);
-  if (functionName)
-    if (!(functionName instanceof CustomFunctionDeclaration) && functionName.__type ===
-      'CustomFunctionDeclaration') {
-      functionName = CustomFunctionDeclaration.revive(functionName);
-    }
+export var FunctionWithArgs = function (funct, functParams) {
+  this.funct = funct;
+  this.functParams = functParams;
+  this.__type = 'FunctionWithArgs';
+};
+FunctionWithArgs.prototype.getParams = function () {
+  var params = [];
+  if (!this.funct) return params;
+  if (!this.funct.hasOwnProperty('clojureCode')) return params;
+  if (!this.funct.clojureCode) return params;
+  var d = this.funct.clojureCode.match(/\[(.*?)\]/g);
+  if (d) {
+    d[0] = d[0].replace(/^\[|\]$/g, '');
+    params = d[0].split(" ");
+    params.splice(0, 1);
+  }
+  return params;
+};
+FunctionWithArgs.revive = function (data) {
+  return new FunctionWithArgs(data.funct, data.functParams);
+};
+this.FunctionWithArgs = FunctionWithArgs;
 
+export var UtilityFunction = function (functionName, docstring) {
+  GenericFunction.call(this);
+  if (functionName !== null) {
+    if (!functionName instanceof FunctionWithArgs) {
+      functionName = new FunctionWithArgs(functionName);
+    }
+  }
   this.functionName = functionName;
+
   if ((!docstring) && functionName) this.docstring = 'Apply ' + functionName.name + ' to dataset';
   else this.docstring = docstring;
   this.name = 'utility';
-  if (functionName) this.displayName = functionName.name;
+  if (functionName.funct) {
+    this.displayName = functionName.funct.name;
+  }
   this.__type = 'UtilityFunction';
 };
 UtilityFunction.revive = function (data) {
-  return new UtilityFunction(data.functionName, data.docstring);
+  // return new UtilityFunction(data.functionName, data.params, data.docstring);
+  var newFunct = data.functionName;
+  if (data.functionName instanceof FunctionWithArgs === false) {
+    if (data.functionName.__type === 'FunctionWithArgs') {
+      newFunct = FunctionWithArgs.revive(data.functionName);
+    }
+    else {
+
+      newFunct = new FunctionWithArgs(data.functionName, []);
+    }
+
+  }
+  return new UtilityFunction(newFunct, data.docstring);
 };
 UtilityFunction.prototype = Object.create(GenericFunction.prototype);
 UtilityFunction.prototype.generateClojure = function () {
-  return new jsedn.List([jsedn.sym(this.functionName.name)]);
+  var elems = [jsedn.sym(this.functionName.funct.name)];
+  for (var i = 0; i < this.functionName.functParams.length; ++i) {
+    //      console.log(this.functionName.functParams[i]); 
+    elems.push(this.functionName.functParams[i]);
+  }
+
+  return new jsedn.List(elems);
 };
 this.UtilityFunction = UtilityFunction;
 
@@ -184,13 +224,13 @@ AddColumnsFunction.prototype.generateClojure = function () {
       case ('Row number'):
         newRownumMap.set(
           new jsedn.kw(':' + this.columnsArray[i].colName),
-          new jsedn.parse('(fn [_] (grafter.sequences/integers-from 1))')
+          new jsedn.sym('(fn [_] (grafter.sequences/integers-from 1))')
         );
         break;
       case ('custom expression'):
         newColMap.set(
           new jsedn.kw(':' + this.columnsArray[i].colName),
-          new jsedn.parse(this.columnsArray[i].expression)
+          new jsedn.sym(this.columnsArray[i].expression)
         );
         break;
       default:
@@ -226,7 +266,7 @@ AddColumnsFunction.prototype.generateClojure = function () {
 };
 this.AddColumnsFunction = AddColumnsFunction;
 
-var AddColumnFunction = function (newColName, fileName, colValue, colExpr, docstring) {
+export var AddColumnFunction = function (newColName, fileName, colValue, colExpr, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colValue = colValue;
@@ -246,7 +286,7 @@ AddColumnFunction.prototype.generateClojure = function () {
   if (this.fileName) return new jsedn.List([jsedn.sym('add-filename-to-column'), new jsedn.kw(':' + this.newColName)]);
   if (!this.colExpr) return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), this.colValue]);
   else {
-    return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), jsedn.parse(this.colExpr)]);
+    return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), jsedn.sym(this.colExpr)]);
   }
 
 };
@@ -298,8 +338,7 @@ GrepFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToFilter.length > 0 && data.colsToFilter[0] && !data.colsToFilter[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToFilter.length; ++i) {
-      var colname = data.colsToFilter[i]
-
+      var colname = { id: i, value: data.colsToFilter[i] };
       columnsArray.push(colname);
     }
   } else {
@@ -316,7 +355,7 @@ GrepFunction.prototype.generateClojure = function () {
   var filterFunc;
   var i;
   for (i = 0; i < this.colsToFilter.length; ++i) {
-    colsToFilter.val.push(new jsedn.kw(':' + this.colsToFilter[i]));
+    colsToFilter.val.push(new jsedn.kw(':' + this.colsToFilter[i].value));
     flag = true;
   }
 
@@ -331,11 +370,11 @@ GrepFunction.prototype.generateClojure = function () {
         regexParsed = '#\"(?i).*' + this.filterText + '.*\"';
 
         if (!this.take) {
-          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
-          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym('(str cell)')])
-          ])]));
+          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.sym('fn [cell]'),
+          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym('(str cell)')])])]));
 
-        } else {
+        }
+        else {
           values.push(new jsedn.List([jsedn.sym('read-string'), regexParsed]));
         }
       } else {
@@ -349,8 +388,7 @@ GrepFunction.prototype.generateClojure = function () {
     case ('regex'):
       regexParsed = '#\"' + this.filterRegex + '\"';
       if (!this.take)
-        values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse(
-          'fn [cell] (re-find (read-string ' + regexParsed + ' ) (str cell))')])]));
+        values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.sym('fn [cell] (re-find (read-string '), regexParsed, jsedn.sym(' ) (str cell))')])]));
       else
         values.push(new jsedn.List([jsedn.sym('read-string'), regexParsed]));
       break;
@@ -378,12 +416,12 @@ GrepFunction.prototype.generateClojure = function () {
       break;
 
     default:
-      /*       Raven.captureMessage('Error in defining  grep option', {
-              tags: {
-                file: 'transformationdatamodel',
-                method: 'GrepFunction.generateClojure'
-              }
-            }); */
+      Raven.captureMessage('Error in defining  grep option', {
+        tags: {
+          file: 'transformationdatamodel',
+          method: 'GrepFunction.generateClojure'
+        }
+      });
       break;
   }
   if (this.colsToFilter.length > 0)
@@ -407,7 +445,7 @@ export var MergeColumnsFunction = function (colsToMerge, separator, newColName, 
   if (!docstring && colsToMerge[0]) {
     this.docstring = 'Merge columns ';
     for (var i = 0; i < colsToMerge.length; ++i) {
-      this.docstring += '' + colsToMerge[i] + ' ';
+      this.docstring += '' + colsToMerge[i].value + ' ';
     }
   } else {
     this.docstring = docstring;
@@ -423,9 +461,9 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   var i;
 
   for (i = 0; i < this.colsToMerge.length; ++i) {
-    colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i]));
+    colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i].value));
   }
-  var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.parse('"' + this.separator + '"')];
+  var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.sym('"' + this.separator + '"')];
   if (this.newColName)
     values.push(new jsedn.kw(':' + this.newColName));
   return new jsedn.List(values);
@@ -433,29 +471,6 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   else return new jsedn.List([new jsedn.sym('merge-columns'),colsToMerge, new jsedn.sym('"'+this.separator+'"'), this.newColName ? new jsedn.kw(':'+this.newColName) : null ]);*/
 };
 this.MergeColumnsFunction = MergeColumnsFunction;
-
-export var FunctionWithArgs = function (funct, functParams) {
-  this.funct = funct;
-  this.functParams = functParams;
-  this.__type = 'FunctionWithArgs';
-};
-FunctionWithArgs.prototype.getParams = function () {
-  var params = [];
-  if (!this.funct) return params;
-  if (!this.funct.hasOwnProperty('clojureCode')) return params;
-  if (!this.funct.clojureCode) return params;
-  var d = this.funct.clojureCode.match(/\[(.*?)\]/g);
-  if (d) {
-    d[0] = d[0].replace(/^\[|\]$/g, '');
-    params = d[0].split(" ");
-    params.splice(0, 1);
-  }
-  return params;
-};
-FunctionWithArgs.revive = function (data) {
-  return new FunctionWithArgs(data.funct, data.functParams);
-};
-this.FunctionWithArgs = FunctionWithArgs;
 
 export var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
   GenericFunction.call(this);
@@ -476,31 +491,31 @@ export var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functi
     }
   }
   /*  this.paramsToFunctions = paramsToFunctions;
-    var deriveFunc;
-    var i;
+  var deriveFunc;
+  var i;
 
-    if (functionsToDeriveWith !== null) {
-      for (i = 0; i < functionsToDeriveWith.length; ++i) {
-        deriveFunc = functionsToDeriveWith[i];
-        if (deriveFunc !== null) {
-          if (!(deriveFunc instanceof CustomFunctionDeclaration) && deriveFunc.__type ===
-              'CustomFunctionDeclaration') {
-            functionsToDeriveWith[i] = CustomFunctionDeclaration.revive(deriveFunc);
-          }
+  if (functionsToDeriveWith !== null) {
+    for (i = 0; i < functionsToDeriveWith.length; ++i) {
+      deriveFunc = functionsToDeriveWith[i];
+      if (deriveFunc !== null) {
+        if (!(deriveFunc instanceof CustomFunctionDeclaration) && deriveFunc.__type ===
+            'CustomFunctionDeclaration') {
+          functionsToDeriveWith[i] = CustomFunctionDeclaration.revive(deriveFunc);
+        }
 
-          if (!(deriveFunc instanceof Prefixer) && deriveFunc.__type === 'Prefixer') {
-            functionsToDeriveWith[i] = Prefixer.revive(deriveFunc);
-          }
+        if (!(deriveFunc instanceof Prefixer) && deriveFunc.__type === 'Prefixer') {
+          functionsToDeriveWith[i] = Prefixer.revive(deriveFunc);
         }
       }
     }
+  }
 */
   this.functionsToDeriveWith = functionsToDeriveWith;
   this.__type = 'DeriveColumnFunction';
   if (!docstring) {
     this.docstring = 'Derive column ' + newColName + ' from column(s) ';
     for (i = 0; i < colsToDeriveFrom.length; ++i) {
-      this.docstring += '' + colsToDeriveFrom[i] + ' ';
+      this.docstring += '' + colsToDeriveFrom[i].value + ' ';
     }
   } else {
     this.docstring = docstring;
@@ -510,10 +525,11 @@ DeriveColumnFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToDeriveFrom.length > 0 && !data.colsToDeriveFrom[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToDeriveFrom.length; ++i) {
-      var colname = data.colsToDeriveFrom[i];
+      var colname = { id: i, value: data.colsToDeriveFrom[i] };
       columnsArray.push(colname);
     }
-  } else columnsArray = data.colsToDeriveFrom;
+  }
+  else columnsArray = data.colsToDeriveFrom;
   var functionsArray = [];
 
   for (var i = 0; i < data.functionsToDeriveWith.length; ++i) {
@@ -523,7 +539,8 @@ DeriveColumnFunction.revive = function (data) {
 
         newFunct = FunctionWithArgs.revive(data.functionsToDeriveWith[i]);
         functionsArray.push(newFunct);
-      } else {
+      }
+      else {
         newFunct = {
           name: data.functionsToDeriveWith[i].name,
           id: 0,
@@ -533,7 +550,8 @@ DeriveColumnFunction.revive = function (data) {
         //               var newFunct = new FunctionWithArgs({funct:data.functionsToDeriveWith[i],functParams:[]});
         functionsArray.push(new FunctionWithArgs(newFunct, []));
       }
-    } else functionsArray.push(data.functionsToDeriveWith[i]);
+    }
+    else functionsArray.push(data.functionsToDeriveWith[i]);
   }
   return new DeriveColumnFunction(data.newColName, columnsArray, functionsArray, data.paramsToFunctions,
     data.docstring);
@@ -546,14 +564,13 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   var functWithParams = [];
   var i;
   for (i = 0; i < this.colsToDeriveFrom.length; ++i) {
-    colsToDeriveFromClj.val.push(new jsedn.kw(':' + this.colsToDeriveFrom[i]));
+    colsToDeriveFromClj.val.push(new jsedn.kw(':' + this.colsToDeriveFrom[i].value));
     flag = true;
   }
 
   var values = [jsedn.sym('derive-column'),
   this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
-    colsToDeriveFromClj
-  ];
+    colsToDeriveFromClj];
   var deriveFuncts = [];
   for (i = 0; i < this.functionsToDeriveWith.length; ++i) {
     if (this.functionsToDeriveWith[i].functParams.length === 0)
@@ -561,34 +578,34 @@ DeriveColumnFunction.prototype.generateClojure = function () {
     else {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
-      deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
-      new jsedn.List(functWithParams)
-      ]));
+      deriveFuncts.push(new jsedn.List([new jsedn.sym('fn [arg]'),
+      new jsedn.List(functWithParams)]));
     }
   }
   if (deriveFuncts.length === 1) {
     values.push(deriveFuncts[0]);
-  } else {
+  }
+  else {
     var compFuncts = ['comp'];
     compFuncts = compFuncts.concat(deriveFuncts);
     values.push(new jsedn.List(compFuncts));
   }
 
   /*   if (this.paramsToFunctions[0]) values.push(new jsedn.List([jsedn.sym(this.functionsToDeriveWith[0].name),
-                                                                 '' + this.paramsToFunctions[0]]));
+                                                               '' + this.paramsToFunctions[0]]));
+    else
+      values.push(jsedn.sym(this.functionsToDeriveWith[0].name));
+  } else {
+    var comp = 'comp ';
+    for (i = 0; i < this.functionsToDeriveWith.length; ++i) {
+      deriveFunc = this.functionsToDeriveWith[i];
+      if (this.paramsToFunctions[i]) comp += '(' + deriveFunc.name + ' "' + this.paramsToFunctions[i] + '") ';
       else
-        values.push(jsedn.sym(this.functionsToDeriveWith[0].name));
-    } else {
-      var comp = 'comp ';
-      for (i = 0; i < this.functionsToDeriveWith.length; ++i) {
-        deriveFunc = this.functionsToDeriveWith[i];
-        if (this.paramsToFunctions[i]) comp += '(' + deriveFunc.name + ' "' + this.paramsToFunctions[i] + '") ';
-        else
-          comp += deriveFunc.name + ' ';
-      }
-
-      values.push(new jsedn.List([jsedn.sym(comp)]));
+        comp += deriveFunc.name + ' ';
     }
+
+    values.push(new jsedn.List([jsedn.sym(comp)]));
+  }
 */
   return new jsedn.List(values);
 };
@@ -606,7 +623,7 @@ export var GroupRowsFunction = function (colnames, colnamesFunctionsSet, separat
     this.docstring = 'Group rows by column(s): ';
     if (colnames.length > 0) {
       for (var i = 0; i < colnames.length; ++i) {
-        this.docstring += colnames[i] + ' ';
+        this.docstring += colnames[i].value + ' ';
       }
     }
   } else {
@@ -622,12 +639,12 @@ GroupRowsFunction.prototype.generateClojure = function () {
   var i;
 
   for (i = 0; i < this.colnames.length; ++i) {
-    colnames.val.push(jsedn.kw(':' + this.colnames[i]));
+    colnames.val.push(jsedn.kw(':' + this.colnames[i].value));
   }
   var set = new jsedn.Set([]);
   for (i = 0; i < this.colnamesFunctionsSet.length; i += 2) {
     var colnameFunctionPair = new jsedn.Map([]);
-    colnameFunctionPair.set(new jsedn.kw(':' + this.colnamesFunctionsSet[i]),
+    colnameFunctionPair.set(new jsedn.kw(':' + this.colnamesFunctionsSet[i].value),
       (this.colnamesFunctionsSet[i + 1] === "MERGE" ? this.separatorSet[i] : this.colnamesFunctionsSet[i + 1]));
     set.val.push(colnameFunctionPair);
   }
@@ -636,6 +653,61 @@ GroupRowsFunction.prototype.generateClojure = function () {
 };
 this.GroupRowsFunction = GroupRowsFunction;
 
+export var UploadDatasetFunction = function (selectedType, typeList, delimiter, sheetNames, selectedSheet, extension, docstring) {
+  GenericFunction.call(this);
+  this.name = 'upload-dataset';
+  this.displayName = 'upload-dataset';
+  this.selectedType = selectedType;
+  this.typeList = typeList;
+  this.delimiter = delimiter;
+  this.sheetNames = sheetNames;
+  this.selectedSheet = selectedSheet;
+  this.extension = extension;
+
+  this.__type = 'UploadDatasetFunction';
+  if (!docstring) {
+    this.docstring = 'Reads the input data for the data transformation \n Cannot be moved or removed';
+  } else {
+    this.docstring = docstring;
+  }
+
+};
+UploadDatasetFunction.revive = function (data) {
+  return new UploadDatasetFunction(data.selectedType, data.typeList, data.delimiter, data.sheetNames, data.selectedSheet, data.extension, data.docstring);
+};
+UploadDatasetFunction.prototype = Object.create(GenericFunction.prototype);
+UploadDatasetFunction.prototype.generateClojure = function () {
+  var values = [];
+
+  if (this.selectedType == "CSV") {
+    values.push(jsedn.sym('read-dataset'));
+    values.push(jsedn.sym('data-file'));
+    values.push(jsedn.sym(':format'));
+    values.push(jsedn.sym(':csv'));
+    values.push(jsedn.sym(':separator'));
+    if (this.delimiter == "tab" || this.delimiter == "t") {
+      values.push(jsedn.sym('\\tab'));
+    } else {
+      values.push(new jsedn.List([jsedn.sym('first'), new jsedn.List([jsedn.sym('char-array'), this.delimiter])]));
+    }
+  }
+  else if (this.selectedType == "Excel" && this.selectedSheet) {
+    values.push(jsedn.sym('read-dataset'));
+    values.push(jsedn.sym('data-file'));
+    values.push(jsedn.sym(':format'));
+    values.push(jsedn.sym(':' + this.extension));
+
+    values.push(jsedn.sym(':sheet'));
+    values.push(this.selectedSheet);
+  }
+  else if (this.selectedType == "Shape") {
+    values.push(jsedn.sym('read-shape-csv'));
+    values.push(jsedn.sym('data-file'));
+  }
+
+  return new jsedn.List(values);
+};
+this.UploadDatasetFunction = UploadDatasetFunction;
 export var RenameColumnsFunction = function (functionsToRenameWith, mappings, docstring) {
   GenericFunction.call(this);
   this.name = 'rename-columns';
@@ -697,10 +769,7 @@ RenameColumnsFunction.revive = function (data) {
   if (data.mappings.length > 0)
     if (data.mappings[0] && !data.mappings[0].hasOwnProperty('id')) {
       for (var i = 0; i < data.mappings.length; ++i) {
-        mappings.push((i % 2) ? data.mappings[i] : {
-          id: i / 2,
-          value: data.mappings[i]
-        });
+        mappings.push((i % 2) ? data.mappings[i] : { id: i / 2, value: data.mappings[i] });
       }
     } else
       mappings = data.mappings;
@@ -724,13 +793,13 @@ RenameColumnsFunction.prototype.generateClojure = function () {
         comp += renameFunc.name + ' ';
       }
 
-      return new jsedn.List([jsedn.sym('rename-columns'), new jsedn.List([jsedn.parse(comp)])]);
+      return new jsedn.List([jsedn.sym('rename-columns'), new jsedn.List([jsedn.sym(comp)])]);
     }
   } else {
     //rename with mapping
     var mapPairs = new jsedn.Map([]);
     for (i = 0; i < this.mappings.length; i += 2)
-      mapPairs.set(new jsedn.kw(':' + this.mappings[i]),
+      mapPairs.set(new jsedn.kw(':' + this.mappings[i].value),
         new jsedn.kw(':' + this.mappings[i + 1])
       );
     return new jsedn.List([jsedn.sym('rename-columns'), mapPairs]);
@@ -753,10 +822,7 @@ KeyFunctionPair.revive = function (data) {
   var key;
   var params;
   if (!data.key.hasOwnProperty('id'))
-    key = {
-      id: 0,
-      value: data.key
-    };
+    key = { id: 0, value: data.key };
   else
     key = data.key;
   if (!data.hasOwnProperty('funcParams'))
@@ -791,7 +857,7 @@ NewColumnSpec.revive = function (data) {
 };
 this.NewColumnSpec = NewColumnSpec;
 
-var ApplyColumnsFunction = function (keyFunctionPairs, docstring) {
+export var ApplyColumnsFunction = function (keyFunctionPairs, docstring) {
   // array of obj with [key, function]
   GenericFunction.call(this);
   this.name = 'apply-columns';
@@ -825,7 +891,7 @@ ApplyColumnsFunction.prototype.generateClojure = function () {
   for (i = 0; i < this.keyFunctionPairs.length; ++i) {
     keyFunctionPairsClj.set(
       new jsedn.kw(':' + this.keyFunctionPairs[i].key),
-      new jsedn.parse(this.keyFunctionPairs[i].func)
+      new jsedn.sym(this.keyFunctionPairs[i].func)
     );
   }
 
@@ -834,12 +900,12 @@ ApplyColumnsFunction.prototype.generateClojure = function () {
 ApplyColumnsFunction.prototype.removeKeyFunctionPair = function (kfPair) {
   var index = this.keyFunctionPairs.indexOf(kfPair);
   if (index === -1 || kfPair === null || kfPair === undefined) {
-    /*     Raven.captureMessage('tried to remove non-existing function', {
-          tags: {
-            file: 'transformationdatamodel',
-            method: 'removeKeyFunctionPair'
-          }
-        }); */
+    Raven.captureMessage('tried to remove non-existing function', {
+      tags: {
+        file: 'transformationdatamodel',
+        method: 'removeKeyFunctionPair'
+      }
+    });
     return false;
   }
 
@@ -884,22 +950,21 @@ MapcFunction.prototype.generateClojure = function () {
     //TODO: Group functions by type
     if (this.keyFunctionPairs[i].func.name === 'fill-when')
       ackeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key),
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
     else
       if (this.keyFunctionPairs[i].funcParams.length > 0) {
         var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
         funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
-        new jsedn.List(funcWithParams)
-        ]);
+        var mapcFunc = new jsedn.List([new jsedn.sym('fn [arg]'),
+        new jsedn.List(funcWithParams)]);
         mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key),
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
           mapcFunc);
       } else {
         mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key),
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
           new jsedn.sym(this.keyFunctionPairs[i].func.name)
         );
       }
@@ -915,15 +980,14 @@ MapcFunction.prototype.generateClojure = function () {
   if (!mapc && applyc) return applyc;
   if (mapc && applyc) return new jsedn.List([jsedn.sym('->'),
     mapc,
-    applyc
-  ]);
+    applyc]);
   else {
-    /*     Raven.captureMessage('Error parsing map in mapc', {
-          tags: {
-            file: 'transformationdatamodel',
-            method: 'MapcFunction.generateClojure'
-          }
-        }); */
+    Raven.captureMessage('Error parsing map in mapc', {
+      tags: {
+        file: 'transformationdatamodel',
+        method: 'MapcFunction.generateClojure'
+      }
+    });
     return;
   }
 
@@ -931,12 +995,12 @@ MapcFunction.prototype.generateClojure = function () {
 MapcFunction.prototype.removeKeyFunctionPair = function (kfPair) {
   var index = this.keyFunctionPairs.indexOf(kfPair);
   if (index === -1 || kfPair === null || kfPair === undefined) {
-    /*     Raven.captureMessage('tried to remove non-existing function', {
-          tags: {
-            file: 'transformationdatamodel',
-            method: 'MapcFunction.removeKeyFunctionPair'
-          }
-        }); */
+    Raven.captureMessage('tried to remove non-existing function', {
+      tags: {
+        file: 'transformationdatamodel',
+        method: 'MapcFunction.removeKeyFunctionPair'
+      }
+    });
     return false;
   }
 
@@ -1007,7 +1071,7 @@ SortDatasetFunction.prototype.generateClojure = function () {
         sort = null;
     }
 
-    newColnamesSorttypesMap.set(new jsedn.kw(':' + this.colnamesSorttypesMap[i].colname),
+    newColnamesSorttypesMap.set(new jsedn.kw(':' + this.colnamesSorttypesMap[i].colname.value),
       new jsedn.kw(':' + sort));
     values.val.push(newColnamesSorttypesMap);
   }
@@ -1017,12 +1081,12 @@ SortDatasetFunction.prototype.generateClojure = function () {
 SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
   var index = this.colnamesSorttypesMap.indexOf(nametype);
   if (index === -1 || nametype === null || nametype === undefined) {
-    /*     Raven.captureMessage('tried to remove non-existing function', {
-          tags: {
-            file: 'transformationdatamodel',
-            method: 'SortDatasetFunction.removeColnameSorttype'
-          }
-        }); */
+    Raven.captureMessage('tried to remove non-existing function', {
+      tags: {
+        file: 'transformationdatamodel',
+        method: 'SortDatasetFunction.removeColnameSorttype'
+      }
+    });
     return false;
   }
 
@@ -1095,19 +1159,20 @@ ShiftColumnFunction.revive = function (data) {
 };
 ShiftColumnFunction.prototype = Object.create(GenericFunction.prototype);
 ShiftColumnFunction.prototype.generateClojure = function () {
-  var values = [jsedn.sym('new-tabular/shift-column'), jsedn.kw(':' + this.colFrom)];
+  var values = [jsedn.sym('new-tabular/shift-column'), jsedn.kw(':' + this.colFrom.value)];
   if (this.shiftcolmode === 'position') values.push(this.indexTo);
   return new jsedn.List(values);
 };
 this.ShiftColumnFunction = ShiftColumnFunction;
 
-export var RemoveDuplicatesFunction = function (mode, colNames, docstring) {
+export var RemoveDuplicatesFunction = function (mode, colNames, separator, docstring) {
   // array of column names
   this.name = 'remove-duplicates';
   this.displayName = 'remove-duplicates';
   GenericFunction.call(this);
   this.mode = mode;
   this.colNames = colNames;
+  this.separator = separator;
   this.__type = 'RemoveDuplicatesFunction';
   if (!docstring) {
     this.docstring = 'Remove duplicates';
@@ -1122,7 +1187,7 @@ RemoveDuplicatesFunction.prototype.generateClojure = function () {
   if (this.mode !== 'full') {
     var colNamesClj = new jsedn.Vector([]);
     for (var i = 0; i < this.colNames.length; ++i) {
-      colNamesClj.val.push(new jsedn.kw(':' + this.colNames[i]));
+      colNamesClj.val.push(new jsedn.kw(':' + this.colNames[i].value));
     }
 
     values.push(colNamesClj);
@@ -1154,10 +1219,7 @@ MakeDatasetFunction.revive = function (data) {
   var columnsArray = [];
   if (data.columnsArray.length > 0 && data.columnsArray[0] && !data.columnsArray[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.columnsArray.length; ++i) {
-      var colname = {
-        id: i,
-        value: data.columnsArray[i]
-      };
+      var colname = { id: i, value: data.columnsArray[i] };
       columnsArray.push(colname);
     }
   } else {
@@ -1179,38 +1241,35 @@ MakeDatasetFunction.prototype.generateClojure = function () {
         new jsedn.List([
           jsedn.sym('comp'),
           jsedn.sym('keyword'),
-          jsedn.sym('new-tabular/string-as-keyword')
-        ])
+          jsedn.sym('new-tabular/string-as-keyword')])
         ])
       ]);
-    } else {
+    }
+    else {
       if (this.columnsArray.length > 0) {
         for (i = 0; i < this.columnsArray.length; ++i) {
-          colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i]));
+          colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
         }
 
         return new jsedn.List([jsedn.sym('make-dataset'), colNamesClj]);
-      } else return new jsedn.List([jsedn.sym('make-dataset')]);
+      }
+
+      else return new jsedn.List([jsedn.sym('make-dataset')]);
     }
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-    new jsedn.List([jsedn.parse('into []'),
+    new jsedn.List([jsedn.sym('into []'),
     new jsedn.List([jsedn.sym('map'),
     jsedn.sym('keyword'),
     new jsedn.List([jsedn.sym('take'),
     this.numberOfColumns,
-    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
-    ])
-    ])
-    ])
-    ]);
+    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])])])])]);
   }
 };
 this.MakeDatasetFunction = MakeDatasetFunction;
 
-// Columns function in old Grafterizer. Name changed for consistency
-export var TakeColumnsFunction = function (columnsArray, indexFrom, indexTo, take, docstring) {
+export var ColumnsFunction = function (columnsArray, indexFrom, indexTo, take, docstring) {
   // array of column names
   this.name = 'columns';
   this.displayName = (take ? 'columns' : 'remove-columns');
@@ -1219,7 +1278,7 @@ export var TakeColumnsFunction = function (columnsArray, indexFrom, indexTo, tak
   this.indexFrom = indexFrom;
   this.indexTo = indexTo;
   this.take = take;
-  this.__type = 'TakeColumnsFunction';
+  this.__type = 'ColumnsFunction';
 
   if (!docstring) {
 
@@ -1230,14 +1289,22 @@ export var TakeColumnsFunction = function (columnsArray, indexFrom, indexTo, tak
       var i;
       this.docstring += (take ? ' columns:' : '');
       for (i = 0; i < columnsArray.length; ++i) {
-        this.docstring += ' ' + columnsArray[i];
+        this.docstring += ' ' + columnsArray[i].value;
       }
     }
 
   } else this.docstring = docstring;
 };
-TakeColumnsFunction.revive = function (data) {
-  var columnsArray = data.columnsArray;
+ColumnsFunction.revive = function (data) {
+  var columnsArray = [];
+  if (data.columnsArray.length > 0)
+    if (!data.columnsArray[0].hasOwnProperty('id')) {
+      for (var i = 0; i < data.columnsArray.length; ++i) {
+        var colname = { id: i, value: data.columnsArray[i] };
+        columnsArray.push(colname);
+      }
+    } else
+      columnsArray = data.columnsArray;
   var indexFrom;
   var indexTo;
   if (data.hasOwnProperty('numberOfColumns')) {
@@ -1247,30 +1314,102 @@ TakeColumnsFunction.revive = function (data) {
     indexFrom = data.indexFrom;
     indexTo = data.indexTo;
   }
-  return new TakeColumnsFunction(columnsArray, indexFrom, indexTo, data.take, data.docstring);
+  return new ColumnsFunction(columnsArray, indexFrom, indexTo, data.take, data.docstring);
 };
-TakeColumnsFunction.prototype = Object.create(GenericFunction.prototype);
-TakeColumnsFunction.prototype.generateClojure = function () {
+ColumnsFunction.prototype = Object.create(GenericFunction.prototype);
+ColumnsFunction.prototype.generateClojure = function () {
 
   var i;
   var colNamesClj = new jsedn.Vector([]);
-  if (!(this.indexFrom || this.indexTo)) {
+  if (this.indexFrom === null || this.indexTo === null) {
     for (i = 0; i < this.columnsArray.length; ++i) {
-      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i]));
+      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
     }
 
     return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
   } else {
+
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
-    ]) :
+    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
-      this.indexFrom, this.indexTo
-      ]);
+      this.indexFrom, this.indexTo]);
   }
 
 };
-this.TakeColumnsFunction = TakeColumnsFunction;
+this.ColumnsFunction = ColumnsFunction;
+
+
+export var FillRowsFunction = function (indexFrom, indexTo, docstring) {
+  // array of column names
+  this.name = 'fill-rows';
+  this.displayName = 'fill-rows';
+  GenericFunction.call(this);
+  this.indexFrom = indexFrom;
+  this.indexTo = indexTo;
+  this.__type = 'FillRowsFunction';
+
+  if (!docstring) {
+
+    this.docstring = 'Fill rows ' + indexFrom + ' - ' + indexTo;
+
+
+  } else this.docstring = docstring;
+};
+
+FillRowsFunction.revive = function (data) {
+
+  return new FillRowsFunction(data.indexFrom, data.indexTo, data.docstring);
+
+};
+
+FillRowsFunction.prototype = Object.create(GenericFunction.prototype);
+FillRowsFunction.prototype.generateClojure = function () {
+
+  var fillRowsEdn = new jsedn.List([jsedn.sym('new-tabular/fill-row-when'), this.indexFrom]);
+
+  if (this.indexFrom !== this.indexTo)
+    fillRowsEdn.val.push(this.indexTo);
+  return fillRowsEdn;
+
+};
+this.FillRowsFunction = FillRowsFunction;
+
+export var MergeRowsFunction = function (indexFrom, indexTo, separator, docstring) {
+  // array of column names
+  this.name = 'merge-rows';
+  this.displayName = 'merge-rows';
+  GenericFunction.call(this);
+  this.indexFrom = indexFrom;
+  this.indexTo = indexTo;
+  this.separator = separator;
+  this.__type = 'MergeRowsFunction';
+
+  if (!docstring) {
+
+    this.docstring = 'Merge rows ' + indexFrom + ' - ' + indexTo;
+
+
+  } else this.docstring = docstring;
+};
+
+MergeRowsFunction.revive = function (data) {
+
+  return new MergeRowsFunction(data.indexFrom, data.indexTo, data.separator, data.docstring);
+
+};
+
+MergeRowsFunction.prototype = Object.create(GenericFunction.prototype);
+MergeRowsFunction.prototype.generateClojure = function () {
+
+
+
+
+  return new jsedn.List([jsedn.sym('new-tabular/merge-rows'), this.indexFrom, this.indexTo, this.separator]);
+
+};
+this.MergeRowsFunction = MergeRowsFunction;
+
+
 
 var ChangeColtype = function (columnName, datatype) {
   this.name = 'changeColtype';
@@ -1282,8 +1421,8 @@ var ChangeColtype = function (columnName, datatype) {
 }
 this.ChangeColtype = ChangeColtype;
 
-// Melt function in old Grafterizer. Name changed for consistency
-export var ReshapeDatasetFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
+
+export var MeltFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
   // array of column names
   this.name = 'melt';
   this.displayName = variable ? 'cast' : 'melt';
@@ -1293,22 +1432,19 @@ export var ReshapeDatasetFunction = function (columnsArray, variable, value, agg
   this.value = value;
   this.aggrFunction = aggrFunction;
   this.separator = separator;
-  this.__type = 'ReshapeDatasetFunction';
+  this.__type = 'MeltFunction';
   if (!docstring) {
     this.docstring = 'Reshape dataset';
   } else {
     this.docstring = docstring;
   }
 };
-ReshapeDatasetFunction.revive = function (data) {
+MeltFunction.revive = function (data) {
   var variable, value, aggrFunction, separator;
   var columnsArray = [];
   if (data.columnsArray.length > 0 && !data.columnsArray[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.columnsArray.length; ++i) {
-      var colname = {
-        id: i,
-        value: data.columnsArray[i]
-      };
+      var colname = { id: i, value: data.columnsArray[i] };
       columnsArray.push(colname);
     }
   } else
@@ -1317,36 +1453,39 @@ ReshapeDatasetFunction.revive = function (data) {
   value = data.hasOwnProperty('value') ? data.value : null;
   aggrFunction = data.hasOwnProperty('aggrFunction') ? data.aggrFunction : null;
   separator = data.hasOwnProperty('separator') ? data.separator : null;
-  return new ReshapeDatasetFunction(columnsArray, variable, value, aggrFunction, separator, data.docstring);
+  return new MeltFunction(columnsArray, variable, value, aggrFunction, separator, data.docstring);
 };
-ReshapeDatasetFunction.prototype = Object.create(GenericFunction.prototype);
-ReshapeDatasetFunction.prototype.generateClojure = function () {
+MeltFunction.prototype = Object.create(GenericFunction.prototype);
+MeltFunction.prototype.generateClojure = function () {
   var i;
   var returnValue;
   if (this.columnsArray.length > 0) {
     var colNamesClj = new jsedn.Vector([]);
     for (i = 0; i < this.columnsArray.length; ++i) {
-      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i]));
+      colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
     }
-    returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
-  } else {
+    // returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
+    returnValue = new jsedn.List([jsedn.sym('->'), new jsedn.List([jsedn.sym('melt'), colNamesClj])
+      , new jsedn.List([jsedn.sym('mapc'), new jsedn.Map([jsedn.kw(':variable'), jsedn.sym('name')])])]);
+  }
+  else {
 
-    returnValue = new jsedn.List([jsedn.sym('new-tabular/cast'), jsedn.kw(':' + this.variable), jsedn.kw(':' + this.value), this.separator ? this.separator : this.aggrFunction]);
+    returnValue = new jsedn.List([jsedn.sym('new-tabular/cast'), jsedn.kw(':' + this.variable.value), jsedn.kw(':' + this.value.value), this.separator ? this.separator : this.aggrFunction]);
   }
   return returnValue;
 };
-this.ReshapeDatasetFunction = ReshapeDatasetFunction;
+this.MeltFunction = MeltFunction;
 
 var Pipeline = function (functions) {
-  // functions that make up the pipeline
-  // TODO: revive!
+  // functions that make up the pipeline 
+  // TODO: revive! 
   var funct;
   var i;
   for (i = 0; i < functions.length; ++i) {
     funct = functions[i];
     if (!(funct instanceof GenericFunction)) {
-      if (funct.__type === 'TakeRowsFunction') {
-        functions[i] = TakeRowsFunction.revive(funct);
+      if (funct.__type === 'DropRowsFunction') {
+        functions[i] = DropRowsFunction.revive(funct);
       }
 
       if (funct.__type === 'UtilityFunction') {
@@ -1403,12 +1542,12 @@ var Pipeline = function (functions) {
         functions[i] = RemoveDuplicatesFunction.revive(funct);
       }
 
-      if (funct.__type === 'TakeColumnsFunction') {
-        functions[i] = TakeColumnsFunction.revive(funct);
+      if (funct.__type === 'ColumnsFunction') {
+        functions[i] = ColumnsFunction.revive(funct);
       }
 
-      if (funct.__type === 'ReshapeDatasetFunction') {
-        functions[i] = ReshapeDatasetFunction.revive(funct);
+      if (funct.__type === 'MeltFunction') {
+        functions[i] = MeltFunction.revive(funct);
       }
 
       if (funct.__type === 'GrepFunction') {
@@ -1443,11 +1582,11 @@ Pipeline.prototype.addAfter = function (funct, functionToAdd) {
 Pipeline.prototype.remove = function (funct) {
   var index = this.functions.indexOf(funct);
   if (index === -1 || funct === null || funct === undefined) {
-    /*     Raven.captureMessage('tried to remove non-existing function', {
-          tags: {
-            file: 'transformationdatamodel',
-            method: 'Pipeline.remove'
-          }
+    /*     Raven.captureMessage('tried to remove non-existing function', { 
+          tags: { 
+            file: 'transformationdatamodel', 
+            method: 'Pipeline.remove' 
+          } 
         }); */
     return false;
   }
@@ -1465,7 +1604,7 @@ export var getGraphElement = function (inputElement) {
   }
 };
 
-// TODO remove subElements and move to URINode (which are the only elements that can have subelements)
+// TODO remove subElements and move to URINode (which are the only elements that can have subelements) 
 var RDFElement = function (subElements) {
   var i;
   var resolvedSubElements;
@@ -1644,7 +1783,7 @@ Property.revive = function (data) {
       }
     }
   }
-  //else console.log("No prop condition");
+  //else console.log("No prop condition"); 
 
   return new Property(data.prefix, data.propertyName, conditions, data.subElements);
 };
@@ -1710,7 +1849,7 @@ ConstantLiteral.revive = function (data) {
 };
 this.ConstantLiteral = ConstantLiteral;
 
-// TODO add support for blank nodes
+// TODO add support for blank nodes 
 export var BlankNode = function (nodeCondition, subElements) {
   RDFElement.call(this, subElements);
   this.nodeCondition = nodeCondition;
@@ -1750,10 +1889,10 @@ var Graph = function (graphURI, existingGraphRoots) {
 
   graphRootsToAdd = [];
 
-  // just a string
+  // just a string 
   this.graphURI = graphURI;
 
-  // need to get stringifiable roots first
+  // need to get stringifiable roots first 
   for (i = 0; i < existingGraphRoots.length; ++i) {
     graphRootsToAdd.push(getGraphElement(existingGraphRoots[i]));
   }
@@ -1800,7 +1939,7 @@ this.Graph = Graph;
 
 export var Transformation = function (customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
 
-  // validate that inputs are revived
+  // validate that inputs are revived 
   var i, cfd, prefixer, pipeline, graph, rdfVocab;
   if (!customFunctionDeclarations)
     customFunctionDeclarations = [];
@@ -1816,7 +1955,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < customFunctionDeclarations.length; ++i) {
     cfd = customFunctionDeclarations[i];
     if (!(cfd instanceof CustomFunctionDeclaration) && cfd.__type === 'CustomFunctionDeclaration') {
-      // TODO: validate, above doesn't check for null
+      // TODO: validate, above doesn't check for null 
       customFunctionDeclarations[i] = CustomFunctionDeclaration.revive(cfd);
     }
   }
@@ -1824,7 +1963,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < prefixers.length; ++i) {
     prefixer = prefixers[i];
     if (!(prefixer instanceof Prefixer) && prefixer.__type === 'Prefixer') {
-      // TODO: validate
+      // TODO: validate 
       prefixers[i] = Prefixer.revive(prefixer);
     }
   }
@@ -1832,7 +1971,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < pipelines.length; ++i) {
     pipeline = pipelines[i];
     if (!(pipeline instanceof Pipeline) && pipeline.__type === 'Pipeline') {
-      // TODO: validate
+      // TODO: validate 
       pipelines[i] = Pipeline.revive(pipeline);
     }
   }
@@ -1855,7 +1994,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   this.prefixers = prefixers;
   this.pipelines = pipelines;
   this.graphs = graphs;
-  this.rdfVocabs = rdfVocabs; //TODO fill this
+  this.rdfVocabs = rdfVocabs; //TODO fill this 
   this.__type = 'Transformation';
 
 };
@@ -2011,26 +2150,26 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
           availableColumnKeys.push(currentFunction.columnsArray[k].colName);
       }
 
-      if (currentFunction instanceof ReshapeDatasetFunction) {
+      if (currentFunction instanceof MeltFunction) {
         availableColumnKeys.push('variable');
         availableColumnKeys.push('value');
       }
 
-      //TODO: clean and get new availColKeys for RenameColumns
+      //TODO: clean and get new availColKeys for RenameColumns 
 
       if (currentFunction instanceof MakeDatasetFunction) {
         if (!currentFunction.useLazy)
           for (k = 0; k < currentFunction.columnsArray.length; ++k) {
-            availableColumnKeys.push(currentFunction.columnsArray[k]);
+            availableColumnKeys.push(currentFunction.columnsArray[k].value);
           }
 
-        // else //TODO:For lazy naming + for "move-first-row-to-header"
+        // else //TODO:For lazy naming + for "move-first-row-to-header" 
 
       }
 
       if (currentFunction instanceof ColumnsFunction) {
         for (k = 0; k < currentFunction.columnsArray.length; ++k) {
-          availableColumnKeys.push(currentFunction.columnsArray[k]);
+          availableColumnKeys.push(currentFunction.columnsArray[k].value);
         }
 
       }
@@ -2041,21 +2180,21 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
 
 };
 Transformation.prototype.getPartialTransformation = function (untilFunction) {
-  // TODO report errors?
-  // TODO how to support multi-pipe transformation??
+  // TODO report errors? 
+  // TODO how to support multi-pipe transformation?? 
   try {
     if (!untilFunction) {
-      //        console.log("Unable to compute partial transformation: empty until function");
+      //        console.log("Unable to compute partial transformation: empty until function"); 
       return this;
     }
     if (!(untilFunction instanceof GenericFunction)) {
-      //        console.log("Unable to compute partial transformation: wrong type of input parameter");
+      //        console.log("Unable to compute partial transformation: wrong type of input parameter"); 
       return this;
     }
 
     var index = this.pipelines[0].functions.indexOf(untilFunction);
     if (index === -1) {
-      //        console.error("Unable to compute partial transformation: unable to find until function");
+      //        console.error("Unable to compute partial transformation: unable to find until function"); 
       return this;
     }
 
@@ -2074,7 +2213,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 };
 this.Transformation = Transformation;
 
-// TODO should this just be a prototype function of every RDFElement?
+// TODO should this just be a prototype function of every RDFElement? 
 var getKeysFromSubs = function (rootNode, subColKeys) {
   for (var i = 0; i < rootNode.subElements.length; ++i) {
     if (rootNode.subElements[i] instanceof ColumnURI)
@@ -2098,4 +2237,4 @@ var getKeysFromSubs = function (rootNode, subColKeys) {
   }
 
   return subColKeys;
-};
+}; 
