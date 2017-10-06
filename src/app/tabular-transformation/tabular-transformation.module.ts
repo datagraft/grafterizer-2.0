@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { FlexLayoutModule } from "@angular/flex-layout";
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
 import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
-import { Ng2CompleterModule } from "ng2-completer";
+import { Ng2CompleterModule } from 'ng2-completer';
 import { CodemirrorModule } from 'ng2-codemirror';
 
-import { TabularTransformationComponent } from "./tabular-transformation.component";
+import { TabularTransformationComponent } from './tabular-transformation.component';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { BoxplotComponent } from './profiling/boxplot/boxplot.component';
@@ -43,7 +43,7 @@ import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-f
 
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 
-import { TabularTransformationRoutingModule } from "./tabular-transformation-routing.module";
+import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -81,7 +81,6 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     SelectboxComponent,
     CustomFunctionModalComponent,
     PipelineComponent,
-    //Pipeline functions
     MakeDatasetComponent,
     TakeRowsComponent,
     TakeColumnsComponent,

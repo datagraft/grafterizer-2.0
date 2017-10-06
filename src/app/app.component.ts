@@ -18,8 +18,8 @@ import * as data from '../assets/data.json';
 export class AppComponent {
 
   tester() {
-    return new transformationDataModel.MakeDatasetFunction(
-      [], true, 0, true, null);
+   /* return new transformationDataModel.MakeDatasetFunction(
+      [], true, 0, true, null);*/
   }
 
   private title = 'Click to generate clojure';
@@ -190,7 +190,7 @@ export class AppComponent {
       (error) => console.log("Error obtaining original file!"))
 
   }
-
+  
   constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
     console.log(config.getConfig('jarfter-path'));
     console.log(config.getConfig('dispatch-path'));
