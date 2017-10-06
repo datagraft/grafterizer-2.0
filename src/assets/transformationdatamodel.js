@@ -13,7 +13,7 @@ Prefixer.revive = function (data) {
 };
 this.Prefixer = Prefixer;
 
-var GenericFunction = function () {
+var GenericFunction = function () { 
   if (!this.generateClojure) {
     this.generateClojure = function () {
       return new jsedn.List([jsedn.sym(this.name)]);
@@ -224,13 +224,13 @@ AddColumnsFunction.prototype.generateClojure = function () {
       case ('Row number'):
         newRownumMap.set(
           new jsedn.kw(':' + this.columnsArray[i].colName),
-          new jsedn.sym('(fn [_] (grafter.sequences/integers-from 1))')
+          new jsedn.parse('(fn [_] (grafter.sequences/integers-from 1))')
         );
         break;
       case ('custom expression'):
         newColMap.set(
           new jsedn.kw(':' + this.columnsArray[i].colName),
-          new jsedn.sym(this.columnsArray[i].expression)
+          new jsedn.parse(this.columnsArray[i].expression)
         );
         break;
       default:
@@ -286,7 +286,7 @@ AddColumnFunction.prototype.generateClojure = function () {
   if (this.fileName) return new jsedn.List([jsedn.sym('add-filename-to-column'), new jsedn.kw(':' + this.newColName)]);
   if (!this.colExpr) return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), this.colValue]);
   else {
-    return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), jsedn.sym(this.colExpr)]);
+    return new jsedn.List([jsedn.sym('add-column'), new jsedn.kw(':' + this.newColName), jsedn.parse(this.colExpr)]);
   }
 
 };
@@ -370,8 +370,8 @@ GrepFunction.prototype.generateClojure = function () {
         regexParsed = '#\"(?i).*' + this.filterText + '.*\"';
 
         if (!this.take) {
-          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.sym('fn [cell]'),
-          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym('(str cell)')])])]));
+          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
+          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])])]));
 
         }
         else {
@@ -379,7 +379,7 @@ GrepFunction.prototype.generateClojure = function () {
         }
       } else {
         if (!this.take)
-          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.sym('fn [^String cell] (.contains (str cell) \"' + this.filterText + '\")')])]));
+          values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [^String cell] (.contains (str cell) \"' + this.filterText + '\")')])]));
         else
           values.push(this.filterText);
       }
@@ -388,7 +388,7 @@ GrepFunction.prototype.generateClojure = function () {
     case ('regex'):
       regexParsed = '#\"' + this.filterRegex + '\"';
       if (!this.take)
-        values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.sym('fn [cell] (re-find (read-string '), regexParsed, jsedn.sym(' ) (str cell))')])]));
+        values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell] (re-find (read-string ' + regexParsed + ' ) (str cell))')])]));
       else
         values.push(new jsedn.List([jsedn.sym('read-string'), regexParsed]));
       break;
@@ -463,7 +463,7 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   for (i = 0; i < this.colsToMerge.length; ++i) {
     colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i].value));
   }
-  var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.sym('"' + this.separator + '"')];
+  var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.parse('"' + this.separator + '"')];
   if (this.newColName)
     values.push(new jsedn.kw(':' + this.newColName));
   return new jsedn.List(values);
@@ -578,7 +578,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
     else {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
-      deriveFuncts.push(new jsedn.List([new jsedn.sym('fn [arg]'),
+      deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
       new jsedn.List(functWithParams)]));
     }
   }
@@ -793,7 +793,7 @@ RenameColumnsFunction.prototype.generateClojure = function () {
         comp += renameFunc.name + ' ';
       }
 
-      return new jsedn.List([jsedn.sym('rename-columns'), new jsedn.List([jsedn.sym(comp)])]);
+      return new jsedn.List([jsedn.sym('rename-columns'), new jsedn.List([jsedn.parse(comp)])]);
     }
   } else {
     //rename with mapping
@@ -891,7 +891,7 @@ ApplyColumnsFunction.prototype.generateClojure = function () {
   for (i = 0; i < this.keyFunctionPairs.length; ++i) {
     keyFunctionPairsClj.set(
       new jsedn.kw(':' + this.keyFunctionPairs[i].key),
-      new jsedn.sym(this.keyFunctionPairs[i].func)
+      new jsedn.parse(this.keyFunctionPairs[i].func)
     );
   }
 
@@ -957,7 +957,7 @@ MapcFunction.prototype.generateClojure = function () {
       if (this.keyFunctionPairs[i].funcParams.length > 0) {
         var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
         funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-        var mapcFunc = new jsedn.List([new jsedn.sym('fn [arg]'),
+        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
         new jsedn.List(funcWithParams)]);
         mkeyFunctionPairsClj.set(
           new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
@@ -1259,7 +1259,7 @@ MakeDatasetFunction.prototype.generateClojure = function () {
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-    new jsedn.List([jsedn.sym('into []'),
+    new jsedn.List([jsedn.parse('into []'),
     new jsedn.List([jsedn.sym('map'),
     jsedn.sym('keyword'),
     new jsedn.List([jsedn.sym('take'),
