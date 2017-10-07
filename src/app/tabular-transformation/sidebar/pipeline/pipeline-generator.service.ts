@@ -1,23 +1,13 @@
 import { Injectable } from '@angular/core';
 
+import * as generateClojure from '../../../../assets/generateclojure.js';
+import * as transformationDataModel from '../../../../assets/transformationdatamodel.js';
+
+import * as data from '../../../../assets/data.json';
+
 @Injectable()
 export class PipelineGeneratorService {
 
   constructor() { }
-
-  public generatePipeline(_function) {
-    this.pipeline.pipelines["0"].functions.push(_function);
-  }
-
-  public pipeline: any = {
-    "customFunctionDeclarations": [],
-    "prefixers": [],
-    "pipelines": [{
-      "functions": [],
-      "__type": "Pipeline"
-    }],
-    "graphs": [],
-    "rdfVocabs": []
-  }
 
 }
