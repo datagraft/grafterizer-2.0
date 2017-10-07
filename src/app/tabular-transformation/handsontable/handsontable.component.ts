@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter} from '@angular/core';
+import { Observable } from 'rxjs/Rx';
 declare var Handsontable: any;
 
 @Component({
@@ -8,28 +9,34 @@ declare var Handsontable: any;
 })
 export class HandsontableComponent implements OnInit {
 
+  @Output()
+  selectionChanged: EventEmitter<any> = new EventEmitter<any>();
+
+  public showLoading: boolean;
+
   // handsontable instance
   private hot: any;
   private data: any[];
   private container: any;
   private settings: any;
+  public selction: any;
 
   constructor() {
     // init table
-    this.data = [];
-    for (let i = 0; i <= 12; i++) {
-      this.data.push(['-', '-', '-', '-', '-']);
-    }
+    this.data = ['No data loaded'];
+    this.showLoading = true;
+//    for (let i = 0; i <= 12; i++) {
+//      this.data.push(['-', '-', '-', '-', '-']);
+//    }
   }
 
   ngOnInit() {
-    this.container = document.getElementById('app-handsontable');
+    this.container = document.getElementById('handsontable');
     this.settings = {
       data: this.data,
       rowHeaders: true,
       colHeaders: [],
       columnSorting: false,
-      preventOverflow: 'horizontal',
       contextMenu: {
         callback: (key, options) => {
           if (key === 'row_above' || 'row_below' || 'remove_col'
@@ -54,16 +61,41 @@ export class HandsontableComponent implements OnInit {
         },
       },
       stretchH: 'all',
-      afterSelection: (r, c, r2, c2) => {
+      afterSelection: this.selectionChangeHandler.bind(this) /*(r, c, r2, c2) => {
+        console.log(r,c,r2,c2);
+        const src = this.hot.getSourceData(r,c,r2,c2);
+        console.log(src);
+        if(r === r2){
+          // selected row
+        } else {
+          if (c === c2) {
+            // selected column
+          }
+        }
         console.log('OK');
-      },
+      }*/,
       manualColumnResize: true,
       manualRowResize: true
     }
     this.hot = new Handsontable(this.container, this.settings);
+    this.hot.render();
+  }
+
+  private selectionChangeHandler(row: number, column: number, row2: number, col2: number) {
+    
+    this.selectionChanged.emit({
+      row: row,
+      col: column,
+      row2: row2,
+      col2: col2,
+      totalRows: this.hot.countRows(),
+      totalCols: this.hot.countCols()
+    });
   }
 
   public dispayJsEdnData(data: JSON) {
+    console.log(this.showLoading);
+    this.showLoading = true;
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
       const rowData = data[':rows'];
@@ -81,8 +113,9 @@ export class HandsontableComponent implements OnInit {
         colHeaders: colNamesClean,
         columns: columnMappings,
         data: data[':rows']
-      })
-      this.hot.render();
+      });
+      this.showLoading = false;
+//      this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

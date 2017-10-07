@@ -1,33 +1,16 @@
 <split direction="horizontal">
-  <split-area [size]="20" class="sin-left-menu">
-    <selectbox (emitter)="emitFunction($event)" class="sin-suggested-transformations"></selectbox>
-    <pipeline [function]="function" class="sin-pipeline"></pipeline>
+  <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
+    <selectbox (emitter)="emitFunction($event)" fxflex class="sin-suggested-transformations"></selectbox>
+    <pipeline [function]="function" fxflex class="sin-pipeline"></pipeline>
   </split-area>
-  <split-area [size]="80">
+  <split-area [size]="85">
     <split direction="vertical">
-      <split-area [size]="70">
-        <app-handsontable></app-handsontable>
+      <split-area [size]="60">
+        <app-handsontable (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
       </split-area>
-      <split-area [size]="30">
+      <split-area [size]="40">
         <profiling></profiling>
       </split-area>
     </split>
   </split-area>
 </split>
-
-<!--<div class="row">
-<div class="col-xs">
-
-</div>
-</div>-->
-<!--
-<div class="row">
-<div class="col-xs">
-
-</div>
-</div>-->
-<!--
-<nav class="sidenav">
-
-</nav>
--->

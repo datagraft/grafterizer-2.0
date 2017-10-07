@@ -36,15 +36,12 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit {
         .then(
         (result) => {
           const transformationObj = transformationDataModel.Transformation.revive(result);
-
           console.log(transformationObj);
           if (paramMap.has('filestoreId')) {
-            /*previewTransformation(filestoreID: string, clojure: string, page?: number, pageSize?: number): Promise<any> {*/
             const clojure = generateClojure.fromTransformation(transformationObj);
             this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
               .then(
               (result) => {
-                
                 console.log(result);
                 this.handsonTable.dispayJsEdnData(result);
               },
@@ -52,13 +49,23 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit {
                 console.log('ERROR getting filestore!');
                 console.log(error);
               });
-            
           }
         },
         (error) => {
           console.log(error)
         });
     }
+  }
+
+  tableSelectionChanged(newSelection: any) {
+    console.log(newSelection);
+    const profile = this.recommenderService
+    .getDataProfile(newSelection.row, newSelection.col,
+                    newSelection.row2, newSelection.col2, 
+                    newSelection.totalRows, newSelection.totalCols);
+    const recommend = this.recommenderService.getRecommendation(profile);
+    console.log(recommend);
+    //    this.recommenderService.getDataProfile()
   }
 
   emitFunction(value: any) {

@@ -1,13 +1,15 @@
-<label for="label"><strong>Suggested Transformations</strong></label>
-<div >
+<div fxLayout='column' fxLayoutAlign="start center">
+  <label for="label"><strong>Suggested Transformations</strong></label>
+
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
              [listStyle]="{'max-height':'250px'}">
     <div id="label">
-      
+
     </div>
   </p-listbox>
+  <button class="btn btn-primary" (click)="selected='custom-functions'">Edit custom functions</button>
 </div>
-<button class="btn btn-primary" (click)="selected='custom-functions'">Edit custom functions</button>
+
 
 <make-dataset [modalEnabled]="selected=='make-dataset'" class="sin-flex"></make-dataset>
 <take-rows [modalEnabled]="selected=='take-rows'" class="sin-flex"></take-rows>
