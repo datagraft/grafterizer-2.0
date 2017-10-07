@@ -31,7 +31,6 @@ export class ProfilingComponent implements OnInit {
   }
 
   getHeader(header: string) {
-
     this.csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/seattle-weather.csv');
     this.column = [];
     this.timePeriod = [];

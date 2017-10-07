@@ -17,6 +17,7 @@ import { TabularTransformationModule } from './tabular-transformation/tabular-tr
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
+import { AngularSplitModule } from 'angular-split';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -37,7 +38,8 @@ export function initConfig(config: AppConfig) {
     AppRoutingModule,
     FormsModule,
     SuiModule,
-    HttpModule
+    HttpModule,
+    AngularSplitModule
   ],
   providers: [
     AppConfig,

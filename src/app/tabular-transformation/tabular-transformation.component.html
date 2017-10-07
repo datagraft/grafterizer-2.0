@@ -1,19 +1,16 @@
-<div class="content-container">
-  <div class="content-area">
-    <div class="row">
-      <div class="col-xs">
-        <app-handsontable></app-handsontable>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-xs">
+<split direction="horizontal">
+  <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
+    <selectbox (emitter)="emitFunction($event)" fxflex class="sin-suggested-transformations"></selectbox>
+    <pipeline [function]="function" fxflex class="sin-pipeline"></pipeline>
+  </split-area>
+  <split-area [size]="85">
+    <split direction="vertical">
+      <split-area [size]="60">
+        <app-handsontable (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
+      </split-area>
+      <split-area [size]="40">
         <profiling></profiling>
-      </div>
-    </div>
-  </div>
-  <nav class="sidenav">
-    <selectbox (emitter)="emitFunction($event)"></selectbox>
-    <pipeline [function]="function"></pipeline>
-  </nav>
-</div>
+      </split-area>
+    </split>
+  </split-area>
+</split>

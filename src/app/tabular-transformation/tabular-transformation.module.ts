@@ -48,6 +48,7 @@ import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
   imports: [
@@ -65,7 +66,8 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
     RlTagInputModule,
     SuiModule,
     Ng2CompleterModule,
-    CodemirrorModule
+    CodemirrorModule,
+    AngularSplitModule
   ],
   declarations: [
     TabularTransformationComponent,
