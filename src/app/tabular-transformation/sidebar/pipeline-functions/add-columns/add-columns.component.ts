@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -13,13 +13,11 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class AddColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
-
+  @Output() emitter = new EventEmitter();
+  private function: any;
   private addcolumnsmode: String[] = [];
   private columnsArray: any[];
   private docstring: String;
-
-
 
   constructor(private completerService: CompleterService) {
     //TODO: remove when passing transformation is implemented
@@ -58,9 +56,8 @@ export class AddColumnsComponent implements OnInit {
 
   accept() {
     this.function.columnsArray = this.columnsArray;
-
     this.function.docstring = this.docstring;
-
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

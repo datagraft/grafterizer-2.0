@@ -49,7 +49,6 @@ export class SelectboxComponent implements OnInit {
 
   onChange($event) {
     this.modalEnabled = true;
-
   }
 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -13,6 +13,7 @@ export class DeriveColumnComponent implements OnInit {
 
   @Input() modalEnabled;
   @Input() function: any;
+  @Output() emitter = new EventEmitter();
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   // Transformation is needed to search for prefixers/functions
@@ -64,6 +65,7 @@ export class DeriveColumnComponent implements OnInit {
     this.function.colsToDeriveFrom = this.colsToDeriveFrom;
     this.function.functionsToDeriveWith = this.functionsToDeriveWith;
     this.function.docstring = this.docstring;
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
   reduceFunctionParams(idx) {

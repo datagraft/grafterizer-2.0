@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from "@angular/core";
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from "ng2-completer";
 
 import * as transformationDataModel from "../../../../../assets/transformationdatamodel.js";
@@ -13,7 +13,8 @@ import * as transformationDataModel from "../../../../../assets/transformationda
 export class GroupDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
+  @Output() emitter = new EventEmitter();
+  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3", "zzz", "aaa", "qqq"];
@@ -66,6 +67,7 @@ export class GroupDatasetComponent implements OnInit {
     this.function.colnamesFunctionsSet = this.colnamesFunctionsSet;
     this.function.separatorSet = this.separatorSet;
     this.function.docstring = this.docstring;
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

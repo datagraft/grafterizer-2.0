@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -14,7 +14,8 @@ import * as data from '../../../../../assets/data.json';
 export class RenameColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
+  @Output() emitter = new EventEmitter();
+  private function: any;
   // Transformation is needed to search for prefixers/functions
   //@Input() transformation: any;
   private transformation: any;
@@ -82,7 +83,7 @@ export class RenameColumnsComponent implements OnInit {
       this.function.functionsToRenameWith.push(this.transformation.findPrefixerOrCustomFunctionByName(functionToRenameWith));
     }
     this.function.docstring = this.docstring;
-
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

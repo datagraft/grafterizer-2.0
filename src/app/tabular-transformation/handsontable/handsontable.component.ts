@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter} from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 declare var Handsontable: any;
 
@@ -25,9 +25,9 @@ export class HandsontableComponent implements OnInit {
     // init table
     this.data = ['No data loaded'];
     this.showLoading = true;
-//    for (let i = 0; i <= 12; i++) {
-//      this.data.push(['-', '-', '-', '-', '-']);
-//    }
+    //    for (let i = 0; i <= 12; i++) {
+    //      this.data.push(['-', '-', '-', '-', '-']);
+    //    }
   }
 
   ngOnInit() {
@@ -40,7 +40,7 @@ export class HandsontableComponent implements OnInit {
       contextMenu: {
         callback: (key, options) => {
           if (key === 'row_above' || 'row_below' || 'remove_col'
-              || 'remove_row' || 'col_left' || 'col_right' || 'undo' || 'redo' || 'zero') {
+            || 'remove_row' || 'col_left' || 'col_right' || 'undo' || 'redo' || 'zero') {
             console.log(key);
 
           };
@@ -82,7 +82,7 @@ export class HandsontableComponent implements OnInit {
   }
 
   private selectionChangeHandler(row: number, column: number, row2: number, col2: number) {
-    
+
     this.selectionChanged.emit({
       row: row,
       col: column,
@@ -93,7 +93,7 @@ export class HandsontableComponent implements OnInit {
     });
   }
 
-  public dispayJsEdnData(data: JSON) {
+  public displayJsEdnData(data: JSON) {
     console.log(this.showLoading);
     this.showLoading = true;
     if (data[':column-names'] && data[':rows']) {
@@ -115,7 +115,8 @@ export class HandsontableComponent implements OnInit {
         data: data[':rows']
       });
       this.showLoading = false;
-//      this.hot.render();
+      console.log(data);
+      //      this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

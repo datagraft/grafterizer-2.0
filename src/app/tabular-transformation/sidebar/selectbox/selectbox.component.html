@@ -1,8 +1,10 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <label for="label"><strong>Suggested Transformations</strong></label>
+  <label for="label">
+    <strong>Suggested Transformations</strong>
+  </label>
 
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
-             [listStyle]="{'max-height':'250px'}">
+    [listStyle]="{'max-height':'250px'}">
     <div id="label">
 
     </div>
@@ -11,22 +13,22 @@
 </div>
 
 
-<make-dataset [modalEnabled]="selected=='make-dataset'" class="sin-flex"></make-dataset>
-<take-rows [modalEnabled]="selected=='take-rows'" class="sin-flex"></take-rows>
-<take-columns [modalEnabled]="selected=='take-columns'" class="sin-flex"></take-columns>
-<split-columns [modalEnabled]="selected=='split-columns'" class="sin-flex"></split-columns>
-<sort-dataset [modalEnabled]="selected=='sort-dataset'" class="sin-flex"></sort-dataset>
-<shift-row [modalEnabled]="selected=='shift-row'" class="sin-flex"></shift-row>
-<shift-column [modalEnabled]="selected=='shift-column'" class="sin-flex"></shift-column>
-<reshape-dataset [modalEnabled]="selected=='reshape-dataset'" class="sin-flex"></reshape-dataset>
-<rename-columns [modalEnabled]="selected=='rename-columns'" class="sin-flex"></rename-columns>
-<merge-columns [modalEnabled]="selected=='merge-columns'" class="sin-flex"></merge-columns>
-<derive-column [modalEnabled]="selected=='derive-column'" class="sin-flex"></derive-column>
-<deduplicate [modalEnabled]="selected=='deduplicate'" class="sin-flex"></deduplicate>
-<add-row [modalEnabled]="selected=='add-row'" class="sin-flex"></add-row>
-<add-columns [modalEnabled]="selected=='add-columns'" class="sin-flex"></add-columns>
-<map-columns [modalEnabled]="selected=='map-columns'" class="sin-flex"></map-columns>
-<group-dataset [modalEnabled]="selected=='group-dataset'" class="sin-flex"></group-dataset>
-<filter-rows [modalEnabled]="selected=='filter-rows'" class="sin-flex"></filter-rows>
-<utility-function [modalEnabled]="selected=='utility-function'" class="sin-flex"></utility-function>
-<custom-function-modal [modalEnabled]="selected=='custom-functions'" class="sin-flex"></custom-function-modal>
+<make-dataset [modalEnabled]="selected=='make-dataset'" class="sin-flex" (emitter)="emitFunction($event)"></make-dataset>
+<take-rows [modalEnabled]="selected=='take-rows'" class="sin-flex" (emitter)="emitFunction($event)"></take-rows>
+<take-columns [modalEnabled]="selected=='take-columns'" class="sin-flex" (emitter)="emitFunction($event)"></take-columns>
+<split-columns [modalEnabled]="selected=='split-columns'" class="sin-flex" (emitter)="emitFunction($event)"></split-columns>
+<sort-dataset [modalEnabled]="selected=='sort-dataset'" class="sin-flex" (emitter)="emitFunction($event)"></sort-dataset>
+<shift-row [modalEnabled]="selected=='shift-row'" class="sin-flex" (emitter)="emitFunction($event)"></shift-row>
+<shift-column [modalEnabled]="selected=='shift-column'" class="sin-flex" (emitter)="emitFunction($event)"></shift-column>
+<reshape-dataset [modalEnabled]="selected=='reshape-dataset'" class="sin-flex" (emitter)="emitFunction($event)"></reshape-dataset>
+<rename-columns [modalEnabled]="selected=='rename-columns'" class="sin-flex" (emitter)="emitFunction($event)"></rename-columns>
+<merge-columns [modalEnabled]="selected=='merge-columns'" class="sin-flex" (emitter)="emitFunction($event)"></merge-columns>
+<derive-column [modalEnabled]="selected=='derive-column'" class="sin-flex" (emitter)="emitFunction($event)"></derive-column>
+<deduplicate [modalEnabled]="selected=='deduplicate'" class="sin-flex" (emitter)="emitFunction($event)"></deduplicate>
+<add-row [modalEnabled]="selected=='add-row'" class="sin-flex" (emitter)="emitFunction($event)"></add-row>
+<add-columns [modalEnabled]="selected=='add-columns'" class="sin-flex" (emitter)="emitFunction($event)"></add-columns>
+<map-columns [modalEnabled]="selected=='map-columns'" class="sin-flex" (emitter)="emitFunction($event)"></map-columns>
+<group-dataset [modalEnabled]="selected=='group-dataset'" class="sin-flex" (emitter)="emitFunction($event)"></group-dataset>
+<filter-rows [modalEnabled]="selected=='filter-rows'" class="sin-flex" (emitter)="emitFunction($event)"></filter-rows>
+<utility-function [modalEnabled]="selected=='utility-function'" class="sin-flex" (emitter)="emitFunction($event)"></utility-function>
+<custom-function-modal [modalEnabled]="selected=='custom-functions'" class="sin-flex" (emitter)="emitFunction($event)"></custom-function-modal>

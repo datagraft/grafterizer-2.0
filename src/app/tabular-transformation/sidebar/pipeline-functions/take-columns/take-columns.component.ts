@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
@@ -12,7 +12,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class TakeColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
+  @Output() emitter = new EventEmitter();
+  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
@@ -48,7 +49,7 @@ export class TakeColumnsComponent implements OnInit {
     this.function.indexTo = this.indexTo;
     this.function.take = this.take;
     this.function.docstring = this.docstring;
-
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

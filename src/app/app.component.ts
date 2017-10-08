@@ -17,21 +17,13 @@ import * as data from '../assets/data.json';
 })
 export class AppComponent {
 
-  tester() {
-   /* return new transformationDataModel.MakeDatasetFunction(
-      [], true, 0, true, null);*/
-  }
-
-  private title = 'Click to generate clojure';
   private basic = true;
-  generateClojure() {
-    console.log("Makedataset function:");
-    console.log(this.tester());
-    console.log("Generate clojure code:");
-    console.log(generateClojure.fromTransformation(transformationDataModel.Transformation.revive(data)));
-    console.log("transformationDataModel.Transformation.revive:");
-    console.log(transformationDataModel.Transformation.revive(data));
-  };
+
+  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
+    console.log(config.getConfig('jarfter-path'));
+    console.log(config.getConfig('dispatch-path'));
+    console.log(config.getConfig('graftwerk-cache-path'));
+  }
 
   getAllTransformations() {
     let publisher = 'nvnikolov';
@@ -140,7 +132,7 @@ export class AppComponent {
     }
   }
 
-  transformData(){
+  transformData() {
     const transformationID = 'patients-data';
     const filestoreID = 'patients-csv';
     const transformationType = 'pipe';
@@ -177,7 +169,7 @@ export class AppComponent {
             //            console.log(result);
           },
           (error) => console.log("Error previewing transformation!"));
-      }, 
+      },
       error => console.log(error));
 
     // get original data of a distribution
@@ -190,11 +182,5 @@ export class AppComponent {
       (error) => console.log("Error obtaining original file!"))
 
   }
-  
-  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
-    console.log(config.getConfig('jarfter-path'));
-    console.log(config.getConfig('dispatch-path'));
-    console.log(config.getConfig('graftwerk-cache-path'));
 
-  }
 }

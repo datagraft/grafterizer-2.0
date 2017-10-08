@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { AddRowFunction } from '../../../../../assets/transformationdatamodel.js';
 
 @Component({
@@ -9,9 +9,9 @@ import { AddRowFunction } from '../../../../../assets/transformationdatamodel.js
 export class AddRowComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() function: any;
   @Input() colnames: string[];
-
+  @Output() emitter = new EventEmitter();
+  private function: any;
   private position: number;
   private values: any;
   private docstring: String;
@@ -46,7 +46,7 @@ export class AddRowComponent implements OnInit, OnChanges {
       this.function.values = this.values;
       this.function.docstring = this.docstring;
     }
-    console.log(this.function);
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

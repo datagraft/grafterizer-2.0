@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
@@ -12,7 +12,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class TakeRowsComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
+  @Output() emitter = new EventEmitter();
+  private function: any;
   private indexFrom: Number = 0;
   private indexTo: Number = 0;
   private take: boolean = true;
@@ -42,6 +43,9 @@ export class TakeRowsComponent implements OnInit {
     this.function.take = this.take;
     this.function.docstring = this.docstring;
 
+    console.log('Take-rows:');
+    console.log(this.function);
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

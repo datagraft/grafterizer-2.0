@@ -11,17 +11,27 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class MakeDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Output() emitter = new EventEmitter();
   private function: any;
   private makedatasetmode: String = '';
   private columnsArray: any = [];
+  private useLazy: boolean;
+  private moveFirstRowToHeader: boolean;
   private numberOfColumns: Number = 0;
   private docstring: String = '';
 
-  @Output() emitter = new EventEmitter();
-
   constructor() {
-    this.function = new transformationDataModel.MakeDatasetFunction(
-      [], null, 0, null, null);
+    if (!this.function) {
+      this.function = new transformationDataModel.MakeDatasetFunction(
+        [], null, undefined, null, null);
+    }
+    else {
+      this.columnsArray = this.function.columnsArray;
+      this.useLazy = this.function.useLazy;
+      this.numberOfColumns = this.function.numberOfColumns;
+      this.moveFirstRowToHeader = this.function.moveFirstRowToHeader;
+      this.docstring = this.function.docstring;
+    }
   }
 
   ngOnInit() { }

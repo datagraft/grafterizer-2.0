@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -15,6 +15,7 @@ export class FilterRowsComponent implements OnInit {
 
   @Input() modalEnabled;
   @Input() function: any;
+  private emitter = new EventEmitter();
   // Transformation is needed to search for prefixers/functions
   //@Input() transformation: any;
   private transformation: any;
@@ -102,7 +103,7 @@ export class FilterRowsComponent implements OnInit {
       this.function.functionsToRenameWith.push(this.transformation.findPrefixerOrCustomFunctionByName(filterFunctionsName));
     }
     this.function.docstring = this.docstring;
-
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import { RemoveDuplicatesFunction } from '../../../../../assets/transformationdatamodel.js';
 
@@ -10,10 +10,10 @@ import { RemoveDuplicatesFunction } from '../../../../../assets/transformationda
 export class DeduplicateComponent implements OnInit {
 
   @Input() modalEnabled;
-  @Input() function: any;
   @Input() colnames: string[];
-  showMessage: boolean;
-
+  @Output() emitter = new EventEmitter();
+  private function: any;
+  private showMessage: boolean;
   private mode;
   private columns;
   private docstring: String;
@@ -48,7 +48,7 @@ export class DeduplicateComponent implements OnInit {
         this.function.columns = this.columns;
         this.function.docstring = this.docstring;
       }
-      console.log(this.function);
+      this.emitter.emit(this.function);
       this.modalEnabled = false;
     }
 
