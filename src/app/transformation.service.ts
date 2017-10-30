@@ -4,17 +4,34 @@ import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
+import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as jsedn from 'jsedn';
 
 @Injectable()
 export class TransformationService {
   private dispatchPath: string;
   private graftwerkCachePath: string;
+
+  // GLOBAL TRANSFORMATION OBJECT
+  public transformationObj: any;
+
   constructor(private http: Http, private config: AppConfig) {
     // We use the Dispatch service as a proxy to Graftwerk
     this.dispatchPath = this.config.getConfig('dispatch-path');
     // Caching service for Graftwerk - caches intermediate results of transformations
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
+  }
+
+  addPipelineStep(_function) {
+    let pipeline = this.transformationObj.pipelines[0];
+    pipeline.addAfter(this.transformationObj.pipelines[0].functions[3], _function);
+    console.log(this.transformationObj.pipelines[0].functions);
+  }
+
+  removePipelineStep(_function) {
+    let pipeline = new transformationDataModel.Pipeline(this.transformationObj.pipelines[0].functions);
+    pipeline.remove(this.transformationObj.pipelines[0].functions[0]);
+    console.log(this.transformationObj.pipelines[0].functions);
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {
@@ -28,8 +45,8 @@ export class TransformationService {
     };
 
     return this.http.post(url, requestPayload, options)
-    .map(result => result.json())
-    .toPromise();
+      .map(result => result.json())
+      .toPromise();
   }
 
   // DO NOT USE - doesn't work for now
@@ -111,7 +128,7 @@ export class TransformationService {
         return this.pollCacheService(dispatchResponse.hash);
       },
       (error) => this.errorHandler(error)
-    );
+      );
   }
 
   private pollCacheService(hash: string): Promise<any> {
@@ -119,9 +136,9 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs =  Observable.interval(1500)
-    .switchMap(() => this.http.get(statusUrl, options))
-    .map((response) => response.json());
+    const obs = Observable.interval(1500)
+      .switchMap(() => this.http.get(statusUrl, options))
+      .map((response) => response.json());
 
     return new Promise((resolve, reject) => {
       const sub = obs.subscribe(

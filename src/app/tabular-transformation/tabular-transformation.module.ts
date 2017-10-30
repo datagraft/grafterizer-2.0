@@ -100,9 +100,7 @@ import { AngularSplitModule } from 'angular-split';
     MapColumnsComponent,
     GroupDatasetComponent,
     FilterRowsComponent,
-    UtilityFunctionComponent,
-
-
+    UtilityFunctionComponent
   ]
 })
 

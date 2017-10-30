@@ -1,75 +1,98 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnInit } from '@angular/core';
-import { PipelineGeneratorService } from './pipeline-generator.service';
+import { Component, Input, Output, EventEmitter, OnChanges, OnInit, forwardRef } from '@angular/core';
+import { TransformationService } from '../../../transformation.service';
 
 import * as generateClojure from '../../../../assets/generateclojure.js';
 import * as transformationDataModel from '../../../../assets/transformationdatamodel.js';
-
 import * as data from '../../../../assets/data.json';
 
 @Component({
   selector: 'pipeline',
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.css'],
-  providers: [PipelineGeneratorService]
+  providers: []
 })
 
 export class PipelineComponent implements OnChanges, OnInit {
 
   @Input() function: any;
   @Output() emitter = new EventEmitter();
-  private clojure: any;
-  private activePipelineStep: boolean;
   private steps: any = [];
+  private addFunctionAfter: boolean;
+  private lastFunctionIndex: number;
+  private currentFunctionIndex: number;
+  private position: string;
+  private info: boolean;
 
-  // GLOBAL TRANSFORMATION OBJECT
-  public transformationObj: any;
-
-  constructor(private pipelineGenerator: PipelineGeneratorService) { }
+  constructor(private transformationService: TransformationService) {
+    this.addFunctionAfter = false;
+    this.position = 'bottom-middle';
+    this.info = true;
+  }
 
   ngOnInit() { }
 
-  addPipelineStep(funct) {
-    this.transformationObj.pipelines[0].functions.push(funct);
-    return this.steps;
+  showInfoLabel() {
+    this.info = true;
   }
 
-  /*   generateClojure() {
-      this.clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(data));
-      console.log(this.function);
-      return this.clojure;
-    } */
-
-  generateLabels(transformationObj) {
+  generateLabels() {
     this.steps = [];
-    for (let functions of transformationObj.pipelines[0].functions) {
-      this.steps.push(functions.__type);
+    this.lastFunctionIndex = 0;
+    for (let functions of this.transformationService.transformationObj.pipelines[0].functions) {
+      let label = functions.__type.slice(0, -8);
+      this.steps.push({ 'type': label, 'id': this.lastFunctionIndex });
+      this.lastFunctionIndex += 1;
     }
     return this.steps;
   }
 
-  generatePipeline(transformationObj) {
-    this.transformationObj = transformationObj;
-    let promise = new Promise((resolve, reject) => {
-      resolve(this.generateLabels(transformationObj));
+  functionAdd(index) {
+    this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[index], this.function);
+    return 'OK';
+  }
+
+  functionRemove(index) {
+    this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[index]);
+    this.generateLabels();
+  }
+
+  getButtonEvent(event) {
+    if (event.path[2].id != '') {
+      this.currentFunctionIndex = event.path[2].id;
+      if (event.path[2].value == 'add') {
+        this.addFunctionAfter = true;
+        // this.showInfoLabel();
+      }
+      else if (event.path[2].value == 'remove') {
+        this.functionRemove(this.currentFunctionIndex);
+      }
     }
-    );
-    promise.then((result) => {
-      console.log(result);
-    })
+    else {
+      this.currentFunctionIndex = event.path[3].id;
+      if (event.path[3].value == 'add') {
+        this.addFunctionAfter = true;
+        // this.showInfoLabel();
+      }
+      else if (event.path[3].value == 'remove') {
+        this.functionRemove(this.currentFunctionIndex);
+      }
+    }
   }
 
   ngOnChanges(changes: any) {
-    console.log('change');
+    console.log(changes.function.currentValue);
     let self = this;
     if (this.function) {
       let promise = new Promise((resolve, reject) => {
-        resolve(self.addPipelineStep(changes['function'].currentValue));
+        if (self.addFunctionAfter == true) {
+          resolve(self.functionAdd(self.currentFunctionIndex));
+        } else {
+          resolve(self.functionAdd(self.lastFunctionIndex));
+        }
       }
       );
       promise.then(() => {
-        self.generateLabels(this.transformationObj);
-        self.emitter.emit('Global transformation object updated');
-        console.log(self.transformationObj);
+        self.generateLabels();
       })
     }
   }

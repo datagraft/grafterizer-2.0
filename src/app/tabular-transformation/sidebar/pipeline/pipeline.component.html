@@ -1,13 +1,30 @@
-<label for="label">
-  <strong>PIPELINE STEPS</strong>
-</label>
-
-<div class="wrapper">
-  <span> 
-    <div class="ui fluid vertical pointing menu">
-      <a class="item" *ngFor="let step of steps">
-        {{step}}
-      </a>
+<div class="wrapper-labels">
+  <div>
+    <label for="label">
+      <strong>Pipeline Steps</strong>
+    </label>
+  </div>
+  <div id="label" *ngIf="info">
+    <div class="alert alert-info">
+      <div class="alert-items">
+        <div class="alert-item static">
+          <div class="alert-icon-wrapper">
+            <clr-icon class="alert-icon" shape="info-circle"></clr-icon>
+          </div>
+          <span class="alert-text">Select transformation from list</span>
+        </div>
+      </div>
     </div>
-  </span>
+  </div>
+</div>
+<div class="wrapper">
+  <div class="btn-group btn-link btn-sm" *ngFor="let step of steps">
+    <button class="btn">{{step.type}}</button>
+    <button class="btn" value="add" id="{{step.id}}" (click)="getButtonEvent($event)">
+      <clr-icon class="is-solid" shape="plus-circle" size="20"></clr-icon>
+    </button>
+    <button class="btn" value="remove" id="{{step.id}}" (click)="getButtonEvent($event)">
+      <clr-icon class="is-solid" shape="minus-circle" size="20"></clr-icon>
+    </button>
+  </div>
 </div>

@@ -13,7 +13,7 @@ Prefixer.revive = function (data) {
 };
 this.Prefixer = Prefixer;
 
-var GenericFunction = function () { 
+var GenericFunction = function () {
   if (!this.generateClojure) {
     this.generateClojure = function () {
       return new jsedn.List([jsedn.sym(this.name)]);
@@ -67,16 +67,19 @@ DropRowsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym('drop-rows'), this.indexTo]);
   var values = [jsedn.sym('rows')];
   if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
-  this.indexFrom,
-  this.indexTo + 1]));
+    this.indexFrom,
+    this.indexTo + 1
+  ]));
   else values.push(new jsedn.List([jsedn.sym('concat'),
-  new jsedn.List([jsedn.sym('range'),
-    0,
-  this.indexFrom
-  ]),
-  new jsedn.List([jsedn.sym('drop'),
-  this.indexTo + 1,
-  new jsedn.List([jsedn.sym('range')])])]));
+    new jsedn.List([jsedn.sym('range'),
+      0,
+      this.indexFrom
+    ]),
+    new jsedn.List([jsedn.sym('drop'),
+      this.indexTo + 1,
+      new jsedn.List([jsedn.sym('range')])
+    ])
+  ]));
 
   return new jsedn.List(values);
 };
@@ -94,7 +97,11 @@ export var SplitFunction = function (colName, separator, docstring) {
 };
 SplitFunction.revive = function (data) {
   var colName;
-  if (!data.colName.hasOwnProperty('id')) colName = { id: 0, value: data.colName }; else colName = data.colName;
+  if (!data.colName.hasOwnProperty('id')) colName = {
+    id: 0,
+    value: data.colName
+  };
+  else colName = data.colName;
   return new SplitFunction(colName, data.separator, data.docstring);
 };
 SplitFunction.prototype = Object.create(GenericFunction.prototype);
@@ -151,8 +158,7 @@ UtilityFunction.revive = function (data) {
   if (data.functionName instanceof FunctionWithArgs === false) {
     if (data.functionName.__type === 'FunctionWithArgs') {
       newFunct = FunctionWithArgs.revive(data.functionName);
-    }
-    else {
+    } else {
 
       newFunct = new FunctionWithArgs(data.functionName, []);
     }
@@ -338,7 +344,10 @@ GrepFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToFilter.length > 0 && data.colsToFilter[0] && !data.colsToFilter[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToFilter.length; ++i) {
-      var colname = { id: i, value: data.colsToFilter[i] };
+      var colname = {
+        id: i,
+        value: data.colsToFilter[i]
+      };
       columnsArray.push(colname);
     }
   } else {
@@ -371,10 +380,10 @@ GrepFunction.prototype.generateClojure = function () {
 
         if (!this.take) {
           values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
-          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])])]));
+            new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])
+          ])]));
 
-        }
-        else {
+        } else {
           values.push(new jsedn.List([jsedn.sym('read-string'), regexParsed]));
         }
       } else {
@@ -525,11 +534,13 @@ DeriveColumnFunction.revive = function (data) {
   var columnsArray = [];
   if (data.colsToDeriveFrom.length > 0 && !data.colsToDeriveFrom[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.colsToDeriveFrom.length; ++i) {
-      var colname = { id: i, value: data.colsToDeriveFrom[i] };
+      var colname = {
+        id: i,
+        value: data.colsToDeriveFrom[i]
+      };
       columnsArray.push(colname);
     }
-  }
-  else columnsArray = data.colsToDeriveFrom;
+  } else columnsArray = data.colsToDeriveFrom;
   var functionsArray = [];
 
   for (var i = 0; i < data.functionsToDeriveWith.length; ++i) {
@@ -539,8 +550,7 @@ DeriveColumnFunction.revive = function (data) {
 
         newFunct = FunctionWithArgs.revive(data.functionsToDeriveWith[i]);
         functionsArray.push(newFunct);
-      }
-      else {
+      } else {
         newFunct = {
           name: data.functionsToDeriveWith[i].name,
           id: 0,
@@ -550,8 +560,7 @@ DeriveColumnFunction.revive = function (data) {
         //               var newFunct = new FunctionWithArgs({funct:data.functionsToDeriveWith[i],functParams:[]});
         functionsArray.push(new FunctionWithArgs(newFunct, []));
       }
-    }
-    else functionsArray.push(data.functionsToDeriveWith[i]);
+    } else functionsArray.push(data.functionsToDeriveWith[i]);
   }
   return new DeriveColumnFunction(data.newColName, columnsArray, functionsArray, data.paramsToFunctions,
     data.docstring);
@@ -569,8 +578,9 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   }
 
   var values = [jsedn.sym('derive-column'),
-  this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
-    colsToDeriveFromClj];
+    this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
+    colsToDeriveFromClj
+  ];
   var deriveFuncts = [];
   for (i = 0; i < this.functionsToDeriveWith.length; ++i) {
     if (this.functionsToDeriveWith[i].functParams.length === 0)
@@ -579,13 +589,13 @@ DeriveColumnFunction.prototype.generateClojure = function () {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
       deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
-      new jsedn.List(functWithParams)]));
+        new jsedn.List(functWithParams)
+      ]));
     }
   }
   if (deriveFuncts.length === 1) {
     values.push(deriveFuncts[0]);
-  }
-  else {
+  } else {
     var compFuncts = ['comp'];
     compFuncts = compFuncts.concat(deriveFuncts);
     values.push(new jsedn.List(compFuncts));
@@ -690,8 +700,7 @@ UploadDatasetFunction.prototype.generateClojure = function () {
     } else {
       values.push(new jsedn.List([jsedn.sym('first'), new jsedn.List([jsedn.sym('char-array'), this.delimiter])]));
     }
-  }
-  else if (this.selectedType == "Excel" && this.selectedSheet) {
+  } else if (this.selectedType == "Excel" && this.selectedSheet) {
     values.push(jsedn.sym('read-dataset'));
     values.push(jsedn.sym('data-file'));
     values.push(jsedn.sym(':format'));
@@ -699,8 +708,7 @@ UploadDatasetFunction.prototype.generateClojure = function () {
 
     values.push(jsedn.sym(':sheet'));
     values.push(this.selectedSheet);
-  }
-  else if (this.selectedType == "Shape") {
+  } else if (this.selectedType == "Shape") {
     values.push(jsedn.sym('read-shape-csv'));
     values.push(jsedn.sym('data-file'));
   }
@@ -769,7 +777,10 @@ RenameColumnsFunction.revive = function (data) {
   if (data.mappings.length > 0)
     if (data.mappings[0] && !data.mappings[0].hasOwnProperty('id')) {
       for (var i = 0; i < data.mappings.length; ++i) {
-        mappings.push((i % 2) ? data.mappings[i] : { id: i / 2, value: data.mappings[i] });
+        mappings.push((i % 2) ? data.mappings[i] : {
+          id: i / 2,
+          value: data.mappings[i]
+        });
       }
     } else
       mappings = data.mappings;
@@ -822,7 +833,10 @@ KeyFunctionPair.revive = function (data) {
   var key;
   var params;
   if (!data.key.hasOwnProperty('id'))
-    key = { id: 0, value: data.key };
+    key = {
+      id: 0,
+      value: data.key
+    };
   else
     key = data.key;
   if (!data.hasOwnProperty('funcParams'))
@@ -954,20 +968,21 @@ MapcFunction.prototype.generateClojure = function () {
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
     else
-      if (this.keyFunctionPairs[i].funcParams.length > 0) {
-        var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
-        funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
-        new jsedn.List(funcWithParams)]);
-        mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-          mapcFunc);
-      } else {
-        mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-          new jsedn.sym(this.keyFunctionPairs[i].func.name)
-        );
-      }
+    if (this.keyFunctionPairs[i].funcParams.length > 0) {
+      var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
+      funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
+      var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
+        new jsedn.List(funcWithParams)
+      ]);
+      mkeyFunctionPairsClj.set(
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+        mapcFunc);
+    } else {
+      mkeyFunctionPairsClj.set(
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+        new jsedn.sym(this.keyFunctionPairs[i].func.name)
+      );
+    }
   }
 
   var mapc;
@@ -980,7 +995,8 @@ MapcFunction.prototype.generateClojure = function () {
   if (!mapc && applyc) return applyc;
   if (mapc && applyc) return new jsedn.List([jsedn.sym('->'),
     mapc,
-    applyc]);
+    applyc
+  ]);
   else {
     Raven.captureMessage('Error parsing map in mapc', {
       tags: {
@@ -1219,7 +1235,10 @@ MakeDatasetFunction.revive = function (data) {
   var columnsArray = [];
   if (data.columnsArray.length > 0 && data.columnsArray[0] && !data.columnsArray[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.columnsArray.length; ++i) {
-      var colname = { id: i, value: data.columnsArray[i] };
+      var colname = {
+        id: i,
+        value: data.columnsArray[i]
+      };
       columnsArray.push(colname);
     }
   } else {
@@ -1238,33 +1257,35 @@ MakeDatasetFunction.prototype.generateClojure = function () {
         jsedn.sym('->'),
         new jsedn.List([jsedn.sym('make-dataset'), jsedn.sym('move-first-row-to-header')]),
         new jsedn.List([jsedn.sym('rename-columns'),
-        new jsedn.List([
-          jsedn.sym('comp'),
-          jsedn.sym('keyword'),
-          jsedn.sym('new-tabular/string-as-keyword')])
+          new jsedn.List([
+            jsedn.sym('comp'),
+            jsedn.sym('keyword'),
+            jsedn.sym('new-tabular/string-as-keyword')
+          ])
         ])
       ]);
-    }
-    else {
+    } else {
       if (this.columnsArray.length > 0) {
         for (i = 0; i < this.columnsArray.length; ++i) {
           colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
         }
 
         return new jsedn.List([jsedn.sym('make-dataset'), colNamesClj]);
-      }
-
-      else return new jsedn.List([jsedn.sym('make-dataset')]);
+      } else return new jsedn.List([jsedn.sym('make-dataset')]);
     }
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-    new jsedn.List([jsedn.parse('into []'),
-    new jsedn.List([jsedn.sym('map'),
-    jsedn.sym('keyword'),
-    new jsedn.List([jsedn.sym('take'),
-    this.numberOfColumns,
-    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])])])])]);
+      new jsedn.List([jsedn.parse('into []'),
+        new jsedn.List([jsedn.sym('map'),
+          jsedn.sym('keyword'),
+          new jsedn.List([jsedn.sym('take'),
+            this.numberOfColumns,
+            new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
+          ])
+        ])
+      ])
+    ]);
   }
 };
 this.MakeDatasetFunction = MakeDatasetFunction;
@@ -1300,7 +1321,10 @@ ColumnsFunction.revive = function (data) {
   if (data.columnsArray.length > 0)
     if (!data.columnsArray[0].hasOwnProperty('id')) {
       for (var i = 0; i < data.columnsArray.length; ++i) {
-        var colname = { id: i, value: data.columnsArray[i] };
+        var colname = {
+          id: i,
+          value: data.columnsArray[i]
+        };
         columnsArray.push(colname);
       }
     } else
@@ -1330,9 +1354,11 @@ ColumnsFunction.prototype.generateClojure = function () {
   } else {
 
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])]) :
+        new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
+      ]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
-      this.indexFrom, this.indexTo]);
+        this.indexFrom, this.indexTo
+      ]);
   }
 
 };
@@ -1444,7 +1470,10 @@ MeltFunction.revive = function (data) {
   var columnsArray = [];
   if (data.columnsArray.length > 0 && !data.columnsArray[0].hasOwnProperty('id')) {
     for (var i = 0; i < data.columnsArray.length; ++i) {
-      var colname = { id: i, value: data.columnsArray[i] };
+      var colname = {
+        id: i,
+        value: data.columnsArray[i]
+      };
       columnsArray.push(colname);
     }
   } else
@@ -1465,10 +1494,8 @@ MeltFunction.prototype.generateClojure = function () {
       colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
     }
     // returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
-    returnValue = new jsedn.List([jsedn.sym('->'), new jsedn.List([jsedn.sym('melt'), colNamesClj])
-      , new jsedn.List([jsedn.sym('mapc'), new jsedn.Map([jsedn.kw(':variable'), jsedn.sym('name')])])]);
-  }
-  else {
+    returnValue = new jsedn.List([jsedn.sym('->'), new jsedn.List([jsedn.sym('melt'), colNamesClj]), new jsedn.List([jsedn.sym('mapc'), new jsedn.Map([jsedn.kw(':variable'), jsedn.sym('name')])])]);
+  } else {
 
     returnValue = new jsedn.List([jsedn.sym('new-tabular/cast'), jsedn.kw(':' + this.variable.value), jsedn.kw(':' + this.value.value), this.separator ? this.separator : this.aggrFunction]);
   }
@@ -1476,7 +1503,7 @@ MeltFunction.prototype.generateClojure = function () {
 };
 this.MeltFunction = MeltFunction;
 
-var Pipeline = function (functions) {
+export var Pipeline = function (functions) {
   // functions that make up the pipeline 
   // TODO: revive! 
   var funct;
@@ -2202,7 +2229,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 
     var partialPipeline = new Pipeline(partialPipelineFunctions);
 
-    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */], this.rdfVocabs);
+    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */ ], this.rdfVocabs);
 
     return partialTransformation;
   } catch (e) {
@@ -2237,4 +2264,4 @@ var getKeysFromSubs = function (rootNode, subColKeys) {
   }
 
   return subColKeys;
-}; 
+};

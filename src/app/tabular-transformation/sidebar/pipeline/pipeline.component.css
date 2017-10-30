@@ -1,10 +1,28 @@
 .wrapper {
-  width: 260px;
   height: 900px;
   padding-top: 5px;
+}
+
+.btn-group:hover .is-solid {
+  display: flex;
+  width: 220px;
   margin-left: -10px;
 }
 
-#label {
+.btn {
+  min-width: 0px;
+}
+
+.is-solid {
+  display: none;
+}
+
+.wrapper-labels {
+  display: flex;
+  flex-direction: column;
   padding-bottom: 10px;
+}
+
+#label {
+  padding-top: 10px;
 }

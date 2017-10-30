@@ -19,6 +19,8 @@ import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
 import { AngularSplitModule } from 'angular-split';
 
+import { TransformationService } from 'app/transformation.service';
+
 export function initConfig(config: AppConfig) {
   return () => config.load();
 }
@@ -43,6 +45,7 @@ export function initConfig(config: AppConfig) {
   ],
   providers: [
     AppConfig,
+    TransformationService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

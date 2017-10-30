@@ -9,6 +9,8 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
 
+import * as data from '../../assets/data.json';
+
 @Component({
   selector: 'app-tabular-transformation',
   templateUrl: './tabular-transformation.component.html',
@@ -18,6 +20,7 @@ import * as generateClojure from 'assets/generateclojure.js';
 export class TabularTransformationComponent implements OnInit, AfterViewInit {
 
   private function: any;
+  private functAddAfter: boolean;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
@@ -34,15 +37,22 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.existingTransformation();
+    // this.existingTransformation();
+
+    let promise = new Promise((resolve, reject) => {
+      resolve(transformationDataModel.Transformation.revive(data));
+    }
+    );
+    promise.then((result) => {
+      this.transformationSvc.transformationObj = result;
+    }).then(() => {
+      this.pipelineComponent.generateLabels();
+    });
   }
 
   // TODO: when this function executes --> global transformation object has been updated --> generate clojure code --> display new data in handsontable
-  // Global transformation object = this.pipelineComponent.transformationObj
   updateTransformation(value: any) {
     console.log(value);
-    const clojure = generateClojure.fromTransformation(this.pipelineComponent.transformationObj);
-    // this.handsonTable.displayJsEdnData();
   }
 
   existingTransformation() {
@@ -57,9 +67,9 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit {
             this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
               .then(
               (result) => {
-                console.log(result);
                 this.handsonTable.displayJsEdnData(result);
-                this.pipelineComponent.generatePipeline(transformationObj);
+                this.transformationSvc.transformationObj = transformationObj;
+                this.pipelineComponent.generateLabels();
               },
               (error) => {
                 console.log('ERROR getting filestore!');
@@ -86,6 +96,10 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit {
 
   emitFunction(value: any) {
     this.function = value;
+  }
+
+  functionAddAfter() {
+    this.functAddAfter = true;
   }
 
 }
