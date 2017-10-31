@@ -13,6 +13,10 @@
   min-width: 0px;
 }
 
+.btn:focus {
+  outline: none;
+}
+
 .is-solid {
   display: none;
 }

@@ -21,19 +21,15 @@ export class PipelineComponent implements OnChanges, OnInit {
   private lastFunctionIndex: number;
   private currentFunctionIndex: number;
   private position: string;
-  private info: boolean;
+  private tooltip: boolean;
 
   constructor(private transformationService: TransformationService) {
     this.addFunctionAfter = false;
     this.position = 'bottom-middle';
-    this.info = true;
+    this.tooltip = true;
   }
 
   ngOnInit() { }
-
-  showInfoLabel() {
-    this.info = true;
-  }
 
   generateLabels() {
     this.steps = [];
@@ -61,7 +57,7 @@ export class PipelineComponent implements OnChanges, OnInit {
       this.currentFunctionIndex = event.path[2].id;
       if (event.path[2].value == 'add') {
         this.addFunctionAfter = true;
-        // this.showInfoLabel();
+        this.tooltip = false;
       }
       else if (event.path[2].value == 'remove') {
         this.functionRemove(this.currentFunctionIndex);
@@ -71,7 +67,7 @@ export class PipelineComponent implements OnChanges, OnInit {
       this.currentFunctionIndex = event.path[3].id;
       if (event.path[3].value == 'add') {
         this.addFunctionAfter = true;
-        // this.showInfoLabel();
+        this.tooltip = false;
       }
       else if (event.path[3].value == 'remove') {
         this.functionRemove(this.currentFunctionIndex);
@@ -86,8 +82,10 @@ export class PipelineComponent implements OnChanges, OnInit {
       let promise = new Promise((resolve, reject) => {
         if (self.addFunctionAfter == true) {
           resolve(self.functionAdd(self.currentFunctionIndex));
+          this.addFunctionAfter = false;
         } else {
           resolve(self.functionAdd(self.lastFunctionIndex));
+          this.addFunctionAfter = false;
         }
       }
       );
