@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnChanges } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -9,9 +9,9 @@ import * as jsedn from 'jsedn';
 
 @Injectable()
 export class TransformationService {
+
   private dispatchPath: string;
   private graftwerkCachePath: string;
-
   // GLOBAL TRANSFORMATION OBJECT
   public transformationObj: any;
 
@@ -20,18 +20,15 @@ export class TransformationService {
     this.dispatchPath = this.config.getConfig('dispatch-path');
     // Caching service for Graftwerk - caches intermediate results of transformations
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
-  }
-
-  addPipelineStep(_function) {
-    let pipeline = this.transformationObj.pipelines[0];
-    pipeline.addAfter(this.transformationObj.pipelines[0].functions[3], _function);
-    console.log(this.transformationObj.pipelines[0].functions);
-  }
-
-  removePipelineStep(_function) {
-    let pipeline = new transformationDataModel.Pipeline(this.transformationObj.pipelines[0].functions);
-    pipeline.remove(this.transformationObj.pipelines[0].functions[0]);
-    console.log(this.transformationObj.pipelines[0].functions);
+    this.transformationObj = {
+      "customFunctionDeclarations": [],
+      "prefixers": [],
+      "pipelines": [{
+        "functions": {},
+        "__type": "Pipeline"
+      }],
+      "rdfVocabs": []
+    };
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {

@@ -1,5 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
+import { Subscription } from 'rxjs/Subscription';
+
 declare var Handsontable: any;
 
 @Component({
@@ -7,48 +9,25 @@ declare var Handsontable: any;
   templateUrl: './handsontable.component.html',
   styleUrls: ['./handsontable.component.css']
 })
+
 export class HandsontableComponent implements OnInit {
 
-  @Output()
-  selectionChanged: EventEmitter<any> = new EventEmitter<any>();
-
-  public showLoading: boolean;
+  @Output() selectionChanged: EventEmitter<any> = new EventEmitter<any>();
 
   // handsontable instance
   private hot: any;
-  private data: any[];
+  private data: any;
   private container: any;
   private settings: any;
   public selction: any;
+  public showLoading: boolean;
 
   constructor() {
-    // init table
-    this.data = [['C1', 'C2', 'C3', 'C4', 'C5', 'C6'],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,],
-    [0, 0, 0, 0, 0, 0,]
-    ];
-    //this.showLoading = true;
-    //    for (let i = 0; i <= 12; i++) {
-    //      this.data.push(['-', '-', '-', '-', '-']);
-    //    }
+    this.showLoading = true;
+    this.data = [];
+    for (let i = 0; i <= 12; i++) {
+      this.data.push(['-', '-', '-', '-', '-']);
+    }
   }
 
   ngOnInit() {
@@ -115,7 +94,6 @@ export class HandsontableComponent implements OnInit {
   }
 
   public displayJsEdnData(data: JSON) {
-    console.log(this.showLoading);
     this.showLoading = true;
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
@@ -136,8 +114,7 @@ export class HandsontableComponent implements OnInit {
         data: data[':rows']
       });
       this.showLoading = false;
-      console.log(data);
-      //      this.hot.render();
+      this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

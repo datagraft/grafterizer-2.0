@@ -1,7 +1,7 @@
 <split direction="horizontal">
   <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
     <selectbox fxflex class="sin-suggested-transformations" (emitter)="emitFunction($event)"></selectbox>
-    <pipeline fxflex class="sin-pipeline" [function]="function" (emitter)="functionAddAfter($event)"></pipeline>
+    <pipeline fxflex class="sin-pipeline" [function]="function"></pipeline>
   </split-area>
   <split-area [size]="85">
     <split direction="vertical">

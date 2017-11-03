@@ -1,9 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnInit, forwardRef } from '@angular/core';
+import { Component, Input, EventEmitter, OnChanges, OnInit } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
-
-import * as generateClojure from '../../../../assets/generateclojure.js';
-import * as transformationDataModel from '../../../../assets/transformationdatamodel.js';
-import * as data from '../../../../assets/data.json';
 
 @Component({
   selector: 'pipeline',
@@ -15,7 +11,6 @@ import * as data from '../../../../assets/data.json';
 export class PipelineComponent implements OnChanges, OnInit {
 
   @Input() function: any;
-  @Output() emitter = new EventEmitter();
   private steps: any = [];
   private addFunctionAfter: boolean;
   private lastFunctionIndex: number;
@@ -42,13 +37,18 @@ export class PipelineComponent implements OnChanges, OnInit {
     return this.steps;
   }
 
-  functionAdd(index) {
-    this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[index], this.function);
-    return 'OK';
+  functionAdd() {
+    if (this.addFunctionAfter == true) {
+      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex], this.function);
+    } else {
+      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
+    }
+    this.generateLabels();
+    this.addFunctionAfter = false;
   }
 
-  functionRemove(index) {
-    this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[index]);
+  functionRemove() {
+    this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
     this.generateLabels();
   }
 
@@ -58,9 +58,10 @@ export class PipelineComponent implements OnChanges, OnInit {
       if (event.path[2].value == 'add') {
         this.addFunctionAfter = true;
         this.tooltip = false;
+        this.functionAdd();
       }
       else if (event.path[2].value == 'remove') {
-        this.functionRemove(this.currentFunctionIndex);
+        this.functionRemove();
       }
     }
     else {
@@ -68,30 +69,17 @@ export class PipelineComponent implements OnChanges, OnInit {
       if (event.path[3].value == 'add') {
         this.addFunctionAfter = true;
         this.tooltip = false;
+        this.functionAdd();
       }
       else if (event.path[3].value == 'remove') {
-        this.functionRemove(this.currentFunctionIndex);
+        this.functionRemove();
       }
     }
   }
 
   ngOnChanges(changes: any) {
-    console.log(changes.function.currentValue);
-    let self = this;
     if (this.function) {
-      let promise = new Promise((resolve, reject) => {
-        if (self.addFunctionAfter == true) {
-          resolve(self.functionAdd(self.currentFunctionIndex));
-          this.addFunctionAfter = false;
-        } else {
-          resolve(self.functionAdd(self.lastFunctionIndex));
-          this.addFunctionAfter = false;
-        }
-      }
-      );
-      promise.then(() => {
-        self.generateLabels();
-      })
+      this.functionAdd();
     }
   }
 }
