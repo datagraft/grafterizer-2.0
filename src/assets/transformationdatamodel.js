@@ -2236,7 +2236,6 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
     console.log('Unable to compute partial transformation: unknown error', e);
     return this;
   }
-
 };
 this.Transformation = Transformation;
 

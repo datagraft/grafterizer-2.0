@@ -12,7 +12,7 @@ export class MakeDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
   @Output() emitter = new EventEmitter();
-  private function: any;
+  @Input() function: any;
   private makedatasetmode: String = '';
   private columnsArray: any = [];
   private useLazy: boolean;
@@ -64,6 +64,7 @@ export class MakeDatasetComponent implements OnInit {
       }
     }
     this.emitter.emit(this.function);
+    console.log(this.columnsArray);
     this.modalEnabled = false;
   }
 

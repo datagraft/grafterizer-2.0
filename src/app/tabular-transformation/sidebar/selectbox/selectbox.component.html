@@ -12,8 +12,7 @@
   <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button>
 </div>
 
-
-<make-dataset [modalEnabled]="selected=='make-dataset'" class="sin-flex" (emitter)="emitFunction($event)"></make-dataset>
+<make-dataset [modalEnabled]="selected=='make-dataset'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></make-dataset>
 <take-rows [modalEnabled]="selected=='take-rows'" class="sin-flex" (emitter)="emitFunction($event)"></take-rows>
 <take-columns [modalEnabled]="selected=='take-columns'" class="sin-flex" (emitter)="emitFunction($event)"></take-columns>
 <split-columns [modalEnabled]="selected=='split-columns'" class="sin-flex" (emitter)="emitFunction($event)"></split-columns>

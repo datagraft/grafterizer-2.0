@@ -1,20 +1,34 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
+import { TabularTransformationService } from '../../tabular-transformation.service';
 
 @Component({
+  moduleId: module.id,
   selector: 'selectbox',
   templateUrl: './selectbox.component.html',
-  styleUrls: ['./selectbox.component.css']
+  styleUrls: ['./selectbox.component.css'],
+  providers: []
 })
-export class SelectboxComponent implements OnInit {
+export class SelectboxComponent implements OnInit, OnDestroy {
 
   private transformations: SelectItem[];
+  private function: any;
   private selected: String;
   private modalEnabled: boolean = false;
 
+  private message: any;
+  private subscription: Subscription;
+
   @Output() emitter = new EventEmitter();
 
-  constructor() {
+  constructor(private tabularTransformationService: TabularTransformationService) {
+    this.subscription = this.tabularTransformationService.getMessage().subscribe(message => {
+      this.function = message;
+      this.selected = 'make-dataset';
+      this.modalEnabled = true;
+      console.log(message);
+    });
     this.transformations = [];
     this.transformations.push({ label: 'Custom function', value: 'utility-function' });
     this.transformations.push({ label: 'Add row', value: 'add-row' });
@@ -37,6 +51,10 @@ export class SelectboxComponent implements OnInit {
   }
 
   ngOnInit() { }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 
   emitFunction(value: any) {
     this.emitter.emit(value);

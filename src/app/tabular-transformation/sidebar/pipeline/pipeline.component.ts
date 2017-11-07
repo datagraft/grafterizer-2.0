@@ -1,7 +1,9 @@
 import { Component, Input, EventEmitter, OnChanges, OnInit } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
+import { TabularTransformationService } from '../../tabular-transformation.service';
 
 @Component({
+  moduleId: module.id,
   selector: 'pipeline',
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.css'],
@@ -18,13 +20,18 @@ export class PipelineComponent implements OnChanges, OnInit {
   private position: string;
   private tooltip: boolean;
 
-  constructor(private transformationService: TransformationService) {
+  constructor(private transformationService: TransformationService, private tabularTransformationService: TabularTransformationService) {
     this.addFunctionAfter = false;
     this.position = 'bottom-middle';
     this.tooltip = true;
   }
 
   ngOnInit() { }
+
+  sendFunction(event) {
+    this.currentFunctionIndex = event.path[0].id;
+    this.tabularTransformationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
+  }
 
   generateLabels() {
     this.steps = [];
@@ -75,6 +82,11 @@ export class PipelineComponent implements OnChanges, OnInit {
         this.functionRemove();
       }
     }
+  }
+
+  displayFunction(event) {
+    this.currentFunctionIndex = event.path[0].id;
+    console.log(this.currentFunctionIndex);
   }
 
   ngOnChanges(changes: any) {

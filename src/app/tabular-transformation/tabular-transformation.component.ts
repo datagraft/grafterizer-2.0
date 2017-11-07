@@ -88,6 +88,16 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
       })
   }
 
+  getPartialTransformation(untilFunction) {
+    const paramMap = this.route.snapshot.paramMap;
+    let partialTransformationObj = this.transformationSvc.transformationObj.pipelines[0].functions[untilFunction];
+    this.transformationSvc.transformationObj.getPartialTransformation(partialTransformationObj);
+    const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
+      .then((result) => {
+        this.handsonTable.displayJsEdnData(result);
+      })
+  }
 
   tableSelectionChanged(newSelection: any) {
     console.log(newSelection);
