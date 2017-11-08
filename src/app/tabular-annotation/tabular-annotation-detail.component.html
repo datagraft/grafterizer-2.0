@@ -1,1 +1,68 @@
-<p>Tabular annotation detail works</p>
+<div class="container">
+  <div class="row">
+    <div class="col-xs-6">
+      <a [routerLink]="['/home']"> Return to Annotation Mode </a>
+      <br> Hello, i'm DetailMode
+      <br> Subject : {{ annotation.isSubject }}
+      <br> Source : {{ annotation.source }}
+      <br> sourceLabel : {{ annotation.sourceLabel }}
+      <br>
+      <div *ngIf=" !annotation.isSubject ">
+        Property : {{ annotation.property }}
+        <br> PropertyLabel : {{ annotation.propertyLabel }}
+        <br> ColumnType : {{ annotation.columnType }}
+        <br> columnTypeLabel : {{ annotation.columnTypeLabel }}
+        <br> columnDataType : {{annotation.columnDataType}}
+        <br>
+      </div>
+      <div id="annotation-component">
+        <div>
+          <ngl-badge [type]="subjectMarker" class="slds-m-horizontal--large"> Subject </ngl-badge>
+          <ngl-badge [type]="objectMarker" class="slds-m-horizontal--large"> Object </ngl-badge>
+        </div>
+        <nav>
+          <a class="btn btn-sm" [routerLink]="['/detail']" (click)="goToDetailMode()"> Go to detail page </a>
+          <br>
+        </nav>
+
+        <div>
+          <ngl-form-element label="Input Label" [error]="hasError ? error : null" class="slds-m-top--small">
+            <input nglFormControl type="text" id="{{ colId }}.Type" placeholder="Insert here source" value="{{ annotation.source }}"
+              [required]="required">
+            <input nglFormControl type="text" id="{{ colId }}.TypeLabel" placeholder="Insert here source label" value="{{ annotation.sourceLabel }}"
+              [required]="required">
+            <br>
+
+            <div *ngIf=" !annotation.isSubject ">
+              <input nglFormControl type="text" id="{{ colId }}.Property" placeholder="Insert here property" value="{{ annotation.property }}">
+              <br>
+              <input nglFormControl type="text" id="{{ colId }}.PropertyLabel" placeholder="Insert here property label" value="{{ annotation.propertyLabel }}">
+              <br>
+
+
+              <fieldset ngl-form-group-alt [required]="required" [error]="hasError ? error : null" class="slds-m-top--small">
+                <template nglFormLabel>
+                  <i>Select datatype of object</i>
+                </template>
+                <ngl-form-group-element *ngFor="let day of ['URL', 'Literal']">
+                  <template nglFormLabel>{{ day }}</template>
+                  <input nglFormControl type="radio" name="{{ colId }}.columnType" value="{{ day }}" (click)="dataTypeSelect()">
+
+                </ngl-form-group-element>
+              </fieldset>
+
+              <input nglFormControl type="text" id="{{ colId }}.DataTypeLabel" placeholder="Insert here datatype label" value="{{ annotation.columnTypeLabel }}">
+              <br>
+            </div>
+          </ngl-form-element>
+          <button type="button" nglButton="neutral" (click)="saveChanges()"> Apply </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <table ngl-datatable [data]="colContent" trackByKey="value" [(sort)]="sort" (onRowClick)="onRowClick($event)" class="slds-max-medium-table--stacked-horizontal">
+        <ngl-datatable-column key="value" sortable></ngl-datatable-column>
+      </table>
+    </div>
+  </div>
+</div>
