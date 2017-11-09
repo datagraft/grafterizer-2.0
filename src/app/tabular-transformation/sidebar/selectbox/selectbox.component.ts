@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
-import { TabularTransformationService } from '../../tabular-transformation.service';
+import { ComponentCommunicationService } from '../../component-communication.service';
 
 @Component({
   moduleId: module.id,
@@ -22,8 +22,8 @@ export class SelectboxComponent implements OnInit, OnDestroy {
 
   @Output() emitter = new EventEmitter();
 
-  constructor(private tabularTransformationService: TabularTransformationService) {
-    this.subscription = this.tabularTransformationService.getMessage().subscribe(message => {
+  constructor(private componentCommunicationService: ComponentCommunicationService) {
+    this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
       this.function = message;
       this.selected = 'make-dataset';
       this.modalEnabled = true;

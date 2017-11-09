@@ -41,7 +41,7 @@ import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-datase
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
 
-import { TabularTransformationService } from './tabular-transformation.service';
+import { ComponentCommunicationService } from './component-communication.service';
 
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 
@@ -103,7 +103,7 @@ import { AngularSplitModule } from 'angular-split';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [TabularTransformationService]
+  ], providers: [ComponentCommunicationService]
 })
 
 export class TabularTransformationModule { }

@@ -1,6 +1,6 @@
 import { Component, Input, EventEmitter, OnChanges, OnInit } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
-import { TabularTransformationService } from '../../tabular-transformation.service';
+import { ComponentCommunicationService } from '../../component-communication.service';
 
 @Component({
   moduleId: module.id,
@@ -20,7 +20,7 @@ export class PipelineComponent implements OnChanges, OnInit {
   private position: string;
   private tooltip: boolean;
 
-  constructor(private transformationService: TransformationService, private tabularTransformationService: TabularTransformationService) {
+  constructor(private transformationService: TransformationService, private componentCommunicationService: ComponentCommunicationService) {
     this.addFunctionAfter = false;
     this.position = 'bottom-middle';
     this.tooltip = true;
@@ -30,7 +30,7 @@ export class PipelineComponent implements OnChanges, OnInit {
 
   sendFunction(event) {
     this.currentFunctionIndex = event.path[0].id;
-    this.tabularTransformationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
+    this.componentCommunicationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
   }
 
   generateLabels() {

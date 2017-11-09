@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { Subject } from 'rxjs/Subject';
 
 @Injectable()
-export class TabularTransformationService {
+export class ComponentCommunicationService {
   private subject = new Subject<any>();
 
   sendMessage(message: any) {
