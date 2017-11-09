@@ -25,6 +25,7 @@
     "@ngrx/core": "^1.2.0",
     "@ngrx/effects": "^2.0.5",
     "@ngrx/store": "^2.2.3",
+    "@ngui/auto-complete": "^0.16.0",
     "@swimlane/ngx-charts": "git+https://github.com/rotaricristian/ngx-charts.git",
     "@swimlane/ngx-datatable": "^9.3.1",
     "@webcomponents/custom-elements": "^1.0.4",

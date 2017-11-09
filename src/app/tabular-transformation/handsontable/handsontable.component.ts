@@ -114,7 +114,7 @@ export class HandsontableComponent implements OnInit {
         data: data[':rows']
       });
       this.showLoading = false;
-      this.hot.render();
+      //this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

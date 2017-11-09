@@ -64,7 +64,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
               (result) => {
                 this.handsonTable.displayJsEdnData(result);
                 this.transformationSvc.transformationObj = transformationObj;
-                console.log(this.transformationSvc.transformationObj);
+                //console.log(this.transformationSvc.transformationObj);
                 this.pipelineComponent.generateLabels();
               },
               (error) => {
@@ -85,6 +85,9 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
         this.handsonTable.displayJsEdnData(result);
+        console.log(this.transformationSvc.transformationObj);
+        console.log('data:');
+        console.log(result);
       })
   }
 
