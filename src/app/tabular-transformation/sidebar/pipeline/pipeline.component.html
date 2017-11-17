@@ -8,6 +8,9 @@
 <div class="wrapper">
   <div class="btn-group btn-link btn-sm" *ngFor="let step of steps">
     <button class="btn" value="function-name" id="{{step.id}}" (click)="sendFunction($event)">{{step.type}}</button>
+    <button class="btn" value="preview" id="{{step.id}}" (click)="getButtonEvent($event)">
+      <clr-icon shape="eye" class="is-solid" size="25"></clr-icon>
+    </button>
     <div class="signpost-item">
       <div class="trigger-item">
         <clr-signpost>

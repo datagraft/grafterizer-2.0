@@ -12,8 +12,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class TakeColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
@@ -24,23 +24,22 @@ export class TakeColumnsComponent implements OnInit {
   private take: boolean = true;
   private docstring: String;
 
-  constructor() {
-    if (!this.function) {
-      this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
-        this.indexFrom, this.indexTo, this.take, this.docstring);
-    }
-    else {
+  constructor() { }
+
+  ngOnInit() {
+    this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
+      this.indexFrom, this.indexTo, this.take, this.docstring);
+    this.modalEnabled = false;
+  }
+
+  ngOnChanges() {
+    if (this.modalEnabled && this.function) {
       this.columnsArray = this.function.columnsArray;
       this.indexFrom = this.function.indexFrom;
       this.indexTo = this.function.indexTo;
       this.take = this.function.take;
       this.docstring = this.function.docstring;
-
-    }
-  }
-
-  ngOnInit() {
-    this.modalEnabled = false;
+    };
   }
 
   accept() {

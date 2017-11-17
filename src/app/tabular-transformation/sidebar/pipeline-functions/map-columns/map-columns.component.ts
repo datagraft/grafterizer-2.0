@@ -13,8 +13,8 @@ import * as data from '../../../../../assets/data.json';
 export class MapColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   // Transformation is needed to search for prefixers/functions

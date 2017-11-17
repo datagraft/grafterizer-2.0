@@ -13,8 +13,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class AddColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   private addcolumnsmode: String[] = [];
   private columnsArray: any[];
   private docstring: String;

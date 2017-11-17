@@ -17,6 +17,7 @@ import * as _ from 'lodash';
 export class CustomFunctionModalComponent implements OnInit, OnChanges {
   @ViewChild('editor') editor: any;
   @Input() modalEnabled;
+  @Input() private function: any;
 
   private functions: any[] = [];
   private customFunctionDeclarations: any[] = [];

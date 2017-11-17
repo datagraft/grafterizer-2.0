@@ -9,17 +9,18 @@ import { AddRowFunction } from '../../../../../assets/transformationdatamodel.js
 export class AddRowComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Input() colnames: string[];
   @Output() emitter = new EventEmitter();
-  private function: any;
-  private position: number;
-  private values: any;
+  private position: number = 0;
+  private values: any = [];
   private docstring: String;
 
   constructor() { }
 
   ngOnInit() {
     //should be removed when column names are provided from the outside
+    this.function = new AddRowFunction(this.position, this.values, this.docstring);
     this.colnames = ["Weather", "Rain", "Temperature"];
   }
   ngOnChanges() {

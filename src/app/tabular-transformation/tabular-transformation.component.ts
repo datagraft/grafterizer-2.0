@@ -19,6 +19,7 @@ import * as generateClojure from 'assets/generateclojure.js';
 export class TabularTransformationComponent implements OnInit, AfterViewInit, DoCheck {
 
   private function: any;
+  private partialPipeline: any;
   private differ: any;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
@@ -93,12 +94,13 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   getPartialTransformation(untilFunction) {
     const paramMap = this.route.snapshot.paramMap;
-    let partialTransformationObj = this.transformationSvc.transformationObj.pipelines[0].functions[untilFunction];
-    this.transformationSvc.transformationObj.getPartialTransformation(partialTransformationObj);
-    const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
+    this.partialPipeline = this.transformationSvc.transformationObj.getPartialTransformation(untilFunction);
+    const clojure = generateClojure.fromTransformation(this.partialPipeline);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
         this.handsonTable.displayJsEdnData(result);
+        this.pipelineComponent.generateLabels();
+        console.log(this.partialPipeline);
       })
   }
 
@@ -115,6 +117,16 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   emitFunction(value: any) {
     this.function = value;
+  }
+
+  editFunction(pipeline) {
+    console.log(pipeline);
+    if (pipeline.edit == true) {
+      this.updateTransformation();
+    }
+    else if (pipeline.preview == true) {
+      this.getPartialTransformation(pipeline.function);
+    }
   }
 
 }

@@ -12,8 +12,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class MergeColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];

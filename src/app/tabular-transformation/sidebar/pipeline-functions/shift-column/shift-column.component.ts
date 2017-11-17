@@ -13,8 +13,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class ShiftColumnComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private colFrom: Number;

@@ -14,8 +14,8 @@ import * as data from '../../../../../assets/data.json';
 export class RenameColumnsComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  private function: any;
   // Transformation is needed to search for prefixers/functions
   //@Input() transformation: any;
   private transformation: any;

@@ -10,9 +10,9 @@ import { RemoveDuplicatesFunction } from '../../../../../assets/transformationda
 export class DeduplicateComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Input() colnames: string[];
   @Output() emitter = new EventEmitter();
-  private function: any;
   private showMessage: boolean;
   private mode;
   private columns;

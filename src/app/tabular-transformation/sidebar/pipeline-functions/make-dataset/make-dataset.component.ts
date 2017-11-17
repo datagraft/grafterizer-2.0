@@ -11,8 +11,8 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class MakeDatasetComponent implements OnInit {
 
   @Input() modalEnabled;
+  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  @Input() function: any;
   private makedatasetmode: String = '';
   private columnsArray: any = [];
   private useLazy: boolean;
