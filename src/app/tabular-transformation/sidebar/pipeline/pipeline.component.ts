@@ -75,11 +75,13 @@ export class PipelineComponent implements OnChanges, OnInit {
     }
     this.generateLabels();
     this.addFunctionAfter = false;
+    console.log('add');
   }
 
   functionRemove() {
     this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
     this.generateLabels();
+    console.log('remove');
   }
 
   getModes(mode) {
@@ -99,15 +101,16 @@ export class PipelineComponent implements OnChanges, OnInit {
   getButtonEvent(event) {
     let index;
     let mode;
-    if (event.path[2].id != '') {
-      index = event.path[2].id;
-      mode = event.path[2].value;
+    console.log(event);
+    if (event.path[0].id != '') {
+      index = event.path[0].id;
+      mode = event.path[0].value;
       this.currentFunctionIndex = index;
       this.getModes(mode);
     }
     else {
-      index = event.path[3].id;
-      mode = event.path[3].value;
+      index = event.path[1].id;
+      mode = event.path[1].value;
       this.currentFunctionIndex = index;
       this.getModes(mode);
     }

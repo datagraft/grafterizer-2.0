@@ -8,8 +8,7 @@ export class ComponentCommunicationService {
 
   sendMessage(message: any) {
     this.subject.next(message);
-    console.log(message)
-    debugger
+    console.log(message);
   }
 
   clearMessage() {

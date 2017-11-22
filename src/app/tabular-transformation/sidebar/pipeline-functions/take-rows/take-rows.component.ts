@@ -3,7 +3,6 @@ import { TransformationService } from '../../../../transformation.service';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
-
 @Component({
   selector: 'take-rows',
   templateUrl: './take-rows.component.html',
@@ -44,7 +43,6 @@ export class TakeRowsComponent implements OnInit {
     this.function.take = this.take;
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
-    debugger
     this.modalEnabled = false;
   }
 
