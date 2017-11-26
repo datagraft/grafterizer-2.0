@@ -10,6 +10,7 @@ import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
 import { CodemirrorModule } from 'ng2-codemirror';
+import { MaterialModule } from '@angular/material';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -69,7 +70,8 @@ import { AngularSplitModule } from 'angular-split';
     SuiModule,
     Ng2CompleterModule,
     CodemirrorModule,
-    AngularSplitModule
+    AngularSplitModule,
+    MaterialModule
   ],
   declarations: [
     TabularTransformationComponent,

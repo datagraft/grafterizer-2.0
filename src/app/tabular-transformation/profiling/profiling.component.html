@@ -1,25 +1,47 @@
-<!-- <ngl-form-element class="slds-m-top--small">
-  <input nglFormControl type="text" placeholder="Column header" (keyup.enter)="getHeader($event.target.value)">
-</ngl-form-element> -->
+<md-grid-list cols="4" rowHeight="15:1">
+  <md-grid-tile [colspan]="tileSpanMissingValues" [style.background]="tileColorMissingValues">
+    <div class='missingValues'>
+      Missing values
+    </div>
+  </md-grid-tile>
+  <md-grid-tile [colspan]="tileSpanDataDistribution" [style.background]="tileColorDataDistribution">
+    <div class='dataDistribution'>
+      Data distribution
+    </div>
+  </md-grid-tile>
+</md-grid-list>
 
-<div *ngIf="header" id="visual-container">
+<div fxLayout='column' class="container">
 
-  <div fxFlex [fxLayout]="direction" class="innerContainer">
+  <div fxFlex="100%" [fxLayout]="direction" class="innerContainer">
 
-    <div fxFlex="33" class="chart">
-      <filled-piechart (done)='onPiechartDone()' [chartData]="column"></filled-piechart>
+    <div class="advancedPieChart">
+      <ngx-charts-advanced-pie-chart [view]="dimensionsAdvancedPieChart" [scheme]="colorSchemeAdvancedPieChart" [results]="dataAdvancedPieChart"
+        [gradient]="gradient" (select)="advancedPieChartClicked($event)">
+      </ngx-charts-advanced-pie-chart>
     </div>
 
-    <!-- <div fxFlex="10%" class="chart">
-      <statistic-table *ngIf="pieChartDone" (done)="onStatisticsDone()" [column] = "column"></statistic-table>
-    </div> -->
-
-    <div fxFlex="33" class="chart">
-      <histogram (done)="onHistogramDone()" [header]="header" [column]="column"></histogram>
+    <div fxFlex="20%" class="datatable">
+      <table ngl-datatable [data]="dataStatisticsTable" [striped]="datatableStriped" [bordered]="datatableBordered" style="background-color:rgb(250, 250, 250); border: 1px solid #fafafa; width: 220px;"
+        trackByKey="rank" class="slds-max-medium-table--stacked-horizontal">
+        <ngl-datatable-column heading="" key="stat"></ngl-datatable-column>
+        <ngl-datatable-column heading="" key="value" cellClass="slds-text-align--center">
+          <template nglDatatableCell let-row="row">
+            <b>{{row.value}}</b>
+          </template>
+        </ngl-datatable-column>
+      </table>
     </div>
 
-    <div fxFlex="33" class="chart">
-      <boxplot [column]="column"></boxplot>
+    <div fxFlex="30%" class="barChart">
+      <ngx-charts-bar-vertical [view]="dimensionsBarChart" [scheme]="colorSchemeBarChart" [results]="dataBarChart" [legend]="showLegend"
+        [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel"
+        [yAxisLabel]="yAxisLabel" [gradient]="gradient" (select)="barChartClicked($event)">
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <div fxFlex="20%" class="boxplot">
+      <div id="boxplot"></div>
     </div>
 
   </div>

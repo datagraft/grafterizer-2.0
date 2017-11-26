@@ -21,9 +21,11 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   private function: any;
   private partialPipeline: any;
   private differ: any;
+  private handsontableSelection: any;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
+  @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
@@ -64,8 +66,8 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
               .then(
               (result) => {
                 this.handsonTable.displayJsEdnData(result);
+                this.profilingComponent.loadJSON(result);
                 this.transformationSvc.transformationObj = transformationObj;
-                //console.log(this.transformationSvc.transformationObj);
                 this.pipelineComponent.generateLabels();
               },
               (error) => {
@@ -86,9 +88,8 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
         this.handsonTable.displayJsEdnData(result);
-        console.log(this.transformationSvc.transformationObj);
-        console.log('data:');
-        console.log(result);
+        this.profilingComponent.loadJSON(result);
+        this.profilingComponent.refresh(this.handsontableSelection);
       })
   }
 
@@ -105,14 +106,15 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   }
 
   tableSelectionChanged(newSelection: any) {
-    console.log(newSelection);
-    const profile = this.recommenderService
-      .getDataProfile(newSelection.row, newSelection.col,
-      newSelection.row2, newSelection.col2,
-      newSelection.totalRows, newSelection.totalCols);
-    const recommend = this.recommenderService.getRecommendation(profile);
-    console.log(recommend);
-    //    this.recommenderService.getDataProfile()
+    this.handsontableSelection = newSelection;
+    this.profilingComponent.refresh(newSelection);
+    /*     const profile = this.recommenderService
+          .getDataProfile(newSelection.row, newSelection.col,
+          newSelection.row2, newSelection.col2,
+          newSelection.totalRows, newSelection.totalCols);
+        const recommend = this.recommenderService.getRecommendation(profile);
+        console.log(recommend);
+        this.recommenderService.getDataProfile() */
   }
 
   emitFunction(value: any) {

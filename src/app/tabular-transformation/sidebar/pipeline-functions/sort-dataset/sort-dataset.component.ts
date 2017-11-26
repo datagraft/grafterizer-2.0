@@ -26,11 +26,9 @@ export class SortDatasetComponent implements OnInit {
 
   constructor() {
     if (!this.function) {
-      console.log("!function ");
       this.sortings = [new transformationDataModel.ColnameSorttype("", "", false)];
       this.function = new transformationDataModel.SortDatasetFunction(
         this.sortings, this.docstring);
-      console.log(this.sortings);
     }
 
     else {

@@ -2,3 +2,67 @@
   position: relative;
   height: 350px;
 }
+
+.missingValues {
+  color: white;
+  font-weight: bold;
+}
+
+.dataDistribution {
+  color: black;
+  font-weight: bold;
+}
+
+md-grid-list {
+  position: relative;
+  z-index: +1;
+  width: 1600px;
+}
+
+md-grid-tile {
+  margin-left: 0px;
+  margin-bottom: -30px;
+}
+
+.barChart {
+  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.8rem;
+  line-height: 2.6rem;
+  letter-spacing: 0.01rem;
+  color: #212121;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  padding-top: 50px;
+  padding-left: 80px;
+}
+
+.advancedPieChart {
+  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 50%;
+  line-height: 2.6rem;
+  letter-spacing: 0.01rem;
+  color: #212121;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin-top: -60px;
+  margin-left: -280px;
+}
+
+#boxplot {
+  width: 350px;
+  height: 370px;
+  padding-left: 170px;
+}
+
+.datatable {
+  width: 250px;
+  height: 300px;
+  padding-top: 20px;
+  margin-left: -210px;
+}

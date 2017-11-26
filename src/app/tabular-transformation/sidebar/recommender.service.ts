@@ -65,10 +65,10 @@ export class RecommenderService {
   data = [];
 
   constructor() {
-    let csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/flights-3m.csv');
+    let csvData = [datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/weather.csv')];
 
     for (let o of csvData) {
-      let record = [o.date, o.delay, o.distance, o.origin, o.destination];
+      let record = [o.location, o.date, o.precipitation, o.temp_max, o.temp_min, o.wind, o.weather];
       this.data.push(record);
     }
   }

@@ -95,6 +95,7 @@ export class HandsontableComponent implements OnInit {
 
   public displayJsEdnData(data: JSON) {
     this.showLoading = true;
+    console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
       const rowData = data[':rows'];
