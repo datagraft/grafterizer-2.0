@@ -1,0 +1,9 @@
+:host >>> .no-margin-top {
+  margin-top: 6px;
+}
+
+.label.inverse{
+  border: 1px solid #565656;
+  color: #dff0d0;
+  background: #737373;
+}

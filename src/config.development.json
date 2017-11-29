@@ -1,5 +1,6 @@
 {
   "jarfter-path": "http://10.80.1.8:55551",
   "dispatch-path": "http://10.80.1.8:8082",
-  "graftwerk-cache-path": "http://10.80.1.8:8083"
+  "graftwerk-cache-path": "http://10.80.1.8:8083",
+  "abstat-path": "http://abstat.disco.unimib.it"
 }

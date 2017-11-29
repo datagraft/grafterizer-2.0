@@ -140,6 +140,8 @@ export class AnnotationService {
   subjectsChange: Subject<Map<number, String>> = new Subject<Map<number, String>>();
 
   constructor(public http: Http) {
+    this.annotations = [];
+    this.colNames = [];
     this.subjectsChange.subscribe((value) => {
       this.subjects = value;
     });
@@ -149,15 +151,9 @@ export class AnnotationService {
     this.subjectsChange.next(subjects);
   }
 
-  init() {
-    this.annotations = [];
-    console.log('INIZIALIZZATO');
-    console.log(this.subjects);
-    this.colNames = [];
-  }
-
   // call the remote service that try to annotate the table, after that map the results in the arrays into annotationService
   getRemoteResponse() {
+    // TODO: change url
     this.http.request('http://localhost:3000/response').subscribe((res: Response) => {
       const response = res.json();
       // get annotation from remote service
@@ -198,16 +194,16 @@ export class AnnotationService {
   //   return this.header;
   // }
 
-  abstatAutofill(word, position, rows, start): Observable<string[]> {
-
-    const URL = 'http://abstat.disco.unimib.it/api/v1/SolrSuggestions?query='.concat(word, ',',
-      position, '&rows=', rows, '&start=', start);
-
-    return this.http.request(URL)
-      .map((response: Response) => {
-        return (<any>response)._body;
-      });
-  }
+  // abstatAutofill(word, position, rows, start): Observable<string[]> {
+  //
+  //   const URL = 'http://abstat.disco.unimib.it/api/v1/SolrSuggestions?query='.concat(word, ',',
+  //     position, '&rows=', rows, '&start=', start);
+  //
+  //   return this.http.request(URL)
+  //     .map((response: Response) => {
+  //       return (<any>response)._body;
+  //     });
+  // }
 
   // AbstatDomain(type, property, object) {
   // }
@@ -216,7 +212,6 @@ export class AnnotationService {
     for (let i = 0; i < headers.length; i++) {
       this.colNames[i] = ''.concat(i.toString(), ': ', headers[i]);
     }
-    console.log('GENERATI i colNames');
   }
 
   // updateSubjects(oldSubject, newSubject) {

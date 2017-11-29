@@ -1,0 +1,106 @@
+<div id="annotation-component" class="card">
+  <div class="card-header">
+    <clr-icon *ngIf="annotated" shape="check-circle" class="is-solid is-success pull-right"
+              size="25" alt="Valid annotation"></clr-icon>
+    <clr-icon *ngIf="!annotated" shape="exclamation-triangle"
+              class="is-solid is-warning pull-right" size="25"
+              alt="Not valid annotation"></clr-icon>
+    Name: {{header}}
+    <p class="p6 no-margin-top">Column ID: {{annotationService.colNames[colId]}}</p>
+  </div>
+  <div class="card-block">
+    <div class="card-title">
+      Column Type
+    </div>
+    <div class="card-text">
+      <ngl-form-element [error]="!validateURL(annotation.columnType) ? urlError :
+    (hasColumnTypeError ? columnTypeError : null)">
+        <div class="slds-form-element__control">
+          <input nglFormControl ngui-auto-complete [(ngModel)]="annotation.columnType"
+                 [source]="typeSuggestions"
+                 [list-formatter]="autocompleteListFormatter"
+                 value-property-name="suggestion"
+                 display-property-name="suggestion"
+                 loading-text="Querying ABSTAT..."
+                 type="text" attr.data-value="{{ colId }}.ColumnType"
+                 placeholder="Insert column type"
+                 (keyup)="invalidateAnnotation()"
+                 (blur)="hasUrlError = (validateURL(annotation.columnType))"
+                 min-chars="2">
+        </div>
+      </ngl-form-element>
+    </div>
+  </div>
+  <div class="card-block">
+    <div class="card-title">
+      Column values type
+    </div>
+    <div class="card-text">
+      <fieldset ngl-form-group-alt
+      [error]="hasSubjectError ? subjectError : (hasUrlLiteralError ? urlLiteralError : null)"
+      class="slds-m-top--small">
+      <ng-template nglFormLabel></ng-template>
+      <ngl-form-group-element *ngFor="let columnDataType of ['URL', 'Literal']">
+        <ng-template nglFormLabel>{{columnDataType}}</ng-template>
+        <input nglFormControl type="radio"
+        name="{{ colId }}.columnDataType" value="URL"
+        (click)="dataTypeSelect(columnDataType)">
+      </ngl-form-group-element>
+      </fieldset>
+    </div>
+  </div>
+  <div class="card-block">
+    <div class="card-title">
+      Column roles
+      <clr-tooltip>
+        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+        <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
+          <span>The roles are detected based on the relationships.</span>
+        </clr-tooltip-content>
+      </clr-tooltip>
+    </div>
+    <div class="card-text">
+      <div class="slds-form-element__control">
+        <span class="label" [ngClass]="{'inverse': isSubject}">SUB</span>
+        <span class="label" [ngClass]="{'inverse': isObject}">OBJ</span>
+      </div>
+    </div>
+  </div>
+  <div class="card-block">
+    <div class="card-title">
+      Relationships
+    </div>
+    <div class="card-text">
+      <ngl-form-element [error]="!(subjectValidate(annotation.source)) ? sourceError :
+    (hasSourcePropertyError ? sourcePropertyError : null)"
+                        class="slds-m-top--small">
+        <input nglFormControl auto-complete [(ngModel)]="annotation.source"
+               [source]="listOfSubjects"
+               (change)="getSubjects()"
+               type="text" attr.data-value="{{ colId }}.Source"
+               placeholder="Choose a source column"
+               value="{{ annotation.source }}"
+               (change)="invalidateAnnotation()">
+      </ngl-form-element>
+      <ngl-form-element [error]="!(validateURL(annotation.property)) ? returnUrlError() :
+    (hasPropertySourceError ? sourcePropertyError : null)">
+        <input nglFormControl ngui-auto-complete [(ngModel)]="annotation.property"
+               [source]="propertySuggestions"
+               [list-formatter]="autocompleteListFormatter"
+               value-property-name="suggestion"
+               display-property-name="suggestion"
+               loading-text="Querying ABSTAT..."
+               type="text" attr.data-value="{{ colId }}.Property"
+               placeholder="Insert relationship property"
+               (change)="invalidateAnnotation()"
+               (blur)="hasUrlError = (validateURL(annotation.property))"
+               min-chars="2">
+      </ngl-form-element>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button class="btn btn-sm btn-link" [disabled]="annotated"
+            (click)="saveChangesSmall(colId)">Annotate</button>
+    <button class="btn btn-sm btn-link" [routerLink]="['/detail']" (click)="goToDetailMode()">Detail page</button>
+  </div>
+</div>
