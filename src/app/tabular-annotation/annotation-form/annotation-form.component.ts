@@ -241,7 +241,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   };
 
   propertySuggestions = (keyword: any): Observable<any[]> => {
-    return this.abstatSuggestions(keyword, 'prop')
+    return this.abstatSuggestions(keyword, 'pred')
   };
 
   autocompleteListFormatter = (data: any) => {
