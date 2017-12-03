@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -11,10 +11,14 @@ import * as data from '../../../../../assets/data.json';
   styleUrls: ['./rename-columns.component.css']
 })
 
-export class RenameColumnsComponent implements OnInit {
+export class RenameColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
+
+  @Input() defaultParams;
+
   @Input() private function: any;
+
   @Output() emitter = new EventEmitter();
   // Transformation is needed to search for prefixers/functions
   //@Input() transformation: any;
@@ -56,6 +60,20 @@ export class RenameColumnsComponent implements OnInit {
   ngOnInit() {
     this.modalEnabled = false;
 
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colsToRename) {
+        this.renamecolumnsmode = "map";
+        this.mappings = [];
+        for (let colname of this.defaultParams.colsToRename) {
+          this.mappings.push(colname, "");
+        }
+      }
+
+    }
   }
 
   addRenameFunction() {

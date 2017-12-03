@@ -3,6 +3,7 @@ import { TransformationService } from '../../../../transformation.service';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
+
 @Component({
   selector: 'take-rows',
   templateUrl: './take-rows.component.html',

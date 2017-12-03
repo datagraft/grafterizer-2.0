@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, SimpleChanges, EventEmitter, OnChanges } from '@angular/core';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -10,10 +10,11 @@ import * as data from '../../../../../assets/data.json';
   templateUrl: './map-columns.component.html',
   styleUrls: ['./map-columns.component.css']
 })
-export class MapColumnsComponent implements OnInit {
+export class MapColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
   @Input() private function: any;
+  @Input() defaultParams;
   @Output() emitter = new EventEmitter();
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
@@ -33,7 +34,6 @@ export class MapColumnsComponent implements OnInit {
 
   constructor(private completerService: CompleterService) {
     this.transformation = transformationDataModel.Transformation.revive(data);
-
 
     this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
     if (!this.function) {
@@ -57,7 +57,24 @@ export class MapColumnsComponent implements OnInit {
 
   ngOnInit() {
   }
+  ngOnChanges(changes: SimpleChanges) {
 
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.keyFunctionPairs) {
+
+        this.keyFunctionPairs[0] = new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[0].key, this.defaultParams.keyFunctionPairs[0].func, []);
+        this.functionsToMapWith[0] = this.defaultParams.keyFunctionPairs[0].func;
+        this.keys[0] = this.defaultParams.keyFunctionPairs[0].key;
+        for (let i = 1; i < this.defaultParams.keyFunctionPairs.length; ++i) {
+          this.keyFunctionPairs.push(new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[i].key, this.defaultParams.keyFunctionPairs[i].func, []));
+          this.functionsToMapWith.push(this.defaultParams.keyFunctionPairs[i].func);
+          this.keys.push(this.defaultParams.keyFunctionPairs[i].key);
+
+        }
+      }
+
+    }
+  }
   accept() {
     this.function.keyFunctionPairs = this.keyFunctionPairs;
     this.function.docstring = this.docstring;

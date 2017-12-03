@@ -1,12 +1,13 @@
 <split direction="horizontal">
   <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
-    <selectbox fxflex class="sin-suggested-transformations" (emitter)="emitFunction($event)"></selectbox>
+    <selectbox fxflex class="sin-suggested-transformations" [suggestions]="recommendations" [transformation]="transformationSvc.transformationObj"
+      (emitter)="emitFunction($event)" [headers]="loadedDataHeaders"></selectbox>
     <pipeline fxflex class="sin-pipeline" [function]="function" (emitter)="editFunction($event)"></pipeline>
   </split-area>
   <split-area [size]="85">
     <split direction="vertical">
       <split-area [size]="60">
-        <app-handsontable (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
+        <app-handsontable [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)" (emitter)="emitFunction($event)"></app-handsontable>
       </split-area>
       <split-area [size]="40">
         <profiling></profiling>

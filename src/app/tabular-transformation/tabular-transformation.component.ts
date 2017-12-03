@@ -20,8 +20,10 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   private function: any;
   private partialPipeline: any;
+  private recommendations: any;
   private differ: any;
   private handsontableSelection: any;
+  private loadedDataHeaders: any
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
@@ -30,6 +32,21 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
     this.differ = differs.find({}).create(null);
+    this.recommendations = [
+
+      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
+      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
+      { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
+      { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
+      { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
+      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
+      { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
+
+    ];
   }
 
   ngOnInit() {
@@ -48,6 +65,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     if (change) {
       console.log('transformationObj.pipelines["0"].functions changed');
       if (this.function) {
+        console.log("Function changed", this.function);
         this.updateTransformation();
       }
     }
@@ -62,9 +80,14 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
           let transformationObj = transformationDataModel.Transformation.revive(result);
           if (paramMap.has('filestoreId')) {
             const clojure = generateClojure.fromTransformation(transformationObj);
+
             this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
               .then(
               (result) => {
+                // Get headers of the dataset, remove :
+
+                this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+
                 this.handsonTable.displayJsEdnData(result);
                 this.profilingComponent.loadJSON(result);
                 this.transformationSvc.transformationObj = transformationObj;
@@ -84,12 +107,25 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   updateTransformation() {
     const paramMap = this.route.snapshot.paramMap;
+
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
+    console.log(clojure);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
+
+
+        this.handsonTable.showLoading = true;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);
+        // console.log(this.transformationSvc.transformationObj);
+        // console.log('data:');
+        // console.log(result);
+        // Get headers of the transformed dataset, remove :
+        this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+
+      }, (err) => {
+        console.log(err); // Error: "It broke"
       })
   }
 
@@ -115,6 +151,24 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
         const recommend = this.recommenderService.getRecommendation(profile);
         console.log(recommend);
         this.recommenderService.getDataProfile() */
+
+    var ind = this.handsonTable.hot.getSelected();
+    var data = [];
+    var headers = [];
+    for (let i = ind[0]; i <= ind[2]; ++i) {
+      var row = [];
+      for (let j = ind[1]; j <= ind[3]; ++j) {
+        row.push(this.handsonTable.hot.getDataAtCell(i, j));
+      }
+      data.push(row);
+    }
+    for (let j = ind[1]; j <= ind[3]; ++j) {
+      headers.push(this.handsonTable.hot.getColHeader(j));
+    }
+    const recommend = this.recommenderService.getRecommendationWithParams(newSelection.row, newSelection.col,
+      newSelection.row2, newSelection.col2,
+      newSelection.totalRows, newSelection.totalCols, data, headers);
+    this.recommendations = recommend;
   }
 
   emitFunction(value: any) {

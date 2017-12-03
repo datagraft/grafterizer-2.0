@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
@@ -9,10 +9,11 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./merge-columns.component.css']
 })
 
-export class MergeColumnsComponent implements OnInit {
+export class MergeColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
   @Input() private function: any;
+  @Input() defaultParams;
   @Output() emitter = new EventEmitter();
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
@@ -37,6 +38,17 @@ export class MergeColumnsComponent implements OnInit {
 
   ngOnInit() {
     this.modalEnabled = false;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colsToMerge) {
+
+        this.colsToMerge = this.defaultParams.colsToMerge;
+      }
+
+    }
   }
 
   accept() {

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -10,11 +10,13 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./sort-dataset.component.css']
 })
 
-export class SortDatasetComponent implements OnInit {
+export class SortDatasetComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
   @Output() emitter = new EventEmitter();
+  @Input() defaultParams;
+
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3", "zzz", "aaa", "qqq"];
@@ -30,12 +32,10 @@ export class SortDatasetComponent implements OnInit {
       this.function = new transformationDataModel.SortDatasetFunction(
         this.sortings, this.docstring);
     }
-
     else {
       for (let sorting in this.function.colnamesSorttypesMap) {
         this.sortings.push(sorting);
       }
-
     }
   }
 
@@ -50,11 +50,27 @@ export class SortDatasetComponent implements OnInit {
   removeSorting(idx: number) {
     this.sortings.splice(idx, 1);
   }
+
+  ngOnChanges(changes: SimpleChanges) {
+
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colsToSort) {
+
+        this.sortings = [];
+        for (let colname of this.defaultParams.colsToSort) {
+          this.sortings.push(new transformationDataModel.ColnameSorttype(colname, "", false));
+        }
+      }
+
+    }
+  }
   accept() {
     for (let sorting in this.function.sortings) {
       this.function.colnamesSorttypesMap.push(sorting);
     }
     this.function.docstring = this.docstring;
+    this.emitter.emit(this.function);
+    this.modalEnabled = false;
   }
 
   cancel() {

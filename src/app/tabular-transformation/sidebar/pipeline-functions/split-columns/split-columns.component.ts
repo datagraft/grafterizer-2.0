@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -10,10 +10,11 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./split-columns.component.css']
 })
 
-export class SplitColumnsComponent implements OnInit {
+export class SplitColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
   @Input() private function: any;
+  @Input() defaultParams;
   @Output() emitter = new EventEmitter();
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
@@ -40,11 +41,22 @@ export class SplitColumnsComponent implements OnInit {
     this.modalEnabled = false;
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colToSplit) {
+
+        this.colName = this.defaultParams.colToSplit;
+      }
+
+    }
+  }
+
   accept() {
     this.function.colName = this.colName;
     this.function.separator = this.separator;
     this.function.docstring = this.docstring;
-
+    this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 

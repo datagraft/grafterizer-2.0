@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, SimpleChanges, EventEmitter, OnChanges } from '@angular/core';
 import { CompleterService, CompleterData } from "ng2-completer";
 
 import * as transformationDataModel from "../../../../../assets/transformationdatamodel.js";
@@ -10,10 +10,11 @@ import * as transformationDataModel from "../../../../../assets/transformationda
   styleUrls: ["./group-dataset.component.css"]
 })
 
-export class GroupDatasetComponent implements OnInit {
+export class GroupDatasetComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
   @Input() private function: any;
+  @Input() defaultParams;
   @Output() emitter = new EventEmitter();
   // TODO: Pass column names of the uploaded dataset
   //@Input() columns: String[] = [];
@@ -48,7 +49,12 @@ export class GroupDatasetComponent implements OnInit {
   ngOnInit() {
     this.modalEnabled = false;
   }
-
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colnames)
+        this.colnames = this.defaultParams.colnames;
+    }
+  }
   addAggregation() {
     this.colnamesFunctionsSet.push(null, null);
     this.separatorSet.push(null, null);
