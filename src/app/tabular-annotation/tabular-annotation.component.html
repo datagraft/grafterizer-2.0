@@ -5,6 +5,11 @@
         <app-annotation-form [colId]='Id' [header]='h'></app-annotation-form>
       </th>
     </tr>
+    <tr>
+      <th *ngFor="let h of headers">
+        {{h}}
+      </th>
+    </tr>
   </thead>
   <tbody>
     <tr *ngFor="let row of data">

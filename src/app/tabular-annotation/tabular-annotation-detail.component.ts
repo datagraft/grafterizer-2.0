@@ -77,34 +77,34 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
     if ("" != typeLabelInput)
       this.annotation.sourceLabel = typeLabelInput;
 
-    if (!this.annotation.isSubject) {
-      let propertyInput = (<HTMLInputElement>(document.getElementById("Property"))).value;
-      let propertyLabelInput = (<HTMLInputElement>(document.getElementById("PropertyLabel"))).value;
-      let dataTypeLabelInput = (<HTMLInputElement>(document.getElementById("DataTypeLabel"))).value;
-
-      if ("" != propertyInput)
-        this.annotation.property = propertyInput;
-      if ("" != propertyLabelInput)
-        this.annotation.propertyLabel = propertyLabelInput;
-      if ("" != dataTypeLabelInput)
-        this.annotation.columnTypeLabel = dataTypeLabelInput;
-
-
-    }
+    // if (!this.annotation.isSubject) {
+    //   let propertyInput = (<HTMLInputElement>(document.getElementById("Property"))).value;
+    //   let propertyLabelInput = (<HTMLInputElement>(document.getElementById("PropertyLabel"))).value;
+    //   let dataTypeLabelInput = (<HTMLInputElement>(document.getElementById("DataTypeLabel"))).value;
+    //
+    //   if ("" != propertyInput)
+    //     this.annotation.property = propertyInput;
+    //   if ("" != propertyLabelInput)
+    //     this.annotation.propertyLabel = propertyLabelInput;
+    //   if ("" != dataTypeLabelInput)
+    //     this.annotation.columnTypeLabel = dataTypeLabelInput;
+    //
+    //
+    // }
   }
 
   // objectSelect() {
   //   this.isSubject = false;
   // }
 
-  subjectSelect(isSubject) {
-    if (isSubject == 'O') {
-      this.annotation.isSubject = false;
-    }
-    else {
-      this.annotation.isSubject = true;
-    }
-  }
+  // subjectSelect(isSubject) {
+  //   if (isSubject == 'O') {
+  //     this.annotation.isSubject = false;
+  //   }
+  //   else {
+  //     this.annotation.isSubject = true;
+  //   }
+  // }
 
   // dataTypeURL(){
   //   this.columnType = "URL";

@@ -1,10 +1,38 @@
 import { Injectable } from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 
-// here I create the Annotation Class, with attributes and set/get
+/**
+ * Annotation model
+ */
 export class Annotation {
+
+  private _index: number;
+  private _source: String;
+  private _sourceLabel: String;
+  private _property: String;
+  private _propertyLabel: String;
+  private _columnType: String;
+  private _columnTypeLabel: String;
+  private _columnDataType: String;
+  private _header: String;
+  private _colName: String;
+  private _urifyPrefix: String;
+
+  constructor(obj?: any) {
+    this._index = obj != null && obj.index != null ? obj.index : -1;
+    this._source = obj && obj.source || '';
+    this._sourceLabel = obj && obj.sourceLabel || '';
+    this._property = obj && obj.property || '';
+    this._propertyLabel = obj && obj.propertyLabel || '';
+    this._columnType = obj && obj.columnType || '';
+    this._columnTypeLabel = obj && obj.columnTypeLabel || '';
+    this._header = obj && obj.header || '';
+    this._colName = obj && obj.colName || '';
+    this._columnDataType = obj && obj._columnDataType || '';
+    this._urifyPrefix = obj && obj._urifyPrefix || '';
+  }
+
   set index(value: number) {
     this._index = value;
   }
@@ -33,10 +61,6 @@ export class Annotation {
     this._columnTypeLabel = value;
   }
 
-  set isSubject(value: Boolean) {
-    this._isSubject = value;
-  }
-
   set header(value: String) {
     this._header = value;
   }
@@ -49,9 +73,9 @@ export class Annotation {
     this._columnDataType = value;
   }
 
-  // get index(): number {
-  //   return this._index;
-  // }
+  set urifyPrefix(value: String) {
+    this._urifyPrefix = value;
+  }
 
   get source(): String {
     return this._source;
@@ -77,10 +101,6 @@ export class Annotation {
     return this._columnTypeLabel;
   }
 
-  get isSubject(): Boolean {
-    return this._isSubject;
-  }
-
   get header(): String {
     return this._header;
   }
@@ -93,30 +113,8 @@ export class Annotation {
     return this._columnDataType;
   }
 
-  private _index: number;
-  private _source: String;
-  private _sourceLabel: String;
-  private _property: String;
-  private _propertyLabel: String;
-  private _columnType: String;
-  private _columnTypeLabel: String;
-  private _columnDataType: String;
-  private _isSubject: Boolean;
-  private _header: String;
-  private _colName: String;
-
-  constructor(obj?: any) {
-    this._index = obj != null && obj.index != null ? obj.index : -1;
-    this._source = obj && obj.source || '';
-    this._sourceLabel = obj && obj.sourceLabel || '';
-    this._property = obj && obj.property || '';
-    this._propertyLabel = obj && obj.propertyLabel || '';
-    this._columnType = obj && obj.columnType || '';
-    this._columnTypeLabel = obj && obj.columnTypeLabel || '';
-    this._isSubject = false;
-    this._header = obj && obj.header || '';
-    this._colName = obj && obj.colName || '';
-    this._columnDataType = obj && obj._columnDataType || '';
+  get urifyPrefix(): String {
+    return this._urifyPrefix;
   }
 }
 
