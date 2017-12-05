@@ -23,9 +23,9 @@
           <span>This column is properly annotated</span>
         </clr-tooltip-content>
       </clr-tooltip>
-      <clr-tooltip class="pull-right">
-        <span class="label" clrTooltipTrigger [ngClass]="{'inverse': isSubject}">S</span>
-        <span class="label" clrTooltipTrigger [ngClass]="{'inverse': isObject}">O</span>
+      <clr-tooltip clrTooltipTrigger class="pull-right">
+        <span class="label" [ngClass]="{'inverse': isSubject}">S</span>
+        <span class="label" [ngClass]="{'inverse': isObject}">O</span>
         <clr-tooltip-content clrPosition="left" clrSize="md" *clrIfOpen>
           <span>The roles are detected based on the relationships.</span>
         </clr-tooltip-content>
