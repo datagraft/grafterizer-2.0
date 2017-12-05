@@ -1,0 +1,3 @@
+.vertical-border tr td + td {
+  border-left:1px solid #eee;
+}
