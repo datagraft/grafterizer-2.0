@@ -1,5 +1,5 @@
 <div id="annotation-component" class="card">
-  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit(colId)">
+  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()">
     <div class="card-header">
       <clr-tooltip *ngIf="annotationForm.invalid ||
               emptySubjectValidator() ||
@@ -31,7 +31,6 @@
         </clr-tooltip-content>
       </clr-tooltip>
       Name: {{header}}
-      <p class="p6 no-margin-top">Column ID: <i>{{annotationService.colNames[colId]}}</i></p>
     </div>
     <!-- Column information -->
     <div class="card-block">
@@ -54,7 +53,6 @@
                    value-property-name="suggestion"
                    display-property-name="suggestion"
                    loading-text="Querying ABSTAT..."
-                   attr.data-value="{{ colId }}.ColumnType"
                    (valueChanged)="annotationForm.get('columnInfo').get('columnType').setValue($event)"
                    min-chars="2">
               <input id="columnType"
@@ -77,10 +75,10 @@
             <label class="required">Column values type</label>
             <div class="btn-group">
               <div class="radio btn" *ngFor="let columnDataType of ['URL', 'Literal']; let i = index">
-                <input type="radio" name="{{ colId }}.columnDataType"
-                       id="{{ colId }}.columnValuesType{{i}}"
+                <input type="radio" name="{{ header }}.columnDataType"
+                       id="{{ header }}.columnValuesType{{i}}"
                        (click)="changeValuesType(columnDataType)">
-                <label for="{{ colId }}.columnValuesType{{i}}">{{columnDataType}}</label>
+                <label for="{{ header }}.columnValuesType{{i}}">{{columnDataType}}</label>
               </div>
             </div>
           </div>
@@ -126,8 +124,7 @@
                       && (annotationForm.get('relationship').get('subject').dirty || annotationForm.get('relationship').get('subject').touched)
                       || emptySubjectValidator()"
                    auto-complete
-                   [source]="listOfSubjects"
-                   attr.data-value="{{ colId }}.Source"
+                   [source]="allowedSources"
                    (valueChanged)="changeSourceColumn($event)">
               <input id="subject" type="text"
                      formControlName="subject"
@@ -157,7 +154,6 @@
                    value-property-name="suggestion"
                    display-property-name="suggestion"
                    loading-text="Querying ABSTAT..."
-                   attr.data-value="{{ colId }}.Property"
                    (valueChanged)="annotationForm.get('relationship').get('property').setValue($event)"
                    min-chars="2">
               <input id="property" type="text"
@@ -183,7 +179,9 @@
               emptyPropertyValidator() ||
               missingPrefix() ||
               annotationForm.pristine">Annotate</button>
-      <button class="btn btn-sm btn-link" [routerLink]="['/detail']" (click)="goToDetailMode()">Detail page</button>
+      <!--<button class="btn btn-sm btn-link" [routerLink]="['/detail']" (click)="goToDetailMode()">Detail page</button>-->
+      <a class="btn btn-sm btn-link" (click)="resetForm()">Reset</a>
+      <a class="btn btn-sm btn-link" (click)="deleteAnnotation()">Delete</a>
     </div>
   </form>
 </div>

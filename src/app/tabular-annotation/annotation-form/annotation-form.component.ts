@@ -1,10 +1,11 @@
 import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {TabularAnnotationDetailComponent} from '../tabular-annotation-detail.component';
-import {Annotation, AnnotationService} from '../annotation.service';
+import {AnnotationService} from '../annotation.service';
 import {Http} from '@angular/http';
 import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
+import {Annotation} from '../annotation.model';
 
 @Component({
   selector: 'app-annotation-form',
@@ -15,7 +16,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   @ViewChild(TabularAnnotationDetailComponent) detailMode: TabularAnnotationDetailComponent;
 
-  @Input() colId: number;
   @Input() header: any;
 
   open = false;
@@ -26,9 +26,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   private abstatPath;
   public annotation: Annotation;
   public first = false;
-  listOfSubjects: string[] = [];
-  colName;
   prefixRequired = false;
+
+  allowedSources: string[];
 
   urlREGEX: RegExp = new RegExp('(ftp|http|https):\/\/[^ "]+$');
   urlREGEX2: RegExp = new RegExp('/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/');
@@ -43,9 +43,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       const subjectsLabel = [];
       this.prefixRequired = false;
       subjects.forEach((value: String) => {
-        if (value === this.colName) {
+        if (value === this.header) {
           this.isSubject = true;
-          if (this.annotation.columnDataType !== 'URL') {
+          if (this.annotation.columnValuesType !== 'URL') {
             this.prefixRequired = true;
             subjectsLabel.push(i);
           }
@@ -71,16 +71,34 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       }),
     });
     this.onChanges();
+
+    /**
+     * Set first ABSTAT type suggestion as initial value
+     */
+    this.typeSuggestions(this.header).subscribe(suggestions => {
+      if (suggestions.length > 0) {
+        this.annotationForm.get('columnInfo').get('columnType').setValue(suggestions[0].suggestion);
+      }
+    });
+
+    /**
+     * Set first ABSTAT property suggestion as initial value
+     */
+    this.propertySuggestions(this.header).subscribe(suggestions => {
+      if (suggestions.length > 0) {
+        this.annotationForm.get('relationship').get('property').setValue(suggestions[0].suggestion);
+      }
+    });
+
     this.annotation = new Annotation();
-    this.colName = this.colId.toString().concat(': ', this.header);
     if (this.annotationService.isFull) {
-      this.annotation = this.annotationService.getAnnotation(this.colId);
+      this.annotation = this.annotationService.getAnnotation(this.header);
     }
-    this.fillSubjectsArray();
+    this.fillAllowedSourcesArray();
   }
 
   ngOnDestroy() {
-    this.annotationService.setAnnotation(this.colId, this.annotation);
+    this.annotationService.setAnnotation(this.header, this.annotation);
     this.annotationService.isFull = true;
   }
 
@@ -108,7 +126,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    */
   forbiddenSubjectValidator(): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
-      const forbidden = control.value !== '' && this.listOfSubjects.indexOf(control.value) === -1;
+      const forbidden = control.value !== '' && this.allowedSources.indexOf(control.value) === -1;
       return forbidden ? {'forbiddenSubject': {value: control.value}} : null;
     };
   }
@@ -160,19 +178,27 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   /**
    * Apply changes to the annotation model when the form is submitted
-   * @param colId
    */
-  onSubmit(colId) {
-    this.annotation.index = colId;
-    this.annotation.source = this.annotationForm.get('relationship').get('subject').value;
+  onSubmit() {
+    this.annotation.sourceColumnHeader = this.annotationForm.get('relationship').get('subject').value;
     this.annotation.property = this.annotationForm.get('relationship').get('property').value;
     this.annotation.columnType = this.annotationForm.get('columnInfo').get('columnType').value;
-    this.annotation.columnDataType = this.annotationForm.get('columnInfo').get('columnValuesType').value;
+    this.annotation.columnValuesType = this.annotationForm.get('columnInfo').get('columnValuesType').value;
     this.annotation.urifyPrefix = this.annotationForm.get('columnInfo').get('urifyPrefix').value;
-    this.isObject = this.annotation.source !== '' && this.annotation.property !== '' && this.annotation.columnType !== '';
-    this.annotationService.setAnnotation(this.colId, this.annotation);
+    this.isObject = this.annotation.sourceColumnHeader !== '' && this.annotation.property !== '' && this.annotation.columnType !== '';
+    this.annotationService.setAnnotation(this.header, this.annotation);
     this.annotationForm.markAsPristine();
     this.submitted = true;
+  }
+
+  resetForm() {
+    this.annotationForm.reset();
+    this.annotation = new Annotation();
+  }
+
+  deleteAnnotation() {
+    this.resetForm();
+    this.annotationService.setAnnotation(this.header, new Annotation());
   }
 
   /**
@@ -188,13 +214,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * Fill the subjects array with all columns that can be selected as source of this column
    * The array contains all table columns, except this column
    */
-  fillSubjectsArray() {
-    this.listOfSubjects = [];
-    for (let i = 0; i < this.annotationService.colNames.length; i++) {
-      if (this.annotationService.colNames[i] !== this.colName) {
-        this.listOfSubjects.push(this.annotationService.colNames[i]);
+  fillAllowedSourcesArray() {
+    this.allowedSources = [];
+    this.annotationService.headers.forEach((h: string) => {
+      if (h !== this.header) {
+        this.allowedSources.push(h);
       }
-    }
+    });
   }
 
   /**
@@ -207,7 +233,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   abstatSuggestions(keyword, position) {
     const url =
       this.abstatPath + '/api/v1/SolrSuggestions?qString=' + keyword + '&qPosition=' + position + '&rows=15&start=0';
-    if (keyword) {
+    if (keyword && position) {
       return this.http.get(url)
         .map(res => {
           return res.json().suggestions;

@@ -1,21 +1,23 @@
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router'
-import { Annotation, AnnotationService } from "./annotation.service";
-import { INglDatatableSort, INglDatatableRowClick } from 'ng-lightning/ng-lightning';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router'
+import {AnnotationService} from './annotation.service';
+import {INglDatatableRowClick, INglDatatableSort} from 'ng-lightning/ng-lightning';
+import {Annotation} from './annotation.model';
 
 @Component({
-  selector: 'tabular-annotation-detail',
+  selector: 'app-tabular-annotation-detail',
   templateUrl: './tabular-annotation-detail.component.html',
   styleUrls: ['./tabular-annotation-detail.component.css'],
   providers: [AnnotationService]
 })
 
-//Detail Mode offers an accurate form for insert the annotation parameters, require the subject/object source and all off
-//attributes for annotation (the same that you can add with annotation form)
+// Detail Mode offers an accurate form for insert the annotation parameters, require the subject/object source and all off
+// attributes for annotation (the same that you can add with annotation form)
+// TODO: detail mode should be re-implemented!!
 
 export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
 
-  //isSubject is true if the resource is marked as object in annotation form
+  // isSubject is true if the resource is marked as object in annotation form
   private annotation: Annotation;
   // isSubject : Boolean;
   // source : String ;
@@ -25,13 +27,12 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
   // columnType : String;
   // columnTypeLabel : String;
   colContent: any[];
-  colId: any;
   header: any;
   data = [{ value: 3 }, { value: 4 }];
 
-  public isActive: boolean = false;
+  public isActive = false;
 
-  //ng-lightning attribute
+  // ng-lightning attribute
 
   // Initial sort
   sort: INglDatatableSort = { key: 'value', order: 'asc' };
@@ -39,8 +40,7 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
   constructor(private annotationService: AnnotationService, route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.colId = this.annotationService.colNum;
-    this.annotation = this.annotationService.getAnnotation(this.colId);
+    this.annotation = this.annotationService.getAnnotation(this.header);
 
     // this.isSubject = this.annotationService.isSubject[this.colId];
     // this.source = this.annotationService.source[this.colId];
@@ -49,15 +49,14 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
     // this.propertyLabel = this.annotationService.propertyLabel[this.colId];
     // this.columnType = this.annotationService.columnType[this.colId];
     // this.columnTypeLabel = this.annotationService.columnTypeLabel[this.colId];
-    this.colContent = this.annotationService.colContent.map(function makeObject(x) { return { value: x } });
+    this.colContent = this.annotationService.data[this.header];
     // console.log(this.colContent);
     // console.log(this.data);
-    this.header = this.annotationService.header;
   }
 
   ngOnDestroy() {
-    this.annotationService.setAnnotation(this.colId, this.annotation);
-    //there will be n entities for n column, so onDestroy we need to send the data at the correct instance of
+    this.annotationService.setAnnotation(this.header, this.annotation);
+    // there will be n entities for n column, so onDestroy we need to send the data at the correct instance of
     // annotationForm, identify by colId I think
     //   this.annotationService.isSubject[this.colId] = this.isSubject;
     //   this.annotationService.source[this.colId] = this.source;
@@ -70,12 +69,13 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
 
   saveChanges() {
 
-    let typeInput = (<HTMLInputElement>(document.getElementById("Type"))).value;
-    let typeLabelInput = (<HTMLInputElement>(document.getElementById("TypeLabel"))).value;
-    if ("" != typeInput)
-      this.annotation.source = typeInput;
-    if ("" != typeLabelInput)
-      this.annotation.sourceLabel = typeLabelInput;
+    const typeInput = (<HTMLInputElement>(document.getElementById('Type'))).value;
+    const typeLabelInput = (<HTMLInputElement>(document.getElementById('TypeLabel'))).value;
+    if ('' !== typeInput) {
+      this.annotation.sourceColumnHeader = typeInput;
+    }
+    // if ('' != typeLabelInput)
+    //   this.annotation.sourceLabel = typeLabelInput;
 
     // if (!this.annotation.isSubject) {
     //   let propertyInput = (<HTMLInputElement>(document.getElementById("Property"))).value;
@@ -115,10 +115,9 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
   // }
 
   dataTypeSelect(dataType) {
-    if (dataType == "URL") {
+    if (dataType === 'URL') {
       this.annotation.columnType = dataType;
-    }
-    else {
+    } else {
       this.annotation.columnType = dataType;
     }
   }
@@ -126,5 +125,4 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
   onRowClick($event: INglDatatableRowClick) {
     console.log('clicked row', $event.data);
   }
-
 }
