@@ -5,6 +5,7 @@
 .sin-suggested-transformations {
   padding-top: 15px;
 }
+
 .sin-pipeline {
   padding-top: 20px;
   width: 200px;
@@ -16,4 +17,9 @@
 
 .sin-flex {
   display: flex;
+}
+
+.handsontable {
+  padding-top: 5px;
+  padding-left: 5px;
 }

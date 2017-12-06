@@ -7,7 +7,9 @@
   <split-area [size]="85">
     <split direction="vertical">
       <split-area [size]="60">
-        <app-handsontable [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)" (emitter)="emitFunction($event)"></app-handsontable>
+        <div class="handsontable">
+          <app-handsontable [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)" (emitter)="emitFunction($event)"></app-handsontable>
+        </div>
       </split-area>
       <split-area [size]="40">
         <profiling></profiling>
