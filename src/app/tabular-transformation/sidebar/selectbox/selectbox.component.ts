@@ -14,8 +14,6 @@ import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
 })
 
 export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
-
-
   private transformations: SelectItem[];
   private function: any;
   private selected: any;
@@ -24,14 +22,13 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   //passing transformation is needed to access available custom functions
   @Input() transformation;
-
   private message: any;
   private subscription: Subscription;
-
   @Output() emitter = new EventEmitter();
 
   constructor(private componentCommunicationService: ComponentCommunicationService) {
     this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
+      this.modalEnabled = false;
       this.function = message;
       this.selected = { id: this.function.__type, defaultParams: null };
       this.modalEnabled = true;
@@ -40,18 +37,12 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
-  ngOnChanges() {
-    if (this.suggestions) this.transformations = this.suggestions;
 
+  ngOnChanges() { if (this.suggestions) this.transformations = this.suggestions; }
 
-  }
-  ngOnInit() {
+  ngOnInit() { }
 
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
+  ngOnDestroy() { this.subscription.unsubscribe(); }
 
   emitFunction(value: any) {
 

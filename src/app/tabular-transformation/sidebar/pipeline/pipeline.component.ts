@@ -36,12 +36,12 @@ export class PipelineComponent implements OnChanges, OnInit {
   sendFunction(event) {
     this.edit = true;
     this.addFunctionAfter = true;
-    this.currentFunctionIndex = event.path[0].id;
+    this.currentFunctionIndex = parseInt(event.path[0].id);
     this.componentCommunicationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
   }
 
   generateLabels() {
-    this.steps = [];
+    let steps = [];
     this.lastFunctionIndex = 0;
     let functions = this.transformationService.transformationObj.pipelines[0].functions;
     if (this.emitterObject.preview == true) {
@@ -49,10 +49,10 @@ export class PipelineComponent implements OnChanges, OnInit {
     }
     for (let f of functions) {
       let label = f.__type.slice(0, -8);
-      this.steps.push({ 'type': label, 'id': this.lastFunctionIndex });
+      steps.push({ 'type': label, 'id': this.lastFunctionIndex });
       this.lastFunctionIndex += 1;
     }
-    return this.steps;
+    this.steps = steps;
   }
 
   viewPartialPipeline() {
@@ -70,10 +70,11 @@ export class PipelineComponent implements OnChanges, OnInit {
     }
     else if (this.edit == false && this.addFunctionAfter == true) {
       this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex], this.function);
+      this.generateLabels();
     } else {
       this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
+      this.generateLabels();
     }
-    this.generateLabels();
     this.addFunctionAfter = false;
     console.log('add');
   }
@@ -105,13 +106,13 @@ export class PipelineComponent implements OnChanges, OnInit {
     if (event.path[0].id != '') {
       index = event.path[0].id;
       mode = event.path[0].value;
-      this.currentFunctionIndex = index;
+      this.currentFunctionIndex = parseInt(index);
       this.getModes(mode);
     }
     else {
       index = event.path[1].id;
       mode = event.path[1].value;
-      this.currentFunctionIndex = index;
+      this.currentFunctionIndex = parseInt(index);
       this.getModes(mode);
     }
   }

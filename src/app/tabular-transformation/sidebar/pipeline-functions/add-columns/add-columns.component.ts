@@ -13,37 +13,29 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 export class AddColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
   @Output() emitter = new EventEmitter();
   private addcolumnsmode: String[] = [];
   private columnsArray: any[];
   private docstring: String;
 
-  constructor(private completerService: CompleterService) {
-    //TODO: remove when passing transformation is implemented
+  constructor(private completerService: CompleterService) { }
 
-
-
-  }
-
-  ngOnInit() {
-    this.modalEnabled = false;
-
-  }
+  ngOnInit() { this.modalEnabled = false; }
 
   addColumn() {
     var newColSpec = new transformationDataModel.NewColumnSpec("", "", "", "");
     this.columnsArray.push(newColSpec);
   }
+
   removeColumn(idx: number) {
     this.columnsArray.splice(idx, 1);
     this.addcolumnsmode.splice(idx, 1);
   }
-  ngOnChanges(changes: SimpleChanges) {
 
+  ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-
         this.columnsArray = [new transformationDataModel.NewColumnSpec(null, null, null, null)];
         this.function = new transformationDataModel.AddColumnsFunction(this.columnsArray, this.docstring);
         this.addcolumnsmode = ['text'];
@@ -70,9 +62,6 @@ export class AddColumnsComponent implements OnInit, OnChanges {
     this.modalEnabled = false;
   }
 
-
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

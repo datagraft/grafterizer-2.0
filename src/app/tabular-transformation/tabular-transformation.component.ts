@@ -33,7 +33,6 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     private transformationSvc: TransformationService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
     this.differ = differs.find({}).create(null);
     this.recommendations = [
-
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
@@ -45,27 +44,19 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
       { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
-
     ];
   }
 
-  ngOnInit() {
-    // recommender testing
-    // let time1 = performance.now();
-    // console.log(this.recommenderService.getRecommendation((this.recommenderService.getDataProfile(0, 0, 20, 0, 20, 4))));
-    // console.log(performance.now() - time1 + " ms");
-  }
+  ngOnInit() { }
 
-  ngAfterViewInit() {
-    this.existingTransformation();
-  }
+  ngAfterViewInit() { this.existingTransformation(); }
 
   ngDoCheck() {
     const change = this.differ.diff(this.transformationSvc.transformationObj.pipelines["0"].functions);
     if (change) {
-      console.log('transformationObj.pipelines["0"].functions changed');
+      console.log('tabular-transformation.component.ts: ngDoCheck()');
       if (this.function) {
-        console.log("Function changed", this.function);
+        console.log('transformationObj.pipelines["0"].functions changed', this.function);
         this.updateTransformation();
       }
     }
@@ -80,18 +71,15 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
           let transformationObj = transformationDataModel.Transformation.revive(result);
           if (paramMap.has('filestoreId')) {
             const clojure = generateClojure.fromTransformation(transformationObj);
-
             this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
               .then(
               (result) => {
-                // Get headers of the dataset, remove :
-
                 this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
-
                 this.handsonTable.displayJsEdnData(result);
                 this.profilingComponent.loadJSON(result);
                 this.transformationSvc.transformationObj = transformationObj;
                 this.pipelineComponent.generateLabels();
+                console.log('tabular-transformation.component.ts: existingTransformation()');
               },
               (error) => {
                 console.log('ERROR getting filestore!');
@@ -107,25 +95,18 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   updateTransformation() {
     const paramMap = this.route.snapshot.paramMap;
-
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
-    console.log(clojure);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
-
-
         this.handsonTable.showLoading = true;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);
-        // console.log(this.transformationSvc.transformationObj);
-        // console.log('data:');
-        // console.log(result);
         // Get headers of the transformed dataset, remove :
         this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
-
+        console.log('tabular-transformation.component.ts: updateTransformation()')
       }, (err) => {
-        console.log(err); // Error: "It broke"
+        console.log(err);
       })
   }
 
@@ -137,21 +118,14 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
       .then((result) => {
         this.handsonTable.displayJsEdnData(result);
         this.pipelineComponent.generateLabels();
-        console.log(this.partialPipeline);
+        // console.log(this.partialPipeline);
+        console.log('tabular-transformation.component.ts: getPartialTransformation(untilFunction)')
       })
   }
 
   tableSelectionChanged(newSelection: any) {
     this.handsontableSelection = newSelection;
     this.profilingComponent.refresh(newSelection);
-    /*     const profile = this.recommenderService
-          .getDataProfile(newSelection.row, newSelection.col,
-          newSelection.row2, newSelection.col2,
-          newSelection.totalRows, newSelection.totalCols);
-        const recommend = this.recommenderService.getRecommendation(profile);
-        console.log(recommend);
-        this.recommenderService.getDataProfile() */
-
     var ind = this.handsonTable.hot.getSelected();
     var data = [];
     var headers = [];
@@ -169,10 +143,12 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
       newSelection.row2, newSelection.col2,
       newSelection.totalRows, newSelection.totalCols, data, headers);
     this.recommendations = recommend;
+    console.log('tabular-transformation.component.ts: tableSelectionChanged(newSelection: any)')
   }
 
   emitFunction(value: any) {
     this.function = value;
+    console.log('tabular-transformation.component.ts: emitFunction(value: any)')
   }
 
   editFunction(pipeline) {
@@ -183,6 +159,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     else if (pipeline.preview == true) {
       this.getPartialTransformation(pipeline.function);
     }
+    console.log('tabular-transformation.component.ts: editFunction(pipeline)')
   }
 
 }

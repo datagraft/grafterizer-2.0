@@ -50,7 +50,6 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     }
     if (changes.function) {
       if (!this.function) {
-
         this.deriveFunctions = [undefined]
         this.function = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(null, [])], this.docstring);
       }
@@ -65,7 +64,6 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
         for (let availableFunction of this.function.functionsToDeriveWith) {
           this.deriveFunctions.push(availableFunction.funct.name);
           this.params.push(availableFunction.functParams);
-
         }
         this.docstring = this.function.docstring;
         console.log(this.deriveFunctions);
@@ -79,6 +77,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
         return f;
     }
   }
+
   accept() {
     this.function.newColName = this.newColName;
     this.function.colsToDeriveFrom = [];
@@ -97,6 +96,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     this.modalEnabled = false;
     console.log(this.function);
   }
+
   reduceFunctionParams(idx) {
     //var params = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[idx]).getParams();
     var params = [];
@@ -110,23 +110,20 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
       params = d[0].split(" ");
       params.splice(0, 1);
     }
-
-
     for (let i of this.colsToDeriveFrom.length) {
       params.splice(0, 1);
     }
     return params;
   }
-  onFunctionSelected(selected: CompleterItem, idx) {
 
-  }
+  onFunctionSelected(selected: CompleterItem, idx) { }
 
   addDeriveFunction() {
     this.deriveFunctions.push(undefined);
     this.params.push([]);
   }
-  removeFunction(idx) {
 
+  removeFunction(idx) {
     console.log(this.deriveFunctions[idx]);
     this.deriveFunctions.splice(idx, 1);
     // this.functionsToDeriveWith.splice(idx, 1);
@@ -134,8 +131,6 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     //this.deriveFunctions = this.functionsToDeriveWith.slice();
   }
 
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

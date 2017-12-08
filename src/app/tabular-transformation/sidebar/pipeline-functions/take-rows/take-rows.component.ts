@@ -23,7 +23,6 @@ export class TakeRowsComponent implements OnInit {
   constructor() { }
 
   ngOnChanges() {
-    this.modalEnabled = true;
     if (this.modalEnabled && this.function) {
       this.indexFrom = this.function.indexFrom;
       this.indexTo = this.function.indexTo;

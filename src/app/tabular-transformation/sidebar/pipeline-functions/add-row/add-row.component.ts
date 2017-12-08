@@ -9,7 +9,7 @@ import { AddRowFunction } from '../../../../../assets/transformationdatamodel.js
 export class AddRowComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
   @Input() columns: string[];
   @Output() emitter = new EventEmitter();
   private position: number = 0;
@@ -21,15 +21,14 @@ export class AddRowComponent implements OnInit, OnChanges {
   ngOnInit() {
     //should be removed when column names are provided from the outside
     this.function = new AddRowFunction(this.position, this.values, this.docstring);
-
   }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
         this.values = [];
         this.docstring = "";
         this.position = 0;
-
       } else {
         if (this.function.__type == 'AddRowFunction') {
           this.values = this.function.values.map(o => o.value);
@@ -38,7 +37,6 @@ export class AddRowComponent implements OnInit, OnChanges {
         }
       }
     }
-
   }
 
   accept() {
