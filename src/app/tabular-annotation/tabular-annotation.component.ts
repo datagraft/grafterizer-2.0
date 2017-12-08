@@ -11,6 +11,7 @@ import {DispatchService} from '../dispatch.service';
 import * as generateClojure from 'assets/generateclojure.js';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import {ActivatedRoute} from '@angular/router';
+import {Http} from '@angular/http';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -19,18 +20,21 @@ import {ActivatedRoute} from '@angular/router';
   providers: [AnnotationService]
 })
 export class TabularAnnotationComponent implements OnInit {
-
-  public data: Array<any>;
-  public headers: Array<string>;
-  public originalHeaders: Array<string>;
-
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-              private annotationService: AnnotationService, private route: ActivatedRoute) {}
+              public annotationService: AnnotationService, private route: ActivatedRoute,
+              public http: Http) {}
 
   ngOnInit() {
-    this.data = [];
-    this.headers = [];
-    this.retrieveData();
+    this.retrieveDataFromJSONFile('assets/jot.json');
+  }
+
+  retrieveDataFromJSONFile(url) {
+    this.http.get(url)
+      .map(res => res.json())
+      .subscribe(data => {
+        this.annotationService.headers = data[':column-names'];
+        this.annotationService.data = data[':rows'];
+      });
   }
 
   retrieveData() {
@@ -52,13 +56,12 @@ export class TabularAnnotationComponent implements OnInit {
                     // console.log("Successfully previewed transformation!");
                     console.log(data);
                     if (data[':column-names'] && data[':rows']) {
-                      this.originalHeaders = data[':column-names'];
-                      this.data = data[':rows'];
+                      const originalHeaders = data[':column-names'];
+                      this.annotationService.data = data[':rows'];
                       // Remove leading ':' from the EDN response
-                      this.originalHeaders.forEach((colname, index) => {
-                        this.headers.push(colname.substring(1));
+                      originalHeaders.forEach((colname, index) => {
+                        this.annotationService.headers.push(colname.substring(1));
                       });
-                      this.annotationService.generateColumnsName(this.headers);
                     }
                   },
                   (error) => console.log('Error previewing transformation!'));

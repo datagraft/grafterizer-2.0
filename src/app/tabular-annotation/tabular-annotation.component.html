@@ -1,14 +1,19 @@
 <table class="table table-compact">
   <thead>
     <tr>
-      <th *ngFor="let h of headers; let Id = index" class="left">
-        <app-annotation-form [colId]='Id' [header]='h'></app-annotation-form>
+      <th *ngFor="let h of annotationService.headers" class="left">
+        <app-annotation-form [header]='h'></app-annotation-form>
+      </th>
+    </tr>
+    <tr>
+      <th *ngFor="let h of annotationService.headers">
+        {{h}}
       </th>
     </tr>
   </thead>
-  <tbody>
-    <tr *ngFor="let row of data">
-      <td *ngFor="let header of originalHeaders">
+  <tbody class="vertical-border">
+    <tr *ngFor="let row of annotationService.data">
+      <td *ngFor="let header of annotationService.headers">
         {{row[header]}}
       </td>
     </tr>
