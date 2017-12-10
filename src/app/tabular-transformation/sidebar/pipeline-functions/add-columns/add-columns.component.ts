@@ -19,9 +19,20 @@ export class AddColumnsComponent implements OnInit, OnChanges {
   private columnsArray: any[];
   private docstring: String;
 
-  constructor(private completerService: CompleterService) { }
+  constructor(private completerService: CompleterService) {
+  }
 
-  ngOnInit() { this.modalEnabled = false; }
+  ngOnInit() {
+    this.modalEnabled = false;
+    this.initFunction();
+  }
+
+  initFunction() {
+    this.docstring = '';
+    this.columnsArray = [new transformationDataModel.NewColumnSpec(null, null, null, null)];
+    this.function = new transformationDataModel.AddColumnsFunction(this.columnsArray, this.docstring);
+    this.addcolumnsmode = ['text'];
+  }
 
   addColumn() {
     var newColSpec = new transformationDataModel.NewColumnSpec("", "", "", "");
@@ -36,14 +47,12 @@ export class AddColumnsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        this.columnsArray = [new transformationDataModel.NewColumnSpec(null, null, null, null)];
-        this.function = new transformationDataModel.AddColumnsFunction(this.columnsArray, this.docstring);
-        this.addcolumnsmode = ['text'];
+        console.log('New function');
       }
       else {
+        console.log('Edit function');
         if (this.function.__type == 'AddColumnsFunction') {
           this.columnsArray = this.function.columnsArray;
-
           for (let colVal of this.function.columnsArray) {
             if (colVal.colValue) { this.addcolumnsmode.push('text'); }
             else { this.addcolumnsmode.push('expr'); }
@@ -59,6 +68,7 @@ export class AddColumnsComponent implements OnInit, OnChanges {
     this.function.columnsArray = this.columnsArray;
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
+    this.initFunction();
     this.modalEnabled = false;
   }
 

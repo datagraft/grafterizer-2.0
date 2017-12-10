@@ -52,8 +52,8 @@ export class UtilityFunctionComponent implements OnInit {
 
     // this.availableDeriveFunctions[idx] = selected.originalObject;
     this.functionName = new transformationDataModel.FunctionWithArgs(selected.originalObject, []);
-    console.log(this.functionName);
-    console.log(this.functionName.getParams());
+    // console.log(this.functionName);
+    // console.log(this.functionName.getParams());
   }
 
   accept() {

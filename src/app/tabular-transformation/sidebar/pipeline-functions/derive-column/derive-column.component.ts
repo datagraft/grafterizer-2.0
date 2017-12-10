@@ -54,8 +54,8 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
         this.function = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(null, [])], this.docstring);
       }
       else {
-        console.log(this.function);
-        console.log(this.transformation);
+        // console.log(this.function);
+        // console.log(this.transformation);
         this.newColName = this.function.newColName;
         this.colsToDeriveFrom = this.function.colsToDeriveFrom.map(o => o.value);
         //this.functionsToDeriveWith = this.function.functionsToDeriveWith;
@@ -66,7 +66,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
           this.params.push(availableFunction.functParams);
         }
         this.docstring = this.function.docstring;
-        console.log(this.deriveFunctions);
+        // console.log(this.deriveFunctions);
       }
     }
   }
@@ -94,7 +94,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
     this.modalEnabled = false;
-    console.log(this.function);
+    // console.log(this.function);
   }
 
   reduceFunctionParams(idx) {
@@ -124,7 +124,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
   }
 
   removeFunction(idx) {
-    console.log(this.deriveFunctions[idx]);
+    // console.log(this.deriveFunctions[idx]);
     this.deriveFunctions.splice(idx, 1);
     // this.functionsToDeriveWith.splice(idx, 1);
     this.params.splice(idx, 1);

@@ -48,7 +48,6 @@ export class AddRowComponent implements OnInit, OnChanges {
       for (let v of this.values) { this.function.values.push({ id: 0, value: v }); }
       this.function.docstring = this.docstring;
     }
-    console.log(this.function);
     this.emitter.emit(this.function);
     this.modalEnabled = false;
   }

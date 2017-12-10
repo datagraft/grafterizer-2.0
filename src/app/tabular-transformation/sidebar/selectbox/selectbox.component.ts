@@ -3,7 +3,7 @@ import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } 
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
 import { ComponentCommunicationService } from '../../component-communication.service';
-import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction, KeyFunctionPair, CustomFunctionDeclaration } from '../../../../assets/transformationdatamodel.js';
+import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction, KeyFunctionPair, CustomFunctionDeclaration, AddColumnsFunction } from '../../../../assets/transformationdatamodel.js';
 
 @Component({
   moduleId: module.id,
@@ -16,6 +16,7 @@ import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
 export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private transformations: SelectItem[];
   private function: any;
+  private addColumnsFunction: any;
   private selected: any;
   private modalEnabled: boolean = false;
   @Input() suggestions;
@@ -28,30 +29,38 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   constructor(private componentCommunicationService: ComponentCommunicationService) {
     this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
-      this.modalEnabled = false;
-      this.function = message;
-      this.selected = { id: this.function.__type, defaultParams: null };
-      this.modalEnabled = true;
-      console.log(message);
+      console.log(message)
+      if (message.__type == 'AddColumnsFunction') {
+        this.addColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
     });
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
 
-  ngOnChanges() { if (this.suggestions) this.transformations = this.suggestions; }
+  ngOnChanges() {
+    if (this.suggestions) this.transformations = this.suggestions;
+    this.selected = { id: null, defaultParams: null };
+    console.log(this.function);
+    console.log(this.modalEnabled);
+    console.log(this.selected);
+  }
 
   ngOnInit() { }
 
   ngOnDestroy() { this.subscription.unsubscribe(); }
 
   emitFunction(value: any) {
-
     this.emitter.emit(value);
     // this.function = null;
     // this.selected = null;
   }
 
   onChange($event) {
+    // console.log(this.function);
+    // console.log(this.modalEnabled);
 
     //Functions that don't require additional user input
 

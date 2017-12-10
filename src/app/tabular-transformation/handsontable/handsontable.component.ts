@@ -45,17 +45,18 @@ export class HandsontableComponent implements OnInit, OnChanges {
     this.settings = {
       data: this.data,
       rowHeaders: true,
-      autoColumnSize: { useHeaders: true },
+      autoColumnSize: true,
       columnSorting: false,
       viewportColumnRenderingOffset: 40,
       height: 600,
       width: 1610,
       stretchH: 'all',
       className: 'htCenter htMiddle',
+      observeDOMVisibility: true,
       afterChange: () => {
         setTimeout(() => {
           this.hot.render();
-        }, 50);
+        }, 10);
       },
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
@@ -75,14 +76,11 @@ export class HandsontableComponent implements OnInit, OnChanges {
   }
 
   emitFunction(value: any) {
-    console.log("EMIT");
-    console.log(value);
     this.emitter.emit(value);
   }
 
   ngOnChanges() {
     if (this.hot) {
-
       var enabledMenuItems = [];
       //for HoT submenus keys 
       var keySuggestionMap = {
@@ -392,7 +390,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
         data: data[':rows']
       });
       this.showLoading = false;
-      // this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

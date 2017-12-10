@@ -11,20 +11,14 @@
     <button class="btn" value="preview" id="{{step.id}}" (click)="getButtonEvent($event)">
       <clr-icon shape="eye" class="is-solid" size="25"></clr-icon>
     </button>
-    <div class="signpost-item">
-      <div class="trigger-item">
-        <clr-signpost>
-          <button class="btn" value="add" id="{{step.id}}" (click)="getButtonEvent($event)" clrSignpostTrigger>
-            <clr-icon class="is-solid" shape="plus-circle" size="20"></clr-icon>
-          </button>
-          <clr-signpost-content [clrPosition]="'top-right'" *clrIfOpen>
-            Select a transformation from the list above to add function at the current position of the pipeline
-          </clr-signpost-content>
-        </clr-signpost>
-      </div>
-    </div>
+    <button class="btn" value="history" id="{{step.id}}" (click)="getButtonEvent($event)">
+      <clr-icon class="is-solid" shape="history" size="20"></clr-icon>
+    </button>
     <button class="btn" value="remove" id="{{step.id}}" (click)="getButtonEvent($event)">
       <clr-icon class="is-solid" shape="minus-circle" size="20"></clr-icon>
+    </button>
+    <button class="btn" value="edit" id="{{step.id}}" (click)="getButtonEvent($event)">
+      <clr-icon class="is-solid" shape="edit" size="20"></clr-icon>
     </button>
   </div>
 </div>
