@@ -89,7 +89,7 @@ export class TransformationService {
     const requestPayload = {
       'clojure': clojure,
       'page': page || 0,
-      pageSize: pageSize || 100,
+      pageSize: pageSize || 300,
       useCache: 1
     };
     return this.http.post(url, requestPayload, options)

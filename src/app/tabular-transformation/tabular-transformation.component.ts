@@ -112,6 +112,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
+        console.log(clojure);
         this.handsonTable.showLoading = true;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
@@ -159,7 +160,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   emitFunction(value: any) {
     this.function = value;
     console.log(this.function);
-    this.updateTransformation();
+    // this.updateTransformation();
   }
 
   deepCopyArray(o) {

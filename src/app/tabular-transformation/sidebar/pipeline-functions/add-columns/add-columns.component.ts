@@ -15,12 +15,12 @@ export class AddColumnsComponent implements OnInit, OnChanges {
   @Input() modalEnabled;
   @Input() function: any;
   @Output() emitter = new EventEmitter();
+
   private addcolumnsmode: String[] = [];
   private columnsArray: any[];
   private docstring: String;
 
-  constructor(private completerService: CompleterService) {
-  }
+  constructor(private completerService: CompleterService) { }
 
   ngOnInit() {
     this.modalEnabled = false;

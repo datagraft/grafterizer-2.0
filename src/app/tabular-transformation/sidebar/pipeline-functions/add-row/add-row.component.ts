@@ -19,17 +19,24 @@ export class AddRowComponent implements OnInit, OnChanges {
   constructor() { }
 
   ngOnInit() {
-    //should be removed when column names are provided from the outside
+    this.modalEnabled = false;
+    this.initFunction();
+  }
+
+  initFunction() {
+    this.values = [];
+    this.docstring = null;
+    this.position = 0;
     this.function = new AddRowFunction(this.position, this.values, this.docstring);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        this.values = [];
-        this.docstring = "";
+        console.log('New function');
         this.position = 0;
       } else {
+        console.log('Edit function');
         if (this.function.__type == 'AddRowFunction') {
           this.values = this.function.values.map(o => o.value);
           this.position = this.function.position;
@@ -40,15 +47,13 @@ export class AddRowComponent implements OnInit, OnChanges {
   }
 
   accept() {
-    if (!this.function) {
-      this.function = new AddRowFunction(this.position, this.values, this.docstring);
-    } else {
-      this.function.position = this.position;
-      this.function.values = [];
-      for (let v of this.values) { this.function.values.push({ id: 0, value: v }); }
-      this.function.docstring = this.docstring;
-    }
+    console.log(this.function);
+    this.function.position = this.position;
+    this.function.values = [];
+    for (let v of this.values) { this.function.values.push({ id: 0, value: v }); }
+    this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
+    this.initFunction();
     this.modalEnabled = false;
   }
 

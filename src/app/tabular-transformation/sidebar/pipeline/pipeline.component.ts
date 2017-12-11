@@ -76,6 +76,9 @@ export class PipelineComponent implements OnChanges, OnInit {
     if (label == 'AddColumnsFunction') {
       return 'Column(s) added'
     }
+    if (label == 'AddRowFunction') {
+      return 'Row(s) added'
+    }
   }
 
   viewPipeline() {
@@ -100,6 +103,7 @@ export class PipelineComponent implements OnChanges, OnInit {
     else {
       this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
     }
+    console.log(this.transformationService.transformationObj);
   }
 
   functionRemove() {

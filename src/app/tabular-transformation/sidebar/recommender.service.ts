@@ -239,6 +239,7 @@ export class RecommenderService {
     return recommendation;
 
   }
+
   keyFunctionPairs(keys: String[], f: any) {
     var pairs = [];
     for (let key of keys) {
@@ -247,9 +248,9 @@ export class RecommenderService {
     }
     return pairs;
   }
-  hasLowercase(str) {
 
-    return !(str === str.toUpperCase());
+  hasLowercase(str) {
+    // return !(str === str.toUpperCase());
   }
 
 }

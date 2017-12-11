@@ -1,72 +1,71 @@
 import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-//TODO: remove when passing transformation is implemented
-import * as data from '../../../../../assets/data.json';
+
 @Component({
   selector: 'derive-column',
   templateUrl: './derive-column.component.html',
   styleUrls: ['./derive-column.component.css']
 })
+
 export class DeriveColumnComponent implements OnInit, OnChanges {
 
-  @Input() modalEnabled;
   @Input() function: any;
+  @Input() modalEnabled;
+  @Input() columns: String[];
+  @Input() transformation: any;  // Transformation is needed to search for prefixers/functions  
   @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  @Input() columns: String[] = [];
-  // Transformation is needed to search for prefixers/functions
-  @Input() transformation: any;
+
   private tr1: any;
-  //private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-
   private newColName: String;
-  private colsToDeriveFrom: any = [];
-
-  private deriveFunctions: any[] = []; // type customFunctionDeclaration
-
-  private params: any[] = [[]];
+  private colsToDeriveFrom: any;
+  private deriveFunctions: any[]; // type customFunctionDeclaration
+  private params: any[];
   private docstring: String;
-
   private dataService: CompleterData;
-  private functionNames: any[] = [];
+  private functionNames: any[];
 
-  constructor() {
-  }
+  constructor() { }
 
   ngOnInit() {
+    this.modalEnabled = false;
+    this.initFunction();
+  }
+
+  initFunction() {
+    this.newColName = null;
+    this.colsToDeriveFrom = [];
+    this.deriveFunctions = [];
+    this.params = [[]];
+    this.docstring = null;
+    this.functionNames = [];
+    this.function = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(null, [])], this.docstring);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.transformation) {
-
-
-      //this.dataService = this.completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
       for (let f of this.transformation.customFunctionDeclarations) {
         this.functionNames.push(f.name);
       }
-
     }
     if (changes.function) {
       if (!this.function) {
-        this.deriveFunctions = [undefined]
-        this.function = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(null, [])], this.docstring);
+        console.log('New function');
+        this.deriveFunctions = [undefined];
       }
       else {
-        // console.log(this.function);
-        // console.log(this.transformation);
-        this.newColName = this.function.newColName;
-        this.colsToDeriveFrom = this.function.colsToDeriveFrom.map(o => o.value);
-        //this.functionsToDeriveWith = this.function.functionsToDeriveWith;
-        this.deriveFunctions = [];
-        this.params = [[]];
-        for (let availableFunction of this.function.functionsToDeriveWith) {
-          this.deriveFunctions.push(availableFunction.funct.name);
-          this.params.push(availableFunction.functParams);
+        console.log('Edit function');
+        if (this.function.__type == 'DeriveColumnFunction') {
+          this.newColName = this.function.newColName;
+          this.colsToDeriveFrom = this.function.colsToDeriveFrom.map(o => o.value);
+          this.deriveFunctions = [];
+          this.params = [[]];
+          for (let availableFunction of this.function.functionsToDeriveWith) {
+            this.deriveFunctions.push(availableFunction.funct.name);
+            this.params.push(availableFunction.functParams);
+          }
+          this.docstring = this.function.docstring;
         }
-        this.docstring = this.function.docstring;
-        // console.log(this.deriveFunctions);
       }
     }
   }
@@ -78,27 +77,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     }
   }
 
-  accept() {
-    this.function.newColName = this.newColName;
-    this.function.colsToDeriveFrom = [];
-    for (let i = 0; i < this.colsToDeriveFrom.length; ++i) {
-      this.function.colsToDeriveFrom.push({ id: 0, value: this.colsToDeriveFrom[i] });
-    }
-    //this.function.colsToDeriveFrom = this.colsToDeriveFrom;
-    this.function.functionsToDeriveWith = [];
-
-    for (let i = 0; i < this.deriveFunctions.length; ++i) {
-      let cf = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[i]);
-      this.function.functionsToDeriveWith.push(new transformationDataModel.FunctionWithArgs(cf, this.params[i]));
-    }
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.modalEnabled = false;
-    // console.log(this.function);
-  }
-
   reduceFunctionParams(idx) {
-    //var params = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[idx]).getParams();
     var params = [];
     var f = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[idx]);
     if (!f) return params;
@@ -124,11 +103,25 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
   }
 
   removeFunction(idx) {
-    // console.log(this.deriveFunctions[idx]);
     this.deriveFunctions.splice(idx, 1);
-    // this.functionsToDeriveWith.splice(idx, 1);
     this.params.splice(idx, 1);
-    //this.deriveFunctions = this.functionsToDeriveWith.slice();
+  }
+
+  accept() {
+    this.function.newColName = this.newColName;
+    this.function.colsToDeriveFrom = [];
+    for (let i = 0; i < this.colsToDeriveFrom.length; ++i) {
+      this.function.colsToDeriveFrom.push({ id: 0, value: this.colsToDeriveFrom[i] });
+    }
+    this.function.functionsToDeriveWith = [];
+    for (let i = 0; i < this.deriveFunctions.length; ++i) {
+      let cf = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[i]);
+      this.function.functionsToDeriveWith.push(new transformationDataModel.FunctionWithArgs(cf, this.params[i]));
+    }
+    this.function.docstring = this.docstring;
+    this.emitter.emit(this.function);
+    this.initFunction();
+    this.modalEnabled = false;
   }
 
   cancel() { this.modalEnabled = false; }

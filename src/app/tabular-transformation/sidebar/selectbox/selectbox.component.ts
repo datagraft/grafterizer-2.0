@@ -14,24 +14,66 @@ import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
 })
 
 export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
-  private transformations: SelectItem[];
-  private function: any;
-  private addColumnsFunction: any;
-  private selected: any;
-  private modalEnabled: boolean = false;
   @Input() suggestions;
   @Input() headers;
-  //passing transformation is needed to access available custom functions
   @Input() transformation;
-  private message: any;
-  private subscription: Subscription;
   @Output() emitter = new EventEmitter();
+
+  private function: any;
+  private addColumnsFunction: any;
+  private addRowFunction: any;
+  private makeDatasetFunction: any;
+  private dropRowsFunction: any;
+  private splitFunction: any;
+  private deriveColumnFunction: any;
+  private mergeColumnsFunction: any;
+
+  private transformations: SelectItem[];
+  private selected: any;
+  private modalEnabled: boolean = false;
+  private subscription: Subscription;
+  private message: any;
 
   constructor(private componentCommunicationService: ComponentCommunicationService) {
     this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
       console.log(message)
       if (message.__type == 'AddColumnsFunction') {
         this.addColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'AddRowFunction') {
+        this.addRowFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MakeDatasetFunction') {
+        this.makeDatasetFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'DropRowsFunction') {
+        this.dropRowsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'ColumnsFunction') {
+        this.dropRowsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'SplitFunction') {
+        this.splitFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'DeriveColumnFunction') {
+        this.deriveColumnFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MergeColumnsFunction') {
+        this.mergeColumnsFunction = message;
         this.selected = { id: message.__type, defaultParams: null };
         this.modalEnabled = true;
       }
@@ -43,8 +85,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges() {
     if (this.suggestions) this.transformations = this.suggestions;
     this.selected = { id: null, defaultParams: null };
-    console.log(this.function);
-    console.log(this.modalEnabled);
     console.log(this.selected);
   }
 
@@ -54,16 +94,10 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   emitFunction(value: any) {
     this.emitter.emit(value);
-    // this.function = null;
-    // this.selected = null;
   }
 
   onChange($event) {
-    // console.log(this.function);
-    // console.log(this.modalEnabled);
-
     //Functions that don't require additional user input
-
     switch (this.selected.id) {
       case 'add-row-above':
       case 'add-row-below':
@@ -88,8 +122,5 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       default:
         break;
     }
-
-
   }
-
 }

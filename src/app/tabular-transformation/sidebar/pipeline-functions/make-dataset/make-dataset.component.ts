@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
@@ -10,11 +10,11 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 })
 export class MakeDatasetComponent implements OnInit, OnChanges {
 
-  @Input() modalEnabled;
-
-  @Output() emitter = new EventEmitter();
   @Input() function: any;
+  @Input() modalEnabled;
   @Input() params: any;
+  @Output() emitter = new EventEmitter();
+
   private makedatasetmode: String = '';
   private columnsArray: any = [];
   private useLazy: boolean = false;
@@ -22,25 +22,38 @@ export class MakeDatasetComponent implements OnInit, OnChanges {
   private numberOfColumns: Number = 0;
   private docstring: String = '';
 
-  constructor() {
-
-
-  }
+  constructor() { }
 
   ngOnInit() {
+    this.modalEnabled = false;
+    this.initFunction();
   }
 
-  ngOnChanges() {
-    if (!this.function) {
-      this.function = new transformationDataModel.MakeDatasetFunction(
-        [], false, undefined, null, null);
-    }
-    else {
-      this.columnsArray = this.function.columnsArray.map(o => o.value);
-      this.useLazy = this.function.useLazy;
-      this.numberOfColumns = this.function.numberOfColumns;
-      this.moveFirstRowToHeader = this.function.moveFirstRowToHeader;
-      this.docstring = this.function.docstring;
+  initFunction() {
+    this.function = new transformationDataModel.MakeDatasetFunction(
+      null, null, null, null, null);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.function) {
+      if (!this.function) {
+        console.log('New function');
+      }
+      else {
+        console.log('Edit function');
+        console.log(this.function)
+        if (this.function.__type == 'MakeDatasetFunction') {
+          this.columnsArray = this.function.columnsArray.map(o => o.value);
+          this.useLazy = this.function.useLazy;
+          this.numberOfColumns = this.function.numberOfColumns;
+          this.moveFirstRowToHeader = this.function.moveFirstRowToHeader;
+          if (this.moveFirstRowToHeader) {
+            this.makedatasetmode = 'firstrow';
+          }
+          else { this.makedatasetmode = 'colnames' }
+        }
+        this.docstring = this.function.docstring;
+      }
     }
   }
 
@@ -51,7 +64,6 @@ export class MakeDatasetComponent implements OnInit, OnChanges {
         for (let c of this.columnsArray) {
           this.function.columnsArray.push({ id: 0, value: c });
         }
-
         this.function.useLazy = false;
         this.function.numberOfColumns = this.numberOfColumns;
         this.function.moveFirstRowToHeader = false;
@@ -67,7 +79,7 @@ export class MakeDatasetComponent implements OnInit, OnChanges {
         break;
       }
       case 'firstrow': {
-        this.function.columnsArray = this.columnsArray;
+        this.function.columnsArray = [];
         this.function.useLazy = false;
         this.function.numberOfColumns = this.numberOfColumns;
         this.function.moveFirstRowToHeader = true;
@@ -76,7 +88,6 @@ export class MakeDatasetComponent implements OnInit, OnChanges {
       }
     }
     this.emitter.emit(this.function);
-
     this.modalEnabled = false;
   }
 
