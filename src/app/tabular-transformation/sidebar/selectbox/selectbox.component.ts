@@ -27,6 +27,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private splitFunction: any;
   private deriveColumnFunction: any;
   private mergeColumnsFunction: any;
+  private renameColumnsFunction: any;
 
   private transformations: SelectItem[];
   private selected: any;
@@ -74,6 +75,11 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       }
       if (message.__type == 'MergeColumnsFunction') {
         this.mergeColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'RenameColumnsFunction') {
+        this.renameColumnsFunction = message;
         this.selected = { id: message.__type, defaultParams: null };
         this.modalEnabled = true;
       }

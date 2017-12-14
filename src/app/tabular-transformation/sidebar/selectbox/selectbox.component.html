@@ -31,8 +31,8 @@
 
 <reshape-dataset [modalEnabled]="selected.id=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
 
-<rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [defaultParams]="selected.defaultParams"></rename-columns>
+<rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></rename-columns>
 
 <merge-columns [modalEnabled]="selected.id=='MergeColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mergeColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers"></merge-columns>

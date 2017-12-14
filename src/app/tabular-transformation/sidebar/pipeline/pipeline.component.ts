@@ -79,6 +79,9 @@ export class PipelineComponent implements OnChanges, OnInit {
     if (label == 'AddRowFunction') {
       return 'Row(s) added'
     }
+    if (label == 'RenameColumnsFunction') {
+      return 'Header title(s) changed'
+    }
   }
 
   viewPipeline() {
@@ -134,12 +137,16 @@ export class PipelineComponent implements OnChanges, OnInit {
       mode = event.path[0].value;
       this.currentFunctionIndex = parseInt(index);
       this.getModes(mode);
+      console.log(index)
+      console.log(mode)
     }
     else {
       index = event.path[1].id;
       mode = event.path[1].value;
       this.currentFunctionIndex = parseInt(index);
       this.getModes(mode);
+      console.log(index)
+      console.log(mode)
     }
   }
 

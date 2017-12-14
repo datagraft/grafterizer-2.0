@@ -84,11 +84,13 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
         .then(
         (result) => {
           let transformationObj = transformationDataModel.Transformation.revive(result);
+          console.log(transformationObj)
           if (paramMap.has('filestoreId')) {
             const clojure = generateClojure.fromTransformation(transformationObj);
             this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
               .then(
               (result) => {
+                console.log(result);
                 this.transformationSvc.transformationObj = transformationObj;
                 this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
                 this.handsonTable.displayJsEdnData(result);

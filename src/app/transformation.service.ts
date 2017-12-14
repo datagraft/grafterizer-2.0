@@ -87,9 +87,9 @@ export class TransformationService {
     const url = this.dispatchPath + '/preview/' + encodeURIComponent(filestoreID);
     const options = new RequestOptions({ withCredentials: true });
     const requestPayload = {
-      'clojure': clojure,
-      'page': page || 0,
-      pageSize: pageSize || 300,
+      clojure: clojure,
+      page: page || 0,
+      pageSize: pageSize || 100,
       useCache: 1
     };
     return this.http.post(url, requestPayload, options)
@@ -133,7 +133,9 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs = Observable.interval(1500)
+    const obs = new Observable(observer => {
+      observer.next();
+    })
       .switchMap(() => this.http.get(statusUrl, options))
       .map((response) => response.json());
 
