@@ -87,7 +87,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
           console.log(transformationObj)
           if (paramMap.has('filestoreId')) {
             const clojure = generateClojure.fromTransformation(transformationObj);
-            this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
+            this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
               .then(
               (result) => {
                 console.log(result);
@@ -112,7 +112,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   updateTransformation() {
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
         console.log(clojure);
         this.handsonTable.showLoading = true;
@@ -161,8 +161,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   emitFunction(value: any) {
     this.function = value;
-    console.log(this.function);
-    // this.updateTransformation();
+    this.updateTransformation();
   }
 
   deepCopyArray(o) {
@@ -177,7 +176,6 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   editFunction(pipeline) {
     console.log(pipeline);
-    console.log(this.transformationSvc.transformationObj);
     if (pipeline.edit == true) {
       this.updateTransformation();
     }
