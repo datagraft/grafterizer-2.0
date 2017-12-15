@@ -2,4 +2,5 @@
   "jarfter-path": "/jarfter",
   "dispatch-path": "/grafterizer-dispatch",
   "graftwerk-path": "/graftwerk-cache"
+  "abstat-path": "http://abstat.disco.unimib.it"
 }
