@@ -12,8 +12,8 @@ export class AddRowComponent implements OnInit, OnChanges {
   @Input() function: any;
   @Input() columns: string[];
   @Output() emitter = new EventEmitter();
-  private position: number = 0;
-  private values: any = [];
+  private position: number;
+  private values: any;
   private docstring: String;
 
   constructor() { }
@@ -28,6 +28,7 @@ export class AddRowComponent implements OnInit, OnChanges {
     this.docstring = null;
     this.position = 0;
     this.function = new AddRowFunction(this.position, this.values, this.docstring);
+
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -50,15 +51,13 @@ export class AddRowComponent implements OnInit, OnChanges {
     console.log(this.function);
     this.function.position = this.position;
     this.function.values = [];
-    for (let v of this.values) { this.function.values.push({ id: 0, value: v }); }
+    for (let v of this.values) { this.function.values.push(v); }
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
     this.initFunction();
     this.modalEnabled = false;
   }
 
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

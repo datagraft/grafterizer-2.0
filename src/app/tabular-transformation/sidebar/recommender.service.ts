@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-
 import * as datalib from 'datalib';
 import * as transformationDataModel from '../../../assets/transformationdatamodel.js';
 
@@ -13,18 +12,14 @@ export class RecommenderService {
     row: 0,
     hasLowercase: 0, // string selection contains lowercase characters
     //hasDuplicates: 0, // selection of rows contains identical rows
-
     first: 0 // selection is the first row or a subset of cells of the first row
   }
-
   // 1: compulsory condition, 0 : don't care, -1: forbidden condition
   conditionMatrix = [
     //[string|multiple|column|row|hasLowercase|hasDuplicates|first]
-
     [0, 0, 0, 1, 0, 0], //Insert row above
     [0, 0, 0, 1, 0, 0], //Insert row below
-
-    [0, -1, 1, -1, 0, 0], //Filter
+    [0, 0, 0, 0, 0, 0], //Filter
     [0, 0, 1, -1, 0, 0], //Group and Aggregate
     [0, 0, 1, -1, 0, 0], //Mapc
     [1, 0, 1, -1, 1, 0], //uppercase
@@ -34,20 +29,11 @@ export class RecommenderService {
     [0, 0, 1, -1, 0, 0],	//Sort
     [0, -1, 1, -1, 0, 0],	//Split columns
     [0, -1, 1, -1, 0, 0],	//Delete column
-
-
   ];
-
 
   data = [];
 
-  constructor() {
-    // let csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/flights-3m.csv');
-    //for (let o of csvData) {
-    // let record = [o.date, o.delay, o.distance, o.origin, o.destination];
-    //this.data.push(record);
-    //   }
-  }
+  constructor() { }
 
   // return the profile of the selection described by : row start, column start, row end, column end indices
   // and total number of rows and cols FROM THE TABLE 
@@ -133,56 +119,12 @@ export class RecommenderService {
     return this.profile;
   }
 
-  /*  getRecommendation(profile: any): any {
-      let recommendation = [{ label: 'Add columns', value: { id: 'add-columns', params: null } },
-      { label: 'Derive column', value: { id: 'derive-column', params: null } },
-      { label: 'Add row', value: { id: 'add-row', params: null } },
-      { label: 'Make dataset', value: { id: 'make-dataset', params: null } },
-      { label: 'Reshape dataset', value: { id: 'reshape-dataset', params: null } },
-      { label: 'Set first row as a header', value: { id: 'make-dataset-header', params: { moveFirstRowToHeader: true } } },
-      { label: 'Sort dataset', value: { id: 'sort-dataset', params: null } },
-      { label: 'Take rows', value: { id: 'take-rows', params: null } },
-      { label: 'Take columns', value: { id: 'take-columns', params: null } },
-      { label: 'Deduplicate', value: { id: 'deduplicate', defaultParams: null } },
-      { label: 'Custom function', value: { id: 'utility-function', params: null } }
-      ];
-  
-      for (let i = 0; i < this.conditionMatrix.length; i++) {
-        if ((this.conditionMatrix[i][0] == 1 && profile.string != 1)
-          || (this.conditionMatrix[i][0] == -1 && profile.string != 0)) continue;
-  
-        if ((this.conditionMatrix[i][1] == 1 && profile.multiple != 1)
-          || (this.conditionMatrix[i][1] == -1 && profile.multiple != 0)) continue;
-  
-        if ((this.conditionMatrix[i][2] == 1 && profile.column != 1)
-          || (this.conditionMatrix[i][2] == -1 && profile.column != 0)) continue;
-  
-        if ((this.conditionMatrix[i][3] == 1 && profile.row != 1)
-          || (this.conditionMatrix[i][3] == -1 && profile.row != 0)) continue;
-  
-        if ((this.conditionMatrix[i][4] == 1 && profile.hasLowercase != 1)
-          || (this.conditionMatrix[i][4] == -1 && profile.hasLowercase != 0)) continue;
-  
-        if ((this.conditionMatrix[i][5] == 1 && profile.hasDuplicates != 1)
-          || (this.conditionMatrix[i][5] == -1 && profile.hasDuplicates != 0)) continue;
-  
-        if ((this.conditionMatrix[i][7] == 1 && profile.first != 1)
-          || (this.conditionMatrix[i][7] == -1 && profile.first != 0)) continue;
-  
-        recommendation.push(this.functionList[i]);
-  
-      }
-      return recommendation;
-    }
-  */
-
   getRecommendationWithParams(rs: number, cs: number, re: number, ce: number, rows: number, columns: number, data: any, headers: any): any {
     var profile = this.getDataProfile(rs, cs, re, ce, rows, columns, data);
     var recommendation = [];
     var functionList = [
       { label: 'Insert row above', value: { id: 'add-row-above', defaultParams: { position: rs - 1, values: new Array(columns) } } },
       { label: 'Insert row below', value: { id: 'add-row-below', defaultParams: { position: rs + 1, values: new Array(columns) } } },
-
       { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: { colsToFilter: headers } } },
       { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: { colnames: headers } } },
       { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: { keyFunctionPairs: this.keyFunctionPairs(headers, null) } } },

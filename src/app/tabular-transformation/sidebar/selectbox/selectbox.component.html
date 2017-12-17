@@ -2,16 +2,13 @@
   <label for="label">
     <strong>Suggested Transformations</strong>
   </label>
-
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
     [listStyle]="{'max-height':'350px'}">
     <div id="label">
-
     </div>
   </p-listbox>
   <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button>
 </div>
-
 
 <make-dataset [modalEnabled]="selected.id=='MakeDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="makeDatasetFunction"></make-dataset>
 
@@ -54,7 +51,7 @@
 <group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [defaultParams]="selected.defaultParams"></group-dataset>
 
-<filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
+<filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></filter-rows>
 
 <utility-function [modalEnabled]="selected.id=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function>

@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
 
@@ -55,7 +54,6 @@ export class AddColumnsComponent implements OnInit, OnChanges {
           this.columnsArray = this.function.columnsArray;
           for (let colVal of this.function.columnsArray) {
             if (colVal.colValue) { this.addcolumnsmode.push('text'); }
-            else { this.addcolumnsmode.push('expr'); }
           }
           this.docstring = this.function.docstring;
         }

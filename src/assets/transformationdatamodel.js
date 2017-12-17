@@ -1105,7 +1105,6 @@ SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
     });
     return false;
   }
-
   this.colnamesSorttypesMap.splice(index, 1);
   return true;
 };

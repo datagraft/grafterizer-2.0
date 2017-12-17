@@ -161,7 +161,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
 
   emitFunction(value: any) {
     this.function = value;
-    this.updateTransformation();
+    // this.updateTransformation();
   }
 
   deepCopyArray(o) {

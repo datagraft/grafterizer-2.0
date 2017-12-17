@@ -14,7 +14,7 @@ export class PipelineComponent implements OnChanges, OnInit {
 
   @Input() private function: any;
   @Output() private emitter = new EventEmitter();
-  private steps: any = [];
+  private steps: any;
   private edit: boolean;
   private lastFunctionIndex: number;
   public currentFunctionIndex: number;
@@ -23,6 +23,7 @@ export class PipelineComponent implements OnChanges, OnInit {
   private emitterObject: any;
 
   constructor(private transformationService: TransformationService, private componentCommunicationService: ComponentCommunicationService) {
+    this.steps = [];
     this.edit = false;
     this.position = 'bottom-middle';
     this.tooltip = true;
@@ -81,6 +82,9 @@ export class PipelineComponent implements OnChanges, OnInit {
     }
     if (label == 'RenameColumnsFunction') {
       return 'Header title(s) changed'
+    }
+    if (label == 'GrepFunction') {
+      return 'Row(s) filtered'
     }
   }
 

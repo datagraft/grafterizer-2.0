@@ -1,4 +1,3 @@
-
 import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
@@ -28,6 +27,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private deriveColumnFunction: any;
   private mergeColumnsFunction: any;
   private renameColumnsFunction: any;
+  private grepFunction: any;
 
   private transformations: SelectItem[];
   private selected: any;
@@ -80,6 +80,11 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       }
       if (message.__type == 'RenameColumnsFunction') {
         this.renameColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'GrepFunction') {
+        this.grepFunction = message;
         this.selected = { id: message.__type, defaultParams: null };
         this.modalEnabled = true;
       }
