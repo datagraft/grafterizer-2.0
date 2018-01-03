@@ -1,8 +1,6 @@
 import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-
 
 @Component({
   selector: 'sort-dataset',
@@ -14,66 +12,54 @@ export class SortDatasetComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
   @Input() function: any;
-  @Output() emitter = new EventEmitter();
   @Input() defaultParams;
-
-  // TODO: Pass column names of the uploaded dataset
-  @Input() columns: String[] = [];
-  private sortTypes: String[] = ["Alphabetical", "Numerical", "By length", "Date"];
-  private sortings: any[] = [];
-
-
+  @Input() columns: String[];
+  @Output() emitter = new EventEmitter();
+  private sortTypes: String[];
+  private colnamesSorttypesMap: any[];
+  private colnameSorttype: any;
+  private colname: any;
   private docstring: String;
 
-  constructor() {
-    if (!this.function) {
-      this.sortings = [new transformationDataModel.ColnameSorttype("", "", false)];
-      this.function = new transformationDataModel.SortDatasetFunction(
-        this.sortings, this.docstring);
-    }
-    else {
-      for (let sorting in this.function.colnamesSorttypesMap) {
-        this.sortings.push(sorting);
-      }
-    }
-  }
+  constructor() { }
 
   ngOnInit() {
     this.modalEnabled = false;
+    this.docstring = null;
+    this.sortTypes = ["Alphabetical", "Numerical", "By length", "Date"];
+    this.colnamesSorttypesMap = [];
+    this.colname = { id: 0, value: 'gender' };
+    this.colnameSorttype = new transformationDataModel.ColnameSorttype(this.colname, this.sortTypes[0], false);
+    this.colnamesSorttypesMap.push(this.colnameSorttype);
+    this.function = new transformationDataModel.SortDatasetFunction(
+      this.colnamesSorttypesMap, this.docstring);
   }
 
   addColnameSorttype() {
-    this.sortings.push(new transformationDataModel.ColnameSorttype("", "", false));
+    this.colnamesSorttypesMap.push(new transformationDataModel.ColnameSorttype(null, null, false));
   }
 
   removeSorting(idx: number) {
-    this.sortings.splice(idx, 1);
+    this.colnamesSorttypesMap.splice(idx, 1);
   }
 
   ngOnChanges(changes: SimpleChanges) {
-
     if (changes.defaultParams && this.defaultParams) {
       if (this.defaultParams.colsToSort) {
-
-        this.sortings = [];
+        this.colnamesSorttypesMap = [];
         for (let colname of this.defaultParams.colsToSort) {
-          this.sortings.push(new transformationDataModel.ColnameSorttype(colname, "", false));
+          this.colnamesSorttypesMap.push(new transformationDataModel.ColnameSorttype(colname, "", false));
         }
       }
-
     }
   }
+
   accept() {
-    for (let sorting in this.function.sortings) {
-      this.function.colnamesSorttypesMap.push(sorting);
-    }
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
     this.modalEnabled = false;
   }
 
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

@@ -19,8 +19,8 @@
 <split-columns [modalEnabled]="selected.id=='SplitFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="splitFunction"
   [defaultParams]="selected.defaultParams"></split-columns>
 
-<sort-dataset [modalEnabled]="selected.id=='SortDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [defaultParams]="selected.defaultParams"></sort-dataset>
+<sort-dataset [modalEnabled]="selected.id=='SortDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="sortDatasetFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers"></sort-dataset>
 
 <shift-row [modalEnabled]="selected.id=='ShiftRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-row>
 
@@ -45,8 +45,8 @@
 
 <add-columns [modalEnabled]="selected.id=='AddColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addColumnsFunction"></add-columns>
 
-<map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [defaultParams]="selected.defaultParams"></map-columns>
+<map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mapcFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></map-columns>
 
 <group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [defaultParams]="selected.defaultParams"></group-dataset>

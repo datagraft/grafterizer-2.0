@@ -13,6 +13,7 @@ import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
 })
 
 export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
+
   @Input() suggestions;
   @Input() headers;
   @Input() transformation;
@@ -28,6 +29,8 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private mergeColumnsFunction: any;
   private renameColumnsFunction: any;
   private grepFunction: any;
+  private sortDatasetFunction: any;
+  private mapcFunction: any;
 
   private transformations: SelectItem[];
   private selected: any;
@@ -85,6 +88,16 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       }
       if (message.__type == 'GrepFunction') {
         this.grepFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'SortDatasetFunction') {
+        this.sortDatasetFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MapcFunction') {
+        this.mapcFunction = message;
         this.selected = { id: message.__type, defaultParams: null };
         this.modalEnabled = true;
       }
