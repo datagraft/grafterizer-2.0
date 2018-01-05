@@ -20,6 +20,7 @@ export class PipelineComponent implements OnChanges, OnInit {
   public currentFunctionIndex: number;
   private position: string;
   private tooltip: boolean;
+  private visible: boolean;
   private emitterObject: any;
 
   constructor(private transformationService: TransformationService, private componentCommunicationService: ComponentCommunicationService) {
@@ -27,6 +28,7 @@ export class PipelineComponent implements OnChanges, OnInit {
     this.edit = false;
     this.position = 'bottom-middle';
     this.tooltip = true;
+    this.visible = true;
     this.emitterObject = { edit: false, function: {}, preview: false, undoPreview: false };
   }
 
@@ -34,6 +36,7 @@ export class PipelineComponent implements OnChanges, OnInit {
 
   sendFunction() {
     this.edit = true;
+    console.log(this.currentFunctionIndex);
     this.componentCommunicationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
   }
 
@@ -50,6 +53,7 @@ export class PipelineComponent implements OnChanges, OnInit {
       this.lastFunctionIndex += 1;
     }
     this.steps = steps;
+    console.log(this.steps);
   }
 
   verboseLabels(label) {
@@ -136,27 +140,19 @@ export class PipelineComponent implements OnChanges, OnInit {
   getButtonEvent(event) {
     let index;
     let mode;
-    if (event.path[0].id != '') {
-      index = event.path[0].id;
-      mode = event.path[0].value;
-      this.currentFunctionIndex = parseInt(index);
-      this.getModes(mode);
-      console.log(index)
-      console.log(mode)
-    }
-    else {
-      index = event.path[1].id;
-      mode = event.path[1].value;
-      this.currentFunctionIndex = parseInt(index);
-      this.getModes(mode);
-      console.log(index)
-      console.log(mode)
-    }
+    console.log(event);
+    index = event.path[2].id;
+    mode = event.path[2].value;
+    this.currentFunctionIndex = parseInt(index);
+    this.getModes(mode);
+    console.log(index)
+    console.log(mode)
   }
 
   displayFunction(event) {
-    let index = event.path[0].id
+    let index = event.path[2].id
     this.currentFunctionIndex = index;
+    console.log(index)
   }
 
   ngOnChanges(changes: any) {
