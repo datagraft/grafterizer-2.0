@@ -26,6 +26,8 @@ export class ProfilingComponent implements OnInit {
   private data: any;
   private header: any;
 
+  public progressbar: boolean;
+
   private barChart_init: any[];
   private advancedPieChart_init: any[];
 
@@ -98,6 +100,7 @@ export class ProfilingComponent implements OnInit {
   };
 
   constructor(private statisticService: StatisticService) {
+    this.progressbar = false;
     this.profileSubset = new Object();
     this.profileSubset.selection = 0;
     this.profileSubset.chart = 0;

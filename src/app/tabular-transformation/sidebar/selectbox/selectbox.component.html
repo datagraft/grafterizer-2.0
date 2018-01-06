@@ -1,13 +1,13 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <label for="label">
-    <strong>Suggested Transformations</strong>
-  </label>
-  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
-    [listStyle]="{'max-height':'350px'}">
-    <div id="label">
-    </div>
+  <!--   <div class="wrapper-labels">
+    <label for="label">
+      <strong>TRANSFORMATIONS</strong>
+    </label>
+  </div> -->
+  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
+    [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'max-height':'360px'}">
   </p-listbox>
-  <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button>
+  <!-- <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button> -->
 </div>
 
 <make-dataset [modalEnabled]="selected.id=='MakeDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="makeDatasetFunction"></make-dataset>

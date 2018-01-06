@@ -110,6 +110,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   }
 
   updateTransformation() {
+    this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
@@ -121,6 +122,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
         this.profilingComponent.refresh(this.handsontableSelection);
         this.pipelineComponent.generateLabels();
         this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+        this.profilingComponent.progressbar = false;
       }, (err) => {
         console.log(err);
       })

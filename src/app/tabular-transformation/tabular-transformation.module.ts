@@ -15,6 +15,8 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
 import { ProfilingComponent } from './profiling/profiling.component';
@@ -76,7 +78,9 @@ import { AngularSplitModule } from 'angular-split';
     MatStepperModule,
     MatButtonModule,
     MatIconModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule
   ],
   declarations: [
     TabularTransformationComponent,
