@@ -1,28 +1,21 @@
 import { Component, OnInit, Input, Output, SimpleChanges, EventEmitter, OnChanges } from '@angular/core';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-//TODO: remove when passing transformation is implemented
-import * as data from '../../../../../assets/data.json';
 
 @Component({
   selector: 'map-columns',
   templateUrl: './map-columns.component.html',
   styleUrls: ['./map-columns.component.css']
 })
+
 export class MapColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
   @Input() defaultParams;
+  @Input() columns: String[] = [];
+  @Input() transformation: any;
   @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  // Transformation is needed to search for prefixers/functions
-  //@Input() transformation: any;
-  private transformation: any;
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-
   private keyFunctionPairs: any[] = []; // type keyFunctionPair
   private functionsToMapWith: any[] = []; // type customFunctionDeclaration
   private keys: String[] = [];
@@ -33,9 +26,8 @@ export class MapColumnsComponent implements OnInit, OnChanges {
   private availableFunctions: any[] = [];
 
   constructor(private completerService: CompleterService) {
-    this.transformation = transformationDataModel.Transformation.revive(data);
-
-    this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
+    // this.transformation = transformationDataModel.Transformation.revive(data);
+    // this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
     if (!this.function) {
       this.keyFunctionPairs = [new transformationDataModel.KeyFunctionPair(null, null, [])];
       this.functionsToMapWith = [undefined];
@@ -44,15 +36,12 @@ export class MapColumnsComponent implements OnInit, OnChanges {
     }
     else {
       this.keyFunctionPairs = this.function.keyFunctionPairs;
-
       for (let availableFunction of this.function.keyFunctionPairs) {
         this.functionsToMapWith.push(availableFunction.func);
         this.keys.push(availableFunction.key);
         this.docstring = this.function.docstring;
-
       }
     }
-
   }
 
   ngOnInit() {

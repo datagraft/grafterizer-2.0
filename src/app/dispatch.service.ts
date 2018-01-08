@@ -62,7 +62,7 @@ export class DispatchService {
       .then(
       (result) => this.mapSparqlEndpoints(result),
       (error) => this.errorHandler(error)
-    );
+      );
   }
 
   private mapSparqlEndpoints(result: JSON): Array<SparqlEndpoint> {
@@ -70,7 +70,6 @@ export class DispatchService {
     result['dcat:record'].forEach((record) => {
       sparqlEndpoints.push(this.mapSparqlEndpoint(record));
     });
-    console.log(result);
     return sparqlEndpoints;
   }
 
@@ -88,7 +87,7 @@ export class DispatchService {
 
   public uploadFile(file: File): Promise<any> {
     const url = `${this.dispatchPath}/myassets/filestores`;
-    const options = new RequestOptions({ withCredentials: true});
+    const options = new RequestOptions({ withCredentials: true });
 
     const formData: FormData = new FormData();
     formData.append('filestore[name]', 'previewed_dataset_' + file.name);
@@ -113,7 +112,7 @@ export class DispatchService {
       .then(
       (result) => this.mapFilestores(result),
       (error) => this.errorHandler(error)
-    );
+      );
   }
 
   /* Helper method. Maps the response from DataGraft to the Filestore interface (through the Dispatch Service).
@@ -210,7 +209,7 @@ export class DispatchService {
   }
   // Update transformation on DataGraft
   public updateTransformation(id: string, publisher: string, name: string, isPublic: boolean, description: string,
-                               keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
+    keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
     const url = this.computeTransformationURL(publisher, id);
     const requestPayload = {
       'name': name,
@@ -232,12 +231,12 @@ export class DispatchService {
           this.postConfiguration(newId, publisher, configuration)
         ]).then(
           () => {
-            return Promise.resolve({id: newId, publisher: newPublisher});
+            return Promise.resolve({ id: newId, publisher: newPublisher });
           },
           (error) => this.errorHandler(error))
       },
       (error) => this.errorHandler(error)
-    );
+      );
 
   }
 
@@ -248,13 +247,13 @@ export class DispatchService {
       .delete(url, options)
       .map((response: Response) => response)
       .toPromise()
-      .then((response) => Promise.resolve({id: id, publisher: publisher}),
-            (error) => this.errorHandler(error));
+      .then((response) => Promise.resolve({ id: id, publisher: publisher }),
+      (error) => this.errorHandler(error));
   }
 
   // creates Transformation asset in DataGraft, then submits the metadata and configuration
   public newTransformation(name: string, isPublic: boolean, description: string,
-                            keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
+    keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
     // According to the API, first we create the transformation asset...
     return this.submitTransformation(name, isPublic)
       .then(
@@ -268,12 +267,12 @@ export class DispatchService {
         ]).then(
           () => {
             // both metadata and configuration requests pass - we resolve the promise by returning the values
-            return Promise.resolve({id: id, publisher: publisher})
+            return Promise.resolve({ id: id, publisher: publisher })
           },
-          (error) =>  this.errorHandler(error)
-        )
+          (error) => this.errorHandler(error)
+          )
       }, (error) => this.errorHandler(error)
-    );
+      );
   }
 
   // Helper method. Creates Transformation asset in DataGraft and returns a promise
@@ -339,7 +338,7 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then((response) => this.mapTransformation(response),
-            (error) => this.errorHandler(error));
+      (error) => this.errorHandler(error));
   }
 
   // Helper method. Computes the transformation URL
@@ -361,7 +360,7 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then((result) => this.mapTransformations(result),
-            (error) => this.errorHandler(error));
+      (error) => this.errorHandler(error));
   }
 
   /* Helper method. Maps the result of the transformations request from DataGraft (through the Dispatch Service).

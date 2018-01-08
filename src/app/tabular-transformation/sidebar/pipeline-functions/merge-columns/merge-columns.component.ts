@@ -11,57 +11,66 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 export class MergeColumnsComponent implements OnInit, OnChanges {
 
-  @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
+  @Input() modalEnabled: boolean;
   @Input() defaultParams;
+  @Input() columns: String[];
   @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-  private colsToMerge: any = [];
+  private colsToMerge: any;
   private separator: String;
   private newColName: String;
   private docstring: String;
 
-  constructor() {
-    if (!this.function) {
-      this.function = new transformationDataModel.MergeColumnsFunction(this.colsToMerge, this.separator, this.newColName, this.docstring);
-    }
-    else {
-      this.colsToMerge = this.function.colsToMerge;
-      this.separator = this.function.separator;
-      this.newColName = this.function.newColName;
-      this.docstring = this.function.docstring;
-
-    }
-  }
+  constructor() { }
 
   ngOnInit() {
     this.modalEnabled = false;
+    this.initFunction();
+  }
+
+  initFunction() {
+    this.colsToMerge = [];
+    this.separator = null;
+    this.newColName = null;
+    this.docstring = null;
+    this.function = new transformationDataModel.MergeColumnsFunction(this.colsToMerge, this.separator, this.newColName, this.docstring);
   }
 
   ngOnChanges(changes: SimpleChanges) {
-
-    if (changes.defaultParams && this.defaultParams) {
-      if (this.defaultParams.colsToMerge) {
-
-        this.colsToMerge = this.defaultParams.colsToMerge;
+    if (changes.function) {
+      if (!this.function) {
+        console.log('New function');
       }
-
+      else {
+        console.log('Edit function');
+        if (this.function.__type == 'MergeColumnsFunction') {
+          this.colsToMerge = this.function.colsToMerge;
+          this.separator = this.function.separator;
+          this.newColName = this.function.newColName;
+          this.docstring = this.function.docstring;
+        }
+      }
+    }
+    if (changes.defaultParams && this.defaultParams) {
+      console.log('OK');
+      if (this.defaultParams.colsToMerge) {
+        // this.colsToMerge = this.defaultParams.colsToMerge;
+      }
     }
   }
 
   accept() {
+    console.log(this.function);
+    console.log(this.colsToMerge);
     this.function.colsToMerge = this.colsToMerge;
     this.function.separator = this.separator;
     this.function.newColName = this.newColName;
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);
+    this.initFunction();
     this.modalEnabled = false;
   }
 
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

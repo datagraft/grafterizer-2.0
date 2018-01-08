@@ -26,6 +26,8 @@ export class ProfilingComponent implements OnInit {
   private data: any;
   private header: any;
 
+  public progressbar: boolean;
+
   private barChart_init: any[];
   private advancedPieChart_init: any[];
 
@@ -98,6 +100,7 @@ export class ProfilingComponent implements OnInit {
   };
 
   constructor(private statisticService: StatisticService) {
+    this.progressbar = false;
     this.profileSubset = new Object();
     this.profileSubset.selection = 0;
     this.profileSubset.chart = 0;
@@ -135,16 +138,18 @@ export class ProfilingComponent implements OnInit {
   }
 
   refresh(handsontableSelection) {
-    this.statisticService.buildProfile(this.data, this.header, handsontableSelection);
-    setTimeout(() => {
-      console.log(this.statisticService.profile);
-      this.dataBarChart = this.statisticService.profile[2];
-      this.dataAdvancedPieChart = this.statisticService.profile[3];
-      this.dataBoxplot = this.statisticService.profile[5];
-      this.dataStatisticsTable = this.statisticService.statData;
-      this.refreshPlotly();
-    },
-      300);
+    if (handsontableSelection) {
+      this.statisticService.buildProfile(this.data, this.header, handsontableSelection);
+      setTimeout(() => {
+        // console.log(this.statisticService.profile);
+        this.dataBarChart = this.statisticService.profile[2];
+        this.dataAdvancedPieChart = this.statisticService.profile[3];
+        this.dataBoxplot = this.statisticService.profile[5];
+        this.dataStatisticsTable = this.statisticService.statData;
+        this.refreshPlotly();
+      },
+        300);
+    }
   };
 
   refreshPlotly() {

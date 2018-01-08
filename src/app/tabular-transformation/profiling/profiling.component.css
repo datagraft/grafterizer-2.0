@@ -1,3 +1,7 @@
+.progressbar {
+  padding-bottom: 5px;
+}
+
 .chart {
   position: relative;
   height: 350px;
@@ -25,44 +29,46 @@ md-grid-tile {
 }
 
 .barChart {
-  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
   text-align: center;
   font-style: normal;
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.6rem;
   line-height: 2.6rem;
   letter-spacing: 0.01rem;
   color: #212121;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  padding-top: 50px;
+  padding-top: 20px;
   padding-left: 80px;
 }
 
 .advancedPieChart {
-  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
   text-align: center;
   font-style: normal;
   font-weight: 400;
   font-size: 50%;
-  line-height: 2.6rem;
+  line-height: 1.6rem;
   letter-spacing: 0.01rem;
   color: #212121;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  margin-top: -60px;
+  margin-top: -70px;
   margin-left: -280px;
 }
 
 #boxplot {
-  width: 350px;
-  height: 370px;
-  padding-left: 170px;
+  width: 300px;
+  height: 300px;
+  padding-left: 190px;
+  margin-top: 10px;
 }
 
 .datatable {
+  line-height: 0.8rem;
+  letter-spacing: 0.01rem;
+  font-size: 0.6rem;
   width: 250px;
   height: 300px;
-  padding-top: 20px;
+  padding-top: 15px;
   margin-left: -210px;
 }

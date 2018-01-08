@@ -49,7 +49,7 @@ export class DeduplicateComponent implements OnInit, OnChanges {
   }
 
   accept() {
-    console.log(this.mode, this.colnames);
+    // console.log(this.mode, this.colnames);
     if (this.mode == "columns" && this.colnames.length < 1) {
       this.showMessage = true;
     }
@@ -64,7 +64,7 @@ export class DeduplicateComponent implements OnInit, OnChanges {
 
       this.function.docstring = this.docstring;
 
-      console.log(this.function);
+      // console.log(this.function);
       this.emitter.emit(this.function);
       this.modalEnabled = false;
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 
@@ -11,35 +11,51 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 export class TakeColumnsComponent implements OnInit {
 
+  @Input() function: any;
   @Input() modalEnabled;
-  @Input() private function: any;
   @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
+
   private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-  private takecolumnsmode: String = "";
-  private indexFrom: Number = null;
-  private indexTo: Number = null;
-  private columnsArray: any = [];
-  private take: boolean = true;
+  private takecolumnsmode: String;
+  private indexFrom: Number;
+  private indexTo: Number;
+  private columnsArray: any;
+  private take: boolean;
   private docstring: String;
 
   constructor() { }
 
   ngOnInit() {
-    this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
-      this.indexFrom, this.indexTo, this.take, this.docstring);
     this.modalEnabled = false;
+    this.initFunction();
   }
 
-  ngOnChanges() {
-    if (this.modalEnabled && this.function) {
-      this.columnsArray = this.function.columnsArray;
-      this.indexFrom = this.function.indexFrom;
-      this.indexTo = this.function.indexTo;
-      this.take = this.function.take;
-      this.docstring = this.function.docstring;
-    };
+  initFunction() {
+    this.columnsArray = [];
+    this.indexFrom = 0;
+    this.indexTo = 0;
+    this.take = true;
+    this.docstring = null;
+    this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
+      this.indexFrom, this.indexTo, this.take, this.docstring);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.function) {
+      if (!this.function) {
+        console.log('New function');
+      }
+      else {
+        console.log('Edit function');
+        if (this.function.__type == 'ColumnsFunction') {
+          this.columnsArray = this.function.columnsArray;
+          this.indexFrom = this.function.indexFrom;
+          this.indexTo = this.function.indexTo;
+          this.take = this.function.take;
+          this.docstring = this.function.docstring;
+        }
+      }
+    }
   }
 
   accept() {
@@ -52,8 +68,6 @@ export class TakeColumnsComponent implements OnInit {
     this.modalEnabled = false;
   }
 
-  cancel() {
-    this.modalEnabled = false;
-  }
+  cancel() { this.modalEnabled = false; }
 
 }

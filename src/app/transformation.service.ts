@@ -85,13 +85,15 @@ export class TransformationService {
 
   public previewTransformation(filestoreID: string, clojure: string, page?: number, pageSize?: number): Promise<any> {
     const url = this.dispatchPath + '/preview/' + encodeURIComponent(filestoreID);
-    const options = new RequestOptions({ withCredentials: true });
     const requestPayload = {
-      'clojure': clojure,
-      'page': page || 0,
-      pageSize: pageSize || 100,
-      useCache: 1
+      clojure: clojure,
+      useCache: true
     };
+    const params = {
+      page: page || 0,
+      pageSize: pageSize || 100
+    };
+    const options = new RequestOptions({ withCredentials: true, params: params });
     return this.http.post(url, requestPayload, options)
       .map((response: Response) => response.json())
       .toPromise()
@@ -133,7 +135,9 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs = Observable.interval(1500)
+    const obs = new Observable(observer => {
+      observer.next();
+    })
       .switchMap(() => this.http.get(statusUrl, options))
       .map((response) => response.json());
 

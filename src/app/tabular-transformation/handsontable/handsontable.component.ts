@@ -45,21 +45,23 @@ export class HandsontableComponent implements OnInit, OnChanges {
     this.settings = {
       data: this.data,
       rowHeaders: true,
-      autoColumnSize: { useHeaders: true },
+      autoColumnSize: false,
+      manualColumnResize: true,
       columnSorting: false,
       viewportColumnRenderingOffset: 40,
       height: 600,
       width: 1610,
+      wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
+      observeDOMVisibility: true,
       afterChange: () => {
         setTimeout(() => {
           this.hot.render();
-        }, 100);
-        console.log('after');
+        }, 10);
       },
       afterSelection: (r, c, r2, c2) => {
-        console.log(r, c, r2, c2);
+        // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
         this.selectionChanged.emit({
           row: r,
@@ -76,14 +78,11 @@ export class HandsontableComponent implements OnInit, OnChanges {
   }
 
   emitFunction(value: any) {
-    console.log("EMIT");
-    console.log(value);
     this.emitter.emit(value);
   }
 
   ngOnChanges() {
     if (this.hot) {
-
       var enabledMenuItems = [];
       //for HoT submenus keys 
       var keySuggestionMap = {
@@ -373,7 +372,7 @@ export class HandsontableComponent implements OnInit, OnChanges {
 
   public displayJsEdnData(data: JSON) {
     this.showLoading = true;
-    console.log(data[':rows']);
+    // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
       const rowData = data[':rows'];
@@ -393,7 +392,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
         data: data[':rows']
       });
       this.showLoading = false;
-      // this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');
