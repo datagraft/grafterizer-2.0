@@ -3,7 +3,8 @@
     <div class="card-header">
       <clr-tooltip *ngIf="annotationForm.invalid ||
               emptySubjectValidator() ||
-              emptyPropertyValidator()" class="pull-right">
+              emptyPropertyValidator() ||
+              missingPrefix()" class="pull-right">
         <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not valid</span>
@@ -11,7 +12,8 @@
       </clr-tooltip>
       <clr-tooltip *ngIf="annotationForm.dirty && !(annotationForm.invalid ||
               emptySubjectValidator() ||
-              emptyPropertyValidator())" class="pull-right">
+              emptyPropertyValidator() ||
+              missingPrefix())" class="pull-right">
         <clr-icon clrTooltipTrigger shape="warning-standard" size="20" class="is-solid is-warning"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not submitted</span>

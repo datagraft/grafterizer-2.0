@@ -47,6 +47,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
           this.isSubject = true;
           if (this.annotation.columnValuesType !== 'URL') {
             this.prefixRequired = true;
+            if (this.missingPrefix()) {
+              this.submitted = false;
+            }
             subjectsLabel.push(i);
           }
         }
