@@ -59,7 +59,15 @@ export class AnnotationService {
     this.annotations[columnHeader] = annotation;
   }
 
+  removeAnnotation(columnHeader: string) {
+    this.annotations = this.annotations.filter(ann => ann.columnHeader !== columnHeader);
+  }
+
   getAnnotation(columnHeader: string): Annotation {
     return this.annotations[columnHeader];
+  }
+
+  getAnnotations(): Annotation[] {
+    return this.annotations;
   }
 }

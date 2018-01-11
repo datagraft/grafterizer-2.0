@@ -183,9 +183,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * Apply changes to the annotation model when the form is submitted
    */
   onSubmit() {
+    this.annotation.columnHeader = this.header;
     this.annotation.sourceColumnHeader = this.annotationForm.get('relationship').get('subject').value;
     this.annotation.property = this.annotationForm.get('relationship').get('property').value;
     this.annotation.columnType = this.annotationForm.get('columnInfo').get('columnType').value;
+    if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
+      this.annotation.columnType = this.annotation.columnType['suggestion'];
+    }
     this.annotation.columnValuesType = this.annotationForm.get('columnInfo').get('columnValuesType').value;
     this.annotation.urifyPrefix = this.annotationForm.get('columnInfo').get('urifyPrefix').value;
     this.isObject = this.annotation.sourceColumnHeader !== '' && this.annotation.property !== '' && this.annotation.columnType !== '';
@@ -195,13 +199,23 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   resetForm() {
-    this.annotationForm.reset();
+    this.annotationForm.reset({
+      columnInfo: {
+        columnType: '',
+        columnValuesType: '',
+        urifyPrefix: '',
+      },
+      relationship: {
+        subject: '',
+        property: '',
+      }
+    });
     this.annotation = new Annotation();
   }
 
   deleteAnnotation() {
     this.resetForm();
-    this.annotationService.setAnnotation(this.header, new Annotation());
+    this.annotationService.removeAnnotation(this.header);
   }
 
   /**
