@@ -6,6 +6,7 @@ import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Annotation} from '../annotation.model';
+import nlp from 'wink-nlp-utils';
 
 @Component({
   selector: 'app-annotation-form',
@@ -73,9 +74,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.onChanges();
 
     /**
+     * Preprocess the header before querying ABSTAT
+     */
+    const filteredHeader = this.stringPreprocessing(this.header);
+
+    /**
      * Set first ABSTAT type suggestion as initial value
      */
-    this.typeSuggestions(this.header).subscribe(suggestions => {
+    this.typeSuggestions(filteredHeader).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('columnInfo').get('columnType').setValue(suggestions[0].suggestion);
       }
@@ -84,7 +90,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     /**
      * Set first ABSTAT property suggestion as initial value
      */
-    this.propertySuggestions(this.header).subscribe(suggestions => {
+    this.propertySuggestions(filteredHeader).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('relationship').get('property').setValue(suggestions[0].suggestion);
       }
@@ -111,6 +117,26 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.annotation = new Annotation();
       this.annotationService.removeAnnotation(this.header);
     });
+  }
+
+  stringPreprocessing(string) {
+    // remove special chars (e.g. _)
+    string = nlp.string.retainAlphaNums(string);
+    // split camelCase words
+    string = string
+      // insert a space between lower & upper
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // space before last upper in a sequence followed by lower
+      .replace(/\b([A-Z]+)([A-Z])([a-z])/, '$1 $2$3')
+      // uppercase the first character
+      .replace(/^./, function(str){ return str.toUpperCase(); });
+    // tokenize string
+    let tokens = nlp.string.tokenize(string);
+    // remove stop words
+    tokens = nlp.tokens.removeWords(tokens);
+    // create string from tokens
+    string = tokens.join(' ');
+    return string;
   }
 
   /**
