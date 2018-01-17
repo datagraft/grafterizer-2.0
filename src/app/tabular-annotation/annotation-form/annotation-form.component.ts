@@ -41,16 +41,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.isSubject = false;
       let i = 0;
       const subjectsLabel = [];
-      this.prefixRequired = false;
       subjects.forEach((value: String) => {
         if (value === this.header) {
           this.isSubject = true;
-          if (this.annotation.columnValuesType !== 'URL') {
-            this.prefixRequired = true;
-            if (this.missingPrefix()) {
-              this.submitted = false;
-            }
-            subjectsLabel.push(i);
+          subjectsLabel.push(i);
+          if (this.subjectValuesTypeValidator()) {
+            this.submitted = false;
+            this.annotationService.removeAnnotation(this.header);
           }
         }
         i++;
@@ -112,15 +109,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.annotationForm.valueChanges.subscribe(val => {
       this.submitted = false;
       this.annotation = new Annotation();
+      this.annotationService.removeAnnotation(this.header);
     });
-  }
-
-  /**
-   * Check if the prefix URI is missing
-   * @returns {boolean} true if the prefix is required but still empty
-   */
-  missingPrefix() {
-    return this.prefixRequired && this.annotationForm.get('columnInfo').get('urifyPrefix').value === '';
   }
 
   /**
@@ -153,6 +143,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * A subject column must have URL as values type
+   * @returns {boolean} true if this column is a subject and the values type is not URL. false otherwise.
+   */
+  subjectValuesTypeValidator() {
+    return this.isSubject && this.annotationForm.get('columnInfo').get('columnValuesType').value !== 'URL'
+  }
+
+  /**
    * Validate form when column values type changes
    * @param columnDataType
    */
@@ -160,10 +158,10 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const formElement = this.annotationForm.get('columnInfo').get('columnValuesType');
     formElement.setValue(columnDataType);
     if (columnDataType === 'URL') {
-      this.prefixRequired = false;
-      this.annotationForm.get('columnInfo').get('urifyPrefix').setValue('');
-    } else if (this.isSubject) {
       this.prefixRequired = true;
+      this.annotationForm.get('columnInfo').get('urifyPrefix').setValue('');
+    } else {
+      this.prefixRequired = false;
     }
     formElement.markAsDirty();
   }
@@ -186,6 +184,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.annotation.columnHeader = this.header;
     this.annotation.sourceColumnHeader = this.annotationForm.get('relationship').get('subject').value;
     this.annotation.property = this.annotationForm.get('relationship').get('property').value;
+    if (this.annotation.property['suggestion']) { // when user select a suggestion from the autocomplete
+      this.annotation.property = this.annotation.property['suggestion'];
+    }
     this.annotation.columnType = this.annotationForm.get('columnInfo').get('columnType').value;
     if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
       this.annotation.columnType = this.annotation.columnType['suggestion'];
