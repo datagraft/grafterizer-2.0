@@ -67,7 +67,9 @@ export class AnnotationService {
     return this.annotations[columnHeader];
   }
 
-  getAnnotations() {
-    return this.annotations;
+  getAnnotations(): Annotation[] {
+    const annotations = [];
+    Object.keys(this.annotations).forEach(key => annotations.push(this.annotations[key]));
+    return annotations;
   }
 }
