@@ -7,7 +7,7 @@ import {Annotation} from './annotation.model';
 @Injectable()
 export class AnnotationService {
 
-  private annotations: Annotation[];
+  private annotations;
   public headers;
   public data;
 
@@ -17,7 +17,7 @@ export class AnnotationService {
   subjectsChange: Subject<Map<string, string>> = new Subject<Map<string, string>>();
 
   constructor(public http: Http) {
-    this.annotations = [];
+    this.annotations = {};
     this.headers = [];
     this.data = [];
     this.subjectsChange.subscribe((value) => {
@@ -60,14 +60,14 @@ export class AnnotationService {
   }
 
   removeAnnotation(columnHeader: string) {
-    this.annotations = this.annotations.filter(ann => ann.columnHeader !== columnHeader);
+    delete this.annotations[columnHeader];
   }
 
   getAnnotation(columnHeader: string): Annotation {
     return this.annotations[columnHeader];
   }
 
-  getAnnotations(): Annotation[] {
+  getAnnotations() {
     return this.annotations;
   }
 }
