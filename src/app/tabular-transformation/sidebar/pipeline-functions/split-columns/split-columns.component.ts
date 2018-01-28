@@ -40,7 +40,7 @@ export class SplitColumnsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        console.log('New function');
+        // console.log('New function');
       }
       else if (changes.defaultParams && this.defaultParams) {
         if (this.defaultParams.colToSplit) {

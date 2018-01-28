@@ -6,12 +6,12 @@
   </split-area>
   <split-area [size]="85">
     <split direction="vertical">
-      <split-area [size]="60">
+      <split-area [size]="65">
         <div class="handsontable">
           <app-handsontable [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)" (emitter)="emitFunction($event)"></app-handsontable>
         </div>
       </split-area>
-      <split-area [size]="40">
+      <split-area [size]="35">
         <profiling></profiling>
       </split-area>
     </split>

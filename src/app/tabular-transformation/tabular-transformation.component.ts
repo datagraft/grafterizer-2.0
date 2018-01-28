@@ -1,19 +1,21 @@
-import { Component, OnInit, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
 import { RecommenderService } from './sidebar/recommender.service';
 import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
+import { RouterUrlService } from './component-communication.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
+import { Message } from '@angular/compiler/src/i18n/i18n_ast';
 
 @Component({
   selector: 'app-tabular-transformation',
   templateUrl: './tabular-transformation.component.html',
   styleUrls: ['./tabular-transformation.component.css'],
-  providers: [RecommenderService, DispatchService, TransformationService]
+  providers: [RecommenderService, DispatchService]
 })
 
 export class TabularTransformationComponent implements OnInit, AfterViewInit, DoCheck {
@@ -26,12 +28,15 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
+  private transformationObj: any;
+  private graftwerkData: any;
+
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
-    private transformationSvc: TransformationService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
+    private transformationSvc: TransformationService, private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
     this.differ = differs.find({}).create(null);
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
@@ -46,9 +51,18 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
       { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
     ];
+    route.url.subscribe(() => this.concatURL());
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
+    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+  }
+
+  ngOnDestroy() {
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+  }
 
   ngAfterViewInit() { this.existingTransformation(); }
 
@@ -56,10 +70,19 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     const change = this.differ.diff(this.transformationSvc.transformationObj.pipelines["0"].functions);
     if (change) {
       if (this.function) {
-        console.log(this.function);
         this.updateTransformation();
       }
     }
+  }
+
+  concatURL() {
+    this.route.snapshot.url.pop();
+    let str = '';
+    for (let o in this.route.snapshot.url) {
+      str = str.concat(this.route.snapshot.url[o].path);
+      str = str.concat('/');
+    }
+    this.routerService.sendMessage(str);
   }
 
   getChanges(oldArray, newArray) {
@@ -92,7 +115,11 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
               (result) => {
                 console.log(result);
                 this.transformationSvc.transformationObj = transformationObj;
+                this.transformationObj = transformationObj;
+                this.graftwerkData = result;
                 this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+                // this.graftwerkData[":column-names"] = this.loadedDataHeaders;
+                console.log(this.loadedDataHeaders)
                 this.handsonTable.displayJsEdnData(result);
                 this.profilingComponent.loadJSON(result);
                 this.pipelineComponent.generateLabels();
@@ -115,8 +142,9 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
-        console.log(clojure);
+        console.log(paramMap);
         this.handsonTable.showLoading = true;
+        this.transformationSvc.graftwerkData = result;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);

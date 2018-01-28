@@ -46,7 +46,7 @@ export class AddColumnsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        console.log('New function');
+        // console.log('New function');
       }
       else {
         console.log('Edit function');
@@ -62,7 +62,7 @@ export class AddColumnsComponent implements OnInit, OnChanges {
   }
 
   accept() {
-    console.log(this.function);
+    // console.log(this.function);
     this.function.columnsArray = this.columnsArray;
     this.function.docstring = this.docstring;
     this.emitter.emit(this.function);

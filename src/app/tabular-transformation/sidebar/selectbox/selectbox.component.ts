@@ -109,7 +109,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges() {
     if (this.suggestions) this.transformations = this.suggestions;
     this.selected = { id: null, defaultParams: null };
-    console.log(this.selected);
+    // console.log(this.selected);
   }
 
   ngOnInit() { }

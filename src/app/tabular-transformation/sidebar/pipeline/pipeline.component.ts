@@ -53,7 +53,7 @@ export class PipelineComponent implements OnChanges, OnInit {
       this.lastFunctionIndex += 1;
     }
     this.steps = steps;
-    console.log(this.steps);
+    // console.log(this.steps);
   }
 
   verboseLabels(label) {
@@ -114,7 +114,7 @@ export class PipelineComponent implements OnChanges, OnInit {
     else {
       this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
     }
-    console.log(this.transformationService.transformationObj);
+    // console.log(this.transformationService.transformationObj);
   }
 
   functionRemove() {
@@ -157,8 +157,8 @@ export class PipelineComponent implements OnChanges, OnInit {
 
   ngOnChanges(changes: any) {
     if (this.function) {
-      console.log('onChanges pipeline component');
-      console.log(this.function);
+      // console.log('onChanges pipeline component');
+      // console.log(this.function);
       this.functionAdd();
     }
   }

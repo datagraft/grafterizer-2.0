@@ -49,7 +49,7 @@ export class HandsontableComponent implements OnInit, OnChanges {
       manualColumnResize: true,
       columnSorting: false,
       viewportColumnRenderingOffset: 40,
-      height: 600,
+      height: 660,
       width: 1610,
       wordWrap: true,
       stretchH: 'all',

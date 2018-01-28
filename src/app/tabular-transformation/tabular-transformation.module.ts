@@ -49,7 +49,7 @@ import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/fi
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
 import { ComponentCommunicationService } from './component-communication.service';
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
-import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
+// import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -62,7 +62,7 @@ import { AngularSplitModule } from 'angular-split';
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
-    TabularTransformationRoutingModule,
+    // TabularTransformationRoutingModule,
     NglModule.forRoot(),
     FlexLayoutModule,
     ClarityModule,

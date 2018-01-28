@@ -34,7 +34,7 @@ export class AddRowComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        console.log('New function');
+        // console.log('New function');
         this.position = 0;
       } else {
         console.log('Edit function');

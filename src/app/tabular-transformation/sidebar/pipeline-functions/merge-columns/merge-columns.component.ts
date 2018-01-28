@@ -39,7 +39,7 @@ export class MergeColumnsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.function) {
       if (!this.function) {
-        console.log('New function');
+        // console.log('New function');
       }
       else {
         console.log('Edit function');

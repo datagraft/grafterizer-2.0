@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
+import { RouterUrlService } from './tabular-transformation/component-communication.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -15,15 +17,22 @@ import * as data from '../assets/data.json';
   styleUrls: ['./app.component.css'],
   providers: [DispatchService, TransformationService, DataGraftMessageService]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   private basic = true;
+  private url: any = 'transformation/new/';
+  private subscription: Subscription;
 
-  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
+  constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig, public dispatch: DispatchService, private transformationSvc: TransformationService, public messageSvc: DataGraftMessageService, private routerService: RouterUrlService) {
     console.log(config.getConfig('jarfter-path'));
     console.log(config.getConfig('dispatch-path'));
     console.log(config.getConfig('graftwerk-cache-path'));
+    this.subscription = this.routerService.getMessage().subscribe(message => {
+      this.url = message;
+    })
   }
+
+  ngOnInit() { }
 
   getAllTransformations() {
     let publisher = 'nvnikolov';
@@ -132,55 +141,55 @@ export class AppComponent {
     }
   }
 
-  transformData() {
-    const transformationID = 'patients-data';
-    const filestoreID = 'patients-csv';
-    const transformationType = 'pipe';
-
-    this.transformationSvc.transformFile(filestoreID, transformationID, 'pipe')
-      .then(
-      (result) => {
-        console.log("Successfully transformed (PIPELINE)!");
-        console.log(result);
-      },
-      (error) => console.log(error));
-
-    // Transform (pipe and graft) and store result in a DB
-    this.transformationSvc.transformFile(filestoreID, transformationID, 'graft', 'nt')
-      .then(
-      (result) => {
-        console.log("Successfully transformed (GRAFT)!");
-      },
-      (error) => console.log(error));
-
-    // preview transformation that is saved on DataGraft
-    let publisher = 'nvnikolov';
-    let existingTransformationID = 'patients-data';
-    this.dispatch.getTransformationJson(existingTransformationID, publisher)
-      .then(
-      (result) => {
-        console.log("Got transformation JSON");
-        const clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(result));
-        console.log("Generated Clojure!");
-        this.transformationSvc.previewTransformation(filestoreID, clojure)
-          .then(
-          (result) => {
-            console.log("Successfully previewed transformation!");
-            //            console.log(result);
-          },
-          (error) => console.log("Error previewing transformation!"));
-      },
-      error => console.log(error));
-
-    // get original data of a distribution
-    this.transformationSvc.getOriginalData(filestoreID)
-      .then(
-      (result) => {
-        console.log("Successfully obtained original filestore!");
-        console.log(result);
-      },
-      (error) => console.log("Error obtaining original file!"))
-
-  }
+  /*   transformData() {
+      const transformationID = 'patients-data';
+      const filestoreID = 'patients-csv';
+      const transformationType = 'pipe';
+  
+      this.transformationSvc.transformFile(filestoreID, transformationID, 'pipe')
+        .then(
+        (result) => {
+          console.log("Successfully transformed (PIPELINE)!");
+          console.log(result);
+        },
+        (error) => console.log(error));
+  
+      // Transform (pipe and graft) and store result in a DB
+      this.transformationSvc.transformFile(filestoreID, transformationID, 'graft', 'nt')
+        .then(
+        (result) => {
+          console.log("Successfully transformed (GRAFT)!");
+        },
+        (error) => console.log(error));
+  
+      // preview transformation that is saved on DataGraft
+      let publisher = 'nvnikolov';
+      let existingTransformationID = 'patients-data';
+      this.dispatch.getTransformationJson(existingTransformationID, publisher)
+        .then(
+        (result) => {
+          console.log("Got transformation JSON");
+          const clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(result));
+          console.log("Generated Clojure!");
+          this.transformationSvc.previewTransformation(filestoreID, clojure)
+            .then(
+            (result) => {
+              console.log("Successfully previewed transformation!");
+              //            console.log(result);
+            },
+            (error) => console.log("Error previewing transformation!"));
+        },
+        error => console.log(error));
+  
+      // get original data of a distribution
+      this.transformationSvc.getOriginalData(filestoreID)
+        .then(
+        (result) => {
+          console.log("Successfully obtained original filestore!");
+          console.log(result);
+        },
+        (error) => console.log("Error obtaining original file!"))
+  
+    } */
 
 }

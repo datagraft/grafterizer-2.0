@@ -50,7 +50,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
     }
     if (changes.function) {
       if (!this.function) {
-        console.log('New function');
+        // console.log('New function');
         this.deriveFunctions = [undefined];
       }
       else {
