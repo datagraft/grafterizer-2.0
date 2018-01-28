@@ -6,6 +6,7 @@ import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Annotation} from '../annotation.model';
+import nlp from 'wink-nlp-utils';
 
 @Component({
   selector: 'app-annotation-form',
@@ -41,16 +42,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.isSubject = false;
       let i = 0;
       const subjectsLabel = [];
-      this.prefixRequired = false;
       subjects.forEach((value: String) => {
         if (value === this.header) {
           this.isSubject = true;
-          if (this.annotation.columnValuesType !== 'URL') {
-            this.prefixRequired = true;
-            if (this.missingPrefix()) {
-              this.submitted = false;
-            }
-            subjectsLabel.push(i);
+          subjectsLabel.push(i);
+          if (this.subjectValuesTypeValidator()) {
+            this.submitted = false;
+            this.annotationService.removeAnnotation(this.header);
           }
         }
         i++;
@@ -76,9 +74,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.onChanges();
 
     /**
+     * Preprocess the header before querying ABSTAT
+     */
+    const filteredHeader = this.stringPreprocessing(this.header);
+
+    /**
      * Set first ABSTAT type suggestion as initial value
      */
-    this.typeSuggestions(this.header).subscribe(suggestions => {
+    this.typeSuggestions(filteredHeader).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('columnInfo').get('columnType').setValue(suggestions[0].suggestion);
       }
@@ -87,7 +90,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     /**
      * Set first ABSTAT property suggestion as initial value
      */
-    this.propertySuggestions(this.header).subscribe(suggestions => {
+    this.propertySuggestions(filteredHeader).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('relationship').get('property').setValue(suggestions[0].suggestion);
       }
@@ -112,15 +115,28 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.annotationForm.valueChanges.subscribe(val => {
       this.submitted = false;
       this.annotation = new Annotation();
+      this.annotationService.removeAnnotation(this.header);
     });
   }
 
-  /**
-   * Check if the prefix URI is missing
-   * @returns {boolean} true if the prefix is required but still empty
-   */
-  missingPrefix() {
-    return this.prefixRequired && this.annotationForm.get('columnInfo').get('urifyPrefix').value === '';
+  stringPreprocessing(string) {
+    // remove special chars (e.g. _)
+    string = nlp.string.retainAlphaNums(string);
+    // split camelCase words
+    string = string
+      // insert a space between lower & upper
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // space before last upper in a sequence followed by lower
+      .replace(/\b([A-Z]+)([A-Z])([a-z])/, '$1 $2$3')
+      // uppercase the first character
+      .replace(/^./, function(str){ return str.toUpperCase(); });
+    // tokenize string
+    let tokens = nlp.string.tokenize(string);
+    // remove stop words
+    tokens = nlp.tokens.removeWords(tokens);
+    // create string from tokens
+    string = tokens.join(' ');
+    return string;
   }
 
   /**
@@ -153,6 +169,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * A subject column must have URL as values type
+   * @returns {boolean} true if this column is a subject and the values type is not URL. false otherwise.
+   */
+  subjectValuesTypeValidator() {
+    return this.isSubject && this.annotationForm.get('columnInfo').get('columnValuesType').value !== 'URL'
+  }
+
+  /**
    * Validate form when column values type changes
    * @param columnDataType
    */
@@ -160,10 +184,10 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const formElement = this.annotationForm.get('columnInfo').get('columnValuesType');
     formElement.setValue(columnDataType);
     if (columnDataType === 'URL') {
-      this.prefixRequired = false;
-      this.annotationForm.get('columnInfo').get('urifyPrefix').setValue('');
-    } else if (this.isSubject) {
       this.prefixRequired = true;
+      this.annotationForm.get('columnInfo').get('urifyPrefix').setValue('');
+    } else {
+      this.prefixRequired = false;
     }
     formElement.markAsDirty();
   }
@@ -183,9 +207,16 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * Apply changes to the annotation model when the form is submitted
    */
   onSubmit() {
+    this.annotation.columnHeader = this.header;
     this.annotation.sourceColumnHeader = this.annotationForm.get('relationship').get('subject').value;
     this.annotation.property = this.annotationForm.get('relationship').get('property').value;
+    if (this.annotation.property['suggestion']) { // when user select a suggestion from the autocomplete
+      this.annotation.property = this.annotation.property['suggestion'];
+    }
     this.annotation.columnType = this.annotationForm.get('columnInfo').get('columnType').value;
+    if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
+      this.annotation.columnType = this.annotation.columnType['suggestion'];
+    }
     this.annotation.columnValuesType = this.annotationForm.get('columnInfo').get('columnValuesType').value;
     this.annotation.urifyPrefix = this.annotationForm.get('columnInfo').get('urifyPrefix').value;
     this.isObject = this.annotation.sourceColumnHeader !== '' && this.annotation.property !== '' && this.annotation.columnType !== '';
@@ -195,13 +226,23 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   resetForm() {
-    this.annotationForm.reset();
+    this.annotationForm.reset({
+      columnInfo: {
+        columnType: '',
+        columnValuesType: '',
+        urifyPrefix: '',
+      },
+      relationship: {
+        subject: '',
+        property: '',
+      }
+    });
     this.annotation = new Annotation();
   }
 
   deleteAnnotation() {
     this.resetForm();
-    this.annotationService.setAnnotation(this.header, new Annotation());
+    this.annotationService.removeAnnotation(this.header);
   }
 
   /**

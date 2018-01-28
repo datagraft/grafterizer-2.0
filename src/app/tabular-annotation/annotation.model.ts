@@ -1,6 +1,6 @@
 export class Annotation {
 
-  columnHeader: number;
+  columnHeader: string;
   sourceColumnHeader: string;
   property: string;
   columnType: string;
