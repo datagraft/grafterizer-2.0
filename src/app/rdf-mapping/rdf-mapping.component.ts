@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterUrlService } from '../tabular-transformation/component-communication.service';
+import { TransformationService } from '../transformation.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
 @Component({
@@ -7,13 +8,26 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
   templateUrl: './rdf-mapping.component.html',
   styleUrls: ['./rdf-mapping.component.css']
 })
+
 export class RdfMappingComponent implements OnInit {
 
-  constructor(private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router) {
+  // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
+  private transformationObj: any;
+  private graftwerkData: any;
+
+  constructor(private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private transformationSvc: TransformationService) {
     route.url.subscribe(() => this.concatURL());
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
+    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+  }
+
+  ngOnDestroy() {
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+  }
 
   concatURL() {
     this.route.snapshot.url.pop();

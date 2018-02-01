@@ -45,7 +45,7 @@ export class DeriveColumnComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.transformation) {
       for (let f of this.transformation.customFunctionDeclarations) {
-        this.functionNames.push(f.name);
+        // this.functionNames.push(f.name);
       }
     }
     if (changes.function) {

@@ -69,7 +69,7 @@ export class FilterRowsComponent implements OnInit, OnChanges {
     if (changes.transformation) {
       if (this.transformation) {
         for (let f of this.transformation.customFunctionDeclarations) {
-          this.functionNames.push(f.name);
+          // this.functionNames.push(f.name);
         }
       }
     }

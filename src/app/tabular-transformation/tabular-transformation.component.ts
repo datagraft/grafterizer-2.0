@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck, ChangeDetectorRef } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
@@ -18,7 +18,7 @@ import { Message } from '@angular/compiler/src/i18n/i18n_ast';
   providers: [RecommenderService, DispatchService]
 })
 
-export class TabularTransformationComponent implements OnInit, AfterViewInit, DoCheck {
+export class TabularTransformationComponent implements OnInit, OnDestroy, AfterViewInit, DoCheck {
 
   private function: any;
   private partialPipeline: any;
@@ -28,6 +28,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
+  // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
 
@@ -36,7 +37,7 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
-    private transformationSvc: TransformationService, private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers) {
+    private transformationSvc: TransformationService, private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
     this.differ = differs.find({}).create(null);
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
@@ -64,7 +65,24 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
-  ngAfterViewInit() { this.existingTransformation(); }
+  ngAfterViewInit() {
+    if (this.graftwerkData == null) {
+      console.log('TEST 1 OK')
+      this.existingTransformation();
+    }
+    else {
+      console.log('TEST 2 OK')
+      this.handsonTable.showLoading = true;
+      this.handsonTable.displayJsEdnData(this.graftwerkData);
+      this.profilingComponent.loadJSON(this.graftwerkData);
+      this.profilingComponent.refresh(this.handsontableSelection);
+      this.loadedDataHeaders = this.graftwerkData[":column-names"].map(o => o.substring(1, o.length));
+      this.cd.detectChanges();
+      setTimeout(() => {
+        this.pipelineComponent.generateLabels();
+      });
+    }
+  }
 
   ngDoCheck() {
     const change = this.differ.diff(this.transformationSvc.transformationObj.pipelines["0"].functions);
@@ -114,12 +132,12 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
               .then(
               (result) => {
                 console.log(result);
+                this.handsonTable.showLoading = true;
                 this.transformationSvc.transformationObj = transformationObj;
                 this.transformationObj = transformationObj;
                 this.graftwerkData = result;
                 this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
                 // this.graftwerkData[":column-names"] = this.loadedDataHeaders;
-                console.log(this.loadedDataHeaders)
                 this.handsonTable.displayJsEdnData(result);
                 this.profilingComponent.loadJSON(result);
                 this.pipelineComponent.generateLabels();
@@ -142,9 +160,8 @@ export class TabularTransformationComponent implements OnInit, AfterViewInit, Do
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
-        console.log(paramMap);
         this.handsonTable.showLoading = true;
-        this.transformationSvc.graftwerkData = result;
+        this.graftwerkData = result;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);

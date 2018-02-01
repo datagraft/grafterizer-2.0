@@ -15,7 +15,7 @@ import * as data from '../assets/data.json';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [DispatchService, TransformationService, DataGraftMessageService]
+  providers: [DispatchService, DataGraftMessageService]
 })
 export class AppComponent implements OnInit {
 
