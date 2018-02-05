@@ -17,6 +17,7 @@
 *.launch
 .settings/
 *.sublime-workspace
+.brackets.json
 
 # IDE - VSCode
 .vscode/*

@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+<<<<<<< Updated upstream
 import { RouterUrlService } from '../tabular-transformation/component-communication.service';
-import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
+=======
+import { RdfVocabularyService } from './rdf-vocabulary.service';
+>>>>>>> Stashed changes
 @Component({
   selector: 'rdf-mapping',
   templateUrl: './rdf-mapping.component.html',
@@ -13,11 +16,14 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
 export class RdfMappingComponent implements OnInit {
   private vocabSvcPath: string;
+  constructor(vocabService: RdfVocabularyService) { }
+
+<<<<<<< Updated upstream
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
-    
-  constructor(private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
+
+  constructor(private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private transformationSvc: TransformationService) {
     route.url.subscribe(() => this.concatURL());
   }
 
@@ -39,6 +45,10 @@ export class RdfMappingComponent implements OnInit {
       str = str.concat('/');
     }
     this.routerService.sendMessage(str);
+=======
+  ngOnInit() {
+    
+>>>>>>> Stashed changes
   }
 
 }
