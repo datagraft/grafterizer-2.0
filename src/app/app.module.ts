@@ -1,6 +1,7 @@
 import {APP_INITIALIZER, NgModule} from '@angular/core';
 import {AppConfig} from './app.config';
 import {HttpModule} from '@angular/http';
+import {HttpClientModule} from '@angular/common/http';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ClarityModule} from 'clarity-angular';
@@ -39,6 +40,7 @@ export function initConfig(config: AppConfig) {
     FormsModule,
     SuiModule,
     HttpModule,
+    HttpClientModule,
     AngularSplitModule
   ],
   providers: [

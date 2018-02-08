@@ -3,7 +3,6 @@ import { Http, Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import {Annotation} from './annotation.model';
 
-// here I create the service that has an Array of Annotations.
 @Injectable()
 export class AnnotationService {
 
@@ -54,7 +53,7 @@ export class AnnotationService {
   }
 
   setAnnotation(columnHeader: string, annotation: Annotation) {
-    this.subjects.set(columnHeader, annotation.sourceColumnHeader);
+    this.subjects.set(columnHeader, annotation.subject);
     this.updateSubjects(this.subjects);
     this.annotations[columnHeader] = annotation;
   }

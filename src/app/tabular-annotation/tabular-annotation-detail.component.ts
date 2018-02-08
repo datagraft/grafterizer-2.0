@@ -72,7 +72,7 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
     const typeInput = (<HTMLInputElement>(document.getElementById('Type'))).value;
     const typeLabelInput = (<HTMLInputElement>(document.getElementById('TypeLabel'))).value;
     if ('' !== typeInput) {
-      this.annotation.sourceColumnHeader = typeInput;
+      this.annotation.subject = typeInput;
     }
     // if ('' != typeLabelInput)
     //   this.annotation.sourceLabel = typeLabelInput;
