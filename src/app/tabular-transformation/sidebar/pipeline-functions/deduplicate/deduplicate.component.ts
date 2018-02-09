@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
 import { RemoveDuplicatesFunction } from '../../../../../assets/transformationdatamodel.js';
 
@@ -7,47 +7,64 @@ import { RemoveDuplicatesFunction } from '../../../../../assets/transformationda
   templateUrl: './deduplicate.component.html',
   styleUrls: ['./deduplicate.component.css']
 })
-export class DeduplicateComponent implements OnInit {
+export class DeduplicateComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
-  @Input() colnames: string[];
+  @Input() function: any;
+  @Input() columns: any[] = [];
+  //private columns = ["col1", "col2"]
   @Output() emitter = new EventEmitter();
-  private showMessage: boolean;
+  private showMessage: boolean = false;
   private mode;
-  private columns;
+  private colnames;
   private docstring: String;
 
   constructor() { }
 
   ngOnInit() {
     //should be removed when column names are provided from the outside
-    this.colnames = ["Weather", "Temperature", "Rain"];
-    if (!this.function) {
-      this.mode = "full";
-      this.columns = [];
-      this.docstring = "";
-    } else {
-      this.mode = this.function.mode;
-      this.columns = this.function.colNames;
-      this.docstring = this.function.docstring;
-    }
+    //this.columns = ["Weather", "Temperature", "Rain"];
+
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.columns) {
+      // Before dataset is loaded and headers are known
+      if (!this.columns) this.columns = [];
+    }
+    if (changes.function) {
+      if (!this.function) {
+        this.mode = "full";
+        this.colnames = [];
+        this.docstring = "";
+        this.function = new RemoveDuplicatesFunction(null, [], null, null);
+      } else {
+        this.mode = this.function.mode;
+        this.colnames = this.function.columns.map(o => o.value);
+        this.docstring = this.function.docstring;
+      }
+
+    }
+
+  }
 
   accept() {
-    if (this.mode == "colnames" && this.columns.length < 1) {
+    // console.log(this.mode, this.colnames);
+    if (this.mode == "columns" && this.colnames.length < 1) {
       this.showMessage = true;
     }
     else {
       this.showMessage = false;
-      if (!this.function) {
-        this.function = new RemoveDuplicatesFunction(this.mode, this.columns, this.docstring);
-      } else {
-        this.function.mode = this.mode;
-        this.function.columns = this.columns;
-        this.function.docstring = this.docstring;
+
+      this.function.mode = this.mode;
+      this.function.columns = [];
+      for (let c of this.colnames) {
+        this.function.columns.push({ id: 0, value: c });
       }
+
+      this.function.docstring = this.docstring;
+
+      // console.log(this.function);
       this.emitter.emit(this.function);
       this.modalEnabled = false;
     }

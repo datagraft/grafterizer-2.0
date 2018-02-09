@@ -2,6 +2,7 @@ import { Injectable, OnChanges } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
@@ -14,6 +15,21 @@ export class TransformationService {
   private graftwerkCachePath: string;
   // GLOBAL TRANSFORMATION OBJECT
   public transformationObj: any;
+  public graftwerkData: any;
+
+  private transformationObjSource = new BehaviorSubject<any>(this.transformationObj);
+  public currentTransformationObj = this.transformationObjSource.asObservable();
+
+  private graftwerkDataSource = new BehaviorSubject<any>(this.graftwerkData);
+  public currentGraftwerkData = this.graftwerkDataSource.asObservable();
+
+  public changeTransformationObj(message: any) {
+    this.transformationObjSource.next(message);
+  }
+
+  public changeGraftwerkData(message: any) {
+    this.graftwerkDataSource.next(message);
+  }
 
   constructor(private http: Http, private config: AppConfig) {
     // We use the Dispatch service as a proxy to Graftwerk
@@ -40,7 +56,6 @@ export class TransformationService {
       wizardId: wizardID,
       type: transformationType
     };
-
     return this.http.post(url, requestPayload, options)
       .map(result => result.json())
       .toPromise();
@@ -69,7 +84,6 @@ export class TransformationService {
       useCache: 1
     };
     const options = new RequestOptions({ withCredentials: true, params: params });
-
     return this.http.get(url, options)
       .map(
       (response: Response) => {
@@ -85,13 +99,15 @@ export class TransformationService {
 
   public previewTransformation(filestoreID: string, clojure: string, page?: number, pageSize?: number): Promise<any> {
     const url = this.dispatchPath + '/preview/' + encodeURIComponent(filestoreID);
-    const options = new RequestOptions({ withCredentials: true });
     const requestPayload = {
-      'clojure': clojure,
-      'page': page || 0,
-      pageSize: pageSize || 100,
-      useCache: 1
+      clojure: clojure,
+      useCache: true
     };
+    const params = {
+      page: page || 0,
+      pageSize: pageSize || 100
+    };
+    const options = new RequestOptions({ withCredentials: true, params: params });
     return this.http.post(url, requestPayload, options)
       .map((response: Response) => response.json())
       .toPromise()
@@ -133,10 +149,11 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs = Observable.interval(1500)
+    const obs = new Observable(observer => {
+      observer.next();
+    })
       .switchMap(() => this.http.get(statusUrl, options))
       .map((response) => response.json());
-
     return new Promise((resolve, reject) => {
       const sub = obs.subscribe(
         (result) => {

@@ -1,33 +1,59 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <label for="label">
-    <strong>Suggested Transformations</strong>
-  </label>
-
-  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [style]="{'width':'220px'}"
-    [listStyle]="{'max-height':'250px'}">
-    <div id="label">
-
-    </div>
+  <!--   <div class="wrapper-labels">
+    <label for="label">
+      <strong>TRANSFORMATIONS</strong>
+    </label>
+  </div> -->
+  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
+    [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'max-height':'360px'}">
   </p-listbox>
-  <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button>
+  <!-- <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button> -->
 </div>
 
-<make-dataset [modalEnabled]="selected=='MakeDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></make-dataset>
-<take-rows [modalEnabled]="selected=='DropRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></take-rows>
-<take-columns [modalEnabled]="selected=='ColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></take-columns>
-<split-columns [modalEnabled]="selected=='SplitFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></split-columns>
-<sort-dataset [modalEnabled]="selected=='SortDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></sort-dataset>
-<shift-row [modalEnabled]="selected=='ShiftRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-row>
-<shift-column [modalEnabled]="selected=='ShiftColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-column>
-<reshape-dataset [modalEnabled]="selected=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
-<rename-columns [modalEnabled]="selected=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></rename-columns>
-<merge-columns [modalEnabled]="selected=='MergeColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></merge-columns>
-<derive-column [modalEnabled]="selected=='DeriveColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></derive-column>
-<deduplicate [modalEnabled]="selected=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></deduplicate>
-<add-row [modalEnabled]="selected=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></add-row>
-<add-columns [modalEnabled]="selected=='AddColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></add-columns>
-<map-columns [modalEnabled]="selected=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></map-columns>
-<group-dataset [modalEnabled]="selected=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></group-dataset>
-<filter-rows [modalEnabled]="selected=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></filter-rows>
-<utility-function [modalEnabled]="selected=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function>
-<custom-function-modal [modalEnabled]="selected=='CustomFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></custom-function-modal>
+<make-dataset [modalEnabled]="selected.id=='MakeDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="makeDatasetFunction"></make-dataset>
+
+<take-rows [modalEnabled]="selected.id=='DropRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="dropRowsFunction"></take-rows>
+
+<take-columns [modalEnabled]="selected.id=='ColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="columnsFunction"></take-columns>
+
+<split-columns [modalEnabled]="selected.id=='SplitFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="splitFunction"
+  [defaultParams]="selected.defaultParams"></split-columns>
+
+<sort-dataset [modalEnabled]="selected.id=='SortDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="sortDatasetFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers"></sort-dataset>
+
+<shift-row [modalEnabled]="selected.id=='ShiftRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-row>
+
+<shift-column [modalEnabled]="selected.id=='ShiftColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-column>
+
+<reshape-dataset [modalEnabled]="selected.id=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
+
+<rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></rename-columns>
+
+<merge-columns [modalEnabled]="selected.id=='MergeColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mergeColumnsFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers"></merge-columns>
+
+<derive-column [modalEnabled]="selected.id=='DeriveColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="deriveColumnFunction"
+  [columns]="headers" [transformation]="transformation"></derive-column>
+
+<deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
+  [columns]="headers"></deduplicate>
+
+<add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
+  [columns]="headers"></add-row>
+
+<add-columns [modalEnabled]="selected.id=='AddColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addColumnsFunction"></add-columns>
+
+<map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mapcFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></map-columns>
+
+<group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
+  [defaultParams]="selected.defaultParams"></group-dataset>
+
+<filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformation"></filter-rows>
+
+<utility-function [modalEnabled]="selected.id=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function>
+
+<custom-function-modal [modalEnabled]="selected.id=='CustomFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></custom-function-modal>

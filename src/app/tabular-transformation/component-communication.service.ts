@@ -8,7 +8,23 @@ export class ComponentCommunicationService {
 
   sendMessage(message: any) {
     this.subject.next(message);
-    console.log(message);
+  }
+
+  clearMessage() {
+    this.subject.next();
+  }
+
+  getMessage(): Observable<any> {
+    return this.subject.asObservable();
+  }
+}
+
+@Injectable()
+export class RouterUrlService {
+  private subject = new Subject<any>();
+
+  sendMessage(message: any) {
+    this.subject.next(message);
   }
 
   clearMessage() {

@@ -48,7 +48,7 @@ export class StatisticService {
           }
         }
         resolve(columndata);
-        console.log(columndata);
+        // console.log(columndata);
       }
     );
 

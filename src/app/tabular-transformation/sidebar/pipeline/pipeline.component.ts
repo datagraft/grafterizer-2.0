@@ -14,50 +14,93 @@ export class PipelineComponent implements OnChanges, OnInit {
 
   @Input() private function: any;
   @Output() private emitter = new EventEmitter();
-  private steps: any = [];
-  private addFunctionAfter: boolean;
+  private steps: any;
   private edit: boolean;
   private lastFunctionIndex: number;
-  private currentFunctionIndex: number;
+  public currentFunctionIndex: number;
   private position: string;
   private tooltip: boolean;
+  private visible: boolean;
   private emitterObject: any;
 
   constructor(private transformationService: TransformationService, private componentCommunicationService: ComponentCommunicationService) {
+    this.steps = [];
     this.edit = false;
-    this.addFunctionAfter = false;
     this.position = 'bottom-middle';
     this.tooltip = true;
-    this.emitterObject = { edit: false, function: {}, preview: false };
+    this.visible = true;
+    this.emitterObject = { edit: false, function: {}, preview: false, undoPreview: false };
   }
 
   ngOnInit() { }
 
-  sendFunction(event) {
+  sendFunction() {
     this.edit = true;
-    this.addFunctionAfter = true;
-    this.currentFunctionIndex = event.path[0].id;
+    console.log(this.currentFunctionIndex);
     this.componentCommunicationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
   }
 
   generateLabels() {
-    this.steps = [];
+    let steps = [];
     this.lastFunctionIndex = 0;
     let functions = this.transformationService.transformationObj.pipelines[0].functions;
     if (this.emitterObject.preview == true) {
-      functions.splice(this.currentFunctionIndex);
+      functions.splice(this.currentFunctionIndex + 1);
     }
     for (let f of functions) {
-      let label = f.__type.slice(0, -8);
-      this.steps.push({ 'type': label, 'id': this.lastFunctionIndex });
+      let label = f.__type;
+      steps.push({ 'type': this.verboseLabels(label), 'id': this.lastFunctionIndex, docstring: f.docstring });
       this.lastFunctionIndex += 1;
     }
-    return this.steps;
+    this.steps = steps;
+    // console.log(this.steps);
+  }
+
+  verboseLabels(label) {
+    if (label == 'DropRowsFunction') {
+      return 'Rows deleted'
+    }
+    if (label == 'MakeDatasetFunction') {
+      return 'Headers created'
+    }
+    if (label == 'UtilityFunction') {
+      return 'Utility'
+    }
+    if (label == 'DropRowsFunction') {
+      return 'Rows deleted'
+    }
+    if (label == 'MapcFunction') {
+      return 'Columns mapped'
+    }
+    if (label == 'MeltFunction') {
+      return 'Dataset reshaped'
+    }
+    if (label == 'DeriveColumnFunction') {
+      return 'Column derived'
+    }
+    if (label == 'AddColumnsFunction') {
+      return 'Column(s) added'
+    }
+    if (label == 'AddRowFunction') {
+      return 'Row(s) added'
+    }
+    if (label == 'RenameColumnsFunction') {
+      return 'Header title(s) changed'
+    }
+    if (label == 'GrepFunction') {
+      return 'Row(s) filtered'
+    }
+  }
+
+  viewPipeline() {
+    this.emitterObject.preview = false;
+    this.emitterObject.undoPreview = true;
+    this.emitter.emit(this.emitterObject);
   }
 
   viewPartialPipeline() {
     this.emitterObject.preview = true;
-    this.emitterObject.function = this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex];
+    this.emitterObject.function = this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex + 1];
     this.emitter.emit(this.emitterObject);
   }
 
@@ -68,27 +111,19 @@ export class PipelineComponent implements OnChanges, OnInit {
       this.emitterObject.edit = true;
       this.emitter.emit(this.emitterObject);
     }
-    else if (this.edit == false && this.addFunctionAfter == true) {
-      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex], this.function);
-    } else {
+    else {
       this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
     }
-    this.generateLabels();
-    this.addFunctionAfter = false;
-    console.log('add');
+    // console.log(this.transformationService.transformationObj);
   }
 
   functionRemove() {
     this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
-    this.generateLabels();
-    console.log('remove');
   }
 
   getModes(mode) {
-    if (mode == 'add') {
-      this.addFunctionAfter = true;
-      this.tooltip = false;
-      this.functionAdd();
+    if (mode == 'history') {
+      this.viewPipeline();
     }
     else if (mode == 'remove') {
       this.functionRemove();
@@ -96,33 +131,34 @@ export class PipelineComponent implements OnChanges, OnInit {
     else if (mode == 'preview') {
       this.viewPartialPipeline();
     }
+    else if (mode == 'edit') {
+      this.sendFunction();
+      console.log('edit')
+    }
   }
 
   getButtonEvent(event) {
     let index;
     let mode;
     console.log(event);
-    if (event.path[0].id != '') {
-      index = event.path[0].id;
-      mode = event.path[0].value;
-      this.currentFunctionIndex = index;
-      this.getModes(mode);
-    }
-    else {
-      index = event.path[1].id;
-      mode = event.path[1].value;
-      this.currentFunctionIndex = index;
-      this.getModes(mode);
-    }
+    index = event.path[2].id;
+    mode = event.path[2].value;
+    this.currentFunctionIndex = parseInt(index);
+    this.getModes(mode);
+    console.log(index)
+    console.log(mode)
   }
 
   displayFunction(event) {
-    let index = event.path[0].id
+    let index = event.path[2].id
     this.currentFunctionIndex = index;
+    console.log(index)
   }
 
   ngOnChanges(changes: any) {
     if (this.function) {
+      // console.log('onChanges pipeline component');
+      // console.log(this.function);
       this.functionAdd();
     }
   }

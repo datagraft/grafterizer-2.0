@@ -3,59 +3,57 @@
   "project": {
     "name": "grafterizer.2.0"
   },
-  "apps": [
-    {
-      "root": "src",
-      "outDir": "dist",
-      "assets": [
-        "assets",
+  "apps": [{
+    "root": "src",
+    "outDir": "dist",
+    "assets": [
+      "assets",
       "favicon.ico",
       "env.json",
       "config.development.json",
       "config.production.json"
-      ],
-      "index": "index.html",
-      "main": "main.ts",
-      "polyfills": "polyfills.ts",
-      "test": "test.ts",
-      "tsconfig": "tsconfig.app.json",
-      "testTsconfig": "tsconfig.spec.json",
-      "prefix": "app",
-      "styles": [
-        "styles.css",
+    ],
+    "index": "index.html",
+    "main": "main.ts",
+    "polyfills": "polyfills.ts",
+    "test": "test.ts",
+    "tsconfig": "tsconfig.app.json",
+    "testTsconfig": "tsconfig.spec.json",
+    "prefix": "app",
+    "styles": [
+      "styles.css",
       "../node_modules/semantic-ui/dist/semantic.min.css",
-        "../node_modules/datavoyager/lib-test/style.css",
-        "../node_modules/clarity-icons/clarity-icons.min.css",
-        "../node_modules/clarity-ui/clarity-ui.min.css",
-        "app/clr-overrides.scss",
-        "app/codemirror-overrides.css",
-        "../node_modules/font-awesome/css/font-awesome.min.css",
-        "../node_modules/primeng/resources/primeng.min.css",
-        "../node_modules/primeng/resources/themes/omega/theme.css",
-        "../node_modules/codemirror/theme/mdn-like.css"
-      ],
-      "scripts": [
-        "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
-        "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-        "../node_modules/clarity-icons/clarity-icons.min.js",
-        "../node_modules/codemirror/lib/codemirror.js",
-        "../node_modules/codemirror/mode/clojure/clojure.js",
-        "../node_modules/codemirror/addon/edit/matchbrackets.js"
-      ],
-      "environmentSource": "environments/environment.ts",
-      "environments": {
-        "dev": "environments/environment.ts",
-        "prod": "environments/environment.prod.ts"
-      }
+      "../node_modules/datavoyager/lib-test/style.css",
+      "../node_modules/clarity-icons/clarity-icons.min.css",
+      "../node_modules/clarity-ui/clarity-ui.min.css",
+      "app/clr-overrides.scss",
+      "app/codemirror-overrides.css",
+      "../node_modules/font-awesome/css/font-awesome.min.css",
+      "../node_modules/primeng/resources/primeng.min.css",
+      "../node_modules/primeng/resources/themes/omega/theme.css",
+      "../node_modules/codemirror/theme/mdn-like.css",
+      "../src/assets/handsontable.full.css"
+    ],
+    "scripts": [
+      "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
+      "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+      "../node_modules/clarity-icons/clarity-icons.min.js",
+      "../node_modules/codemirror/lib/codemirror.js",
+      "../node_modules/codemirror/mode/clojure/clojure.js",
+      "../node_modules/codemirror/addon/edit/matchbrackets.js"
+    ],
+    "environmentSource": "environments/environment.ts",
+    "environments": {
+      "dev": "environments/environment.ts",
+      "prod": "environments/environment.prod.ts"
     }
-  ],
+  }],
   "e2e": {
     "protractor": {
       "config": "./protractor.conf.js"
     }
   },
-  "lint": [
-    {
+  "lint": [{
       "project": "src/tsconfig.app.json"
     },
     {

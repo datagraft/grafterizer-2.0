@@ -1,7 +1,8 @@
-import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
 import { ComponentCommunicationService } from '../../component-communication.service';
+import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction, KeyFunctionPair, CustomFunctionDeclaration, AddColumnsFunction } from '../../../../assets/transformationdatamodel.js';
 
 @Component({
   moduleId: module.id,
@@ -10,59 +11,140 @@ import { ComponentCommunicationService } from '../../component-communication.ser
   styleUrls: ['./selectbox.component.css'],
   providers: []
 })
-export class SelectboxComponent implements OnInit, OnDestroy {
+
+export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
+
+  @Input() suggestions;
+  @Input() headers;
+  @Input() transformation;
+  @Output() emitter = new EventEmitter();
+
+  private function: any;
+  private addColumnsFunction: any;
+  private addRowFunction: any;
+  private makeDatasetFunction: any;
+  private dropRowsFunction: any;
+  private splitFunction: any;
+  private deriveColumnFunction: any;
+  private mergeColumnsFunction: any;
+  private renameColumnsFunction: any;
+  private grepFunction: any;
+  private sortDatasetFunction: any;
+  private mapcFunction: any;
 
   private transformations: SelectItem[];
-  private function: any;
-  private selected: String;
+  private selected: any;
   private modalEnabled: boolean = false;
-
-  private message: any;
   private subscription: Subscription;
-
-  @Output() emitter = new EventEmitter();
+  private message: any;
 
   constructor(private componentCommunicationService: ComponentCommunicationService) {
     this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
-      this.function = message;
-      this.selected = this.function.__type
-      this.modalEnabled = true;
-      console.log(message);
+      console.log(message)
+      if (message.__type == 'AddColumnsFunction') {
+        this.addColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'AddRowFunction') {
+        this.addRowFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MakeDatasetFunction') {
+        this.makeDatasetFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'DropRowsFunction') {
+        this.dropRowsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'ColumnsFunction') {
+        this.dropRowsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'SplitFunction') {
+        this.splitFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'DeriveColumnFunction') {
+        this.deriveColumnFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MergeColumnsFunction') {
+        this.mergeColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'RenameColumnsFunction') {
+        this.renameColumnsFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'GrepFunction') {
+        this.grepFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'SortDatasetFunction') {
+        this.sortDatasetFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
+      if (message.__type == 'MapcFunction') {
+        this.mapcFunction = message;
+        this.selected = { id: message.__type, defaultParams: null };
+        this.modalEnabled = true;
+      }
     });
     this.transformations = [];
-    this.transformations.push({ label: 'Custom function', value: 'CustomFunction' });
-    this.transformations.push({ label: 'Utility function', value: 'UtilityFunction' });
-    this.transformations.push({ label: 'Add row', value: 'AddRowFunction' });
-    this.transformations.push({ label: 'Add columns', value: 'AddColumnsFunction' });
-    this.transformations.push({ label: 'Deduplicate', value: 'RemoveDuplicatesFunction' });
-    this.transformations.push({ label: 'Derive column', value: 'DeriveColumnFunction' });
-    this.transformations.push({ label: 'Filter rows', value: 'GrepFunction' });
-    this.transformations.push({ label: 'Group and aggregate', value: 'GroupRowsFunction' });
-    this.transformations.push({ label: 'Make dataset', value: 'MakeDatasetFunction' });
-    this.transformations.push({ label: 'Map columns', value: 'MapcFunction' });
-    this.transformations.push({ label: 'Merge columns', value: 'MergeColumnsFunction' });
-    this.transformations.push({ label: 'Rename columns', value: 'RenameColumnsFunction' });
-    this.transformations.push({ label: 'Reshape dataset', value: 'MeltFunction' });
-    this.transformations.push({ label: 'Shift column', value: 'ShiftColumnFunction' });
-    this.transformations.push({ label: 'Shift row', value: 'ShiftRowFunction' });
-    this.transformations.push({ label: 'Sort dataset', value: 'SortDatasetFunction' });
-    this.transformations.push({ label: 'Split columns', value: 'SplitFunction' });
-    this.transformations.push({ label: 'Take columns', value: 'ColumnsFunction' });
-    this.transformations.push({ label: 'Take rows', value: 'DropRowsFunction' });
+    this.selected = { id: null, defaultParams: null };
+  }
+
+  ngOnChanges() {
+    if (this.suggestions) this.transformations = this.suggestions;
+    this.selected = { id: null, defaultParams: null };
+    // console.log(this.selected);
   }
 
   ngOnInit() { }
 
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
+  ngOnDestroy() { this.subscription.unsubscribe(); }
 
   emitFunction(value: any) {
     this.emitter.emit(value);
   }
 
   onChange($event) {
-    this.modalEnabled = true;
+    //Functions that don't require additional user input
+    switch (this.selected.id) {
+      case 'add-row-above':
+      case 'add-row-below':
+        this.emitFunction(new AddRowFunction(this.selected.defaultParams.position, this.selected.defaultParams.values, ""));
+        break;
+      case 'make-dataset-header':
+        this.emitFunction(new MakeDatasetFunction(
+          [], null, undefined, this.selected.defaultParams.moveFirstRowToHeader, null));
+        break;
+      case 'map-columns-uc':
+        this.emitFunction(new MapcFunction(
+          this.selected.defaultParams.keyFunctionPairs, null));
+        break;
+      case 'take-rows-delete':
+        this.emitFunction(new DropRowsFunction(
+          this.selected.defaultParams.indexFrom, this.selected.defaultParams.indexTo, this.selected.defaultParams.take, null));
+        break;
+      case 'take-columns-delete':
+        this.emitFunction(new ColumnsFunction(
+          [this.selected.defaultParams.colToDelete], null, null, false, null));
+        break;
+      default:
+        break;
+    }
   }
-
 }

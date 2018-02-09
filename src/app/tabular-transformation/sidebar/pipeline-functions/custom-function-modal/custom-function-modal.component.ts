@@ -44,7 +44,7 @@ export class CustomFunctionModalComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.selected) { console.log(this.selected); }
     //Fixing bug with displaying ng2-codemirror in the modal. Codemirror needs to be refreshed and cursor set up
-    if (changes.modalEnabled.currentValue == true) {
+    if (changes.modalEnabled && changes.modalEnabled.currentValue == true) {
       let cm = this.editor.instance;
       console.log(cm);
       setTimeout(function () {

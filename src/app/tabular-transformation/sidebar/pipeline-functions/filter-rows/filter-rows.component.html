@@ -44,14 +44,14 @@
       <input type="text" id="matchRegex" [(ngModel)]="filterRegex" size="25">
     </div>
     <div *ngIf="grepmode=='function'">
-      <div *ngFor="let filterFunction of functionsToFilterWith; index as i;">
+      <div *ngFor="let filterFunction of filterFunctionsNames; index as i;">
         <div class="row ">
           <button class="btn btn-link btn-icon-link removablePropertyButton"> 
               <clr-icon  shape="remove" size="22"  (click)="removeFilterFunction(idx)"></clr-icon> 
        
           </button>
 
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="filterFunctionsNames[i]" [datasource]="dataService" [openOnFocus]="true"
+          <ng2-completer class="removablePropertyFields" [(ngModel)]="filterFunctionsNames[i]" [datasource]="functionNames" [openOnFocus]="true"
             [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
         </div>
 

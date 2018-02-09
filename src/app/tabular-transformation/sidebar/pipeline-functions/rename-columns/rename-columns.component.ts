@@ -1,9 +1,6 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
 import { CompleterService, CompleterData } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-//TODO: remove when passing transformation is implemented
-import * as data from '../../../../../assets/data.json';
 
 @Component({
   selector: 'rename-columns',
@@ -11,60 +8,66 @@ import * as data from '../../../../../assets/data.json';
   styleUrls: ['./rename-columns.component.css']
 })
 
-export class RenameColumnsComponent implements OnInit {
+export class RenameColumnsComponent implements OnInit, OnChanges {
 
+  @Input() function: any;
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() defaultParams;
   @Output() emitter = new EventEmitter();
-  // Transformation is needed to search for prefixers/functions
-  //@Input() transformation: any;
-  private transformation: any;
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-  private mappings: any = [null, null];
-  private functionsToRenameWith: String[] = [];
-  private test: String[] = ["keyword"];
+  @Input() transformation: any; // Transformation is needed to search for prefixers/functions
+  @Input() columns: String[];
+  private mappings: any;
+  private functionsToRenameWith: String[];
   private docstring: String;
-  private smth: String;
-
-  //private dataService: CompleterData;
-
-  protected dataService: CompleterData;
-
-
   private renamecolumnsmode: String;
+  private test: String[] = ["keyword"];
 
-  constructor(private completerService: CompleterService) {
-    //TODO: remove when passing transformation is implemented
-    this.transformation = transformationDataModel.Transformation.revive(data);
-    this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
-    if (!this.function) {
-      this.functionsToRenameWith = ["keyword"];
-      this.function = new transformationDataModel.RenameColumnsFunction(this.transformation.findPrefixerOrCustomFunctionByName("keyword"), this.mappings, this.docstring);
-    }
-    else {
-      this.mappings = this.function.mappings;
-      for (let functionToRenameWith of this.function.functionsToRenameWith) {
-        this.functionsToRenameWith.push(functionToRenameWith);
-      }
-      this.docstring = this.function.docstring;
-
-    }
-  }
+  constructor(private completerService: CompleterService) { }
 
   ngOnInit() {
     this.modalEnabled = false;
+    this.initFunction();
+  }
 
+  initFunction() {
+    this.docstring = null;
+    this.mappings = [null, null];
+    this.functionsToRenameWith = [];
+    this.function = new transformationDataModel.RenameColumnsFunction(this.functionsToRenameWith, this.mappings, this.docstring);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.function) {
+      if (!this.function) {
+        // console.log('New function');
+      }
+      else {
+        console.log('Edit function');
+        if (this.function.__type == 'RenameColumnsFunction') {
+          this.mappings = this.function.mappings;
+          this.docstring = this.function.docstring;
+          for (let functionToRenameWith of this.function.functionsToRenameWith) {
+            this.functionsToRenameWith.push(functionToRenameWith);
+          }
+        }
+      }
+    }
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.colsToRename) {
+        this.renamecolumnsmode = "map";
+        this.mappings = [];
+        for (let colname of this.defaultParams.colsToRename) {
+          this.mappings.push(colname, "");
+        }
+      }
+    }
   }
 
   addRenameFunction() {
-
-
     this.functionsToRenameWith.push(undefined);
     this.test.push(undefined);
-
   }
+
   removeFunction(idx) {
     this.functionsToRenameWith.splice(idx, 1);
     this.test.splice(idx, 1);
@@ -73,18 +76,9 @@ export class RenameColumnsComponent implements OnInit {
   addMapping() {
     this.mappings.push(null, null);
   }
+
   removeMapping(idx) {
     this.mappings.splice(idx, 2);
-  }
-  accept() {
-    this.function.mappings = this.mappings;
-    this.function.functionsToRenameWith = [];
-    for (let functionToRenameWith of this.test) {
-      this.function.functionsToRenameWith.push(this.transformation.findPrefixerOrCustomFunctionByName(functionToRenameWith));
-    }
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.modalEnabled = false;
   }
 
   getmaplength() {
@@ -92,8 +86,30 @@ export class RenameColumnsComponent implements OnInit {
     for (var i = 0; i < this.mappings.length; i += 2) b.push(i);
     return b;
   }
-  cancel() {
+
+  accept() {
+    let map = [];
+    if (this.mappings[0] && !this.mappings[0].hasOwnProperty('id')) {
+      for (var i = 0; i < this.mappings.length; ++i) {
+        map.push((i % 2) ? this.mappings[i] : {
+          id: i / 2,
+          value: this.mappings[i]
+        });
+      }
+      this.function.mappings = map;
+    }
+    console.log(map)
+    console.log(this.mappings)
+    this.function.functionsToRenameWith = [];
+    for (let functionToRenameWith of this.test) {
+      this.function.functionsToRenameWith.push(this.functionsToRenameWith);
+    }
+    this.function.docstring = this.docstring;
+    this.emitter.emit(this.function);
+    this.initFunction();
     this.modalEnabled = false;
   }
+
+  cancel() { this.modalEnabled = false; }
 
 }

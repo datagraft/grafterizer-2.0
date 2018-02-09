@@ -1,17 +1,17 @@
-import {Component, OnInit} from '@angular/core';
-import {AnnotationService} from './annotation.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AnnotationService } from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import {TransformationService} from '../transformation.service';
-import {DispatchService} from '../dispatch.service';
+import { TransformationService } from '../transformation.service';
+import { DispatchService } from '../dispatch.service';
 import * as generateClojure from 'assets/generateclojure.js';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {ActivatedRoute} from '@angular/router';
-import {Http} from '@angular/http';
+import { ActivatedRoute } from '@angular/router';
+import { Http } from '@angular/http';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -19,13 +19,27 @@ import {Http} from '@angular/http';
   styleUrls: ['./tabular-annotation.component.css'],
   providers: [AnnotationService]
 })
-export class TabularAnnotationComponent implements OnInit {
+
+export class TabularAnnotationComponent implements OnInit, OnDestroy {
+
+  // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
+  private transformationObj: any;
+  private graftwerkData: any;
+
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-              public annotationService: AnnotationService, private route: ActivatedRoute,
-              public http: Http) {}
+    public annotationService: AnnotationService, private route: ActivatedRoute,
+    public http: Http) { }
 
   ngOnInit() {
-    this.retrieveDataFromJSONFile('assets/jot.json');
+    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
+    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+    this.retrieveData();
+    // this.retrieveDataFromJSONFile('assets/jot.json');    
+  }
+
+  ngOnDestroy() {
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
   retrieveDataFromJSONFile(url) {
@@ -38,36 +52,7 @@ export class TabularAnnotationComponent implements OnInit {
   }
 
   retrieveData() {
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-    }
-
-    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-      this.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
-        .then(
-          (result) => {
-            console.log('Got transformation JSON');
-            const clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(result));
-            console.log('Generated Clojure!');
-            if (paramMap.has('filestoreId')) {
-              this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
-                .then(
-                  (data) => {
-                    // console.log("Successfully previewed transformation!");
-                    console.log(data);
-                    if (data[':column-names'] && data[':rows']) {
-                      const originalHeaders = data[':column-names'];
-                      this.annotationService.data = data[':rows'];
-                      // Remove leading ':' from the EDN response
-                      originalHeaders.forEach((colname, index) => {
-                        this.annotationService.headers.push(colname.substring(1));
-                      });
-                    }
-                  },
-                  (error) => console.log('Error previewing transformation!'));
-            }
-          },
-          error => console.log(error));
-    }
+    this.annotationService.headers = this.graftwerkData[':column-names'];
+    this.annotationService.data = this.graftwerkData[':rows'];
   }
 }

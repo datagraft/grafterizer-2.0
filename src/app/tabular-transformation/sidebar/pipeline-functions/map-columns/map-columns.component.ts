@@ -1,27 +1,21 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, SimpleChanges, EventEmitter, OnChanges } from '@angular/core';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
-
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-//TODO: remove when passing transformation is implemented
-import * as data from '../../../../../assets/data.json';
 
 @Component({
   selector: 'map-columns',
   templateUrl: './map-columns.component.html',
   styleUrls: ['./map-columns.component.css']
 })
-export class MapColumnsComponent implements OnInit {
+
+export class MapColumnsComponent implements OnInit, OnChanges {
 
   @Input() modalEnabled;
-  @Input() private function: any;
+  @Input() function: any;
+  @Input() defaultParams;
+  @Input() columns: String[] = [];
+  @Input() transformation: any;
   @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  // Transformation is needed to search for prefixers/functions
-  //@Input() transformation: any;
-  private transformation: any;
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-
   private keyFunctionPairs: any[] = []; // type keyFunctionPair
   private functionsToMapWith: any[] = []; // type customFunctionDeclaration
   private keys: String[] = [];
@@ -32,10 +26,8 @@ export class MapColumnsComponent implements OnInit {
   private availableFunctions: any[] = [];
 
   constructor(private completerService: CompleterService) {
-    this.transformation = transformationDataModel.Transformation.revive(data);
-
-
-    this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
+    // this.transformation = transformationDataModel.Transformation.revive(data);
+    // this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
     if (!this.function) {
       this.keyFunctionPairs = [new transformationDataModel.KeyFunctionPair(null, null, [])];
       this.functionsToMapWith = [undefined];
@@ -44,20 +36,34 @@ export class MapColumnsComponent implements OnInit {
     }
     else {
       this.keyFunctionPairs = this.function.keyFunctionPairs;
-
       for (let availableFunction of this.function.keyFunctionPairs) {
         this.functionsToMapWith.push(availableFunction.func);
         this.keys.push(availableFunction.key);
         this.docstring = this.function.docstring;
-
       }
     }
-
   }
 
   ngOnInit() {
   }
+  ngOnChanges(changes: SimpleChanges) {
 
+    if (changes.defaultParams && this.defaultParams) {
+      if (this.defaultParams.keyFunctionPairs) {
+
+        this.keyFunctionPairs[0] = new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[0].key, this.defaultParams.keyFunctionPairs[0].func, []);
+        this.functionsToMapWith[0] = this.defaultParams.keyFunctionPairs[0].func;
+        this.keys[0] = this.defaultParams.keyFunctionPairs[0].key;
+        for (let i = 1; i < this.defaultParams.keyFunctionPairs.length; ++i) {
+          this.keyFunctionPairs.push(new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[i].key, this.defaultParams.keyFunctionPairs[i].func, []));
+          this.functionsToMapWith.push(this.defaultParams.keyFunctionPairs[i].func);
+          this.keys.push(this.defaultParams.keyFunctionPairs[i].key);
+
+        }
+      }
+
+    }
+  }
   accept() {
     this.function.keyFunctionPairs = this.keyFunctionPairs;
     this.function.docstring = this.docstring;
