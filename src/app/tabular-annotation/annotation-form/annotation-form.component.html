@@ -1,5 +1,5 @@
 <div id="annotation-component" class="card">
-  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()">
+  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()" autocomplete="off">
     <div class="card-header">
       <clr-tooltip *ngIf="annotationForm.invalid || subjectValuesTypeValidator()" class="pull-right">
         <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
