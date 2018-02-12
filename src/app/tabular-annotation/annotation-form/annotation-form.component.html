@@ -124,29 +124,29 @@
               </span>
             </label>
           </div>
-          <div class="form-group" *ngIf="displayURIprefix">
-            <label for="urifyPrefix">
-              URIfy with prefix:
+          <div class="form-group" *ngIf="displayURINamespace">
+            <label for="urifyNamespace">
+              URIfy with namespace:
               <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="20" class="is-solid"></clr-icon>
                 <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
-                  <span>URIfy column values using this prefix. If empty, column values will be used as URIs.</span>
+                  <span>URIfy column values using this namespace. If empty, column values will be used as URIs.</span>
                 </clr-tooltip-content>
               </clr-tooltip>
             </label>
-            <label for="urifyPrefix"
+            <label for="urifyNamespace"
                    aria-haspopup="true"
                    role="tooltip"
                    class="tooltip tooltip-validation tooltip-sm"
-                   [class.invalid]="annotationForm.get('columnInfo.urifyPrefix').invalid
-                      && (annotationForm.get('columnInfo.urifyPrefix').dirty ||
-                      annotationForm.get('columnInfo.urifyPrefix').touched)">
-              <input id="urifyPrefix"
+                   [class.invalid]="annotationForm.get('columnInfo.urifyNamespace').invalid
+                      && (annotationForm.get('columnInfo.urifyNamespace').dirty ||
+                      annotationForm.get('columnInfo.urifyNamespace').touched)">
+              <input id="urifyNamespace"
                      type="text"
-                     formControlName="urifyPrefix"
-                     placeholder="Insert a URI prefix"/>
-              <span *ngIf="annotationForm.get('columnInfo.urifyPrefix').hasError('pattern')"
-                    class="tooltip-content"> This prefix is not valid.</span>
+                     formControlName="urifyNamespace"
+                     placeholder="Insert a namespace"/>
+              <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('pattern')"
+                    class="tooltip-content"> This namespace is not valid.</span>
             </label>
           </div>
         </div>

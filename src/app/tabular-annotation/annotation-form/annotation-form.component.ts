@@ -150,7 +150,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   private abstatPath;
   public annotation: Annotation;
-  displayURIprefix = false;
+  displayURINamespace = false;
   displayDatatype = false;
   displayType = false;
   displayLangTag = true; // because the default datatype is string
@@ -227,7 +227,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
           Validators.pattern(this.urlREGEX)
         ]),
         columnValuesType: new FormControl('', Validators.required),
-        urifyPrefix: new FormControl('', Validators.pattern(this.urlREGEX)),
+        urifyNamespace: new FormControl('', Validators.pattern(this.urlREGEX)),
         columnDatatype: new FormControl('string'),
         customDatatype: new FormControl('', Validators.pattern(this.urlREGEX)),
         langTag: new FormControl('en'),
@@ -250,7 +250,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       columnInfo: {
         columnType: '',
         columnValuesType: '',
-        urifyPrefix: '',
+        urifyNamespace: '',
         columnDatatype: 'string',
         columnCustomType: '',
         langTag: 'en',
@@ -272,7 +272,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         let changed = false;
         const oldAnnotation = this.annotationService.getAnnotation(this.header);
         const literalProps = ['columnDatatype', 'customDatatype', 'langTag'];
-        const URIProps = ['columnType', 'urifyPrefix'];
+        const URIProps = ['columnType', 'urifyNamespace'];
         const commonProps = ['subject', 'property'];
 
         const newValuesType = valuesObj.columnInfo.columnValuesType;
@@ -346,7 +346,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const formElement = this.annotationForm.get('columnInfo.columnValuesType');
     formElement.setValue(columnDatatype);
     if (columnDatatype === ColumnTypes.URI) {
-      this.displayURIprefix = true;
+      this.displayURINamespace = true;
       this.displayDatatype = false;
       this.displayType = true;
       this.displayCustomDatatype = false;
@@ -356,7 +356,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         this.displayCustomDatatype = true;
       }
       this.displayType = false;
-      this.displayURIprefix = false;
+      this.displayURINamespace = false;
       this.displayDatatype = true;
     }
     formElement.markAsDirty();
@@ -402,7 +402,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
         this.annotation.columnType = this.annotation.columnType['suggestion'];
       }
-      this.annotation.urifyPrefix = this.annotationForm.get('columnInfo.urifyPrefix').value;
+      this.annotation.urifyNamespace = this.annotationForm.get('columnInfo.urifyNamespace').value;
     } else if (valuesType === ColumnTypes.Literal) {
       const datatype = this.annotationForm.get('columnInfo.columnDatatype').value;
       if (datatype === 'custom') {
