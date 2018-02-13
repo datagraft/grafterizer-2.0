@@ -83,6 +83,26 @@ class CustomValidators {
     };
   }
 
+  /**
+   * Check if the selected URL is valid
+   * @returns {ValidatorFn}
+   */
+  static URLValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} => {
+      try {
+        if (control.value !== '') {
+          const url = new URL(control.value);
+          if (url.host === '') {
+            return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+          }
+        }
+        return null;
+      } catch (error) {
+        return {'invalidURL': {errorMessage: 'This URL is not valid'}}
+      }
+    };
+  }
+
   static customDatatypeValidator(columnDatatype: string, customDatatype: string): ValidatorFn {
     return (group: FormGroup): { [key: string]: any } => {
       const dataTypeControl = group.get(columnDatatype);
@@ -160,8 +180,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   availableColumnValuesTypes = Object.keys(ColumnTypes);
   availableDatatypes = Object.keys(XSDDatatypes);
 
-  urlREGEX: RegExp = new RegExp('(ftp|http|https):\/\/[^ "]+$');
-
   annotationForm: FormGroup;
 
   static stringPreprocessing(string) {
@@ -223,18 +241,16 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   buildForm() {
     this.annotationForm = new FormGroup({
       columnInfo: new FormGroup({
-        columnType: new FormControl('', [
-          Validators.pattern(this.urlREGEX)
-        ]),
+        columnType: new FormControl('', CustomValidators.URLValidator()),
         columnValuesType: new FormControl('', Validators.required),
-        urifyNamespace: new FormControl('', Validators.pattern(this.urlREGEX)),
+        urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
-        customDatatype: new FormControl('', Validators.pattern(this.urlREGEX)),
+        customDatatype: new FormControl('', CustomValidators.URLValidator()),
         langTag: new FormControl('en'),
       }),
       relationship: new FormGroup({
         subject: new FormControl('', CustomValidators.subjectValidator(this.allowedSources)),
-        property: new FormControl('', Validators.pattern(this.urlREGEX)),
+        property: new FormControl('', CustomValidators.URLValidator()),
       }),
     }, Validators.compose([
       CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),

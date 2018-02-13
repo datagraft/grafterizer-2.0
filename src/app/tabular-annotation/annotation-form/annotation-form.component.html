@@ -77,8 +77,8 @@
                      placeholder="Insert column type"/>
               <span *ngIf="annotationForm.hasError('invalidColumnType')"
                     class="tooltip-content"> {{annotationForm.errors['invalidColumnType'].errorMessage}}</span>
-              <span *ngIf="annotationForm.get('columnInfo.columnType').hasError('pattern')"
-                    class="tooltip-content"> Column type must be a valid URL.</span>
+              <span *ngIf="annotationForm.get('columnInfo.columnType').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.columnType').errors['invalidURL'].errorMessage}} </span>
             </label>
           </div>
           <div class="form-group" *ngIf="displayDatatype">
@@ -106,8 +106,8 @@
               <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidCustomDatatype')">
                     {{annotationForm.errors['invalidCustomDatatype'].errorMessage}}
               </span>
-              <span *ngIf="annotationForm.get('columnInfo.customDatatype').hasError('pattern')"
-                    class="tooltip-content"> Custom datatype must be a valid URL.</span>
+              <span *ngIf="annotationForm.get('columnInfo.customDatatype').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.customDatatype').errors['invalidURL'].errorMessage}} </span>
             </label>
           </div>
           <div class="form-group" *ngIf="displayDatatype && displayLangTag">
@@ -145,8 +145,8 @@
                      type="text"
                      formControlName="urifyNamespace"
                      placeholder="Insert a namespace"/>
-              <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('pattern')"
-                    class="tooltip-content"> This namespace is not valid.</span>
+              <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.urifyNamespace').errors['invalidURL'].errorMessage}} </span>
             </label>
           </div>
         </div>
@@ -202,8 +202,8 @@
               <input id="property" type="text"
                      formControlName="property"
                      placeholder="Insert relationship property">
-              <span *ngIf="annotationForm.get('relationship.property').hasError('pattern')"
-                    class="tooltip-content"> The property must be a valid URL. </span>
+              <span *ngIf="annotationForm.get('relationship.property').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('relationship.property').errors['invalidURL'].errorMessage}} </span>
               <span *ngIf="annotationForm.hasError('invalidProperty')"
                     class="tooltip-content"> {{annotationForm.errors['invalidProperty'].errorMessage}}</span>
             </label>
