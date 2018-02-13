@@ -8,10 +8,9 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
 import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
-import * as generateClojure from 'assets/generateclojure.js';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { ActivatedRoute } from '@angular/router';
 import { Http } from '@angular/http';
+import {Annotation} from './annotation.model';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -26,6 +25,21 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   private transformationObj: any;
   private graftwerkData: any;
 
+  /**
+   * Return the namespace of a URL
+   * @param {URL} url
+   * @returns {string} the namespace for the given URL
+   */
+  static getNamespaceFromURL(url: URL) {
+    let suffix = '';
+    if (url.hash.length > 0) {
+      suffix = url.hash.substring(1); // remove '#' char
+    } else {
+      suffix = url.pathname.substring(url.pathname.lastIndexOf('/') + 1);
+    }
+    return url.href.substring(0, url.href.indexOf(suffix));
+  }
+
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
     public annotationService: AnnotationService, private route: ActivatedRoute,
     public http: Http) { }
@@ -34,7 +48,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
     this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
     this.retrieveData();
-    // this.retrieveDataFromJSONFile('assets/jot.json');    
   }
 
   ngOnDestroy() {
@@ -42,17 +55,116 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
-  retrieveDataFromJSONFile(url) {
-    this.http.get(url)
-      .map(res => res.json())
-      .subscribe(data => {
-        this.annotationService.headers = data[':column-names'];
-        this.annotationService.data = data[':rows'];
-      });
+  retrieveData() {
+    if (this.graftwerkData) {
+      this.annotationService.headers = this.graftwerkData[':column-names'];
+      this.annotationService.data = this.graftwerkData[':rows'];
+    } else {
+      console.log('graftwerk data not initialized yet')
+    }
   }
 
-  retrieveData() {
-    this.annotationService.headers = this.graftwerkData[':column-names'];
-    this.annotationService.data = this.graftwerkData[':rows'];
+  /**
+   * Create a valid graph using all annotations.
+   */
+  annotationsToGraph() {
+    const annotations = this.annotationService.getAnnotations();
+
+    /**
+     * Create prefixes and namespaces for all properties, types and datatypes.
+     * Insert also new prefixes and namespaces into the RDFvocabs array
+     */
+    this.updatePrefixesNamespaces(annotations);
+
+    /**
+     * TODO: Create one graph node for each annotation
+     */
+    console.log(annotations);
+    console.log(this.transformationObj.rdfVocabs);
+  }
+
+  /**
+   * Returns a set of annotations where each annotation has prefix and namespace set.
+   * @param {Annotation[]} annotations
+   * @returns {Annotation[]}
+   */
+  updatePrefixesNamespaces(annotations: Annotation[]) {
+    annotations.forEach((annotation) => {
+      if (annotation.urifyNamespace !== '') {
+        annotation.urifyPrefix = this.getPrefixForNamespace(annotation.urifyNamespace);
+      }
+
+      if (annotation.columnType !== '') {
+        annotation.columnTypeNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnType));
+        annotation.columnTypePrefix = this.getPrefixForNamespace(annotation.columnTypeNamespace);
+      }
+
+      if (annotation.columnDatatype !== '') {
+        annotation.columnDatatypeNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnDatatype));
+        annotation.columnDatatypePrefix = this.getPrefixForNamespace(annotation.columnDatatypeNamespace);
+      }
+
+      if (annotation.property !== '') {
+        annotation.propertyNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.property));
+        annotation.propertyPrefix = this.getPrefixForNamespace(annotation.propertyNamespace);
+      }
+    });
+    return annotations;
+  }
+
+  /**
+   * Help method that returns the prefix of a known namespace.
+   * @param {string} namespace
+   * @returns {any} the prefix if the given namespace is known, null otherwise
+   */
+  private getExistingPrefixFromNamespace(namespace: string) {
+    const existingNS = this.transformationObj.rdfVocabs.filter(vocab => (vocab.namespace === namespace));
+    if (existingNS.length > 0) {
+      return existingNS[0].name;
+    }
+    return null;
+  }
+
+  /**
+   * Check if a vocab with the given prefix does not exist.
+   * @param {string} prefix
+   * @returns {boolean} true if the given prefix is not already used in a vocab, false otherwise
+   */
+  private isPrefixValid(prefix: string) {
+    const existingPrefix = this.transformationObj.rdfVocabs.filter(vocab => (vocab.name === prefix));
+    return existingPrefix.length === 0;
+  }
+
+  /**
+   * Given a namespace, this method return a valid prefix. The prefix is kept from the rdfVocab
+   * if the namespace is known; alternatively, a new prefix is generated and inserted into the
+   * rdfVocab array.
+   * @param {string} namespace
+   * @returns {string} a valid prefix
+   */
+  getPrefixForNamespace(namespace: string) {
+    const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
+    let prefix = '';
+    if (existingPrefix) {
+      prefix = existingPrefix;
+    } else {
+      const url = new URL(namespace);
+      // first 2 letter of the URL domain
+      prefix = url.host.replace('www.', '')
+        .split('.')[0]
+        .substr(0, 2);
+      // first 2 letter of the URL pathname
+      prefix += url.pathname.split('/')[1]
+        .substr(0, 2);
+      prefix = prefix.toLowerCase();
+      let i = 1;
+      while (!this.isPrefixValid(prefix)) {
+        prefix = prefix += i;
+        ++i;
+      }
+      // TODO: create a new RDFVocabulary instance
+      this.transformationObj.rdfVocabs.push({name: prefix, namespace: namespace, fromServer: false})
+    }
+    return prefix;
   }
 }
