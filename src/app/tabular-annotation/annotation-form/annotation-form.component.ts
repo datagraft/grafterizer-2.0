@@ -223,19 +223,20 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.annotation = this.annotationService.getAnnotation(this.header);
     this.fillAllowedSourcesArray();
     this.buildForm();
     this.onChanges();
-    this.annotationsSuggestion();
-    this.annotation = new Annotation();
-    if (this.annotationService.isFull) {
-      this.annotation = this.annotationService.getAnnotation(this.header);
+    if (this.annotation == null) {
+      this.annotationsSuggestion();
+      this.annotation = new Annotation();
+    } else {
+      this.setFormFromAnnotation();
     }
   }
 
   ngOnDestroy() {
-    this.annotationService.setAnnotation(this.header, this.annotation);
-    this.annotationService.isFull = true;
+    // Don't save anything since each valid annotation is already stored into the service
   }
 
   buildForm() {
@@ -259,6 +260,34 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       CustomValidators.columnTypeValidator('columnInfo.columnType', 'columnInfo.columnValuesType'),
       ]
     ));
+  }
+
+  setFormFromAnnotation() {
+    this.annotationForm.get('relationship.subject').setValue(this.annotation.subject);
+    this.annotationForm.get('relationship.property').setValue(this.annotation.property);
+
+    const valuesType = this.annotation.columnValuesType;
+    this.annotationForm.get('columnInfo.columnValuesType').setValue(valuesType);
+    if (valuesType === ColumnTypes.URI) {
+      this.annotationForm.get('columnInfo.columnType').setValue(this.annotation.columnType);
+      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.annotation.urifyNamespace);
+    } else if (valuesType === ColumnTypes.Literal) {
+      const xsdDatatype = this.annotation.columnDatatype;
+      let datatype = Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === xsdDatatype);
+      if (!datatype) {
+        datatype = 'custom';
+      }
+      this.annotationForm.get('columnInfo.columnDatatype').setValue(datatype);
+      if (datatype === 'custom') {
+        this.annotationForm.get('columnInfo.customDatatype').setValue(this.annotation.columnDatatype);
+      }
+      if (datatype === 'string') {
+       this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
+      }
+    }
+    this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
+    this.annotationForm.markAsPristine();
+    this.submitted = true;
   }
 
   resetForm() {

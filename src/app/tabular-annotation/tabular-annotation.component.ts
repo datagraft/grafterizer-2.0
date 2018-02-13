@@ -16,7 +16,6 @@ import {Annotation} from './annotation.model';
   selector: 'app-tabular-annotation',
   templateUrl: './tabular-annotation.component.html',
   styleUrls: ['./tabular-annotation.component.css'],
-  providers: [AnnotationService]
 })
 
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
@@ -68,19 +67,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * Create a valid graph using all annotations.
    */
   annotationsToGraph() {
-    const annotations = this.annotationService.getAnnotations();
+    let annotations = this.annotationService.getAnnotations();
 
     /**
      * Create prefixes and namespaces for all properties, types and datatypes.
      * Insert also new prefixes and namespaces into the RDFvocabs array
      */
-    this.updatePrefixesNamespaces(annotations);
+    annotations = this.updatePrefixesNamespaces(annotations);
 
-    /**
-     * TODO: Create one graph node for each annotation
-     */
-    console.log(annotations);
-    console.log(this.transformationObj.rdfVocabs);
+    // Create a new instance of graph
+    const graph = this.buildGraph(annotations);
   }
 
   /**
@@ -110,6 +106,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     });
     return annotations;
+  }
+
+  buildGraph(annotations: Annotation[]) {
+    console.log(this.annotationService.subjects);
+    console.log(annotations);
   }
 
   /**
