@@ -46,7 +46,7 @@ import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/ma
 import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
-import { ComponentCommunicationService } from './component-communication.service';
+import { PipelineEventsService } from './pipeline-events.service';
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 // import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -115,7 +115,7 @@ import { TagInputModule } from 'ngx-chips';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [ComponentCommunicationService]
+  ], providers: [PipelineEventsService]
 })
 
 export class TabularTransformationModule { }
