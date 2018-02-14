@@ -59,6 +59,8 @@ export class AnnotationService {
   }
 
   removeAnnotation(columnHeader: string) {
+    this.subjects.delete(columnHeader);
+    this.updateSubjects(this.subjects);
     delete this.annotations[columnHeader];
   }
 
