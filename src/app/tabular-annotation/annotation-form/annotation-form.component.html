@@ -1,13 +1,13 @@
 <div id="annotation-component" class="card">
   <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()" autocomplete="off">
     <div class="card-header">
-      <clr-tooltip *ngIf="annotationForm.invalid || subjectValuesTypeValidator()" class="pull-right">
+      <clr-tooltip *ngIf="annotationForm.invalid" class="pull-right">
         <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not valid</span>
         </clr-tooltip-content>
       </clr-tooltip>
-      <clr-tooltip *ngIf="!submitted && !(annotationForm.invalid || subjectValuesTypeValidator())" class="pull-right">
+      <clr-tooltip *ngIf="!submitted && !(annotationForm.invalid)" class="pull-right">
         <clr-icon clrTooltipTrigger shape="warning-standard" size="20" class="is-solid is-warning"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not submitted</span>
@@ -38,18 +38,26 @@
           <div class="form-group">
             <label class="required">Column values type</label>
             <div class="btn-group">
-              <div class="radio btn btn-sm" [ngClass]="{'btn-danger': subjectValuesTypeValidator()}"
+              <div class="radio btn btn-sm" [ngClass]="{'btn-danger': annotationForm.get('columnInfo.columnValuesType').invalid
+                      && (annotationForm.get('columnInfo.columnValuesType').dirty || annotationForm.get('columnInfo.columnValuesType').touched)
+                      || (annotationForm.get('columnInfo.columnValuesType').hasError('invalidColumnValuesType')
+                      && !annotationForm.get('columnInfo.columnValuesType').hasError('missingColumnValuesType'))}"
                    *ngFor="let columnValuesType of availableColumnValuesTypes; let i = index">
-                <input type="radio" name="{{ header }}.columnDatatype"
+                <input type="radio" name="columnValuesType"
                        id="{{ header }}.columnValuesType{{i}}"
-                       (click)="changeValuesType(columnValuesType)">
+                       formControlName="columnValuesType"
+                       value="{{columnValuesType}}"
+                       (click)="changeValuesType(columnValuesType)"
+                       [checked]="annotationForm.get('columnInfo.columnValuesType').value === columnValuesType">
                 <label for="{{ header }}.columnValuesType{{i}}">{{columnValuesType}}</label>
               </div>
             </div>
-            <clr-tooltip *ngIf="subjectValuesTypeValidator()">
+            <clr-tooltip *ngIf="annotationForm.get('columnInfo.columnValuesType').invalid
+                      && (annotationForm.get('columnInfo.columnValuesType').dirty || annotationForm.get('columnInfo.columnValuesType').touched)
+                      || annotationForm.get('columnInfo.columnValuesType').hasError('invalidColumnValuesType')">
               <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
               <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
-                <span>A subject column must be of type URI.</span>
+                <span>{{annotationForm.get('columnInfo.columnValuesType').errors['invalidColumnValuesType'].errorMessage}}</span>
               </clr-tooltip-content>
             </clr-tooltip>
           </div>
@@ -214,9 +222,7 @@
     <div class="card-footer">
       <button class="btn btn-sm btn-link"
               type="submit"
-              [disabled]="annotationForm.invalid ||
-              subjectValuesTypeValidator() ||
-              submitted">Annotate</button>
+              [disabled]="annotationForm.invalid || submitted">Annotate</button>
       <a class="btn btn-sm btn-link" (click)="deleteAnnotation()">Delete</a>
     </div>
   </form>

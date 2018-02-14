@@ -212,9 +212,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         if (value === this.header) {
           this.isSubject = true;
           subjectsLabel.push(i);
-          if (this.subjectValuesTypeValidator()) {
-            this.submitted = false;
-            this.annotationService.removeAnnotation(this.header);
+          if (this.submitted && this.annotation && this.annotationForm) {
+            if (this.isValuesTypeNotValid(this.annotation.columnValuesType)) {
+              this.submitted = false;
+              this.annotationService.removeAnnotation(this.header);
+              // Force the form to re-check itself -> produce the error on columnValuesType
+              this.changeValuesType(this.annotation.columnValuesType);
+            }
           }
         }
         i++;
@@ -243,7 +247,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.annotationForm = new FormGroup({
       columnInfo: new FormGroup({
         columnType: new FormControl('', CustomValidators.URLValidator()),
-        columnValuesType: new FormControl('', Validators.required),
+        columnValuesType: new FormControl('', this.subjectValuesTypeValidator()),
         urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
         customDatatype: new FormControl('', CustomValidators.URLValidator()),
@@ -285,6 +289,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
        this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
       }
     }
+    this.changeValuesType(valuesType);
     this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
     this.annotationForm.markAsPristine();
     this.submitted = true;
@@ -297,7 +302,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         columnValuesType: '',
         urifyNamespace: '',
         columnDatatype: 'string',
-        columnCustomType: '',
+        customDatatype: '',
         langTag: 'en',
       },
       relationship: {
@@ -306,6 +311,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       }
     });
     this.annotation = new Annotation();
+    this.isSubject = false;
+    this.isObject = false;
+    this.submitted = false;
+    this.displayURINamespace = false;
+    this.displayDatatype = false;
+    this.displayType = false;
+    this.displayLangTag = true; // because the default datatype is string
+    this.displayCustomDatatype = false;
   }
 
   /**
@@ -379,8 +392,20 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * A subject column must have URL as values type
    * @returns {boolean} true if this column is a subject and the values type is not URL. false otherwise.
    */
-  subjectValuesTypeValidator() {
-    return this.isSubject && this.annotationForm.get('columnInfo.columnValuesType').value !== ColumnTypes.URI
+  isValuesTypeNotValid(valuesType: string) {
+    return this.isSubject && valuesType !== ColumnTypes.URI;
+  }
+
+  subjectValuesTypeValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} => {
+      if (control.value === '') {
+        return { 'invalidColumnValuesType': {errorMessage: 'Column values type is required'}, 'missingColumnValuesType': true};
+      }
+      if (this.isValuesTypeNotValid(control.value)) {
+        return { 'invalidColumnValuesType': {errorMessage: 'A subject column must be of type URI'}};
+      }
+      return null;
+    };
   }
 
   /**
