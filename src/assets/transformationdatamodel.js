@@ -1380,13 +1380,11 @@ export var FillRowsFunction = function (indexFrom, indexTo, docstring) {
 
   } else this.docstring = docstring;
 };
-
 FillRowsFunction.revive = function (data) {
 
   return new FillRowsFunction(data.indexFrom, data.indexTo, data.docstring);
 
 };
-
 FillRowsFunction.prototype = Object.create(GenericFunction.prototype);
 FillRowsFunction.prototype.generateClojure = function () {
 
@@ -1416,13 +1414,11 @@ export var MergeRowsFunction = function (indexFrom, indexTo, separator, docstrin
 
   } else this.docstring = docstring;
 };
-
 MergeRowsFunction.revive = function (data) {
 
   return new MergeRowsFunction(data.indexFrom, data.indexTo, data.separator, data.docstring);
 
 };
-
 MergeRowsFunction.prototype = Object.create(GenericFunction.prototype);
 MergeRowsFunction.prototype.generateClojure = function () {
 
@@ -1434,8 +1430,6 @@ MergeRowsFunction.prototype.generateClojure = function () {
 };
 this.MergeRowsFunction = MergeRowsFunction;
 
-
-
 var ChangeColtype = function (columnName, datatype) {
   this.name = 'changeColtype';
   this.displayName = 'change-type';
@@ -1445,7 +1439,6 @@ var ChangeColtype = function (columnName, datatype) {
   this.docstring = 'Change datatype of column ' + columnName + ' to ' + datatype;
 }
 this.ChangeColtype = ChangeColtype;
-
 
 export var MeltFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
   // array of column names

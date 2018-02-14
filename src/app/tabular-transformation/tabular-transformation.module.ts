@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
-import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
 import { CodemirrorModule } from 'ng2-codemirror';
@@ -56,6 +55,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { AngularSplitModule } from 'angular-split';
 
+import { TagInputModule } from 'ngx-chips';
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -69,7 +70,7 @@ import { AngularSplitModule } from 'angular-split';
     NgxChartsModule,
     NgxDatatableModule,
     ListboxModule,
-    RlTagInputModule,
+    TagInputModule,
     SuiModule,
     Ng2CompleterModule,
     CodemirrorModule,

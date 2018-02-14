@@ -16,8 +16,8 @@
     <!-- Hidden when there are less than 2 columns -->
     <div *ngIf="mode=='columns' && columns.length>1">
       <label for="cols">Column names:</label>
-      <rl-tag-input [(ngModel)]="colnames" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true" placeholder="Column names"
-        id="cols"></rl-tag-input>
+      <!--<rl-tag-input [(ngModel)]="colnames" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true" placeholder="Column names"
+        id="cols"></rl-tag-input>-->
 
       <!-- Alert if not a single column is chosen -->
       <div *ngIf="colnames.length < 1 && showMessage" class="alert alert-danger">
