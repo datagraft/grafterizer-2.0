@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { AppConfig } from '../app.config';
+import { TransformationService } from '../transformation.service';
 
 export interface Vocabulary {
   name: string;
@@ -15,35 +16,51 @@ export class RdfVocabularyService {
   // Default vocabularies maintained by the vocabulary service
   public defaultVocabularies: Map<string, Vocabulary>;
 
-  // Manually added vocabularies, stored in the transformation object
-  public transformationVocabularies: Map<string, Vocabulary>;
-
   constructor(private http: Http, private config: AppConfig) {
     this.vocabSvcPath = this.config.getConfig('vocabulary-service-path');
     // load the default vocabularies from the server
-    this.http
-      .get(this.vocabSvcPath + '/getAll')
-      .map((response: Response) => response.json())
-      .toPromise()
+    this.getDefaultVocabs()
       .then(
       (result) => {
         this.defaultVocabularies = new Map<string, Vocabulary>();
         const vocabs = this.mapVocabularies(result);
-        console.log(vocabs);
-        console.log(vocabs.length);
         vocabs.forEach((vocab) => {
-          this.defaultVocabularies.set(vocab.name, vocab);
-          console.log(this.defaultVocabularies);
+          // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
+          const name_space = vocab.namespace === 'http://rdfs.org/sioc/ns#' ? 'http://rdfs.org/sioc/ns' : vocab.namespace;
+          this.getVocabularyClassesAndProperties(vocab.name, name_space)
+            .then(
+            (classAndProps) => {
+              // add classes and properties to the vocabulary
+              const classes = [];
+              const properties = [];
+              classAndProps['classResult'].forEach((classResult) => {
+                if (classResult.value !== 'null') {
+                  classes.push(classResult.value);
+                }
+              });
+              classAndProps['propertyResult'].forEach((propertyResult) => {
+                if (propertyResult.value !== 'null') {
+                  properties.push(propertyResult.value);
+                }
+              });
+              vocab.classes = classes;
+              vocab.properties = properties;
+              this.defaultVocabularies.set(vocab.name, vocab);
+            },
+            (error) => this.errorHandler(error)
+          );
         });
-        console.log(this.defaultVocabularies);
       },
       (error) => this.errorHandler(error)
     );
-    //    console.log(this.defaultVocabularies);
-    // load the vocabularies from the transformation object
   }
 
-  //  private getDefaultVocabs
+  private getDefaultVocabs(): Promise<any> {
+    return this.http
+      .get(this.vocabSvcPath + '/getAll')
+      .map((response: Response) => response.json())
+      .toPromise();
+  }
   // Helper method. Maps the server vocabulary descriptions to the internal Vocabulary interface.
   // The format of the server response is as follows:
   // {
@@ -56,61 +73,30 @@ export class RdfVocabularyService {
   // }
   private mapVocabularies(vocabularies: JSON): Array<Vocabulary> {
     const mappedVocabs = [];
-//    vocabularies['result'].forEach((record) => {
-//      const body = JSON.stringify(
-//        {
-//          name: record.name,
-//          namespace: record.namespace
-//        }
-//      );
-//      const headers = new Headers({ 'Content-Type': 'application/json' });
-//      const options = new RequestOptions({ headers: headers });
-//      const vocab = this.mapVocabulary({
-//          name: record.name,
-//          namespace: record.namespace
-//        }, {
-//          classes: classes,
-//          properties: properties
-//        });
-//      // First, retrieve the classes and properties for each vocabulary
-//      mappedVocabs.push(vocab);
-//    });
+    vocabularies['result'].forEach((record) => {
+      // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
+      const name_space = record['namespace'] === 'http://rdfs.org/sioc/ns' ? 'http://rdfs.org/sioc/ns#' : record['namespace'];
+      const vocab = {
+        name: record['name'],
+        namespace: name_space
+      }
+      mappedVocabs.push(vocab);
+    });
     return mappedVocabs;
   }
 
   private getVocabularyClassesAndProperties(name: string, name_space: string): Promise<any> {
     const body = JSON.stringify(
-        {
-          name: name,
-          namespace: name_space
-        }
-      );
-      const headers = new Headers({ 'Content-Type': 'application/json' });
-      const options = new RequestOptions({ headers: headers });
+      {
+        name: name,
+        namespace: name_space
+      }
+    );
+    const headers = new Headers({ 'Content-Type': 'application/json' });
+    const options = new RequestOptions({ headers: headers });
     return this.http.post(this.vocabSvcPath + '/getClassAndProperty', body, options)
       .map((response: Response) => response.json())
-      .toPromise()
-      .then(
-      (result) => {
-        // map each retrieved vocabulary and add it to the array
-        const classes = [];
-        const properties = [];
-        result['classResult'].forEach((classResult) => {
-          if (classResult.value !== 'null') {
-            classes.push(classResult.value);
-          }
-        });
-        result['propertyResult'].forEach((propertyResult) => {
-          if (propertyResult.value !== 'null') {
-            properties.push(propertyResult.value);
-          }
-        });
-        // map each vocabulary to the interface Vocabulary and add it to the result array
-        
-        
-      },
-      (error) => this.errorHandler(error)
-    );
+      .toPromise();
   }
 
   // Helper method. Maps single vocabulary objects obtained from the vocabulary service.
