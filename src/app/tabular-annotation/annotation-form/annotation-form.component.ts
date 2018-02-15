@@ -291,8 +291,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     }
     this.changeValuesType(valuesType);
     this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
-    this.annotationForm.markAsPristine();
-    this.submitted = true;
+    if (this.annotationForm.get('relationship.subject').invalid) { // check if the subject column exists)
+      this.annotationForm.get('relationship.subject').markAsDirty();
+      this.submitted = false;
+    } else {
+      this.annotationForm.markAsPristine();
+      this.submitted = true;
+    }
   }
 
   resetForm() {
