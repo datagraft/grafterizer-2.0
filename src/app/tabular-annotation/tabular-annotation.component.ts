@@ -86,6 +86,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    */
   updatePrefixesNamespaces(annotations: Annotation[]) {
     annotations.forEach((annotation) => {
+      // reset all prefixes (useful when the user deletes for instnce the "property" field)
+      annotation.urifyPrefix = '';
+      annotation.columnTypeNamespace = '';
+      annotation.columnTypePrefix = '';
+      annotation.columnDatatypeNamespace = '';
+      annotation.columnDatatypePrefix = '';
+
       if (annotation.urifyNamespace !== '') {
         annotation.urifyPrefix = this.getPrefixForNamespace(annotation.urifyNamespace);
       }
