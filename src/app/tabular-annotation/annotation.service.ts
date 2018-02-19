@@ -7,7 +7,7 @@ import {Annotation} from './annotation.model';
 export class AnnotationService {
 
   private annotations;
-  public headers;
+  public headers: string[];
   public data;
 
   public isFull = false;
@@ -68,9 +68,28 @@ export class AnnotationService {
     return this.annotations[columnHeader];
   }
 
+  /**
+   * Get all annotations (also those annotations related to deleted columns!)
+   * @returns {Annotation[]}
+   */
   getAnnotations(): Annotation[] {
     const annotations = [];
     Object.keys(this.annotations).forEach(key => annotations.push(this.annotations[key]));
+    return annotations;
+  }
+
+  /**
+   * Get all annotations that are valid (not related to deleted columns)
+   * @returns {Annotation[]}
+   */
+  getValidAnnotations(): Annotation[] {
+    const annotations = [];
+    Object.keys(this.annotations).forEach(key => {
+      const currentAnnotation = this.annotations[key];
+      if (this.headers.indexOf(currentAnnotation.columnHeader) > -1) {
+        annotations.push(currentAnnotation);
+      }
+    });
     return annotations;
   }
 }
