@@ -136,12 +136,12 @@ class CustomValidators {
   }
 }
 
-const ColumnTypes = {
+export const ColumnTypes = {
   URI: 'URI' as 'URI',
   Literal: 'Literal' as 'Literal',
 };
 
-const XSDDatatypes = {
+export const XSDDatatypes = {
   'byte': 'https://www.w3.org/2001/XMLSchema#byte',
   'short': 'https://www.w3.org/2001/XMLSchema#short',
   'integer': 'https://www.w3.org/2001/XMLSchema#int',
@@ -293,6 +293,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
     if (this.annotationForm.get('relationship.subject').invalid) { // check if the subject column exists)
       this.annotationForm.get('relationship.subject').markAsDirty();
+      this.annotationService.removeAnnotation(this.header);
       this.submitted = false;
     } else {
       this.annotationForm.markAsPristine();
