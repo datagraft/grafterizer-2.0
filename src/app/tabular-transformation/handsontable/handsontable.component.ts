@@ -24,7 +24,8 @@ export class HandsontableComponent implements OnInit, OnChanges {
   private container: any;
   private settings: any;
   public selction: any;
-  public showLoading: boolean;
+  private showLoading: boolean;
+  private showHandsonTable: boolean;
   private colNamesClean: any;
 
   public selectedFunction: any;
@@ -35,9 +36,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
   constructor() {
     this.showLoading = true;
     this.data = [];
-    // for (let i = 0; i <= 12; i++) {
-    //  this.data.push(['-', '-', '-', '-', '-']);
-    //}
   }
 
   ngOnInit() {
@@ -45,17 +43,19 @@ export class HandsontableComponent implements OnInit, OnChanges {
     this.settings = {
       data: this.data,
       rowHeaders: true,
-      autoColumnSize: false,
+      autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
+      height: 900,
       columnSorting: false,
-      viewportColumnRenderingOffset: 40,
-      height: 660,
-      width: 1610,
+      viewportColumnRenderingOffset: 30,
+      viewportRowRenderingOffset: 'auto',
       wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
       observeDOMVisibility: true,
-      afterChange: () => {
+      observeChanges: true,
+      preventOverflow: false,
+      afterChangesObserved: () => {
         setTimeout(() => {
           this.hot.render();
         }, 10);
@@ -371,7 +371,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
   }
 
   public displayJsEdnData(data: JSON) {
-    this.showLoading = true;
     // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
@@ -391,10 +390,11 @@ export class HandsontableComponent implements OnInit, OnChanges {
         columns: columnMappings,
         data: data[':rows']
       });
-      this.showLoading = false;
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');
     }
+    this.showLoading = false;
+    this.showHandsonTable = false;
   }
 }

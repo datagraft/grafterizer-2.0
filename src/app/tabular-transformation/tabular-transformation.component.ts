@@ -72,7 +72,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
     }
     else {
       console.log('TEST 2 OK')
-      this.handsonTable.showLoading = true;
+      // this.handsonTable.showLoading = true;
       this.handsonTable.displayJsEdnData(this.graftwerkData);
       this.profilingComponent.loadJSON(this.graftwerkData);
       this.profilingComponent.refresh(this.handsontableSelection);
@@ -123,34 +123,34 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       this.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
         .then(
-        (result) => {
-          let transformationObj = transformationDataModel.Transformation.revive(result);
-          console.log(transformationObj)
-          if (paramMap.has('filestoreId')) {
-            const clojure = generateClojure.fromTransformation(transformationObj);
-            this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
-              .then(
-              (result) => {
-                console.log(result);
-                this.handsonTable.showLoading = true;
-                this.transformationSvc.transformationObj = transformationObj;
-                this.transformationObj = transformationObj;
-                this.graftwerkData = result;
-                this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
-                // this.graftwerkData[":column-names"] = this.loadedDataHeaders;
-                this.handsonTable.displayJsEdnData(result);
-                this.profilingComponent.loadJSON(result);
-                this.pipelineComponent.generateLabels();
-              },
-              (error) => {
-                console.log('ERROR getting filestore!');
-                console.log(error);
-              });
-          }
-        },
-        (error) => {
-          console.log(error)
-        });
+          (result) => {
+            let transformationObj = transformationDataModel.Transformation.revive(result);
+            console.log(transformationObj)
+            if (paramMap.has('filestoreId')) {
+              const clojure = generateClojure.fromTransformation(transformationObj);
+              this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+                .then(
+                  (result) => {
+                    console.log(result);
+                    // this.handsonTable.showLoading = true;
+                    this.transformationSvc.transformationObj = transformationObj;
+                    this.transformationObj = transformationObj;
+                    this.graftwerkData = result;
+                    this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+                    // this.graftwerkData[":column-names"] = this.loadedDataHeaders;
+                    this.handsonTable.displayJsEdnData(result);
+                    this.profilingComponent.loadJSON(result);
+                    this.pipelineComponent.generateLabels();
+                  },
+                  (error) => {
+                    console.log('ERROR getting filestore!');
+                    console.log(error);
+                  });
+            }
+          },
+          (error) => {
+            console.log(error)
+          });
     }
   }
 
@@ -160,12 +160,13 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
     const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
-        this.handsonTable.showLoading = true;
+        // this.handsonTable.showLoading = true;
         this.graftwerkData = result;
         this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);
         this.pipelineComponent.generateLabels();
+        console.log(result);
         this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
         this.profilingComponent.progressbar = false;
       }, (err) => {
