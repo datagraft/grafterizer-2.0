@@ -83,6 +83,26 @@ class CustomValidators {
     };
   }
 
+  /**
+   * Check if the selected URL is valid
+   * @returns {ValidatorFn}
+   */
+  static URLValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} => {
+      try {
+        if (control.value !== '') {
+          const url = new URL(control.value);
+          if (url.host === '') {
+            return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+          }
+        }
+        return null;
+      } catch (error) {
+        return {'invalidURL': {errorMessage: 'This URL is not valid'}}
+      }
+    };
+  }
+
   static customDatatypeValidator(columnDatatype: string, customDatatype: string): ValidatorFn {
     return (group: FormGroup): { [key: string]: any } => {
       const dataTypeControl = group.get(columnDatatype);
@@ -116,12 +136,12 @@ class CustomValidators {
   }
 }
 
-const ColumnTypes = {
+export const ColumnTypes = {
   URI: 'URI' as 'URI',
   Literal: 'Literal' as 'Literal',
 };
 
-const XSDDatatypes = {
+export const XSDDatatypes = {
   'byte': 'https://www.w3.org/2001/XMLSchema#byte',
   'short': 'https://www.w3.org/2001/XMLSchema#short',
   'integer': 'https://www.w3.org/2001/XMLSchema#int',
@@ -150,7 +170,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   private abstatPath;
   public annotation: Annotation;
-  displayURIprefix = false;
+  displayURINamespace = false;
   displayDatatype = false;
   displayType = false;
   displayLangTag = true; // because the default datatype is string
@@ -159,8 +179,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   allowedSources: string[];
   availableColumnValuesTypes = Object.keys(ColumnTypes);
   availableDatatypes = Object.keys(XSDDatatypes);
-
-  urlREGEX: RegExp = new RegExp('(ftp|http|https):\/\/[^ "]+$');
 
   annotationForm: FormGroup;
 
@@ -194,9 +212,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         if (value === this.header) {
           this.isSubject = true;
           subjectsLabel.push(i);
-          if (this.subjectValuesTypeValidator()) {
-            this.submitted = false;
-            this.annotationService.removeAnnotation(this.header);
+          if (this.submitted && this.annotation && this.annotationForm) {
+            if (this.isValuesTypeNotValid(this.annotation.columnValuesType)) {
+              this.submitted = false;
+              this.annotationService.removeAnnotation(this.header);
+              // Force the form to re-check itself -> produce the error on columnValuesType
+              this.changeValuesType(this.annotation.columnValuesType);
+            }
           }
         }
         i++;
@@ -205,36 +227,35 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.annotation = this.annotationService.getAnnotation(this.header);
     this.fillAllowedSourcesArray();
     this.buildForm();
     this.onChanges();
-    this.annotationsSuggestion();
-    this.annotation = new Annotation();
-    if (this.annotationService.isFull) {
-      this.annotation = this.annotationService.getAnnotation(this.header);
+    if (this.annotation == null) {
+      this.annotationsSuggestion();
+      this.annotation = new Annotation();
+    } else {
+      this.setFormFromAnnotation();
     }
   }
 
   ngOnDestroy() {
-    this.annotationService.setAnnotation(this.header, this.annotation);
-    this.annotationService.isFull = true;
+    // Don't save anything since each valid annotation is already stored into the service
   }
 
   buildForm() {
     this.annotationForm = new FormGroup({
       columnInfo: new FormGroup({
-        columnType: new FormControl('', [
-          Validators.pattern(this.urlREGEX)
-        ]),
-        columnValuesType: new FormControl('', Validators.required),
-        urifyPrefix: new FormControl('', Validators.pattern(this.urlREGEX)),
+        columnType: new FormControl('', CustomValidators.URLValidator()),
+        columnValuesType: new FormControl('', this.subjectValuesTypeValidator()),
+        urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
-        customDatatype: new FormControl('', Validators.pattern(this.urlREGEX)),
+        customDatatype: new FormControl('', CustomValidators.URLValidator()),
         langTag: new FormControl('en'),
       }),
       relationship: new FormGroup({
         subject: new FormControl('', CustomValidators.subjectValidator(this.allowedSources)),
-        property: new FormControl('', Validators.pattern(this.urlREGEX)),
+        property: new FormControl('', CustomValidators.URLValidator()),
       }),
     }, Validators.compose([
       CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
@@ -245,14 +266,49 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     ));
   }
 
+  setFormFromAnnotation() {
+    this.annotationForm.get('relationship.subject').setValue(this.annotation.subject);
+    this.annotationForm.get('relationship.property').setValue(this.annotation.property);
+
+    const valuesType = this.annotation.columnValuesType;
+    this.annotationForm.get('columnInfo.columnValuesType').setValue(valuesType);
+    if (valuesType === ColumnTypes.URI) {
+      this.annotationForm.get('columnInfo.columnType').setValue(this.annotation.columnType);
+      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.annotation.urifyNamespace);
+    } else if (valuesType === ColumnTypes.Literal) {
+      const xsdDatatype = this.annotation.columnDatatype;
+      let datatype = Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === xsdDatatype);
+      if (!datatype) {
+        datatype = 'custom';
+      }
+      this.annotationForm.get('columnInfo.columnDatatype').setValue(datatype);
+      if (datatype === 'custom') {
+        this.annotationForm.get('columnInfo.customDatatype').setValue(this.annotation.columnDatatype);
+      }
+      if (datatype === 'string') {
+       this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
+      }
+    }
+    this.changeValuesType(valuesType);
+    this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
+    if (this.annotationForm.get('relationship.subject').invalid) { // check if the subject column exists)
+      this.annotationForm.get('relationship.subject').markAsDirty();
+      this.annotationService.removeAnnotation(this.header);
+      this.submitted = false;
+    } else {
+      this.annotationForm.markAsPristine();
+      this.submitted = true;
+    }
+  }
+
   resetForm() {
     this.annotationForm.reset({
       columnInfo: {
         columnType: '',
         columnValuesType: '',
-        urifyPrefix: '',
+        urifyNamespace: '',
         columnDatatype: 'string',
-        columnCustomType: '',
+        customDatatype: '',
         langTag: 'en',
       },
       relationship: {
@@ -261,6 +317,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       }
     });
     this.annotation = new Annotation();
+    this.isSubject = false;
+    this.isObject = false;
+    this.submitted = false;
+    this.displayURINamespace = false;
+    this.displayDatatype = false;
+    this.displayType = false;
+    this.displayLangTag = true; // because the default datatype is string
+    this.displayCustomDatatype = false;
   }
 
   /**
@@ -272,7 +336,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         let changed = false;
         const oldAnnotation = this.annotationService.getAnnotation(this.header);
         const literalProps = ['columnDatatype', 'customDatatype', 'langTag'];
-        const URIProps = ['columnType', 'urifyPrefix'];
+        const URIProps = ['columnType', 'urifyNamespace'];
         const commonProps = ['subject', 'property'];
 
         const newValuesType = valuesObj.columnInfo.columnValuesType;
@@ -334,8 +398,20 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * A subject column must have URL as values type
    * @returns {boolean} true if this column is a subject and the values type is not URL. false otherwise.
    */
-  subjectValuesTypeValidator() {
-    return this.isSubject && this.annotationForm.get('columnInfo.columnValuesType').value !== ColumnTypes.URI
+  isValuesTypeNotValid(valuesType: string) {
+    return this.isSubject && valuesType !== ColumnTypes.URI;
+  }
+
+  subjectValuesTypeValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} => {
+      if (control.value === '') {
+        return { 'invalidColumnValuesType': {errorMessage: 'Column values type is required'}, 'missingColumnValuesType': true};
+      }
+      if (this.isValuesTypeNotValid(control.value)) {
+        return { 'invalidColumnValuesType': {errorMessage: 'A subject column must be of type URI'}};
+      }
+      return null;
+    };
   }
 
   /**
@@ -346,7 +422,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const formElement = this.annotationForm.get('columnInfo.columnValuesType');
     formElement.setValue(columnDatatype);
     if (columnDatatype === ColumnTypes.URI) {
-      this.displayURIprefix = true;
+      this.displayURINamespace = true;
       this.displayDatatype = false;
       this.displayType = true;
       this.displayCustomDatatype = false;
@@ -356,7 +432,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         this.displayCustomDatatype = true;
       }
       this.displayType = false;
-      this.displayURIprefix = false;
+      this.displayURINamespace = false;
       this.displayDatatype = true;
     }
     formElement.markAsDirty();
@@ -402,7 +478,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
         this.annotation.columnType = this.annotation.columnType['suggestion'];
       }
-      this.annotation.urifyPrefix = this.annotationForm.get('columnInfo.urifyPrefix').value;
+      this.annotation.urifyNamespace = this.annotationForm.get('columnInfo.urifyNamespace').value;
     } else if (valuesType === ColumnTypes.Literal) {
       const datatype = this.annotationForm.get('columnInfo.columnDatatype').value;
       if (datatype === 'custom') {

@@ -8,7 +8,6 @@ import {Annotation} from './annotation.model';
   selector: 'app-tabular-annotation-detail',
   templateUrl: './tabular-annotation-detail.component.html',
   styleUrls: ['./tabular-annotation-detail.component.css'],
-  providers: [AnnotationService]
 })
 
 // Detail Mode offers an accurate form for insert the annotation parameters, require the subject/object source and all off
