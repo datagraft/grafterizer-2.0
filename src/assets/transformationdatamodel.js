@@ -170,7 +170,7 @@ UtilityFunction.prototype = Object.create(GenericFunction.prototype);
 UtilityFunction.prototype.generateClojure = function () {
   var elems = [jsedn.sym(this.functionName.funct.name)];
   for (var i = 0; i < this.functionName.functParams.length; ++i) {
-    //      console.log(this.functionName.functParams[i]); 
+    //      console.log(this.functionName.functParams[i]);
     elems.push(this.functionName.functParams[i]);
   }
 
@@ -1503,8 +1503,8 @@ MeltFunction.prototype.generateClojure = function () {
 this.MeltFunction = MeltFunction;
 
 export var Pipeline = function (functions) {
-  // functions that make up the pipeline 
-  // TODO: revive! 
+  // functions that make up the pipeline
+  // TODO: revive!
   var funct;
   var i;
   for (i = 0; i < functions.length; ++i) {
@@ -1608,11 +1608,11 @@ Pipeline.prototype.addAfter = function (funct, functionToAdd) {
 Pipeline.prototype.remove = function (funct) {
   var index = this.functions.indexOf(funct);
   if (index === -1 || funct === null || funct === undefined) {
-    /*     Raven.captureMessage('tried to remove non-existing function', { 
-          tags: { 
-            file: 'transformationdatamodel', 
-            method: 'Pipeline.remove' 
-          } 
+    /*     Raven.captureMessage('tried to remove non-existing function', {
+          tags: {
+            file: 'transformationdatamodel',
+            method: 'Pipeline.remove'
+          }
         }); */
     return false;
   }
@@ -1630,7 +1630,7 @@ export var getGraphElement = function (inputElement) {
   }
 };
 
-// TODO remove subElements and move to URINode (which are the only elements that can have subelements) 
+// TODO remove subElements and move to URINode (which are the only elements that can have subelements)
 var RDFElement = function (subElements) {
   var i;
   var resolvedSubElements;
@@ -1809,7 +1809,7 @@ Property.revive = function (data) {
       }
     }
   }
-  //else console.log("No prop condition"); 
+  //else console.log("No prop condition");
 
   return new Property(data.prefix, data.propertyName, conditions, data.subElements);
 };
@@ -1875,7 +1875,7 @@ ConstantLiteral.revive = function (data) {
 };
 this.ConstantLiteral = ConstantLiteral;
 
-// TODO add support for blank nodes 
+// TODO add support for blank nodes
 export var BlankNode = function (nodeCondition, subElements) {
   RDFElement.call(this, subElements);
   this.nodeCondition = nodeCondition;
@@ -1909,16 +1909,16 @@ RDFVocabulary.revive = function (data) {
 };
 this.RDFVocabulary = RDFVocabulary;
 
-var Graph = function (graphURI, existingGraphRoots) {
+export var Graph = function (graphURI, existingGraphRoots) {
   var i;
   var graphRootsToAdd;
 
   graphRootsToAdd = [];
 
-  // just a string 
+  // just a string
   this.graphURI = graphURI;
 
-  // need to get stringifiable roots first 
+  // need to get stringifiable roots first
   for (i = 0; i < existingGraphRoots.length; ++i) {
     graphRootsToAdd.push(getGraphElement(existingGraphRoots[i]));
   }
@@ -1965,7 +1965,7 @@ this.Graph = Graph;
 
 export var Transformation = function (customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
 
-  // validate that inputs are revived 
+  // validate that inputs are revived
   var i, cfd, prefixer, pipeline, graph, rdfVocab;
   if (!customFunctionDeclarations)
     customFunctionDeclarations = [];
@@ -1981,7 +1981,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < customFunctionDeclarations.length; ++i) {
     cfd = customFunctionDeclarations[i];
     if (!(cfd instanceof CustomFunctionDeclaration) && cfd.__type === 'CustomFunctionDeclaration') {
-      // TODO: validate, above doesn't check for null 
+      // TODO: validate, above doesn't check for null
       customFunctionDeclarations[i] = CustomFunctionDeclaration.revive(cfd);
     }
   }
@@ -1989,7 +1989,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < prefixers.length; ++i) {
     prefixer = prefixers[i];
     if (!(prefixer instanceof Prefixer) && prefixer.__type === 'Prefixer') {
-      // TODO: validate 
+      // TODO: validate
       prefixers[i] = Prefixer.revive(prefixer);
     }
   }
@@ -1997,7 +1997,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   for (i = 0; i < pipelines.length; ++i) {
     pipeline = pipelines[i];
     if (!(pipeline instanceof Pipeline) && pipeline.__type === 'Pipeline') {
-      // TODO: validate 
+      // TODO: validate
       pipelines[i] = Pipeline.revive(pipeline);
     }
   }
@@ -2020,7 +2020,7 @@ export var Transformation = function (customFunctionDeclarations, prefixers, pip
   this.prefixers = prefixers;
   this.pipelines = pipelines;
   this.graphs = graphs;
-  this.rdfVocabs = rdfVocabs; //TODO fill this 
+  this.rdfVocabs = rdfVocabs; //TODO fill this
   this.__type = 'Transformation';
 
 };
@@ -2181,7 +2181,7 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
         availableColumnKeys.push('value');
       }
 
-      //TODO: clean and get new availColKeys for RenameColumns 
+      //TODO: clean and get new availColKeys for RenameColumns
 
       if (currentFunction instanceof MakeDatasetFunction) {
         if (!currentFunction.useLazy)
@@ -2189,7 +2189,7 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
             availableColumnKeys.push(currentFunction.columnsArray[k].value);
           }
 
-        // else //TODO:For lazy naming + for "move-first-row-to-header" 
+        // else //TODO:For lazy naming + for "move-first-row-to-header"
 
       }
 
@@ -2206,21 +2206,21 @@ Transformation.prototype.getColumnKeysFromPipeline = function () {
 
 };
 Transformation.prototype.getPartialTransformation = function (untilFunction) {
-  // TODO report errors? 
-  // TODO how to support multi-pipe transformation?? 
+  // TODO report errors?
+  // TODO how to support multi-pipe transformation??
   try {
     if (!untilFunction) {
-      //        console.log("Unable to compute partial transformation: empty until function"); 
+      //        console.log("Unable to compute partial transformation: empty until function");
       return this;
     }
     if (!(untilFunction instanceof GenericFunction)) {
-      //        console.log("Unable to compute partial transformation: wrong type of input parameter"); 
+      //        console.log("Unable to compute partial transformation: wrong type of input parameter");
       return this;
     }
 
     var index = this.pipelines[0].functions.indexOf(untilFunction);
     if (index === -1) {
-      //        console.error("Unable to compute partial transformation: unable to find until function"); 
+      //        console.error("Unable to compute partial transformation: unable to find until function");
       return this;
     }
 
@@ -2238,7 +2238,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 };
 this.Transformation = Transformation;
 
-// TODO should this just be a prototype function of every RDFElement? 
+// TODO should this just be a prototype function of every RDFElement?
 var getKeysFromSubs = function (rootNode, subColKeys) {
   for (var i = 0; i < rootNode.subElements.length; ++i) {
     if (rootNode.subElements[i] instanceof ColumnURI)

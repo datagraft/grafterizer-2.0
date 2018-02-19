@@ -11,6 +11,8 @@ import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { Http } from '@angular/http';
 import {Annotation} from './annotation.model';
+import * as transformationDataModel from 'assets/transformationdatamodel.js';
+import {ColumnTypes, XSDDatatypes} from './annotation-form/annotation-form.component';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -67,7 +69,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * Create a valid graph using all annotations.
    */
   annotationsToGraph() {
-    let annotations = this.annotationService.getAnnotations();
+    let annotations = this.annotationService.getValidAnnotations();
 
     /**
      * Create prefixes and namespaces for all properties, types and datatypes.
@@ -77,6 +79,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
+
+    if (this.transformationObj.graphs[1]) {
+      this.transformationObj.graphs[1] = graph;
+    } else {
+      this.transformationObj.graphs.push(graph);
+    }
+    // TODO: get the nt file from the dispatcher
   }
 
   /**
@@ -115,9 +124,92 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     return annotations;
   }
 
-  buildGraph(annotations: Annotation[]) {
-    console.log(this.annotationService.subjects);
-    console.log(annotations);
+  /**
+   * Return a new Graph, identified by its URI
+   * @param {Annotation[]} annotations
+   * @param {string} graphURI
+   * @returns {transformationDataModel.Graph}
+   */
+  buildGraph(annotations: Annotation[], graphURI = 'http://www.ew-shopp.eu/#/') {
+    const objNodes = {};
+    const rootNodes = {};
+
+    // Build all object nodes
+    annotations.forEach(annotation => {
+      if (annotation.columnValuesType === ColumnTypes.URI) {
+        const type = annotation.columnType.substring(annotation.columnTypeNamespace.length);
+        const typeNode = new transformationDataModel.ConstantURI(annotation.columnTypePrefix, type, [], []);
+        const property = annotation.property.substring(annotation.propertyNamespace.length);
+        const propertyType = new transformationDataModel.Property(annotation.propertyPrefix, property, [], [typeNode]);
+        objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
+          annotation.urifyPrefix,
+          annotation.columnHeader,
+          [], // node conditions
+          [propertyType], // subelements
+        );
+      } else if (annotation.columnValuesType === ColumnTypes.Literal) {
+        objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
+          annotation.columnHeader,
+          Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotation.columnDatatype), // datatype
+          null, // on empty
+          null, // on error
+          annotation.langTag,
+          annotation.columnDatatype,
+          [], // nodeCondition
+        );
+      } else {
+        console.log('blank node?');
+      }
+    });
+
+    // Build all roots nodes
+    const subjectCols = Array.from(new Set(this.annotationService.subjects.values()));
+    const subjectAnnotations = annotations.filter(annotation => (subjectCols.includes(annotation.columnHeader)));
+    subjectAnnotations.forEach((annotation) => {
+      if (annotation.columnValuesType === ColumnTypes.Literal) {
+        throw Error('Subject column cannot be literal!');
+      } else if (annotation.columnValuesType === ColumnTypes.URI) {
+        rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
+          annotation.urifyPrefix,
+          annotation.columnHeader,
+          [], // node conditions
+          this.buildPropertiesForSubject(annotation, objNodes, annotations), // subelements
+        )
+      } else {
+        console.log('blank node?');
+      }
+    });
+
+    // Create a new graph
+    const rootsList = [];
+    Object.keys(rootNodes).forEach(key => rootsList.push(rootNodes[key]));
+    return new transformationDataModel.Graph(graphURI, rootsList)
+  }
+
+  /**
+   * Given a subject column, this method returns all its subelements (which are properties linked to their own objects column)
+   * Also the rdf:type properties is created.
+   * @param {Annotation} subjectAnnotations
+   * @param {{}} objNodes
+   * @param {Annotation[]} annotations
+   * @returns {Array}
+   */
+  private buildPropertiesForSubject(subjectAnnotations: Annotation, objNodes: {}, annotations: Annotation[]) {
+    const properties = [];
+    const objects = annotations.filter(ann => (ann.subject === subjectAnnotations.columnHeader));
+    objects.forEach(object => {
+      const objectNode = objNodes[object.columnHeader];
+      const property = object.property.substring(object.propertyNamespace.length);
+      const propertyType = new transformationDataModel.Property(object.propertyPrefix, property, [], [objectNode]);
+      properties.push(propertyType)
+    });
+
+    // Create the rdf:type prop
+    const typePrefix = subjectAnnotations.columnTypePrefix;
+    const type = subjectAnnotations.columnType.substring(subjectAnnotations.columnTypeNamespace.length);
+    const typeNode = new transformationDataModel.ConstantURI(typePrefix, type, [], []);
+    properties.push(new transformationDataModel.Property('rdf', 'type', [], [typeNode]));
+    return properties;
   }
 
   /**
