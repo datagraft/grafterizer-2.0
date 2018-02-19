@@ -27,6 +27,7 @@
       "../node_modules/clarity-icons/clarity-icons.min.css",
       "../node_modules/clarity-ui/clarity-ui.min.css",
       "app/clr-overrides.scss",
+      "app/tag-input-theme.scss",
       "app/codemirror-overrides.css",
       "../node_modules/font-awesome/css/font-awesome.min.css",
       "../node_modules/primeng/resources/primeng.min.css",

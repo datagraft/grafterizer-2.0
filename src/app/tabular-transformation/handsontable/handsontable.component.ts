@@ -1,9 +1,12 @@
-
-import { Component, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
-import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction, KeyFunctionPair, CustomFunctionDeclaration } from '../../../assets/transformationdatamodel.js';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
+  MapcFunction, KeyFunctionPair, CustomFunctionDeclaration
+} from '../../../assets/transformationdatamodel.js';
 import { timeout } from 'q';
+import { TransformationService } from 'app/transformation.service';
 
 declare var Handsontable: any;
 
@@ -13,7 +16,7 @@ declare var Handsontable: any;
   styleUrls: ['./handsontable.component.css']
 })
 
-export class HandsontableComponent implements OnInit, OnChanges {
+export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() selectionChanged: EventEmitter<any> = new EventEmitter<any>();
 
@@ -30,10 +33,13 @@ export class HandsontableComponent implements OnInit, OnChanges {
 
   public selectedFunction: any;
   public selectedDefaultParams: any;
+
+  private dataSubscription: Subscription;
+
   @Input() suggestions;
   @Output() emitter = new EventEmitter();
 
-  constructor() {
+  constructor(private transformationSvc: TransformationService) {
     this.showLoading = true;
     this.data = [];
   }
@@ -73,8 +79,19 @@ export class HandsontableComponent implements OnInit, OnChanges {
         });
         this.hot.render();
       },
-    }
+    };
+
     this.hot = new Handsontable(this.container, this.settings);
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
+      if (message) {
+        console.log('Data Changed');
+        this.displayJsEdnData(message);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.dataSubscription.unsubscribe();
   }
 
   emitFunction(value: any) {
@@ -83,9 +100,9 @@ export class HandsontableComponent implements OnInit, OnChanges {
 
   ngOnChanges() {
     if (this.hot) {
-      var enabledMenuItems = [];
-      //for HoT submenus keys 
-      var keySuggestionMap = {
+      const enabledMenuItems = [];
+      // for HoT submenus keys
+      const keySuggestionMap = {
         'newcol:1': 'AddColumnsFunction',
         'newcol:2': 'DeriveColumnFunction',
         'newrow:1': 'add-row-below',
@@ -107,7 +124,7 @@ export class HandsontableComponent implements OnInit, OnChanges {
         'take-columns-delete': 'take-columns-delete'
 
       };
-      for (let suggestion of this.suggestions) {
+      for (const suggestion of this.suggestions) {
         enabledMenuItems.push(suggestion.label);
       }
 

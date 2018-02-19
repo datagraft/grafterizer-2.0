@@ -6,17 +6,21 @@
       </label>
     </div>
   </div>
-  <mat-vertical-stepper class="stepper" *ngIf="visible">
-    <div class="pipeline-steps" *ngFor="let step of steps">
-      <mat-step label={{step.type}} id="{{step.id}}" value="function-name" [stepControl]="AbstractControl" completed="true" (click)="sendFunction($event)">
-        <button mat-mini-fab class="btn" color="accent" id="{{step.id}}" value="preview" (click)="getButtonEvent($event)">
+  <mat-vertical-stepper #pipelineElement class="stepper" *ngIf="showPipeline"(selectionChange)="selectFunction($event)">
+    <div class="pipeline-steps" *ngFor="let step of steps; let i = index">
+      <mat-step id="{{i}}" value="function-name" [stepControl]="AbstractControl" completed="true"  previewed="false">
+        <ng-template matStepLabel><div id="{{i}}">{{verboseLabels(step.__type)}}</div></ng-template>
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="triggerPipelineEvent($event)" *ngIf="!step.isPreviewed">
           <mat-icon aria-label="visibility">visibility</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{step.id}}" value="edit" (click)="getButtonEvent($event)">
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="triggerPipelineEvent($event)" *ngIf="step.isPreviewed">
+          <mat-icon aria-label="visibility">visibility_off</mat-icon>
+        </button>
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="edit" (click)="triggerPipelineEvent($event)">
           <mat-icon aria-label="mode_edit">mode_edit</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{step.id}}" value="remove" (click)="getButtonEvent($event)">
-          <mat-icon aria-label="remove_circle_outline">remove</mat-icon>
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="remove" (click)="triggerPipelineEvent($event)">
+          <mat-icon aria-label="remove_circle_outline">delete</mat-icon>
         </button>
       </mat-step>
     </div>
