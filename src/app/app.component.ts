@@ -5,7 +5,7 @@ import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
-import { RouterUrlService } from './tabular-transformation/component-communication.service';
+import { RoutingService } from './routing.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -25,11 +25,11 @@ export class AppComponent implements OnInit {
   private routeSubscription: Subscription;
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
-               public dispatch: DispatchService, private transformationSvc: TransformationService,
-               public messageSvc: DataGraftMessageService, private routerService: RouterUrlService) {
-    this.subscription = this.routerService.getMessage().subscribe(message => {
+    public dispatch: DispatchService, private transformationSvc: TransformationService,
+    public messageSvc: DataGraftMessageService, private routingService: RoutingService) {
+    this.subscription = this.routingService.getMessage().subscribe(message => {
       this.url = message;
-      //      console.log(message);
+      console.log(message);
     });
   }
 
@@ -43,27 +43,27 @@ export class AppComponent implements OnInit {
           if (paramMap.has('publisher') && paramMap.has('transformationId')) {
             self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
               .then(
-              (result) => {
-                const transformationObj = transformationDataModel.Transformation.revive(result);
-                self.transformationSvc.changeTransformationObj(transformationObj);
-                if (paramMap.has('filestoreId')) {
-                  const clojure = generateClojure.fromTransformation(transformationObj);
-                  // TODO hack??
-                  self.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
-                    .then(
-                    (resultData) => {
-                      console.log(resultData);
-                      self.transformationSvc.changeGraftwerkData(resultData);
-                    },
-                    (error) => {
-                      console.log('ERROR getting filestore!');
-                      console.log(error);
-                    });
-                }
-              },
-              (error) => {
-                console.log(error)
-              });
+                (result) => {
+                  const transformationObj = transformationDataModel.Transformation.revive(result);
+                  self.transformationSvc.changeTransformationObj(transformationObj);
+                  if (paramMap.has('filestoreId')) {
+                    const clojure = generateClojure.fromTransformation(transformationObj);
+                    // TODO hack??
+                    self.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+                      .then(
+                        (resultData) => {
+                          console.log(resultData);
+                          self.transformationSvc.changeGraftwerkData(resultData);
+                        },
+                        (error) => {
+                          console.log('ERROR getting filestore!');
+                          console.log(error);
+                        });
+                  }
+                },
+                (error) => {
+                  console.log(error)
+                });
           }
           self.routeSubscription.unsubscribe();
         }
@@ -109,14 +109,14 @@ export class AppComponent implements OnInit {
       let file: File = fileList[0];
       this.dispatch.uploadFile(file)
         .then(
-        (result) => {
-          console.log("Successfully uploaded file!");
-          console.log(result);
-        },
-        (error) => {
-          console.log("Error uploading file!");
-          console.log(error);
-        });
+          (result) => {
+            console.log("Successfully uploaded file!");
+            console.log(result);
+          },
+          (error) => {
+            console.log("Error uploading file!");
+            console.log(error);
+          });
     }
   }
 

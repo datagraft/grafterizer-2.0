@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterUrlService } from '../tabular-transformation/component-communication.service';
+import { RoutingService } from '../routing.service';
 import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
@@ -21,9 +21,9 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
-  constructor(private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router,
-               private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
-    route.url.subscribe(() => this.concatURL());
+  constructor(private routingService: RoutingService, private route: ActivatedRoute, private router: Router,
+    private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
+    route.url.subscribe(() => this.routingService.concatURL(route));
     // load the vocabularies from the transformation object
   }
 
@@ -42,15 +42,4 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.transformationSvc.changeTransformationObj(this.transformationObj);
     this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
-
-  concatURL() {
-    this.route.snapshot.url.pop();
-    let str = '';
-    for (let o in this.route.snapshot.url) {
-      str = str.concat(this.route.snapshot.url[o].path);
-      str = str.concat('/');
-    }
-    this.routerService.sendMessage(str);
-  }
-
 }

@@ -19,7 +19,7 @@ import { AngularSplitModule } from 'angular-split';
 
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
-import { RouterUrlService } from './tabular-transformation/component-communication.service';
+import { RoutingService } from './routing.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -48,7 +48,7 @@ export function initConfig(config: AppConfig) {
     AppConfig,
     TransformationService,
     AnnotationService,
-    RouterUrlService,
+    RoutingService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

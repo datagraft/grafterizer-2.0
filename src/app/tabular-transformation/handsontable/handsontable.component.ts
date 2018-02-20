@@ -26,9 +26,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   private data: any;
   private container: any;
   private settings: any;
-  public selction: any;
   private showLoading: boolean;
-  private showHandsonTable: boolean;
   private colNamesClean: any;
 
   public selectedFunction: any;
@@ -51,7 +49,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       rowHeaders: true,
       autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      height: 900,
+      height: 660,
       columnSorting: false,
       viewportColumnRenderingOffset: 30,
       viewportRowRenderingOffset: 'auto',
@@ -61,11 +59,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       observeDOMVisibility: true,
       observeChanges: true,
       preventOverflow: false,
-      afterChangesObserved: () => {
-        setTimeout(() => {
-          this.hot.render();
-        }, 10);
-      },
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
@@ -79,8 +72,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         });
         this.hot.render();
       },
-    };
-
+    }
     this.hot = new Handsontable(this.container, this.settings);
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
       if (message) {
@@ -100,9 +92,9 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges() {
     if (this.hot) {
-      const enabledMenuItems = [];
-      // for HoT submenus keys
-      const keySuggestionMap = {
+      var enabledMenuItems = [];
+      //for HoT submenus keys 
+      var keySuggestionMap = {
         'newcol:1': 'AddColumnsFunction',
         'newcol:2': 'DeriveColumnFunction',
         'newrow:1': 'add-row-below',
@@ -124,7 +116,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         'take-columns-delete': 'take-columns-delete'
 
       };
-      for (const suggestion of this.suggestions) {
+      for (let suggestion of this.suggestions) {
         enabledMenuItems.push(suggestion.label);
       }
 
@@ -257,7 +249,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       //             disabled: function () { 
       //               return !enabledMenuItems.includes("Convert to uppercase"); 
       //             }, 
-
       //             'submenu': { 
       //               key: "submenu:submenu:1", 
       //               name: 'submenu:submenu:1', 
@@ -269,7 +260,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       //                 }, 
       //                 callback: (key, options) => { 
       //                   console.log(key); 
-
       //                 }, 
       //               }, { 
       //                 key: "submenu:2", 
@@ -402,16 +392,18 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
           data: colname
         });
       });
+      this.hot.loadData(data[':rows']);
       this.hot.updateSettings({
         colHeaders: this.colNamesClean,
         columns: columnMappings,
-        data: data[':rows']
+        afterLoadData: () => {
+          this.showLoading = false;
+          this.hot.render();
+        }
       });
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');
     }
-    this.showLoading = false;
-    this.showHandsonTable = false;
   }
 }

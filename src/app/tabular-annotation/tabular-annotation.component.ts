@@ -10,9 +10,9 @@ import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { Http } from '@angular/http';
-import {Annotation} from './annotation.model';
+import { Annotation } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {ColumnTypes, XSDDatatypes} from './annotation-form/annotation-form.component';
+import { ColumnTypes, XSDDatatypes } from './annotation-form/annotation-form.component';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -47,7 +47,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
-    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+    this.transformationSvc.currentGraftwerkData.subscribe(message => {
+    this.graftwerkData = message;
+      console.log("SUP!")
+    });
     this.retrieveData();
   }
 
@@ -263,7 +266,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         ++i;
       }
       // TODO: create a new RDFVocabulary instance
-      this.transformationObj.rdfVocabs.push({name: prefix, namespace: namespace, fromServer: false})
+      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false })
     }
     return prefix;
   }
