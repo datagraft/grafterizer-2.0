@@ -513,7 +513,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
         this.annotation.columnType = this.annotation.columnType['suggestion'];
       }
-      this.annotation.urifyNamespace = this.annotationForm.get('columnInfo.urifyNamespace').value;
+      // Use the URL href instead of the user input
+      const uriNamespace = this.annotationForm.get('columnInfo.urifyNamespace').value;
+      this.annotation.urifyNamespace = new URL(uriNamespace).href;
     } else if (valuesType === ColumnTypes.Literal) {
       const datatype = this.annotationForm.get('columnInfo.columnDatatype').value;
       if (datatype === 'custom') {
