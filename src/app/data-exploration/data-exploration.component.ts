@@ -11,20 +11,20 @@ export class DataExplorationComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    const libVoyager = require('datavoyager');
-
-    const container = document.getElementById('voyager-container');
-    const config = {
-      showDataSourceSelector: false,
-      serverUrl: null,
-      manualSpecificationOnly: false,
-      hideHeader: true,
-      hideFooter: false
-    };
-
-    let csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/seattle-weather.csv');
-    const voyagerInstance = libVoyager.CreateVoyager(container, config, { "values": csvData });
-
+    /*   const libVoyager = require('datavoyager');
+  
+      const container = document.getElementById('voyager-container');
+      const config = {
+        showDataSourceSelector: false,
+        serverUrl: null,
+        manualSpecificationOnly: false,
+        hideHeader: true,
+        hideFooter: false
+      };
+  
+      let csvData = datalib.csv('https://raw.githubusercontent.com/vega/vega-datasets/gh-pages/data/seattle-weather.csv');
+      const voyagerInstance = libVoyager.CreateVoyager(container, config, { "values": csvData });
+   */
   }
 
 }

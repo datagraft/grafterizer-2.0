@@ -2,7 +2,7 @@ import * as jsedn from 'jsedn';
 
 var _this = this;
 
-var Prefixer = function (name, uri, parentPrefix) {
+export function Prefixer(name, uri, parentPrefix) {
   this.name = name;
   this.uri = uri;
   this.parentPrefix = parentPrefix;
@@ -13,7 +13,7 @@ Prefixer.revive = function (data) {
 };
 this.Prefixer = Prefixer;
 
-var GenericFunction = function () {
+export function GenericFunction() {
   if (!this.generateClojure) {
     this.generateClojure = function () {
       return new jsedn.List([jsedn.sym(this.name)]);
@@ -23,7 +23,7 @@ var GenericFunction = function () {
   this.isPreviewed = false;
 };
 
-export var CustomFunctionDeclaration = function (name, clojureCode, group, docstring) {
+export function CustomFunctionDeclaration(name, clojureCode, group, docstring) {
   this.name = name;
   this.clojureCode = clojureCode;
   this.group = group;
@@ -35,7 +35,7 @@ CustomFunctionDeclaration.revive = function (data) {
 };
 this.CustomFunctionDeclaration = CustomFunctionDeclaration;
 
-export var DropRowsFunction = function (indexFrom, indexTo, take, docstring) {
+export function DropRowsFunction(indexFrom, indexTo, take, docstring) {
   GenericFunction.call(this);
   this.indexFrom = indexFrom;
   this.indexTo = indexTo;
@@ -67,25 +67,25 @@ DropRowsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym('drop-rows'), this.indexTo]);
   var values = [jsedn.sym('rows')];
   if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
-    this.indexFrom,
-    this.indexTo + 1
+  this.indexFrom,
+  this.indexTo + 1
   ]));
   else values.push(new jsedn.List([jsedn.sym('concat'),
-    new jsedn.List([jsedn.sym('range'),
-      0,
-      this.indexFrom
-    ]),
-    new jsedn.List([jsedn.sym('drop'),
-      this.indexTo + 1,
-      new jsedn.List([jsedn.sym('range')])
-    ])
+  new jsedn.List([jsedn.sym('range'),
+    0,
+  this.indexFrom
+  ]),
+  new jsedn.List([jsedn.sym('drop'),
+  this.indexTo + 1,
+  new jsedn.List([jsedn.sym('range')])
+  ])
   ]));
 
   return new jsedn.List(values);
 };
 this.DropRowsFunction = DropRowsFunction;
 
-export var SplitFunction = function (colName, separator, docstring) {
+export function SplitFunction(colName, separator, docstring) {
   GenericFunction.call(this);
   this.colName = colName;
   this.separator = separator;
@@ -112,7 +112,7 @@ SplitFunction.prototype.generateClojure = function () {
 };
 this.SplitFunction = SplitFunction;
 
-export var FunctionWithArgs = function (funct, functParams) {
+export function FunctionWithArgs(funct, functParams) {
   this.funct = funct;
   this.functParams = functParams;
   this.__type = 'FunctionWithArgs';
@@ -135,7 +135,7 @@ FunctionWithArgs.revive = function (data) {
 };
 this.FunctionWithArgs = FunctionWithArgs;
 
-export var UtilityFunction = function (functionName, docstring) {
+export function UtilityFunction(functionName, docstring) {
   GenericFunction.call(this);
   if (functionName !== null) {
     if (!functionName instanceof FunctionWithArgs) {
@@ -178,7 +178,7 @@ UtilityFunction.prototype.generateClojure = function () {
 };
 this.UtilityFunction = UtilityFunction;
 
-export var AddColumnsFunction = function (columnsArray, docstring) {
+export function AddColumnsFunction(columnsArray, docstring) {
   GenericFunction.call(this);
   this.name = 'add-columns';
   this.displayName = 'add-columns';
@@ -272,7 +272,7 @@ AddColumnsFunction.prototype.generateClojure = function () {
 };
 this.AddColumnsFunction = AddColumnsFunction;
 
-export var AddColumnFunction = function (newColName, fileName, colValue, colExpr, docstring) {
+export function AddColumnFunction(newColName, fileName, colValue, colExpr, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colValue = colValue;
@@ -298,7 +298,7 @@ AddColumnFunction.prototype.generateClojure = function () {
 };
 this.AddColumnFunction = AddColumnFunction;
 
-export var GrepFunction = function (take, grepmode, colsToFilter, functionsToFilterWith, filterText, filterRegex, ignoreCase, docstring) {
+export function GrepFunction(take, grepmode, colsToFilter, functionsToFilterWith, filterText, filterRegex, ignoreCase, docstring) {
   GenericFunction.call(this);
   this.take = take;
   this.grepmode = grepmode;
@@ -380,7 +380,7 @@ GrepFunction.prototype.generateClojure = function () {
 
         if (!this.take) {
           values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
-            new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])
+          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])
           ])]));
 
         } else {
@@ -440,7 +440,7 @@ GrepFunction.prototype.generateClojure = function () {
 };
 this.GrepFunction = GrepFunction;
 
-export var MergeColumnsFunction = function (colsToMerge, separator, newColName, docstring) {
+export function MergeColumnsFunction(colsToMerge, separator, newColName, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colsToMerge = colsToMerge;
@@ -481,7 +481,7 @@ MergeColumnsFunction.prototype.generateClojure = function () {
 };
 this.MergeColumnsFunction = MergeColumnsFunction;
 
-export var DeriveColumnFunction = function (newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
+export function DeriveColumnFunction(newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
   GenericFunction.call(this);
   this.newColName = newColName;
   this.colsToDeriveFrom = colsToDeriveFrom;
@@ -578,7 +578,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   }
 
   var values = [jsedn.sym('derive-column'),
-    this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
+  this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
     colsToDeriveFromClj
   ];
   var deriveFuncts = [];
@@ -589,7 +589,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
       deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
-        new jsedn.List(functWithParams)
+      new jsedn.List(functWithParams)
       ]));
     }
   }
@@ -621,7 +621,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
 };
 this.DeriveColumnFunction = DeriveColumnFunction;
 
-export var GroupRowsFunction = function (colnames, colnamesFunctionsSet, separatorSet, docstring) {
+export function GroupRowsFunction(colnames, colnamesFunctionsSet, separatorSet, docstring) {
   GenericFunction.call(this);
   this.name = 'group-rows';
   this.displayName = 'group-rows';
@@ -663,7 +663,7 @@ GroupRowsFunction.prototype.generateClojure = function () {
 };
 this.GroupRowsFunction = GroupRowsFunction;
 
-export var UploadDatasetFunction = function (selectedType, typeList, delimiter, sheetNames, selectedSheet, extension, docstring) {
+export function UploadDatasetFunction(selectedType, typeList, delimiter, sheetNames, selectedSheet, extension, docstring) {
   GenericFunction.call(this);
   this.name = 'upload-dataset';
   this.displayName = 'upload-dataset';
@@ -716,7 +716,8 @@ UploadDatasetFunction.prototype.generateClojure = function () {
   return new jsedn.List(values);
 };
 this.UploadDatasetFunction = UploadDatasetFunction;
-export var RenameColumnsFunction = function (functionsToRenameWith, mappings, docstring) {
+
+export function RenameColumnsFunction(functionsToRenameWith, mappings, docstring) {
   GenericFunction.call(this);
   this.name = 'rename-columns';
   this.displayName = 'rename-columns';
@@ -823,7 +824,7 @@ RenameColumnsFunction.prototype.removeRenameFunction = function (index) {
 };
 this.RenameColumnsFunction = RenameColumnsFunction;
 
-export var KeyFunctionPair = function (key, funcName, funcParams) {
+export function KeyFunctionPair(key, funcName, funcParams) {
   this.key = key;
   this.func = funcName;
   this.funcParams = funcParams;
@@ -859,7 +860,7 @@ KeyFunctionPair.prototype.getParams = function () {
 };
 this.KeyFunctionPair = KeyFunctionPair;
 
-export var NewColumnSpec = function (colName, colValue, specValue, expression) {
+export function NewColumnSpec(colName, colValue, specValue, expression) {
   this.colName = colName;
   this.colValue = colValue;
   this.specValue = specValue;
@@ -871,7 +872,7 @@ NewColumnSpec.revive = function (data) {
 };
 this.NewColumnSpec = NewColumnSpec;
 
-export var ApplyColumnsFunction = function (keyFunctionPairs, docstring) {
+export function ApplyColumnsFunction(keyFunctionPairs, docstring) {
   // array of obj with [key, function]
   GenericFunction.call(this);
   this.name = 'apply-columns';
@@ -928,7 +929,7 @@ ApplyColumnsFunction.prototype.removeKeyFunctionPair = function (kfPair) {
 };
 this.ApplyColumnsFunction = ApplyColumnsFunction;
 
-export var MapcFunction = function (keyFunctionPairs, docstring) {
+export function MapcFunction(keyFunctionPairs, docstring) {
   // array of obj with [key, function]
   GenericFunction.call(this);
   this.name = 'mapc';
@@ -968,21 +969,21 @@ MapcFunction.prototype.generateClojure = function () {
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
     else
-    if (this.keyFunctionPairs[i].funcParams.length > 0) {
-      var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
-      funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-      var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
+      if (this.keyFunctionPairs[i].funcParams.length > 0) {
+        var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
+        funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
+        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
         new jsedn.List(funcWithParams)
-      ]);
-      mkeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-        mapcFunc);
-    } else {
-      mkeyFunctionPairsClj.set(
-        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-        new jsedn.sym(this.keyFunctionPairs[i].func.name)
-      );
-    }
+        ]);
+        mkeyFunctionPairsClj.set(
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          mapcFunc);
+      } else {
+        mkeyFunctionPairsClj.set(
+          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+          new jsedn.sym(this.keyFunctionPairs[i].func.name)
+        );
+      }
   }
 
   var mapc;
@@ -1025,7 +1026,7 @@ MapcFunction.prototype.removeKeyFunctionPair = function (kfPair) {
 };
 this.MapcFunction = MapcFunction;
 
-export var ColnameSorttype = function (colname, sorttype, order) {
+export function ColnameSorttype(colname, sorttype, order) {
   this.colname = colname;
   this.sorttype = sorttype;
   this.order = order;
@@ -1036,7 +1037,7 @@ ColnameSorttype.revive = function (data) {
 };
 this.ColnameSorttype = ColnameSorttype;
 
-export var SortDatasetFunction = function (colnamesSorttypesMap, docstring) {
+export function SortDatasetFunction(colnamesSorttypesMap, docstring) {
   // array of column names
   this.name = 'sort-dataset';
   this.displayName = 'sort-dataset';
@@ -1110,7 +1111,7 @@ SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
 };
 this.SortDatasetFunction = SortDatasetFunction;
 
-export var AddRowFunction = function (position, values, docstring) {
+export function AddRowFunction(position, values, docstring) {
   this.name = 'add-row';
   this.displayName = 'add-row';
   GenericFunction.call(this);
@@ -1134,7 +1135,7 @@ AddRowFunction.prototype.generateClojure = function () {
 };
 this.AddRowFunction = AddRowFunction;
 
-export var ShiftRowFunction = function (indexFrom, indexTo, shiftrowmode, docstring) {
+export function ShiftRowFunction(indexFrom, indexTo, shiftrowmode, docstring) {
   this.name = 'shift-row';
   this.displayName = 'shift-row';
   GenericFunction.call(this);
@@ -1157,7 +1158,7 @@ ShiftRowFunction.prototype.generateClojure = function () {
 };
 this.ShiftRowFunction = ShiftRowFunction;
 
-export var ShiftColumnFunction = function (colFrom, indexTo, shiftcolmode, docstring) {
+export function ShiftColumnFunction(colFrom, indexTo, shiftcolmode, docstring) {
   this.name = 'shift-column';
   this.displayName = 'shift-column';
   GenericFunction.call(this);
@@ -1180,7 +1181,7 @@ ShiftColumnFunction.prototype.generateClojure = function () {
 };
 this.ShiftColumnFunction = ShiftColumnFunction;
 
-export var RemoveDuplicatesFunction = function (mode, colNames, separator, docstring) {
+export function RemoveDuplicatesFunction(mode, colNames, separator, docstring) {
   // array of column names
   this.name = 'remove-duplicates';
   this.displayName = 'remove-duplicates';
@@ -1214,7 +1215,7 @@ RemoveDuplicatesFunction.prototype.generateClojure = function () {
 };
 this.RemoveDuplicatesFunction = RemoveDuplicatesFunction;
 
-export var MakeDatasetFunction = function (columnsArray, useLazy, numberOfColumns, moveFirstRowToHeader, docstring) {
+export function MakeDatasetFunction(columnsArray, useLazy, numberOfColumns, moveFirstRowToHeader, docstring) {
   // array of column names
   this.name = 'make-dataset';
   this.displayName = 'make-dataset';
@@ -1256,11 +1257,11 @@ MakeDatasetFunction.prototype.generateClojure = function () {
         jsedn.sym('->'),
         new jsedn.List([jsedn.sym('make-dataset'), jsedn.sym('move-first-row-to-header')]),
         new jsedn.List([jsedn.sym('rename-columns'),
-          new jsedn.List([
-            jsedn.sym('comp'),
-            jsedn.sym('keyword'),
-            jsedn.sym('new-tabular/string-as-keyword')
-          ])
+        new jsedn.List([
+          jsedn.sym('comp'),
+          jsedn.sym('keyword'),
+          jsedn.sym('new-tabular/string-as-keyword')
+        ])
         ])
       ]);
     } else {
@@ -1275,21 +1276,21 @@ MakeDatasetFunction.prototype.generateClojure = function () {
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-      new jsedn.List([jsedn.parse('into []'),
-        new jsedn.List([jsedn.sym('map'),
-          jsedn.sym('keyword'),
-          new jsedn.List([jsedn.sym('take'),
-            this.numberOfColumns,
-            new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
-          ])
-        ])
-      ])
+    new jsedn.List([jsedn.parse('into []'),
+    new jsedn.List([jsedn.sym('map'),
+    jsedn.sym('keyword'),
+    new jsedn.List([jsedn.sym('take'),
+    this.numberOfColumns,
+    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
+    ])
+    ])
+    ])
     ]);
   }
 };
 this.MakeDatasetFunction = MakeDatasetFunction;
 
-export var ColumnsFunction = function (columnsArray, indexFrom, indexTo, take, docstring) {
+export function ColumnsFunction(columnsArray, indexFrom, indexTo, take, docstring) {
   // array of column names
   this.name = 'columns';
   this.displayName = (take ? 'columns' : 'remove-columns');
@@ -1353,10 +1354,10 @@ ColumnsFunction.prototype.generateClojure = function () {
   } else {
 
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-        new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
-      ]) :
+    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
+    ]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
-        this.indexFrom, this.indexTo
+      this.indexFrom, this.indexTo
       ]);
   }
 
@@ -1364,7 +1365,7 @@ ColumnsFunction.prototype.generateClojure = function () {
 this.ColumnsFunction = ColumnsFunction;
 
 
-export var FillRowsFunction = function (indexFrom, indexTo, docstring) {
+export function FillRowsFunction(indexFrom, indexTo, docstring) {
   // array of column names
   this.name = 'fill-rows';
   this.displayName = 'fill-rows';
@@ -1397,7 +1398,7 @@ FillRowsFunction.prototype.generateClojure = function () {
 };
 this.FillRowsFunction = FillRowsFunction;
 
-export var MergeRowsFunction = function (indexFrom, indexTo, separator, docstring) {
+export function MergeRowsFunction(indexFrom, indexTo, separator, docstring) {
   // array of column names
   this.name = 'merge-rows';
   this.displayName = 'merge-rows';
@@ -1440,7 +1441,7 @@ var ChangeColtype = function (columnName, datatype) {
 }
 this.ChangeColtype = ChangeColtype;
 
-export var MeltFunction = function (columnsArray, variable, value, aggrFunction, separator, docstring) {
+export function MeltFunction(columnsArray, variable, value, aggrFunction, separator, docstring) {
   // array of column names
   this.name = 'melt';
   this.displayName = variable ? 'cast' : 'melt';
@@ -1495,7 +1496,7 @@ MeltFunction.prototype.generateClojure = function () {
 };
 this.MeltFunction = MeltFunction;
 
-export var Pipeline = function (functions) {
+export function Pipeline(functions) {
   // functions that make up the pipeline
   // TODO: revive!
   var funct;
@@ -1615,7 +1616,7 @@ Pipeline.prototype.remove = function (funct) {
 };
 this.Pipeline = Pipeline;
 
-export var getGraphElement = function (inputElement) {
+export function getGraphElement(inputElement) {
   if (!(inputElement instanceof RDFElement)) {
     return _this[inputElement.__type].revive(inputElement);
   } else {
@@ -1624,7 +1625,7 @@ export var getGraphElement = function (inputElement) {
 };
 
 // TODO remove subElements and move to URINode (which are the only elements that can have subelements)
-var RDFElement = function (subElements) {
+export function RDFElement(subElements) {
   var i;
   var resolvedSubElements;
   resolvedSubElements = [];
@@ -1637,7 +1638,7 @@ var RDFElement = function (subElements) {
   this.subElements = resolvedSubElements;
 };
 
-var URINode = function (prefix, subElements) {
+export function URINode(prefix, subElements) {
   RDFElement.call(this, subElements);
   this.prefix = prefix;
 };
@@ -1680,7 +1681,7 @@ URINode.prototype.replaceChild = function (child, nodeToReplaceWith) {
 };
 this.URINode = URINode;
 
-export var ConstantURI = function (prefix, constantURIText, nodeCondition, subElements) {
+export function ConstantURI(prefix, constantURIText, nodeCondition, subElements) {
   URINode.call(this, prefix, subElements);
   this.constant = constantURIText;
   this.nodeCondition = nodeCondition;
@@ -1700,7 +1701,7 @@ ConstantURI.revive = function (data) {
 };
 this.ConstantURI = ConstantURI;
 
-export var ColumnURI = function (prefix, columnName, nodeCondition, subElements) {
+export function ColumnURI(prefix, columnName, nodeCondition, subElements) {
   URINode.call(this, prefix.value, subElements);
   this.column = columnName;
   this.nodeCondition = nodeCondition;
@@ -1744,7 +1745,7 @@ Condition.revive = function (data) {
 };
 this.Condition = Condition;
 
-export var Property = function (prefix, propertyName, propertyCondition, subElements) {
+export function Property(prefix, propertyName, propertyCondition, subElements) {
   RDFElement.call(this, subElements);
   this.prefix = prefix;
   this.propertyName = propertyName;
@@ -1808,7 +1809,7 @@ Property.revive = function (data) {
 };
 this.Property = Property;
 
-export var ColumnLiteral = function (literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
+export function ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
   RDFElement.call(this, []);
   this.literalValue = literalText;
   this.datatype = datatype;
@@ -1848,7 +1849,7 @@ ColumnLiteral.revive = function (data) {
 };
 this.ColumnLiteral = ColumnLiteral;
 
-export var ConstantLiteral = function (literalText, nodeCondition) {
+export function ConstantLiteral(literalText, nodeCondition) {
   RDFElement.call(this, []);
   this.literalValue = literalText;
   this.nodeCondition = nodeCondition;
@@ -1869,7 +1870,7 @@ ConstantLiteral.revive = function (data) {
 this.ConstantLiteral = ConstantLiteral;
 
 // TODO add support for blank nodes
-export var BlankNode = function (nodeCondition, subElements) {
+export function BlankNode(nodeCondition, subElements) {
   RDFElement.call(this, subElements);
   this.nodeCondition = nodeCondition;
   this.__type = 'BlankNode';
@@ -1888,7 +1889,7 @@ BlankNode.revive = function (data) {
 };
 this.BlankNode = BlankNode;
 
-var RDFVocabulary = function (prefixName, namespaceURI, properties, classes) {
+export function RDFVocabulary(prefixName, namespaceURI, properties, classes) {
   this.prefixName = prefixName;
   this.namespaceURI = namespaceURI;
   this.properties = properties;
@@ -1902,7 +1903,7 @@ RDFVocabulary.revive = function (data) {
 };
 this.RDFVocabulary = RDFVocabulary;
 
-export var Graph = function (graphURI, existingGraphRoots) {
+export function Graph(graphURI, existingGraphRoots) {
   var i;
   var graphRootsToAdd;
 
@@ -1956,7 +1957,7 @@ Graph.revive = function (data) {
 };
 this.Graph = Graph;
 
-export var Transformation = function (customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
+export function Transformation(customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
 
   // validate that inputs are revived
   var i, cfd, prefixer, pipeline, graph, rdfVocab;
@@ -2221,7 +2222,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 
     var partialPipeline = new Pipeline(partialPipelineFunctions);
 
-    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */ ], this.rdfVocabs);
+    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */], this.rdfVocabs);
 
     return partialTransformation;
   } catch (e) {
@@ -2232,7 +2233,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 this.Transformation = Transformation;
 
 // TODO should this just be a prototype function of every RDFElement?
-var getKeysFromSubs = function (rootNode, subColKeys) {
+export function getKeysFromSubs(rootNode, subColKeys) {
   for (var i = 0; i < rootNode.subElements.length; ++i) {
     if (rootNode.subElements[i] instanceof ColumnURI)
       if (subColKeys.indexOf(rootNode.subElements[i].column.value) === -1)

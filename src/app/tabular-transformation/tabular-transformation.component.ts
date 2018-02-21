@@ -44,7 +44,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
     private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
-    this.differ = differs.find({}).create(null);
+    this.differ = differs.find({}).create();
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -71,6 +71,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       .subscribe((previewedTransformation) => {
         this.previewedTransformationObj = previewedTransformation;
         this.updatePreviewedData();
+        console.log(this.previewedTransformationObj);
       });
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
@@ -102,7 +103,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
       .then((result) => {
         this.transformationSvc.changeGraftwerkData(result);
         //      this.handsonTable.showLoading = true;
