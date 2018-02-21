@@ -103,6 +103,12 @@ class CustomValidators {
     };
   }
 
+  /**
+   * Requires a custom datatype to be set whene the columnDatatype is 'custom'
+   * @param {string} columnDatatype
+   * @param {string} customDatatype
+   * @returns {ValidatorFn}
+   */
   static customDatatypeValidator(columnDatatype: string, customDatatype: string): ValidatorFn {
     return (group: FormGroup): { [key: string]: any } => {
       const dataTypeControl = group.get(columnDatatype);
@@ -119,6 +125,12 @@ class CustomValidators {
     };
   }
 
+  /**
+   * Requires the column type to be set when the columnValuesType is 'URI'
+   * @param {string} columnType
+   * @param {string} columnValuesType
+   * @returns {ValidatorFn}
+   */
   static columnTypeValidator(columnType: string, columnValuesType: string): ValidatorFn {
     return (group: FormGroup): { [key: string]: any } => {
       const typeControl = group.get(columnType);
@@ -129,6 +141,28 @@ class CustomValidators {
         const valuesTypeValue = valuesTypeControl.value;
         if (valuesTypeValue === ColumnTypes.URI && typeValue === '') {
           return {'invalidColumnType': {errorMessage: 'A column type is required'}}
+        }
+        return null;
+      }
+    };
+  }
+
+  /**
+   * Requires the URIfy prefix to be set when the columnValuesType is 'URI'
+   * @param {string} urifyNamespace
+   * @param {string} columnValuesType
+   * @returns {ValidatorFn}
+   */
+  static urifyNamespaceValidator(urifyNamespace: string, columnValuesType: string): ValidatorFn {
+    return (group: FormGroup): { [key: string]: any } => {
+      const urifyNamespaceControl = group.get(urifyNamespace);
+      const valuesTypeControl = group.get(columnValuesType);
+
+      if (urifyNamespaceControl && valuesTypeControl) {
+        const urifyNamespace = urifyNamespaceControl.value;
+        const valuesTypeValue = valuesTypeControl.value;
+        if (valuesTypeValue === ColumnTypes.URI && urifyNamespace === '') {
+          return {'invalidUrifyNamespace': {errorMessage: 'An URIfy namespace is required'}}
         }
         return null;
       }
@@ -262,6 +296,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
       CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
       CustomValidators.columnTypeValidator('columnInfo.columnType', 'columnInfo.columnValuesType'),
+      CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
       ]
     ));
   }
