@@ -5,7 +5,7 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
 import { RecommenderService } from './sidebar/recommender.service';
 import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
-import { RouterUrlService } from './component-communication.service';
+import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
@@ -42,8 +42,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
-               private transformationSvc: TransformationService, private routerService: RouterUrlService,
-               private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
+    private transformationSvc: TransformationService, private routingService: RoutingService,
+    private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
     this.differ = differs.find({}).create(null);
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
@@ -58,14 +58,14 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
       { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
     ];
-    route.url.subscribe(() => this.concatURL());
+    route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
   ngOnInit() {
-//    this.transformationSubscription =
-//      this.transformationSvc.currentTransformationObj.subscribe((message) => {
-//      this.transformationObj = message;
-//    });
+    //    this.transformationSubscription =
+    //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
+    //      this.transformationObj = message;
+    //    });
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -95,16 +95,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
-
-  concatURL() {
-    this.route.snapshot.url.pop();
-    let str = '';
-    for (let o in this.route.snapshot.url) {
-      str = str.concat(this.route.snapshot.url[o].path);
-      str = str.concat('/');
-    }
-    this.routerService.sendMessage(str);
-  }
 
   updatePreviewedData() {
     this.profilingComponent.progressbar = true;

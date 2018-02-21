@@ -8,7 +8,6 @@ import {Annotation} from './annotation.model';
   selector: 'app-tabular-annotation-detail',
   templateUrl: './tabular-annotation-detail.component.html',
   styleUrls: ['./tabular-annotation-detail.component.css'],
-  providers: [AnnotationService]
 })
 
 // Detail Mode offers an accurate form for insert the annotation parameters, require the subject/object source and all off
@@ -72,7 +71,7 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
     const typeInput = (<HTMLInputElement>(document.getElementById('Type'))).value;
     const typeLabelInput = (<HTMLInputElement>(document.getElementById('TypeLabel'))).value;
     if ('' !== typeInput) {
-      this.annotation.sourceColumnHeader = typeInput;
+      this.annotation.subject = typeInput;
     }
     // if ('' != typeLabelInput)
     //   this.annotation.sourceLabel = typeLabelInput;

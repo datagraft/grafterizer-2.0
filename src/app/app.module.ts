@@ -1,6 +1,7 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { AppConfig } from './app.config';
 import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from 'clarity-angular';
@@ -18,7 +19,7 @@ import { AngularSplitModule } from 'angular-split';
 
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
-import { RouterUrlService } from './tabular-transformation/component-communication.service';
+import { RoutingService } from './routing.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -40,13 +41,14 @@ export function initConfig(config: AppConfig) {
     FormsModule,
     SuiModule,
     HttpModule,
+    HttpClientModule,
     AngularSplitModule
   ],
   providers: [
     AppConfig,
     TransformationService,
     AnnotationService,
-    RouterUrlService,
+    RoutingService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

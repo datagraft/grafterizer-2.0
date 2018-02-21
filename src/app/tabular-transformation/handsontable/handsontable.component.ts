@@ -1,8 +1,10 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
-import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
-        MapcFunction, KeyFunctionPair, CustomFunctionDeclaration } from '../../../assets/transformationdatamodel.js';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
+  MapcFunction, KeyFunctionPair, CustomFunctionDeclaration
+} from '../../../assets/transformationdatamodel.js';
 import { timeout } from 'q';
 import { TransformationService } from 'app/transformation.service';
 
@@ -24,7 +26,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   private data: any;
   private container: any;
   private settings: any;
-  public selction: any;
   private showLoading: boolean;
   private colNamesClean: any;
 
@@ -46,21 +47,18 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
     this.settings = {
       data: this.data,
       rowHeaders: true,
-      autoColumnSize: false,
+      autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      columnSorting: false,
-      viewportColumnRenderingOffset: 40,
       height: 660,
-      width: 1610,
+      columnSorting: false,
+      viewportColumnRenderingOffset: 30,
+      viewportRowRenderingOffset: 'auto',
       wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
       observeDOMVisibility: true,
-      afterChange: () => {
-        setTimeout(() => {
-          this.hot.render();
-        }, 10);
-      },
+      observeChanges: true,
+      preventOverflow: false,
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
@@ -252,7 +250,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       //             disabled: function () { 
       //               return !enabledMenuItems.includes("Convert to uppercase"); 
       //             }, 
-
       //             'submenu': { 
       //               key: "submenu:submenu:1", 
       //               name: 'submenu:submenu:1', 
@@ -264,7 +261,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       //                 }, 
       //                 callback: (key, options) => { 
       //                   console.log(key); 
-
       //                 }, 
       //               }, { 
       //                 key: "submenu:2", 
@@ -383,7 +379,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public displayJsEdnData(data: JSON) {
-    this.showLoading = true;
     // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];

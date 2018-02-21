@@ -1,19 +1,13 @@
 <div id="annotation-component" class="card">
-  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()">
+  <form class="compact" [formGroup]="annotationForm" (ngSubmit)="onSubmit()" autocomplete="off">
     <div class="card-header">
-      <clr-tooltip *ngIf="annotationForm.invalid ||
-              emptySubjectValidator() ||
-              emptyPropertyValidator() ||
-              subjectValuesTypeValidator()" class="pull-right">
+      <clr-tooltip *ngIf="annotationForm.invalid" class="pull-right">
         <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not valid</span>
         </clr-tooltip-content>
       </clr-tooltip>
-      <clr-tooltip *ngIf="annotationForm.dirty && !(annotationForm.invalid ||
-              emptySubjectValidator() ||
-              emptyPropertyValidator() ||
-              subjectValuesTypeValidator())" class="pull-right">
+      <clr-tooltip *ngIf="!submitted && !(annotationForm.invalid)" class="pull-right">
         <clr-icon clrTooltipTrigger shape="warning-standard" size="20" class="is-solid is-warning"></clr-icon>
         <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
           <span>This annotation is not submitted</span>
@@ -42,81 +36,125 @@
       <div class="card-text">
         <div formGroupName="columnInfo">
           <div class="form-group">
+            <label class="required">Column values type</label>
+            <div class="btn-group">
+              <div class="radio btn btn-sm" [ngClass]="{'btn-danger': annotationForm.get('columnInfo.columnValuesType').invalid
+                      && (annotationForm.get('columnInfo.columnValuesType').dirty || annotationForm.get('columnInfo.columnValuesType').touched)
+                      || (annotationForm.get('columnInfo.columnValuesType').hasError('invalidColumnValuesType')
+                      && !annotationForm.get('columnInfo.columnValuesType').hasError('missingColumnValuesType'))}"
+                   *ngFor="let columnValuesType of availableColumnValuesTypes; let i = index">
+                <input type="radio" name="columnValuesType"
+                       id="{{ header }}.columnValuesType{{i}}"
+                       formControlName="columnValuesType"
+                       value="{{columnValuesType}}"
+                       (click)="changeValuesType(columnValuesType)"
+                       [checked]="annotationForm.get('columnInfo.columnValuesType').value === columnValuesType">
+                <label for="{{ header }}.columnValuesType{{i}}">{{columnValuesType}}</label>
+              </div>
+            </div>
+            <clr-tooltip *ngIf="annotationForm.get('columnInfo.columnValuesType').invalid
+                      && (annotationForm.get('columnInfo.columnValuesType').dirty || annotationForm.get('columnInfo.columnValuesType').touched)
+                      || annotationForm.get('columnInfo.columnValuesType').hasError('invalidColumnValuesType')">
+              <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
+              <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
+                <span>{{annotationForm.get('columnInfo.columnValuesType').errors['invalidColumnValuesType'].errorMessage}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="form-group" *ngIf="displayType">
             <label class="required" for="columnType">Column Type</label>
             <label for="columnType"
                    aria-haspopup="true"
                    role="tooltip"
                    class="tooltip tooltip-validation tooltip-sm"
-                   [class.invalid]="annotationForm.get('columnInfo').get('columnType').invalid
-                      && (annotationForm.get('columnInfo').get('columnType').dirty || annotationForm.get('columnInfo').get('columnType').touched)"
+                   [class.invalid]="annotationForm.get('columnInfo.columnType').invalid
+                      && (annotationForm.get('columnInfo.columnType').dirty || annotationForm.get('columnInfo.columnType').touched)
+                      || annotationForm.hasError('invalidColumnType')"
                    auto-complete
                    [source]="typeSuggestions"
                    [list-formatter]="autocompleteListFormatter"
                    value-property-name="suggestion"
                    display-property-name="suggestion"
+                   select-value-of="suggestion"
                    loading-text="Querying ABSTAT..."
-                   (valueChanged)="annotationForm.get('columnInfo').get('columnType').setValue($event)"
+                   (valueChanged)="annotationForm.get('columnInfo.columnType').setValue($event)"
                    min-chars="2">
               <input id="columnType"
                      type="text"
                      formControlName="columnType"
                      placeholder="Insert column type"/>
-              <span *ngIf="annotationForm.get('columnInfo').get('columnType').invalid
-                      && (annotationForm.get('columnInfo').get('columnType').dirty ||
-                          annotationForm.get('columnInfo').get('columnType').touched)
-                      && annotationForm.get('columnInfo').get('columnType').errors.required"
-                    class="tooltip-content"> Column type is required.</span>
-              <span *ngIf="annotationForm.get('columnInfo').get('columnType').invalid
-                      && (annotationForm.get('columnInfo').get('columnType').dirty ||
-                      annotationForm.get('columnInfo').get('columnType').touched)
-                       && annotationForm.get('columnInfo').get('columnType').errors.pattern"
-                    class="tooltip-content"> Column type must be a valid URL.</span>
+              <span *ngIf="annotationForm.hasError('invalidColumnType')"
+                    class="tooltip-content"> {{annotationForm.errors['invalidColumnType'].errorMessage}}</span>
+              <span *ngIf="annotationForm.get('columnInfo.columnType').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.columnType').errors['invalidURL'].errorMessage}} </span>
             </label>
           </div>
-          <div class="form-group">
-            <label class="required">Column values type</label>
-            <div class="btn-group">
-              <div class="radio btn" [ngClass]="{'btn-danger': subjectValuesTypeValidator()}"
-                   *ngFor="let columnDataType of ['URL', 'Literal']; let i = index">
-                <input type="radio" name="{{ header }}.columnDataType"
-                       id="{{ header }}.columnValuesType{{i}}"
-                       (click)="changeValuesType(columnDataType)">
-                <label for="{{ header }}.columnValuesType{{i}}">{{columnDataType}}</label>
-              </div>
+          <div class="form-group" *ngIf="displayDatatype">
+            <label class="required" for="columnDatatype">Column datatype: </label>
+            <div class="select">
+              <select id="columnDatatype"
+                      name="columnDatatype"
+                      formControlName="columnDatatype"
+                      (change)="changeDatatype($event.target.value)">
+                <option *ngFor="let datatype of availableDatatypes" [value]="datatype">{{datatype}}</option>
+              </select>
             </div>
-            <clr-tooltip *ngIf="subjectValuesTypeValidator()">
-              <clr-icon clrTooltipTrigger shape="error-standard" size="20" class="is-solid is-danger"></clr-icon>
-              <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
-                <span>A subject column must have URL as column values type.</span>
-              </clr-tooltip-content>
-            </clr-tooltip>
           </div>
-          <div class="form-group" *ngIf="prefixRequired">
-            <label for="urifyPrefix">
-              URIfy with prefix:
-              <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="20" class="is-solid"></clr-icon>
-                <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
-                  <span>URIfy column values using this prefix. If empty, column values will be used as URIs.</span>
-                </clr-tooltip-content>
-              </clr-tooltip>
-            </label>
-            <label for="urifyPrefix"
+          <div class="form-group" *ngIf="displayCustomDatatype">
+            <label for="customDatatype" class="required">Custom datatype</label>
+            <label for="customDatatype"
                    aria-haspopup="true"
                    role="tooltip"
                    class="tooltip tooltip-validation tooltip-sm"
-                   [class.invalid]="annotationForm.get('columnInfo').get('urifyPrefix').invalid
-                      && (annotationForm.get('columnInfo').get('urifyPrefix').dirty ||
-                      annotationForm.get('columnInfo').get('urifyPrefix').touched)">
-              <input id="urifyPrefix"
+                   [class.invalid]="annotationForm.get('columnInfo.customDatatype').invalid
+                      && (annotationForm.get('columnInfo.customDatatype').dirty || annotationForm.get('columnInfo.customDatatype').touched) ||
+                      annotationForm.hasError('invalidCustomDatatype')">
+              <input id="customDatatype" type="text"
+                     formControlName="customDatatype">
+              <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidCustomDatatype')">
+                    {{annotationForm.errors['invalidCustomDatatype'].errorMessage}}
+              </span>
+              <span *ngIf="annotationForm.get('columnInfo.customDatatype').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.customDatatype').errors['invalidURL'].errorMessage}} </span>
+            </label>
+          </div>
+          <div class="form-group" *ngIf="displayDatatype && displayLangTag">
+            <label for="langTag" class="required">Language tag</label>
+            <label for="langTag"
+                   aria-haspopup="true"
+                   role="tooltip"
+                   class="tooltip tooltip-validation tooltip-sm"
+                   [class.invalid]="annotationForm.hasError('invalidLangTag')">
+              <input id="langTag" type="text"
+                     formControlName="langTag">
+              <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidLangTag')">
+                    {{annotationForm.errors['invalidLangTag'].errorMessage}}
+              </span>
+            </label>
+          </div>
+          <div class="form-group" *ngIf="displayURINamespace">
+            <label for="urifyNamespace">
+              URIfy with namespace:
+              <clr-tooltip>
+                <clr-icon clrTooltipTrigger shape="info-circle" size="20" class="is-solid"></clr-icon>
+                <clr-tooltip-content clrPosition="left" clrSize="sm" *clrIfOpen>
+                  <span>URIfy column values using this namespace. If empty, column values will be used as URIs.</span>
+                </clr-tooltip-content>
+              </clr-tooltip>
+            </label>
+            <label for="urifyNamespace"
+                   aria-haspopup="true"
+                   role="tooltip"
+                   class="tooltip tooltip-validation tooltip-sm"
+                   [class.invalid]="annotationForm.get('columnInfo.urifyNamespace').invalid
+                      && (annotationForm.get('columnInfo.urifyNamespace').dirty ||
+                      annotationForm.get('columnInfo.urifyNamespace').touched)">
+              <input id="urifyNamespace"
                      type="text"
-                     formControlName="urifyPrefix"
-                     placeholder="Insert a URI prefix"/>
-              <span *ngIf="annotationForm.get('columnInfo').get('urifyPrefix').invalid
-                      && (annotationForm.get('columnInfo').get('urifyPrefix').dirty ||
-                      annotationForm.get('columnInfo').get('urifyPrefix').touched)
-                       && annotationForm.get('columnInfo').get('urifyPrefix').errors.pattern"
-                    class="tooltip-content"> This prefix is not valid.</span>
+                     formControlName="urifyNamespace"
+                     placeholder="Insert a namespace"/>
+              <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('columnInfo.urifyNamespace').errors['invalidURL'].errorMessage}} </span>
             </label>
           </div>
         </div>
@@ -135,22 +173,19 @@
                    aria-haspopup="true"
                    role="tooltip"
                    class="tooltip tooltip-validation tooltip-sm"
-                   [class.invalid]="annotationForm.get('relationship').get('subject').invalid
-                      && (annotationForm.get('relationship').get('subject').dirty || annotationForm.get('relationship').get('subject').touched)
-                      || emptySubjectValidator()"
+                   [class.invalid]="annotationForm.get('relationship.subject').invalid
+                      && (annotationForm.get('relationship.subject').dirty || annotationForm.get('relationship.subject').touched)
+                      || annotationForm.hasError('invalidSubject')"
                    auto-complete
                    [source]="allowedSources"
                    (valueChanged)="changeSourceColumn($event)">
               <input id="subject" type="text"
                      formControlName="subject"
                      placeholder="Choose a source column">
-              <span *ngIf="annotationForm.get('relationship').get('subject').invalid
-                      && (annotationForm.get('relationship').get('subject').dirty ||
-                          annotationForm.get('relationship').get('subject').touched)
-                          && annotationForm.get('relationship').get('subject').errors.forbiddenSubject"
-                    class="tooltip-content">Invalid column ID</span>
-              <span *ngIf="emptySubjectValidator()"
-                    class="tooltip-content">Property requires a source column.</span>
+              <span *ngIf="annotationForm.get('relationship.subject').hasError('invalidSubject')"
+                    class="tooltip-content">{{annotationForm.get('relationship.subject').errors['invalidSubject'].errorMessage}}</span>
+              <span *ngIf="annotationForm.hasError('invalidSubject')"
+                    class="tooltip-content">{{annotationForm.errors['invalidSubject'].errorMessage}}</span>
             </label>
           </div>
           <div class="form-group">
@@ -159,28 +194,26 @@
                    aria-haspopup="true"
                    role="tooltip"
                    class="tooltip tooltip-validation tooltip-sm"
-                   [class.invalid]="annotationForm.get('relationship').get('property').invalid
-                          && (annotationForm.get('relationship').get('property').dirty ||
-                          annotationForm.get('relationship').get('property').touched)
-                          || emptyPropertyValidator()"
+                   [class.invalid]="annotationForm.get('relationship.property').invalid
+                          && (annotationForm.get('relationship.property').dirty ||
+                          annotationForm.get('relationship.property').touched)
+                          || annotationForm.hasError('invalidProperty')"
                    auto-complete
                    [source]="propertySuggestions"
                    [list-formatter]="autocompleteListFormatter"
                    value-property-name="suggestion"
                    display-property-name="suggestion"
+                   select-value-of="suggestion"
                    loading-text="Querying ABSTAT..."
-                   (valueChanged)="annotationForm.get('relationship').get('property').setValue($event)"
+                   (valueChanged)="annotationForm.get('relationship.property').setValue($event)"
                    min-chars="2">
               <input id="property" type="text"
                      formControlName="property"
                      placeholder="Insert relationship property">
-              <span *ngIf="annotationForm.get('relationship').get('property').invalid
-                      && (annotationForm.get('relationship').get('property').dirty ||
-                          annotationForm.get('relationship').get('property').touched)
-                      && annotationForm.get('relationship').get('property').errors.pattern"
-                    class="tooltip-content"> The property must be a valid URL. </span>
-              <span *ngIf="emptyPropertyValidator()"
-                    class="tooltip-content"> Source column requires a property.</span>
+              <span *ngIf="annotationForm.get('relationship.property').hasError('invalidURL')"
+                    class="tooltip-content"> {{annotationForm.get('relationship.property').errors['invalidURL'].errorMessage}} </span>
+              <span *ngIf="annotationForm.hasError('invalidProperty')"
+                    class="tooltip-content"> {{annotationForm.errors['invalidProperty'].errorMessage}}</span>
             </label>
           </div>
         </div>
@@ -189,11 +222,7 @@
     <div class="card-footer">
       <button class="btn btn-sm btn-link"
               type="submit"
-              [disabled]="annotationForm.invalid ||
-              emptySubjectValidator() ||
-              emptyPropertyValidator() ||
-              subjectValuesTypeValidator() ||
-              annotationForm.pristine">Annotate</button>
+              [disabled]="annotationForm.invalid || submitted">Annotate</button>
       <a class="btn btn-sm btn-link" (click)="deleteAnnotation()">Delete</a>
     </div>
   </form>

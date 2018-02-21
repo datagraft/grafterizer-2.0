@@ -1,3 +1,5 @@
+<button class="btn btn-default" [disabled]="annotationService.getAnnotations().length === 0" (click)="annotationsToGraph()">Annotations to Graph</button>
+
 <table class="table table-compact">
   <thead>
     <tr>
