@@ -49,70 +49,70 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEvent: any;
 
   constructor(private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
-    
-//    this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
-//      console.log(message)
-//      if (message.__type === 'AddColumnsFunction') {
-//        this.addColumnsFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'AddRowFunction') {
-//        this.addRowFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'MakeDatasetFunction') {
-//        this.makeDatasetFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'DropRowsFunction') {
-//        this.dropRowsFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'ColumnsFunction') {
-//        this.dropRowsFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'SplitFunction') {
-//        this.splitFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'DeriveColumnFunction') {
-//        this.deriveColumnFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'MergeColumnsFunction') {
-//        this.mergeColumnsFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'RenameColumnsFunction') {
-//        this.renameColumnsFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'GrepFunction') {
-//        this.grepFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'SortDatasetFunction') {
-//        this.sortDatasetFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//      if (message.__type === 'MapcFunction') {
-//        this.mapcFunction = message;
-//        this.selected = { id: message.__type, defaultParams: null };
-//        this.modalEnabled = true;
-//      }
-//    });
+
+    //    this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
+    //      console.log(message)
+    //      if (message.__type === 'AddColumnsFunction') {
+    //        this.addColumnsFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'AddRowFunction') {
+    //        this.addRowFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'MakeDatasetFunction') {
+    //        this.makeDatasetFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'DropRowsFunction') {
+    //        this.dropRowsFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'ColumnsFunction') {
+    //        this.dropRowsFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'SplitFunction') {
+    //        this.splitFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'DeriveColumnFunction') {
+    //        this.deriveColumnFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'MergeColumnsFunction') {
+    //        this.mergeColumnsFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'RenameColumnsFunction') {
+    //        this.renameColumnsFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'GrepFunction') {
+    //        this.grepFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'SortDatasetFunction') {
+    //        this.sortDatasetFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //      if (message.__type === 'MapcFunction') {
+    //        this.mapcFunction = message;
+    //        this.selected = { id: message.__type, defaultParams: null };
+    //        this.modalEnabled = true;
+    //      }
+    //    });
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
@@ -132,6 +132,40 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((pipelineEvent) => {
       this.pipelineEvent = pipelineEvent;
+
+      // in case we finished editing a step
+      if (this.pipelineEvent.commitEdit) {
+        this.transformationSvc.changePreviewedTransformationObj(
+          this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
+        );
+        // reset isPreviewed for other functions
+        this.transformationObj.pipelines[0].functions.forEach((step, ind) => {
+          if (step !== this.selectedFunction.changedFunction) {
+            step.isPreviewed = false;
+          }
+        });
+      }
+
+      // in case we finished creating a step
+      if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
+        // add new step to the transformation object
+        this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
+
+        // notify of change to transformation object
+        this.transformationSvc.changeTransformationObj(this.transformationObj);
+
+        // change previewed transformation
+        this.transformationSvc.changePreviewedTransformationObj(
+          this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
+        );
+
+        // reset isPreviewed for other functions
+        this.transformationObj.pipelines[0].functions.forEach((step, ind) => {
+          if (step !== this.selectedFunction.changedFunction) {
+            step.isPreviewed = false;
+          }
+        });
+      }
     });
 
     this.selectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selectedFunction) => {
@@ -152,6 +186,14 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onChange($event) {
+    this.pipelineEventsSvc.changePipelineEvent({
+      startEdit: false,
+      commitEdit: false,
+      preview: false,
+      delete: false,
+      createNew: true,
+      newStepType: this.selected.id // TODO NEED TO CHANGE THIS
+    });
     // Functions that don't require additional user input
     switch (this.selected.id) {
       case 'add-row-above':

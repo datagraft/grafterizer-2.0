@@ -66,13 +66,13 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
 //      this.transformationObj = message;
 //    });
-    
+
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
       this.previewedTransformationObj = previewedTransformation;
       this.updatePreviewedData();
     });
-  
+
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         console.log(previewedData);
@@ -83,9 +83,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
         this.profilingComponent.refresh(this.handsontableSelection);
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
         this.cd.detectChanges();
-        setTimeout(() => {
-//          this.pipelineComponent.generateLabels();
-        });
       }
     });
   }

@@ -46,19 +46,9 @@ export class AppComponent implements OnInit {
               (result) => {
                 const transformationObj = transformationDataModel.Transformation.revive(result);
                 self.transformationSvc.changeTransformationObj(transformationObj);
+
                 if (paramMap.has('filestoreId')) {
-                  const clojure = generateClojure.fromTransformation(transformationObj);
-                  // TODO hack??
-                  self.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
-                    .then(
-                    (resultData) => {
-                      console.log(resultData);
-                      self.transformationSvc.changeGraftwerkData(resultData);
-                    },
-                    (error) => {
-                      console.log('ERROR getting filestore!');
-                      console.log(error);
-                    });
+                  self.transformationSvc.changePreviewedTransformationObj(transformationObj);
                 }
               },
               (error) => {
