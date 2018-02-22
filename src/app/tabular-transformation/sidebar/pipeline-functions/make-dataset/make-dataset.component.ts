@@ -14,36 +14,33 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MakeDatasetComponent implements OnInit {
 
-  modalEnabled = false;
+  private modalEnabled = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
 
   private pipelineEventsSubscription: Subscription;
-  private pipelineEvent: any;
+  private pipelineEvent: any = { startEdit: false };
 
-  private previewedDataSubscription: Subscription;
-  private previewedDataColumns: any;
-
-  private makedatasetmode: String = '';
-  private columnsArray: any = [];
+  private makedatasetmode: String = 'colnames';
+  private columnsArray: Array<any> = [];
   private useLazy = false;
   private moveFirstRowToHeader: boolean;
-  private numberOfColumns: Number = 0;
-  private docstring: String = '';
+  private numberOfColumns: Number = undefined;
+  private docstring: String = 'Create headers for the data';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) {}
 
   ngOnInit() {
     this.modalEnabled = false;
-    // _this used only for Chrome debugger purposes... (WHY!?) ;-(
-    //    const _this = this;
-    //    this.initFunction();
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
     });
 
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+
+      // In case we clicked edit
       if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MakeDatasetFunction') {
         this.modalEnabled = true;
         this.useLazy = this.currentlySelectedFunction.useLazy;
@@ -56,86 +53,112 @@ export class MakeDatasetComponent implements OnInit {
           this.makedatasetmode = 'ncolumns';
         } else {
           this.makedatasetmode = 'colnames';
-          this.columnsArray = this.currentlySelectedFunction.columnsArray.map(o => o.value);
+          this.columnsArray = this.currentlySelectedFunction.columnsArray.map((o) => {
+            return {display: o.value, value: o.value}
+          });
         }
+      }
+
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'MakeDatasetFunction') {
+        this.modalEnabled = true;
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
-      .subscribe((previewedData) => {
-      if (previewedData[':column-names']) {
-        this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
-        console.log(this.previewedDataColumns);
-      }
-    });
   }
 
-  //  initFunction() {
-  //    this.function = new transformationDataModel.MakeDatasetFunction(
-  //      null, null, null, null, null);
-  //  }
-
-  //  ngOnChanges(changes: SimpleChanges) {
-  //    if (changes.function) {
-  //      if (!this.function) {
-  //        // console.log('New function');
-  //      } else {
-  //        console.log('Edit function');
-  //        console.log(this.function)
-  //        if (this.function.__type === 'MakeDatasetFunction') {
-  //          this.columnsArray = this.function.columnsArray.map(o => o.value);
-  //          this.useLazy = this.function.useLazy;
-  //          this.numberOfColumns = this.function.numberOfColumns;
-  //          this.moveFirstRowToHeader = this.function.moveFirstRowToHeader;
-  //          if (this.moveFirstRowToHeader) {
-  //            this.makedatasetmode = 'firstrow';
-  //          } else { this.makedatasetmode = 'colnames' }
-  //        }
-  //        this.docstring = this.function.docstring;
-  //      }
-  //    }
-  //  }
-
   accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.createMakeDatasetFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
+    } else if (this.pipelineEvent.createNew) {
+      // create empty object
+      const newFunction = new transformationDataModel.MakeDatasetFunction(null, null, null, null, null);
+
+      // apply user choices to the empty object
+      this.createMakeDatasetFunction(newFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+
+    this.modalEnabled = false;
+    this.resetModal();
+  }
+
+  // Creates a make-dataset function in instanceObj (must be of type transformationDataModel.MakeDatasetFunction)
+  // based on the selected options in the modal
+  private createMakeDatasetFunction(instanceObj): any {
     switch (this.makedatasetmode) {
       case 'colnames': {
-        this.currentlySelectedFunction.columnsArray = [];
+        instanceObj.columnsArray = [];
         let index = 0;
         for (const col of this.columnsArray) {
-          this.currentlySelectedFunction.columnsArray.push({ id: index, value: col });
+          instanceObj.columnsArray.push({ id: index, value: col.value });
           index++;
         }
-        this.currentlySelectedFunction.useLazy = false;
-        this.currentlySelectedFunction.numberOfColumns = this.numberOfColumns;
-        this.currentlySelectedFunction.moveFirstRowToHeader = false;
-        this.currentlySelectedFunction.docstring = this.docstring;
+        instanceObj.useLazy = false;
+        instanceObj.numberOfColumns = undefined;
+        instanceObj.moveFirstRowToHeader = false;
+        instanceObj.docstring = this.docstring;
         break;
       }
       case 'ncolumns': {
-        this.currentlySelectedFunction.columnsArray = this.columnsArray;
-        this.currentlySelectedFunction.useLazy = true;
-        this.currentlySelectedFunction.numberOfColumns = this.numberOfColumns;
-        this.currentlySelectedFunction.moveFirstRowToHeader = false;
-        this.currentlySelectedFunction.docstring = this.docstring;
+        instanceObj.columnsArray = this.columnsArray;
+        instanceObj.useLazy = true;
+        instanceObj.numberOfColumns = this.numberOfColumns;
+        instanceObj.moveFirstRowToHeader = false;
+        instanceObj.docstring = this.docstring;
         break;
       }
       case 'firstrow': {
-        this.currentlySelectedFunction.columnsArray = [];
-        this.currentlySelectedFunction.useLazy = false;
-        this.currentlySelectedFunction.numberOfColumns = this.numberOfColumns;
-        this.currentlySelectedFunction.moveFirstRowToHeader = true;
-        this.currentlySelectedFunction.docstring = this.docstring;
+        instanceObj.columnsArray = [];
+        instanceObj.useLazy = false;
+        instanceObj.numberOfColumns = this.numberOfColumns;
+        instanceObj.moveFirstRowToHeader = true;
+        instanceObj.docstring = this.docstring;
         break;
       }
     }
-    // change event
-    // change selected function
-    this.modalEnabled = false;
+    instanceObj.isPreviewed = true;
+  }
+
+  // resets the fields of the modal
+  private resetModal() {
+    this.makedatasetmode = 'colnames';
+    this.columnsArray = [];
+    this.useLazy = false;
+    this.moveFirstRowToHeader = false;
+    this.numberOfColumns = undefined;
+    this.docstring = 'Create headers for the data';
   }
 
   cancel() {
     // change event
     this.modalEnabled = false;
+    this.resetModal();
   }
 
 }

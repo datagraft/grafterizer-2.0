@@ -59,6 +59,11 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       observeDOMVisibility: true,
       observeChanges: true,
       preventOverflow: false,
+      afterChange: () => {
+        setTimeout(() => {
+          this.hot.render();
+        }, 10);
+      },
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
@@ -72,7 +77,8 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         });
         this.hot.render();
       },
-    }
+    };
+
     this.hot = new Handsontable(this.container, this.settings);
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
       if (message) {
@@ -92,9 +98,9 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges() {
     if (this.hot) {
-      var enabledMenuItems = [];
-      //for HoT submenus keys 
-      var keySuggestionMap = {
+      const enabledMenuItems = [];
+      // for HoT submenus keys
+      const keySuggestionMap = {
         'newcol:1': 'AddColumnsFunction',
         'newcol:2': 'DeriveColumnFunction',
         'newrow:1': 'add-row-below',
@@ -116,7 +122,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         'take-columns-delete': 'take-columns-delete'
 
       };
-      for (let suggestion of this.suggestions) {
+      for (const suggestion of this.suggestions) {
         enabledMenuItems.push(suggestion.label);
       }
 
@@ -378,6 +384,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public displayJsEdnData(data: JSON) {
+    this.showLoading = true;
     // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
@@ -392,15 +399,12 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
           data: colname
         });
       });
-      this.hot.loadData(data[':rows']);
       this.hot.updateSettings({
         colHeaders: this.colNamesClean,
         columns: columnMappings,
-        afterLoadData: () => {
-          this.showLoading = false;
-          this.hot.render();
-        }
+        data: data[':rows']
       });
+      this.showLoading = false;
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

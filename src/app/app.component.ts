@@ -27,11 +27,11 @@ export class AppComponent implements OnInit {
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService) {
+    
     this.subscription = this.routingService.getMessage().subscribe(message => {
       this.url = message;
-      console.log(message);
     });
-  }
+}
 
 
   ngOnInit() {
