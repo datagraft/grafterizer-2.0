@@ -36,7 +36,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private transformations: SelectItem[];
   private selected: any;
   private modalEnabled = false;
-  private subscription: Subscription;
   private message: any;
 
   private transformationSubscription: Subscription;
@@ -49,70 +48,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEvent: any;
 
   constructor(private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
-
-    //    this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
-    //      console.log(message)
-    //      if (message.__type === 'AddColumnsFunction') {
-    //        this.addColumnsFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'AddRowFunction') {
-    //        this.addRowFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'MakeDatasetFunction') {
-    //        this.makeDatasetFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'DropRowsFunction') {
-    //        this.dropRowsFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'ColumnsFunction') {
-    //        this.dropRowsFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'SplitFunction') {
-    //        this.splitFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'DeriveColumnFunction') {
-    //        this.deriveColumnFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'MergeColumnsFunction') {
-    //        this.mergeColumnsFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'RenameColumnsFunction') {
-    //        this.renameColumnsFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'GrepFunction') {
-    //        this.grepFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'SortDatasetFunction') {
-    //        this.sortDatasetFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //      if (message.__type === 'MapcFunction') {
-    //        this.mapcFunction = message;
-    //        this.selected = { id: message.__type, defaultParams: null };
-    //        this.modalEnabled = true;
-    //      }
-    //    });
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
@@ -175,7 +110,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.selectedFunctionSubscription.unsubscribe();
     this.transformationSubscription.unsubscribe();

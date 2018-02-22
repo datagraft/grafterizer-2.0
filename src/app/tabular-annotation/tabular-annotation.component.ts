@@ -42,21 +42,20 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, private route: ActivatedRoute,
-    public http: Http) { }
+               public annotationService: AnnotationService, private route: ActivatedRoute,
+               public http: Http) { }
 
   ngOnInit() {
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
     this.transformationSvc.currentGraftwerkData.subscribe(message => {
-    this.graftwerkData = message;
-      console.log("SUP!")
+      this.graftwerkData = message;
     });
     this.retrieveData();
   }
 
   ngOnDestroy() {
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+//    this.transformationSvc.changeTransformationObj(this.transformationObj);
+//    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
   retrieveData() {

@@ -39,7 +39,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+//    this.transformationSvc.changeTransformationObj(this.transformationObj);
+//    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 }

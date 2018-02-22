@@ -6,8 +6,22 @@
   <split-area [size]="85">
     <split direction="vertical">
       <split-area [size]="65">
+        <div class="alert alert-danger sin-error-pipeline" *ngIf="previewError">
+          <div class="alert-items">
+            <div class="alert-item static">
+              <div class="alert-icon-wrapper">
+                <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+              </div>
+              <span class="alert-text">
+                 {{previewError._body ? 'Error while computing transformation. Error message:' : previewError.toString()}} 
+                <br/>
+                {{previewError._body ? previewError._body : '' }}
+              </span>
+            </div>
+          </div>
+        </div>
         <div class="handsontable">
-          <app-handsontable [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
+          <app-handsontable *ngIf="!previewError" [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
         </div>
       </split-area>
       <split-area [size]="35">

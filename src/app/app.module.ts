@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
 import { AppConfig } from './app.config';
 import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -21,41 +21,47 @@ import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
 
+import { GlobalErrorHandler } from 'app/global-error-handler';
+
 export function initConfig(config: AppConfig) {
   return () => config.load();
 }
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    DataExplorationComponent
-  ],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    ClarityModule.forRoot(),
-    TabularTransformationModule,
-    RdfMappingModule,
-    TabularAnnotationModule,
-    AppRoutingModule,
-    FormsModule,
-    SuiModule,
-    HttpModule,
-    HttpClientModule,
-    AngularSplitModule
-  ],
-  providers: [
-    AppConfig,
-    TransformationService,
-    AnnotationService,
-    RoutingService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initConfig,
-      deps: [AppConfig],
-      multi: true
-    }
-  ],
-  bootstrap: [AppComponent]
-})
+  @NgModule({
+    declarations: [
+      AppComponent,
+      DataExplorationComponent
+    ],
+    imports: [
+      BrowserModule,
+      BrowserAnimationsModule,
+      ClarityModule.forRoot(),
+      TabularTransformationModule,
+      RdfMappingModule,
+      TabularAnnotationModule,
+      AppRoutingModule,
+      FormsModule,
+      SuiModule,
+      HttpModule,
+      HttpClientModule,
+      AngularSplitModule
+    ],
+    providers: [
+      AppConfig,
+      TransformationService,
+      AnnotationService,
+      RoutingService,
+      {
+        provide: APP_INITIALIZER,
+        useFactory: initConfig,
+        deps: [AppConfig],
+        multi: true
+      },
+      {
+        provide: ErrorHandler,
+        useClass: GlobalErrorHandler
+      }
+    ],
+    bootstrap: [AppComponent]
+  })
 export class AppModule { }
