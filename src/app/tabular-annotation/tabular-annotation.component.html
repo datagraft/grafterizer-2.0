@@ -1,4 +1,21 @@
-<button class="btn btn-default" [disabled]="annotationService.getAnnotations().length === 0" (click)="saveAnnotation()">Annotations to Graph</button>
+<div class="btn-group">
+  <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="annotationService.getAnnotations().length === 0">
+    <clr-icon shape="floppy"></clr-icon> Create graph
+  </button>
+  <clr-dropdown>
+    <button [clrLoading]="persistLoading" type="button" class="btn btn-info-outline" [disabled]="graphNotSaved" clrDropdownTrigger>
+      <clr-icon shape="download"></clr-icon>
+      Create RDF triples
+      <clr-icon shape="caret down"></clr-icon>
+    </button>
+    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+      <label class="dropdown-header">Formats</label>
+      <button type="button" clrDropdownItem (click)="persistTransformation('nt')" >.nt</button>
+      <button type="button" clrDropdownItem (click)="persistTransformation('ttl')" >.ttl</button>
+      <button type="button" clrDropdownItem (click)="persistTransformation('rdf')" >.rdf</button>
+    </clr-dropdown-menu>
+  </clr-dropdown>
+</div>
 
 <table class="table table-compact">
   <thead>
@@ -21,9 +38,3 @@
     </tr>
   </tbody>
 </table>
-
-<!-- <nav>
-  <a routerLink="/tabular-annotation/detail" routerLinkActive="active">Tabular Annotation Detail</a>
-</nav>
-
-<router-outlet></router-outlet> -->

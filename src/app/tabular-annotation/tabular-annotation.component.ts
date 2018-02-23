@@ -27,6 +27,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   private transformationObj: any;
   private graftwerkData: any;
 
+  saveLoading = false;
+  persistLoading = false;
+  graphNotSaved = true;
+
   /**
    * Return the namespace of a URL
    * @param {URL} url
@@ -70,6 +74,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * Create a valid graph using all annotations and save it into the transformation object.
    */
   saveAnnotation() {
+    this.saveLoading = true;
     let annotations = this.annotationService.getValidAnnotations();
 
     /**
@@ -89,41 +94,59 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Save the new transformation
     this.transformationSvc.changeTransformationObj(this.transformationObj);
-
-    // Store transformation to server
-    this.persistTransformation();
+    this.graphNotSaved = false;
+    this.saveLoading = false;
   }
 
-  persistTransformation() {
+  // Update transformation on DataGraft
+  persistTransformation(rdfFormat: string = 'nt') {
+    this.persistLoading = true;
     console.log(this.transformationObj);
+    const paramMap = this.route.snapshot.paramMap;
+    if (paramMap.has('filestoreId') && paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
 
-    const publisher = 'nvnikolov';
-    const existingTransformationID = 'eubg-sdati-uk-d04a5347-3d2b-403d-8a60-a3060a553f6b';
-    const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-    const newTransformationName = 'test-graft-transformation';
-    const isPublic = false;
-    const newTransformationDescription = 'testing graft created from annotations';
-    const newTransformationKeywords = ['graft', 'annotations'];
-    const newTransformationConfiguration = {
-      type: 'graft',
-      command: 'my-graft',
-      code: someClojure,
-      json: JSON.stringify(this.transformationObj)
-    };
-    return this.dispatch.updateTransformation(existingTransformationID,
-      publisher,
-      newTransformationName + '-new',
-      isPublic,
-      newTransformationDescription + ' new',
-      newTransformationKeywords.concat('four'),
-      newTransformationConfiguration).then(
-      (result) => {
-        console.log(result);
-      },
-      (error) => {
-        console.log('Error updating transformation');
-        console.log(error);
-      });
+      const existingTransformationID = paramMap.get('transformationId');
+      const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
+      const newTransformationName = 'test-graft-transformation';
+      const isPublic = false;
+      const newTransformationDescription = 'testing graft created from annotations';
+      const newTransformationKeywords = ['graft', 'annotations'];
+      const newTransformationConfiguration = {
+        type: 'graft',
+        command: 'my-graft',
+        code: someClojure,
+        json: JSON.stringify(this.transformationObj)
+      };
+      const filestoreID = paramMap.get('filestoreId');
+
+      return this.dispatch.updateTransformation(existingTransformationID,
+        publisher,
+        newTransformationName + '-new',
+        isPublic,
+        newTransformationDescription + ' new',
+        newTransformationKeywords.concat('four'),
+        newTransformationConfiguration).then(
+        (result) => {
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
+            (transformed) => {
+              console.log(transformed);
+              this.persistLoading = false;
+            },
+            (error) => {
+              console.log('Error transforming file');
+              console.log(error);
+              this.persistLoading = false;
+            }
+          );
+        },
+        (error) => {
+          console.log('Error updating transformation');
+          console.log(error);
+          this.persistLoading = false;
+        });
+    }
+    this.persistLoading = false;
   }
 
   /**
