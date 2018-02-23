@@ -599,7 +599,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  typeSuggestions(keyword: any): Observable<any[]> {
+  typeSuggestions = (keyword: any): Observable<any[]> => {
     return this.abstatSuggestions(keyword, 'subj');
   }
 
@@ -608,7 +608,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  propertySuggestions(keyword: any): Observable<any[]> {
+  propertySuggestions = (keyword: any): Observable<any[]> => {
     return this.abstatSuggestions(keyword, 'pred');
   }
 
