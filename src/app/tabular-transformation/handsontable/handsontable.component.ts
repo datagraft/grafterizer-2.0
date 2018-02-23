@@ -151,18 +151,18 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       const rowData = data[':rows'];
       const columnMappings = [];
       // Remove leading ':' from the EDN response
-      this.colNamesClean = [];
+      const colNamesClean = [];
       columnNames.forEach((colname, index) => {
         const colNameClean = colname.substring(1);
-        this.colNamesClean.push(colNameClean);
+        colNamesClean.push(colNameClean);
         columnMappings.push({
           data: colname
         });
       });
 
-      if (this.colNamesClean && columnMappings) {
+      if (colNamesClean && columnMappings) {
         this.hot.updateSettings({
-          colHeaders: this.colNamesClean,
+          colHeaders: colNamesClean,
           columns: columnMappings,
           data: data[':rows']
         });

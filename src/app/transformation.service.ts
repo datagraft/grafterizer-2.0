@@ -88,7 +88,7 @@ export class TransformationService {
     const url = this.dispatchPath + '/preview_original/' + encodeURIComponent(filestoreID);
     const params = {
       page: page || 0,
-      pageSize: pageSize || 100,
+      pageSize: pageSize || 600,
       useCache: 1
     };
     const options = new RequestOptions({ withCredentials: true, params: params });
@@ -113,7 +113,7 @@ export class TransformationService {
     };
     const params = {
       page: page || 0,
-      pageSize: pageSize || 100
+      pageSize: pageSize || 600
     };
     const options = new RequestOptions({ withCredentials: true, params: params });
     return this.http.post(url, requestPayload, options)

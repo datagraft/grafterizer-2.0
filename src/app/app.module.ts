@@ -21,45 +21,48 @@ import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
+import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
 }
 
-  @NgModule({
-    declarations: [
-      AppComponent,
-      DataExplorationComponent
-    ],
-    imports: [
-      BrowserModule,
-      BrowserAnimationsModule,
-      ClarityModule.forRoot(),
-      TabularTransformationModule,
-      RdfMappingModule,
-      TabularAnnotationModule,
-      AppRoutingModule,
-      FormsModule,
-      SuiModule,
-      HttpModule,
+@NgModule({
+  declarations: [
+    AppComponent,
+    DataExplorationComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    ClarityModule.forRoot(),
+    TabularTransformationModule,
+    RdfMappingModule,
+    TabularAnnotationModule,
+    AppRoutingModule,
+    FormsModule,
+    SuiModule,
+    HttpModule,
     HttpClientModule
-    ],
-    providers: [
-      AppConfig,
-      TransformationService,
-      AnnotationService,
-      RoutingService,
-      {
-        provide: APP_INITIALIZER,
-        useFactory: initConfig,
-        deps: [AppConfig],
-        multi: true
-      },
-      {
-        provide: ErrorHandler,
-        useClass: GlobalErrorHandler
-      }
-    ],
-    bootstrap: [AppComponent]
-  })
+  ],
+  providers: [
+    AppConfig,
+    GlobalErrorReportingService,
+    TransformationService,
+    AnnotationService,
+    RoutingService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initConfig,
+      deps: [AppConfig],
+      multi: true
+    },
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+      deps: [GlobalErrorReportingService]
+    }
+  ],
+  bootstrap: [AppComponent]
+})
 export class AppModule { }

@@ -20,8 +20,8 @@
         <span class="nav-text">Tabular Annotation</span>
       </a>
       <!--       <a routerLink="/transformation/new/data-exploration" routerLinkActive="active" class="nav-link">
-<span class="nav-text">Data Exploration</span>
-</a> -->
+      <span class="nav-text">Data Exploration</span>
+      </a> -->
     </div>
     <div class="header-actions">
       <a href="..." class="nav-link nav-icon">
@@ -30,15 +30,15 @@
     </div>
   </header>
   <clr-alerts>
-    <clr-alert [clrAlertType]="'danger'" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors">
+    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
       <div class="alert-item">
         <span class="alert-text">
           Woops - something went wrong! If the problem persists, try reloading the application.
-          <br/>
-          {{error.toString()}}
+          <br />
+          {{error.toString().substring(0,200) + " [...]"}}
         </span>
         <div class="alert-actions">
-          <button class="btn alert-action">Fix</button>
+          <button class="btn alert-action" (click)="onClose(i)">Close</button>
         </div>
       </div>
     </clr-alert>
