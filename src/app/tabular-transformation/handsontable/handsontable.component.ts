@@ -27,12 +27,12 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   private container: any;
   private settings: any;
   private showLoading: boolean;
-  private colNamesClean: any;
 
   public selectedFunction: any;
   public selectedDefaultParams: any;
 
   private dataSubscription: Subscription;
+  private previewedTransformationSubscription: Subscription;
 
   @Input() suggestions;
   @Output() emitter = new EventEmitter();
@@ -45,11 +45,11 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     this.container = document.getElementById('handsontable');
     this.settings = {
-      data: this.data,
+      data: [],
       rowHeaders: true,
       autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      height: 660,
+      height: 645,
       columnSorting: false,
       viewportColumnRenderingOffset: 30,
       viewportRowRenderingOffset: 'auto',
@@ -86,6 +86,10 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         this.displayJsEdnData(message);
       }
     });
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.showLoading = true;
+      });
   }
 
   ngOnDestroy() {
@@ -125,250 +129,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       for (const suggestion of this.suggestions) {
         enabledMenuItems.push(suggestion.label);
       }
-
-      // this.hot.updateSettings({
-      //   contextMenu: {
-      //     callback: (key, options) => {
-      //       this.selectedFunction = key;
-      //       for (let i in keySuggestionMap) {
-      //         if (i == key) {
-      //           var selectedSuggestion = this.suggestions.find(o => o.value.id === keySuggestionMap[i]);
-      //           this.selectedDefaultParams = selectedSuggestion.value.defaultParams;
-      //         }
-      //       };
-      //       console.log(key, this.selectedDefaultParams)
-      //       switch (key) {
-      //         case 'newrow:1':
-      //         case 'newrow:2':
-      //           this.emitFunction(new AddRowFunction(this.selectedDefaultParams.position, this.selectedDefaultParams.values, ""));
-      //           break;
-      //         case 'make-dataset-header':
-      //           this.emitFunction(new MakeDatasetFunction(
-      //             [], null, undefined, this.selectedDefaultParams.moveFirstRowToHeader, null));
-      //           break;
-      //         case 'mapc:1':
-      //           console.log("Map cols UC");
-      //           this.emitFunction(new MapcFunction(
-      //             this.selectedDefaultParams.keyFunctionPairs, null));
-      //           break;
-      //         case 'take-rows-delete':
-      //           this.emitFunction(new DropRowsFunction(
-      //             this.selectedDefaultParams.indexFrom, this.selectedDefaultParams.indexTo, this.selectedDefaultParams.take, null));
-      //           break;
-      //         case 'take-columns-delete':
-      //           this.emitFunction(new ColumnsFunction(
-      //             [this.selectedDefaultParams.colToDelete], null, null, false, null));
-      //           break;
-      //         default:
-      //           break;
-      //       }
-      //     },
-      //     items: {
-      //       "newcol": {
-      //         key: "newcol",
-      //         name: "New column",
-      //         "submenu": {
-      //           "items": [{
-      //             key: "newcol:1",
-      //             "name": "Add column",
-      //           }, {
-      //             key: "newcol:2",
-      //             "name": "Derive column",
-      //           }]
-      //         }
-      //       },
-      //       "newrow": {
-      //         key: "newrow",
-      //         name: "New row",
-      //         "submenu": {
-      //           "items": [{
-      //             key: "newrow:1",
-      //             "name": "Insert row below",
-      //             disabled: function () {
-      //               return !enabledMenuItems.includes("Insert row below");
-      //             }
-      //           }, {
-      //             key: "newrow:2",
-      //             "name": "Insert row above",
-      //             disabled: function () {
-      //               return !enabledMenuItems.includes("Insert row above");
-      //             }
-      //           }, {
-      //             key: "newrow:3",
-      //             "name": "Insert row (custom position)"
-      //           }]
-      //         }
-      //       },
-      //       deduplicate: {
-      //         name: 'Deduplicate',
-      //         key: 'deduplicate',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Deduplicate");
-      //         }
-      //       },
-      //       filter: {
-      //         name: 'Filter rows',
-      //         key: 'filter-rows',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Filter rows");
-      //         }
-      //       },
-      //       group: {
-      //         name: 'Group and aggregate',
-      //         key: 'group-dataset',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Group and aggregate");
-      //         }
-      //       },
-      //       header: {
-      //         name: 'Set first row as a header',
-      //         key: 'make-dataset-header',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Set first row as a header");
-      //         }
-      //       },
-      //       "mapc": {
-      //         key: "mapc",
-      //         name: "Map columns",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Map columns");
-      //         },
-      //         "submenu": {
-      //           "items": [{
-      //             key: "mapc:2",
-      //             "name": "Set empty cells to median",
-      //             disabled: function () {
-      //               return true;
-      //             }
-      //           },
-      //           {
-      //             key: "mapc:1",
-      //             "name": "Convert to uppercase",
-      //             disabled: function () {
-      //               return !enabledMenuItems.includes("Convert to uppercase");
-      //             }
-      //           }
-      //           // Second-level submenu bug https://github.com/handsontable/handsontable/issues/3533 
-      //           /*{ 
-      //             key: "submenu:3", 
-      //             "name": "Convert case to", 
-      //             disabled: function () { 
-      //               return !enabledMenuItems.includes("Convert to uppercase"); 
-      //             }, 
-      //             'submenu': { 
-      //               key: "submenu:submenu:1", 
-      //               name: 'submenu:submenu:1', 
-      //               'items': [{ 
-      //                 key: "submenu:1", 
-      //                 "name": "UPPERCASE", 
-      //                 disabled: function () { 
-      //                   return !enabledMenuItems.includes("Convert to uppercase"); 
-      //                 }, 
-      //                 callback: (key, options) => { 
-      //                   console.log(key); 
-      //                 }, 
-      //               }, { 
-      //                 key: "submenu:2", 
-      //                 "name": "lowercase", 
-      //                 disabled: function () { 
-      //                   return true; 
-      //                 } 
-      //               }, { 
-      //                 key: "submenu:3", 
-      //                 "name": "Proper Case", 
-      //                 disabled: function () { 
-      //                   return true; 
-      //                 } 
-      //               }, 
-      //               { 
-      //                 key: "submenu:3", 
-      //                 "name": "Sentence case", 
-      //                 disabled: function () { 
-      //                   return true; 
-      //                 } 
-      //               }] 
-      //             } 
-      //           }*/]
-      //         }
-      //       },
-      //       merge_columns: {
-      //         name: 'Merge columns',
-      //         key: 'merge-columns',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Merge columns");
-      //         }
-      //       },
-      //       rename_columns: {
-      //         name: 'Rename columns',
-      //         key: 'rename-columns',
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Rename columns");
-      //         }
-      //       },
-      //       "reshape": {
-      //         key: "reshape",
-      //         name: "Reshape dataset",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Reshape dataset");
-      //         }/*, 
-      //         "submenu": { 
-      //           "items": [{ 
-      //             key: "reshape:1", 
-      //             "name": "Melt" 
-      //           }, { 
-      //             key: "reshape:2", 
-      //             "name": "Cast" 
-      //           }] 
-      //         }*/
-      //       },
-      //       "sort": {
-      //         key: "sort",
-      //         name: "Sort dataset",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Sort dataset");
-      //         },
-      //         /* "submenu": { 
-      //            "items": [{ 
-      //              key: "sort:1", 
-      //              "name": "Alphabetically" 
-      //            }, { 
-      //              key: "sort:2", 
-      //              "name": "Numerically" 
-      //            }, { 
-      //              key: "sort:3", 
-      //              "name": "By length" 
-      //            }, { 
-      //              key: "sort:4", 
-      //              "name": "By date" 
-      //            }] 
-      //          }*/
-      //       },
-      //       split_col: {
-      //         name: 'Split columns',
-      //         key: "split-columns",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Split columns");
-      //         }
-      //       },
-      //       remove_col: {
-      //         name: 'Delete column',
-      //         key: "take-columns-delete",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Delete column");
-      //         }
-      //       },
-      //       remove_row: {
-      //         name: 'Delete row',
-      //         key: "take-columns-delete",
-      //         disabled: function () {
-      //           return !enabledMenuItems.includes("Delete row");
-      //         }
-      //       },
-      //       undo: {},
-      //       redo: {}
-      //     },
-      //   }
-      // })
     }
   }
 
@@ -391,19 +151,22 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       const rowData = data[':rows'];
       const columnMappings = [];
       // Remove leading ':' from the EDN response
-      this.colNamesClean = [];
+      const colNamesClean = [];
       columnNames.forEach((colname, index) => {
         const colNameClean = colname.substring(1);
-        this.colNamesClean.push(colNameClean);
+        colNamesClean.push(colNameClean);
         columnMappings.push({
           data: colname
         });
       });
-      this.hot.updateSettings({
-        colHeaders: this.colNamesClean,
-        columns: columnMappings,
-        data: data[':rows']
-      });
+
+      if (colNamesClean && columnMappings) {
+        this.hot.updateSettings({
+          colHeaders: colNamesClean,
+          columns: columnMappings,
+          data: data[':rows']
+        });
+      }
       this.showLoading = false;
     } else {
       // TODO error handling one day!!

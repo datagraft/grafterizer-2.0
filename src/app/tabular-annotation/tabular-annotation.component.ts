@@ -52,14 +52,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
     this.transformationSvc.currentGraftwerkData.subscribe(message => {
       this.graftwerkData = message;
-      console.log("SUP!")
     });
     this.retrieveData();
   }
 
   ngOnDestroy() {
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
   retrieveData() {

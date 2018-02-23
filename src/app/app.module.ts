@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
 import { AppConfig } from './app.config';
 import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -19,6 +19,8 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
+
+import { GlobalErrorHandler } from 'app/global-error-handler';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -52,6 +54,10 @@ export function initConfig(config: AppConfig) {
       useFactory: initConfig,
       deps: [AppConfig],
       multi: true
+    },
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler
     }
   ],
   bootstrap: [AppComponent]

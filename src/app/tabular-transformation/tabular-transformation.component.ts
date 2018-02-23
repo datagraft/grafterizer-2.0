@@ -41,6 +41,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
+  private previewError: string;
+
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
     private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
@@ -91,29 +93,32 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     //    this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     this.previewedTransformationSubscription.unsubscribe();
-    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
 
   updatePreviewedData() {
+    delete this.previewError;
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
         this.transformationSvc.changeGraftwerkData(result);
-        //      this.handsonTable.showLoading = true;
-        //      this.handsonTable.displayJsEdnData(result);
+        // TODO these actions should be delegated to the profiling component
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);
-        //      this.pipelineComponent.generateLabels();
         this.loadedDataHeaders = result[':column-names'].map(o => o.substring(1, o.length));
         this.profilingComponent.progressbar = false;
       }, (err) => {
-        // TODO - remove loading bar?
-        //      this.handsonTable.showLoading = false;
+        this.previewError = err;
+        this.transformationSvc.changeGraftwerkData(
+          {
+            ':column-names': [],
+            ':rows': []
+          });
         console.log(err);
+        // TODO: move this to profiling component
+        this.profilingComponent.progressbar = false;
       })
   }
 
@@ -134,7 +139,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       headers.push(this.handsonTable.hot.getColHeader(j));
     }
     const recommend = this.recommenderService.getRecommendationWithParams(
-      newSelection.row, newSelection.col, newSelection.row2, newSelection.col2, newSelection.totalRows, newSelection.totalCols, data, headers);
+      newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
+      newSelection.totalRows, newSelection.totalCols, data, headers);
     this.recommendations = recommend;
   }
 
