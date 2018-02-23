@@ -5,11 +5,11 @@ import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
 import { RecommenderService } from './sidebar/recommender.service';
 import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
-import { RouterUrlService } from './component-communication.service';
+import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
-import { Message } from '@angular/compiler/src/i18n/i18n_ast';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -18,7 +18,7 @@ import { Message } from '@angular/compiler/src/i18n/i18n_ast';
   providers: [RecommenderService, DispatchService]
 })
 
-export class TabularTransformationComponent implements OnInit, OnDestroy, AfterViewInit, DoCheck {
+export class TabularTransformationComponent implements OnInit, OnDestroy {
 
   private function: any;
   private partialPipeline: any;
@@ -30,15 +30,21 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
+  private previewedTransformationObj: any;
   private graftwerkData: any;
+
+  private transformationSubscription: Subscription;
+  private previewedTransformationSubscription: Subscription;
+  private dataSubscription: Subscription;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
-    private transformationSvc: TransformationService, private routerService: RouterUrlService, private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
-    this.differ = differs.find({}).create(null);
+    private transformationSvc: TransformationService, private routingService: RoutingService,
+    private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
+    this.differ = differs.find({}).create();
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -52,146 +58,76 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
       { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
     ];
-    route.url.subscribe(() => this.concatURL());
+    route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
   ngOnInit() {
-    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
-    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+    //    this.transformationSubscription =
+    //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
+    //      this.transformationObj = message;
+    //    });
+
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.previewedTransformationObj = previewedTransformation;
+        this.updatePreviewedData();
+        console.log(this.previewedTransformationObj);
+      });
+
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
+      if (previewedData) {
+        console.log(previewedData);
+        this.graftwerkData = previewedData;
+        //        this.handsonTable.showLoading = true;
+        //        this.handsonTable.displayJsEdnData(this.graftwerkData);
+        this.profilingComponent.loadJSON(this.graftwerkData);
+        this.profilingComponent.refresh(this.handsontableSelection);
+        this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
+        this.cd.detectChanges();
+        setTimeout(() => {
+          //          this.pipelineComponent.generateLabels();
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+    //    this.transformationSubscription.unsubscribe();
+    this.dataSubscription.unsubscribe();
+    this.previewedTransformationSubscription.unsubscribe();
+    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
-  ngAfterViewInit() {
-    if (this.graftwerkData == null) {
-      console.log('TEST 1 OK')
-      this.existingTransformation();
-    }
-    else {
-      console.log('TEST 2 OK')
-      this.handsonTable.showLoading = true;
-      this.handsonTable.displayJsEdnData(this.graftwerkData);
-      this.profilingComponent.loadJSON(this.graftwerkData);
-      this.profilingComponent.refresh(this.handsontableSelection);
-      this.loadedDataHeaders = this.graftwerkData[":column-names"].map(o => o.substring(1, o.length));
-      this.cd.detectChanges();
-      setTimeout(() => {
-        this.pipelineComponent.generateLabels();
-      });
-    }
-  }
-
-  ngDoCheck() {
-    const change = this.differ.diff(this.transformationSvc.transformationObj.pipelines["0"].functions);
-    if (change) {
-      if (this.function) {
-        this.updateTransformation();
-      }
-    }
-  }
-
-  concatURL() {
-    this.route.snapshot.url.pop();
-    let str = '';
-    for (let o in this.route.snapshot.url) {
-      str = str.concat(this.route.snapshot.url[o].path);
-      str = str.concat('/');
-    }
-    this.routerService.sendMessage(str);
-  }
-
-  getChanges(oldArray, newArray) {
-    var changes, i, item, j, len;
-    if (JSON.stringify(oldArray) === JSON.stringify(newArray)) {
-      return false;
-    }
-    changes = [];
-    for (i = j = 0, len = newArray.length; j < len; i = ++j) {
-      item = newArray[i];
-      if (JSON.stringify(item) !== JSON.stringify(oldArray[i])) {
-        changes.push(item);
-      }
-    }
-    return changes;
-  };
-
-  existingTransformation() {
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-      this.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
-        .then(
-        (result) => {
-          let transformationObj = transformationDataModel.Transformation.revive(result);
-          console.log(transformationObj)
-          if (paramMap.has('filestoreId')) {
-            const clojure = generateClojure.fromTransformation(transformationObj);
-            this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
-              .then(
-              (result) => {
-                console.log(result);
-                this.handsonTable.showLoading = true;
-                this.transformationSvc.transformationObj = transformationObj;
-                this.transformationObj = transformationObj;
-                this.graftwerkData = result;
-                this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
-                // this.graftwerkData[":column-names"] = this.loadedDataHeaders;
-                this.handsonTable.displayJsEdnData(result);
-                this.profilingComponent.loadJSON(result);
-                this.pipelineComponent.generateLabels();
-              },
-              (error) => {
-                console.log('ERROR getting filestore!');
-                console.log(error);
-              });
-          }
-        },
-        (error) => {
-          console.log(error)
-        });
-    }
-  }
-
-  updateTransformation() {
+  updatePreviewedData() {
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
-    const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+    const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
       .then((result) => {
-        this.handsonTable.showLoading = true;
-        this.graftwerkData = result;
-        this.handsonTable.displayJsEdnData(result);
+        this.transformationSvc.changeGraftwerkData(result);
+        //      this.handsonTable.showLoading = true;
+        //      this.handsonTable.displayJsEdnData(result);
         this.profilingComponent.loadJSON(result);
         this.profilingComponent.refresh(this.handsontableSelection);
-        this.pipelineComponent.generateLabels();
-        this.loadedDataHeaders = result[":column-names"].map(o => o.substring(1, o.length));
+        //      this.pipelineComponent.generateLabels();
+        this.loadedDataHeaders = result[':column-names'].map(o => o.substring(1, o.length));
         this.profilingComponent.progressbar = false;
       }, (err) => {
+        // TODO - remove loading bar?
+        //      this.handsonTable.showLoading = false;
         console.log(err);
-      })
-  }
-
-  getPartialTransformation(untilFunction) {
-    const paramMap = this.route.snapshot.paramMap;
-    this.pipelineDefaultState = this.deepCopyArray(this.transformationSvc.transformationObj.pipelines[0].functions);
-    const clojure = generateClojure.fromTransformation(this.transformationSvc.transformationObj.getPartialTransformation(untilFunction));
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
-      .then((result) => {
-        this.handsonTable.displayJsEdnData(result);
-        this.pipelineComponent.generateLabels();
       })
   }
 
   tableSelectionChanged(newSelection: any) {
     this.handsontableSelection = newSelection;
     this.profilingComponent.refresh(newSelection);
-    var ind = this.handsonTable.hot.getSelected();
-    var data = [];
-    var headers = [];
+    const ind = this.handsonTable.hot.getSelected();
+    const data = [];
+    const headers = [];
     for (let i = ind[0]; i <= ind[2]; ++i) {
-      var row = [];
+      const row = [];
       for (let j = ind[1]; j <= ind[3]; ++j) {
         row.push(this.handsonTable.hot.getDataAtCell(i, j));
       }
@@ -200,39 +136,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, AfterV
     for (let j = ind[1]; j <= ind[3]; ++j) {
       headers.push(this.handsonTable.hot.getColHeader(j));
     }
-    const recommend = this.recommenderService.getRecommendationWithParams(newSelection.row, newSelection.col,
-      newSelection.row2, newSelection.col2,
-      newSelection.totalRows, newSelection.totalCols, data, headers);
+    const recommend = this.recommenderService.getRecommendationWithParams(
+      newSelection.row, newSelection.col, newSelection.row2, newSelection.col2, newSelection.totalRows, newSelection.totalCols, data, headers);
     this.recommendations = recommend;
-  }
-
-  emitFunction(value: any) {
-    this.function = value;
-    // this.updateTransformation();
-  }
-
-  deepCopyArray(o) {
-    var output, v, key;
-    output = Array.isArray(o) ? [] : {};
-    for (key in o) {
-      v = o[key];
-      output[key] = (typeof v === "object") ? this.deepCopyArray(v) : v;
-    }
-    return output;
-  }
-
-  editFunction(pipeline) {
-    console.log(pipeline);
-    if (pipeline.edit == true) {
-      this.updateTransformation();
-    }
-    else if (pipeline.preview == true) {
-      this.getPartialTransformation(pipeline.function);
-    }
-    else if (pipeline.undoPreview == true) {
-      this.transformationSvc.transformationObj.pipelines[0].functions = this.pipelineDefaultState;
-      this.updateTransformation();
-    }
   }
 
 }

@@ -8,11 +8,12 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
 import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { RoutingService } from '../routing.service';
 import { Http } from '@angular/http';
-import {Annotation} from './annotation.model';
+import { Annotation } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {ColumnTypes, XSDDatatypes} from './annotation-form/annotation-form.component';
+import { ColumnTypes, XSDDatatypes } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 
 @Component({
@@ -47,12 +48,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, private route: ActivatedRoute,
-    public http: Http) { }
+    public annotationService: AnnotationService, private route: ActivatedRoute, private routingService: RoutingService,
+    public http: Http) {
+    route.url.subscribe(() => this.routingService.concatURL(route));
+  }
 
   ngOnInit() {
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
-    this.transformationSvc.currentGraftwerkData.subscribe(message => this.graftwerkData = message);
+    this.transformationSvc.currentGraftwerkData.subscribe(message => {
+      this.graftwerkData = message;
+      console.log("SUP!")
+    });
     this.retrieveData();
   }
 

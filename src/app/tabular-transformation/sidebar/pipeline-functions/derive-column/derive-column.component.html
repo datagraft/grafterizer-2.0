@@ -9,8 +9,10 @@
 
     <br>
     <label for="colnames">Column names:</label>
+<!--
     <rl-tag-input [(ngModel)]="colsToDeriveFrom" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
       placeholder="Column names" id="colnames"></rl-tag-input>
+-->
     <label for="df">Functions to derive with:</label>
     <div id="df" *ngFor="let deriveFunction of deriveFunctions; index as idx;">
       <div class="row">

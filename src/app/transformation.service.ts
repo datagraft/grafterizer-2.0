@@ -14,14 +14,21 @@ export class TransformationService {
   private dispatchPath: string;
   private graftwerkCachePath: string;
   // GLOBAL TRANSFORMATION OBJECT
-  public transformationObj: any;
-  public graftwerkData: any;
+//  private transformationObj: any;
+//  private graftwerkData: any;
 
-  private transformationObjSource = new BehaviorSubject<any>(this.transformationObj);
-  public currentTransformationObj = this.transformationObjSource.asObservable();
+  private previewedTransformationObjSource: BehaviorSubject<any>;
+  public currentPreviewedTransformationObj: Observable<any>;
 
-  private graftwerkDataSource = new BehaviorSubject<any>(this.graftwerkData);
-  public currentGraftwerkData = this.graftwerkDataSource.asObservable();
+  private transformationObjSource: BehaviorSubject<any>;
+  public currentTransformationObj: Observable<any>;
+
+  private graftwerkDataSource: BehaviorSubject<any>;
+  public currentGraftwerkData: Observable<any>;
+
+  public changePreviewedTransformationObj(message: any) {
+    this.previewedTransformationObjSource.next(message);
+  }
 
   public changeTransformationObj(message: any) {
     this.transformationObjSource.next(message);
@@ -36,15 +43,16 @@ export class TransformationService {
     this.dispatchPath = this.config.getConfig('dispatch-path');
     // Caching service for Graftwerk - caches intermediate results of transformations
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
-    this.transformationObj = {
-      "customFunctionDeclarations": [],
-      "prefixers": [],
-      "pipelines": [{
-        "functions": {},
-        "__type": "Pipeline"
-      }],
-      "rdfVocabs": []
-    };
+    const emptyTransformation = new transformationDataModel.Transformation();
+    this.transformationObjSource = new BehaviorSubject<any>(emptyTransformation);
+    this.graftwerkDataSource = new BehaviorSubject<any>({
+      ':column-names': [],
+      ':rows': []
+    });
+    this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
+    this.currentTransformationObj = this.transformationObjSource.asObservable();
+    this.currentGraftwerkData = this.graftwerkDataSource.asObservable();
+    this.currentPreviewedTransformationObj = this.previewedTransformationObjSource.asObservable();
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {
@@ -141,7 +149,7 @@ export class TransformationService {
         return this.pollCacheService(dispatchResponse.hash);
       },
       (error) => this.errorHandler(error)
-      );
+    );
   }
 
   private pollCacheService(hash: string): Promise<any> {
@@ -152,8 +160,8 @@ export class TransformationService {
     const obs = new Observable(observer => {
       observer.next();
     })
-      .switchMap(() => this.http.get(statusUrl, options))
-      .map((response) => response.json());
+    .switchMap(() => this.http.get(statusUrl, options))
+    .map((response) => response.json());
     return new Promise((resolve, reject) => {
       const sub = obs.subscribe(
         (result) => {

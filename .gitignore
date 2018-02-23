@@ -17,6 +17,7 @@
 *.launch
 .settings/
 *.sublime-workspace
+.brackets.json
 
 # IDE - VSCode
 .vscode/*
@@ -45,4 +46,3 @@ Thumbs.db
 # Other
 .orig
 semantic.json
-src/assets/jot.json

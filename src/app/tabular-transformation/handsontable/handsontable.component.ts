@@ -1,9 +1,12 @@
-
-import { Component, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
-import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction, KeyFunctionPair, CustomFunctionDeclaration } from '../../../assets/transformationdatamodel.js';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
+  MapcFunction, KeyFunctionPair, CustomFunctionDeclaration
+} from '../../../assets/transformationdatamodel.js';
 import { timeout } from 'q';
+import { TransformationService } from 'app/transformation.service';
 
 declare var Handsontable: any;
 
@@ -13,7 +16,7 @@ declare var Handsontable: any;
   styleUrls: ['./handsontable.component.css']
 })
 
-export class HandsontableComponent implements OnInit, OnChanges {
+export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() selectionChanged: EventEmitter<any> = new EventEmitter<any>();
 
@@ -23,21 +26,20 @@ export class HandsontableComponent implements OnInit, OnChanges {
   private data: any;
   private container: any;
   private settings: any;
-  public selction: any;
-  public showLoading: boolean;
+  private showLoading: boolean;
   private colNamesClean: any;
 
   public selectedFunction: any;
   public selectedDefaultParams: any;
+
+  private dataSubscription: Subscription;
+
   @Input() suggestions;
   @Output() emitter = new EventEmitter();
 
-  constructor() {
+  constructor(private transformationSvc: TransformationService) {
     this.showLoading = true;
     this.data = [];
-    // for (let i = 0; i <= 12; i++) {
-    //  this.data.push(['-', '-', '-', '-', '-']);
-    //}
   }
 
   ngOnInit() {
@@ -45,21 +47,18 @@ export class HandsontableComponent implements OnInit, OnChanges {
     this.settings = {
       data: this.data,
       rowHeaders: true,
-      autoColumnSize: false,
+      autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      columnSorting: false,
-      viewportColumnRenderingOffset: 40,
       height: 660,
-      width: 1610,
+      columnSorting: false,
+      viewportColumnRenderingOffset: 30,
+      viewportRowRenderingOffset: 'auto',
       wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
       observeDOMVisibility: true,
-      afterChange: () => {
-        setTimeout(() => {
-          this.hot.render();
-        }, 10);
-      },
+      observeChanges: true,
+      preventOverflow: false,
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
@@ -75,6 +74,16 @@ export class HandsontableComponent implements OnInit, OnChanges {
       },
     }
     this.hot = new Handsontable(this.container, this.settings);
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
+      if (message) {
+        console.log('Data Changed');
+        this.displayJsEdnData(message);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.dataSubscription.unsubscribe();
   }
 
   emitFunction(value: any) {
@@ -240,7 +249,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
       //             disabled: function () { 
       //               return !enabledMenuItems.includes("Convert to uppercase"); 
       //             }, 
-
       //             'submenu': { 
       //               key: "submenu:submenu:1", 
       //               name: 'submenu:submenu:1', 
@@ -252,7 +260,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
       //                 }, 
       //                 callback: (key, options) => { 
       //                   console.log(key); 
-
       //                 }, 
       //               }, { 
       //                 key: "submenu:2", 
@@ -371,7 +378,6 @@ export class HandsontableComponent implements OnInit, OnChanges {
   }
 
   public displayJsEdnData(data: JSON) {
-    this.showLoading = true;
     // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
@@ -386,12 +392,15 @@ export class HandsontableComponent implements OnInit, OnChanges {
           data: colname
         });
       });
+      this.hot.loadData(data[':rows']);
       this.hot.updateSettings({
         colHeaders: this.colNamesClean,
         columns: columnMappings,
-        data: data[':rows']
+        afterLoadData: () => {
+          this.showLoading = false;
+          this.hot.render();
+        }
       });
-      this.showLoading = false;
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');

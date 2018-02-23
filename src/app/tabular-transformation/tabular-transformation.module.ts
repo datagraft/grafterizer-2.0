@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
-import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
 import { CodemirrorModule } from 'ng2-codemirror';
@@ -47,7 +46,7 @@ import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/ma
 import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
-import { ComponentCommunicationService } from './component-communication.service';
+import { PipelineEventsService } from './pipeline-events.service';
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 // import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
 import { NglModule } from 'ng-lightning/ng-lightning';
@@ -55,6 +54,8 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { AngularSplitModule } from 'angular-split';
+
+import { TagInputModule } from 'ngx-chips';
 
 @NgModule({
   imports: [
@@ -69,7 +70,7 @@ import { AngularSplitModule } from 'angular-split';
     NgxChartsModule,
     NgxDatatableModule,
     ListboxModule,
-    RlTagInputModule,
+    TagInputModule,
     SuiModule,
     Ng2CompleterModule,
     CodemirrorModule,
@@ -114,7 +115,7 @@ import { AngularSplitModule } from 'angular-split';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [ComponentCommunicationService]
+  ], providers: [PipelineEventsService]
 })
 
 export class TabularTransformationModule { }
