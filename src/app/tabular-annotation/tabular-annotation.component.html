@@ -1,4 +1,9 @@
-<div class="btn-group">
+<div style="text-align: center" *ngIf="dataLoading">
+  <span class="spinner spinner-lg" style="margin-top: 200px">
+    Loading...
+  </span>
+</div>
+<div class="btn-group" *ngIf="!dataLoading">
   <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="annotationService.getAnnotations().length === 0">
     <clr-icon shape="floppy"></clr-icon> Create graph
   </button>
@@ -16,8 +21,7 @@
     </clr-dropdown-menu>
   </clr-dropdown>
 </div>
-
-<table class="table table-compact">
+<table class="table table-compact" *ngIf="!dataLoading">
   <thead>
     <tr>
       <th *ngFor="let h of annotationService.headers" class="left">

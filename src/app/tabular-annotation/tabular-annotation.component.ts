@@ -31,6 +31,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   saveLoading = false;
   persistLoading = false;
   graphNotSaved = true;
+  dataLoading = true;
 
   /**
    * Return the namespace of a URL
@@ -51,29 +52,25 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     public annotationService: AnnotationService, private route: ActivatedRoute, private routingService: RoutingService,
     public http: Http) {
     route.url.subscribe(() => this.routingService.concatURL(route));
+    this.dataLoading = true;
   }
 
   ngOnInit() {
+    this.dataLoading = true;
     this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
     this.transformationSvc.currentGraftwerkData.subscribe(message => {
       this.graftwerkData = message;
-      console.log("SUP!")
+      this.annotationService.headers = this.graftwerkData[':column-names'];
+      this.annotationService.data = this.graftwerkData[':rows'];
+      if (this.annotationService.headers.length > 0) {
+        this.dataLoading = false;
+      }
     });
-    this.retrieveData();
   }
 
   ngOnDestroy() {
     this.transformationSvc.changeTransformationObj(this.transformationObj);
     this.transformationSvc.changeGraftwerkData(this.graftwerkData);
-  }
-
-  retrieveData() {
-    if (this.graftwerkData) {
-      this.annotationService.headers = this.graftwerkData[':column-names'];
-      this.annotationService.data = this.graftwerkData[':rows'];
-    } else {
-      console.log('graftwerk data not initialized yet')
-    }
   }
 
   /**

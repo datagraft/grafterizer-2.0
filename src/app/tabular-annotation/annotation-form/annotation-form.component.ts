@@ -4,7 +4,7 @@ import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Annotation} from '../annotation.model';
-import nlp from 'wink-nlp-utils';
+import * as nlp from 'wink-nlp-utils';
 import {HttpParams, HttpClient} from '@angular/common/http';
 
 class CustomValidators {
@@ -25,9 +25,9 @@ class CustomValidators {
         const langTagValue = langTagControl.value;
         if (datatypeValue === 'string') {
           if (langTagValue.length === 0) {
-            return {'invalidLangTag': {errorMessage: 'Language tag is required for strings'}}
+            return {'invalidLangTag': {errorMessage: 'Language tag is required for strings'}};
           } else if (langTagValue.length !== 2) {
-            return {'invalidLangTag': {errorMessage: 'Language tag must be of 2 chars'}}
+            return {'invalidLangTag': {errorMessage: 'Language tag must be of 2 chars'}};
           }
         }
         return null;
@@ -54,16 +54,16 @@ class CustomValidators {
         const valuesTypeValue = columnValuesTypeControl.value;
 
         if (subjectValue !== '' && propertyValue === '') {
-          return {'invalidProperty': {errorMessage: 'A property requires a source column'}}
+          return {'invalidProperty': {errorMessage: 'A property requires a source column'}};
         }
         if (propertyValue !== '' && subjectValue === '') {
-          return {'invalidSubject': {errorMessage: 'A source requires a property'}}
+          return {'invalidSubject': {errorMessage: 'A source requires a property'}};
         }
         if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
           return {
             'invalidSubject': {errorMessage: 'Literal columns require a source'},
             'invalidProperty': {errorMessage: 'Literal columns require a property'}
-          }
+          };
         }
         return null;
       }
@@ -77,7 +77,7 @@ class CustomValidators {
   static subjectValidator(allowedSources: string[]): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
       if (control.value !== '' && allowedSources && allowedSources.indexOf(control.value) === -1) {
-        return {'invalidSubject': {errorMessage: 'This subject is not allowed'}}
+        return {'invalidSubject': {errorMessage: 'This subject is not allowed'}};
       }
       return null;
     };
@@ -98,7 +98,7 @@ class CustomValidators {
         }
         return null;
       } catch (error) {
-        return {'invalidURL': {errorMessage: 'This URL is not valid'}}
+        return {'invalidURL': {errorMessage: 'This URL is not valid'}};
       }
     };
   }
@@ -118,7 +118,7 @@ class CustomValidators {
         const datatypeValue = dataTypeControl.value;
         const customTypeValue = customTypeControl.value;
         if (datatypeValue === 'custom' && customTypeValue === '') {
-          return {'invalidCustomDatatype': {errorMessage: 'A custom datatype must be specified'}}
+          return {'invalidCustomDatatype': {errorMessage: 'A custom datatype must be specified'}};
         }
         return null;
       }
@@ -140,7 +140,7 @@ class CustomValidators {
         const typeValue = typeControl.value;
         const valuesTypeValue = valuesTypeControl.value;
         if (valuesTypeValue === ColumnTypes.URI && typeValue === '') {
-          return {'invalidColumnType': {errorMessage: 'A column type is required'}}
+          return {'invalidColumnType': {errorMessage: 'A column type is required'}};
         }
         return null;
       }
@@ -159,10 +159,10 @@ class CustomValidators {
       const valuesTypeControl = group.get(columnValuesType);
 
       if (urifyNamespaceControl && valuesTypeControl) {
-        const urifyNamespace = urifyNamespaceControl.value;
+        const urifyNamespaceValue = urifyNamespaceControl.value;
         const valuesTypeValue = valuesTypeControl.value;
-        if (valuesTypeValue === ColumnTypes.URI && urifyNamespace === '') {
-          return {'invalidUrifyNamespace': {errorMessage: 'An URIfy namespace is required'}}
+        if (valuesTypeValue === ColumnTypes.URI && urifyNamespaceValue === '') {
+          return {'invalidUrifyNamespace': {errorMessage: 'An URIfy namespace is required'}};
         }
         return null;
       }
@@ -226,7 +226,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       // space before last upper in a sequence followed by lower
       .replace(/\b([A-Z]+)([A-Z])([a-z])/, '$1 $2$3')
       // uppercase the first character
-      .replace(/^./, function(str){ return str.toUpperCase(); });
+      .replace(/^./, function(str) { return str.toUpperCase(); });
     // tokenize string
     let tokens = nlp.string.tokenize(string);
     // remove stop words
@@ -589,7 +589,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
       return this.http
         .get(url, {params: params})
-        .map(res => res['suggestions'])
+        .map(res => res['suggestions']);
     }
     return Observable.of([]);
   }
@@ -599,18 +599,18 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  typeSuggestions = (keyword: any): Observable<any[]> => {
-    return this.abstatSuggestions(keyword, 'subj')
-  };
+  typeSuggestions(keyword: any): Observable<any[]> {
+    return this.abstatSuggestions(keyword, 'subj');
+  }
 
   /**
    * Search for property suggestions
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  propertySuggestions = (keyword: any): Observable<any[]> => {
-    return this.abstatSuggestions(keyword, 'pred')
-  };
+  propertySuggestions(keyword: any): Observable<any[]> {
+    return this.abstatSuggestions(keyword, 'pred');
+  }
 
   /**
    * Custom rendering of autocomplete list
@@ -621,5 +621,5 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     return `<p class="p6 no-margin-top">${data.suggestion}</p>
                 <p class="p7 no-margin-top">${data.occurrence} occurrences</p>
                 <p class="p7 no-margin-top">from: ${data.dataset}</p>`;
-  };
+  }
 }
