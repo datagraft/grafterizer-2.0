@@ -27,9 +27,9 @@
         trackByKey="rank" class="slds-max-medium-table--stacked-horizontal">
         <ngl-datatable-column heading="" key="stat"></ngl-datatable-column>
         <ngl-datatable-column heading="" key="value" cellClass="slds-text-align--center">
-          <template nglDatatableCell let-row="row">
+          <ng-template nglDatatableCell let-row="row">
             <b>{{row.value}}</b>
-          </template>
+          </ng-template>
         </ngl-datatable-column>
       </table>
     </div>

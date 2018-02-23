@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
     this.subscription = this.routingService.getMessage().subscribe(message => {
       this.url = message;
     });
-  }
+}
 
 
   ngOnInit() {

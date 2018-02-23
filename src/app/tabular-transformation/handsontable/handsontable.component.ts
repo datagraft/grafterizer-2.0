@@ -59,6 +59,11 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       observeDOMVisibility: true,
       observeChanges: true,
       preventOverflow: false,
+      afterChange: () => {
+        setTimeout(() => {
+          this.hot.render();
+        }, 10);
+      },
       afterSelection: (r, c, r2, c2) => {
         // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
@@ -139,6 +144,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public displayJsEdnData(data: JSON) {
+    this.showLoading = true;
     // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];

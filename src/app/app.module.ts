@@ -15,7 +15,6 @@ import { TabularTransformationModule } from './tabular-transformation/tabular-tr
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
-import { AngularSplitModule } from 'angular-split';
 
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
@@ -43,8 +42,7 @@ export function initConfig(config: AppConfig) {
       FormsModule,
       SuiModule,
       HttpModule,
-      HttpClientModule,
-      AngularSplitModule
+    HttpClientModule
     ],
     providers: [
       AppConfig,
