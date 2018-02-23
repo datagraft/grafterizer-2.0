@@ -1,8 +1,10 @@
 import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
-import { AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction,
-        KeyFunctionPair, CustomFunctionDeclaration, AddColumnsFunction } from '../../../../assets/transformationdatamodel.js';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction,
+  KeyFunctionPair, CustomFunctionDeclaration, AddColumnsFunction
+} from '../../../../assets/transformationdatamodel.js';
 import { TransformationService } from 'app/transformation.service';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 
@@ -36,7 +38,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private transformations: SelectItem[];
   private selected: any;
   private modalEnabled = false;
-  private subscription: Subscription;
   private message: any;
 
   private transformationSubscription: Subscription;
@@ -111,7 +112,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.selectedFunctionSubscription.unsubscribe();
     this.transformationSubscription.unsubscribe();

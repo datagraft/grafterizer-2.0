@@ -14,6 +14,7 @@ import { Http } from '@angular/http';
 import { Annotation } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { ColumnTypes, XSDDatatypes } from './annotation-form/annotation-form.component';
+import * as generateClojure from 'assets/generateclojure.js';
 
 @Component({
   selector: 'app-tabular-annotation',
@@ -71,9 +72,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Create a valid graph using all annotations.
+   * Create a valid graph using all annotations and save it into the transformation object.
    */
-  annotationsToGraph() {
+  saveAnnotation() {
     let annotations = this.annotationService.getValidAnnotations();
 
     /**
@@ -85,12 +86,49 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
 
-    if (this.transformationObj.graphs[1]) {
-      this.transformationObj.graphs[1] = graph;
+    if (this.transformationObj.graphs.length > 0) { // overwrite first graph - TODO: check it
+      this.transformationObj.graphs[0] = graph;
     } else {
       this.transformationObj.graphs.push(graph);
     }
-    // TODO: get the nt file from the dispatcher
+
+    // Save the new transformation
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+
+    // Store transformation to server
+    this.persistTransformation();
+  }
+
+  persistTransformation() {
+    console.log(this.transformationObj);
+
+    const publisher = 'nvnikolov';
+    const existingTransformationID = 'eubg-sdati-uk-d04a5347-3d2b-403d-8a60-a3060a553f6b';
+    const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
+    const newTransformationName = 'test-graft-transformation';
+    const isPublic = false;
+    const newTransformationDescription = 'testing graft created from annotations';
+    const newTransformationKeywords = ['graft', 'annotations'];
+    const newTransformationConfiguration = {
+      type: 'graft',
+      command: 'my-graft',
+      code: someClojure,
+      json: JSON.stringify(this.transformationObj)
+    };
+    return this.dispatch.updateTransformation(existingTransformationID,
+      publisher,
+      newTransformationName + '-new',
+      isPublic,
+      newTransformationDescription + ' new',
+      newTransformationKeywords.concat('four'),
+      newTransformationConfiguration).then(
+        (result) => {
+          console.log(result);
+        },
+        (error) => {
+          console.log('Error updating transformation');
+          console.log(error);
+        });
   }
 
   /**
@@ -135,53 +173,61 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param {string} graphURI
    * @returns {transformationDataModel.Graph}
    */
-  buildGraph(annotations: Annotation[], graphURI = 'http://www.ew-shopp.eu/#/') {
+  buildGraph(annotations: Annotation[], graphURI = 'http://eubusinessgraph.eu/#/') {
     const objNodes = {};
     const rootNodes = {};
 
     // Build all object nodes
+    // NOTE: the subelements array should be always empty (otherwise, a BLANK NODE will be produced)
     annotations.forEach(annotation => {
+      // TODO: to be removed when the header will be cleaned before fetching data
+      let cleanHeader = annotation.columnHeader;
+      if (cleanHeader.startsWith(':')) {
+        cleanHeader = cleanHeader.substring(1);
+      }
+
       if (annotation.columnValuesType === ColumnTypes.URI) {
-        const type = annotation.columnType.substring(annotation.columnTypeNamespace.length);
-        const typeNode = new transformationDataModel.ConstantURI(annotation.columnTypePrefix, type, [], []);
-        const property = annotation.property.substring(annotation.propertyNamespace.length);
-        const propertyType = new transformationDataModel.Property(annotation.propertyPrefix, property, [], [typeNode]);
+        // const type = annotation.columnType.substring(annotation.columnTypeNamespace.length);
+        // const typeNode = new transformationDataModel.ConstantURI(annotation.columnTypePrefix, type, [], []);
+        // const propertyType  = new transformationDataModel.Property('rdf', 'type', [], [typeNode]);
+
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          annotation.urifyPrefix,
-          annotation.columnHeader,
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': cleanHeader },
           [], // node conditions
-          [propertyType], // subelements
+          [], // subelements
         );
       } else if (annotation.columnValuesType === ColumnTypes.Literal) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          annotation.columnHeader,
-          Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotation.columnDatatype), // datatype
+          { 'id': 0, 'value': cleanHeader },
+          { 'id': 0, 'name': Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotation.columnDatatype) }, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
           annotation.columnDatatype,
           [], // nodeCondition
         );
-      } else {
-        console.log('blank node?');
       }
     });
 
     // Build all roots nodes
-    const subjectCols = Array.from(new Set(this.annotationService.subjects.values()));
-    const subjectAnnotations = annotations.filter(annotation => (subjectCols.includes(annotation.columnHeader)));
-    subjectAnnotations.forEach((annotation) => {
-      if (annotation.columnValuesType === ColumnTypes.Literal) {
-        throw Error('Subject column cannot be literal!');
-      } else if (annotation.columnValuesType === ColumnTypes.URI) {
+    // NOTE: all URI columns are roots, because of their 'rdf:type' property
+
+    // const subjectCols = Array.from(new Set(this.annotationService.subjects.values()));
+    // const subjectAnnotations = annotations.filter(annotation => (subjectCols.includes(annotation.columnHeader)));
+    annotations.forEach((annotation) => {
+      // TODO: to be removed when the header will be cleaned before fetching data
+      let cleanHeader = annotation.columnHeader;
+      if (cleanHeader.startsWith(':')) {
+        cleanHeader = cleanHeader.substring(1);
+      }
+      if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          annotation.urifyPrefix,
-          annotation.columnHeader,
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': cleanHeader },
           [], // node conditions
-          this.buildPropertiesForSubject(annotation, objNodes, annotations), // subelements
+          this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         )
-      } else {
-        console.log('blank node?');
       }
     });
 
@@ -192,16 +238,18 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Given a subject column, this method returns all its subelements (which are properties linked to their own objects column)
-   * Also the rdf:type properties is created.
-   * @param {Annotation} subjectAnnotations
+   * Given a column of type URI, this method returns all its subelements (which are properties linked to their own objects column) if any.
+   * The rdf:type properties is also created.
+   * @param {Annotation} annotation
    * @param {{}} objNodes
    * @param {Annotation[]} annotations
    * @returns {Array}
    */
-  private buildPropertiesForSubject(subjectAnnotations: Annotation, objNodes: {}, annotations: Annotation[]) {
+  private buildPropertiesForURINode(annotation: Annotation, objNodes: {}, annotations: Annotation[]) {
     const properties = [];
-    const objects = annotations.filter(ann => (ann.subject === subjectAnnotations.columnHeader));
+    const objects = annotations.filter(ann => (ann.subject === annotation.columnHeader));
+
+    // If the annotation is not related to a subject column, this FOR statement will be skipped
     objects.forEach(object => {
       const objectNode = objNodes[object.columnHeader];
       const property = object.property.substring(object.propertyNamespace.length);
@@ -209,9 +257,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       properties.push(propertyType)
     });
 
-    // Create the rdf:type prop
-    const typePrefix = subjectAnnotations.columnTypePrefix;
-    const type = subjectAnnotations.columnType.substring(subjectAnnotations.columnTypeNamespace.length);
+    // Create the rdf:type prop - all URI annotations must provide their own rdf type
+    const typePrefix = annotation.columnTypePrefix;
+    const type = annotation.columnType.substring(annotation.columnTypeNamespace.length);
     const typeNode = new transformationDataModel.ConstantURI(typePrefix, type, [], []);
     properties.push(new transformationDataModel.Property('rdf', 'type', [], [typeNode]));
     return properties;

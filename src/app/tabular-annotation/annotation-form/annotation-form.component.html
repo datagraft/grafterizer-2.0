@@ -148,13 +148,16 @@
                    class="tooltip tooltip-validation tooltip-sm"
                    [class.invalid]="annotationForm.get('columnInfo.urifyNamespace').invalid
                       && (annotationForm.get('columnInfo.urifyNamespace').dirty ||
-                      annotationForm.get('columnInfo.urifyNamespace').touched)">
+                      annotationForm.get('columnInfo.urifyNamespace').touched)
+                      || annotationForm.hasError('invalidUrifyNamespace')">
               <input id="urifyNamespace"
                      type="text"
                      formControlName="urifyNamespace"
                      placeholder="Insert a namespace"/>
               <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('invalidURL')"
                     class="tooltip-content"> {{annotationForm.get('columnInfo.urifyNamespace').errors['invalidURL'].errorMessage}} </span>
+              <span *ngIf="annotationForm.hasError('invalidUrifyNamespace')"
+                    class="tooltip-content"> {{annotationForm.errors['invalidUrifyNamespace'].errorMessage}}</span>
             </label>
           </div>
         </div>
