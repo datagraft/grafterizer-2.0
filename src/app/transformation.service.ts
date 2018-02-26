@@ -100,7 +100,7 @@ export class TransformationService {
       .toPromise()
       .then(
       (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash);
+        return this.pollCacheService(dispatchResponse.hash, 'pipe');
       },
       (error) => this.errorHandler(error));
   }
@@ -121,7 +121,7 @@ export class TransformationService {
       .toPromise()
       .then(
       (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash);
+        return this.pollCacheService(dispatchResponse.hash, 'pipe');
       },
       (error) => this.errorHandler(error));
   }
@@ -146,13 +146,13 @@ export class TransformationService {
       .toPromise()
       .then(
       (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash);
+        return this.pollCacheService(dispatchResponse.hash, transformationType);
       },
       (error) => this.errorHandler(error)
     );
   }
 
-  private pollCacheService(hash: string): Promise<any> {
+  private pollCacheService(hash: string, transformationType: string): Promise<any> {
     const statusUrl = this.graftwerkCachePath + '/graftermemcache/' + hash + '?status=1';
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
@@ -168,7 +168,15 @@ export class TransformationService {
           if (!result.processing) {
             sub.unsubscribe();
             this.http.get(resultUrl, options)
-              .map((responseCache) => jsedn.toJS(jsedn.parse(responseCache.text())))
+              .map((responseCache) => {
+                // if transformation is a pipe (pipeline), then we parse the response using JSEDN
+                if (transformationType === 'pipe') {
+                  return jsedn.toJS(jsedn.parse(responseCache.text()));
+                } else {
+                  // if transformation is a graft (or undefined), we pass the response as plain text
+                  return responseCache;
+                }
+              })
               .toPromise()
               .then(
               (transformationResult) => {
