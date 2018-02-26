@@ -39,7 +39,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   public hot: any;
 
   public saveLoading: boolean;
-  public persistLoading: boolean;
+  public retrieveRDFLoading: boolean;
   public graphNotSaved: boolean;
   public dataLoading: boolean;
 
@@ -64,7 +64,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.dataLoading = true;
     this.saveLoading = false;
-    this.persistLoading = false;
+    this.retrieveRDFLoading = false;
     this.graphNotSaved = true;
   }
 
@@ -209,14 +209,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         (result) => {
           console.log(result);
           console.log('Data uploaded');
+          this.graphNotSaved = false;
+          this.saveLoading = false;
         },
         (error) => {
           console.log('Error updating transformation');
           console.log(error);
-          this.persistLoading = false;
+          this.graphNotSaved = true;
+          this.saveLoading = false;
         });
     }
-    this.graphNotSaved = false;
     this.saveLoading = false;
   }
 
@@ -225,25 +227,25 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param {string} rdfFormat specifies the RDF syntax
    */
   retrieveRDF(rdfFormat: string = 'nt') {
-    this.persistLoading = true;
+    this.retrieveRDFLoading = true;
     const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
       const existingTransformationID = paramMap.get('transformationId');
       const filestoreID = paramMap.get('filestoreId');
       console.log(this.transformationObj);
       this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
         (transformed) => {
           console.log(transformed);
-          this.persistLoading = false;
+          this.retrieveRDFLoading = false;
         },
         (error) => {
           console.log('Error transforming file');
           console.log(error);
-          this.persistLoading = false;
+          this.retrieveRDFLoading = false;
         }
       );
     }
-    this.persistLoading = false;
+    this.retrieveRDFLoading = false;
   }
 
   /**
@@ -309,9 +311,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           [], // subelements
         );
       } else if (annotation.columnValuesType === ColumnTypes.Literal) {
+        let datatype = Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotation.columnDatatype);
+        if (!datatype) {
+          datatype = 'custom';
+        }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
           {'id': 0, 'value': cleanHeader},
-          {'id': 0, 'name': Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotation.columnDatatype)}, // datatype
+          {'id': 0, 'name': datatype}, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
