@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AnnotationService} from '../annotation.service';
 import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
@@ -6,6 +6,7 @@ import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '
 import {Annotation} from '../annotation.model';
 import * as nlp from 'wink-nlp-utils';
 import {HttpParams, HttpClient} from '@angular/common/http';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 
 class CustomValidators {
 
@@ -195,7 +196,7 @@ export const XSDDatatypes = {
   styleUrls: ['./annotation-form.component.css']
 })
 export class AnnotationFormComponent implements OnInit, OnDestroy {
-  @Input() header: any;
+  public header: any;
 
   open = false;
   isSubject = false;
@@ -236,7 +237,11 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     return string;
   }
 
-  constructor(public annotationService: AnnotationService, private http: HttpClient, private config: AppConfig) {
+  constructor(public annotationService: AnnotationService,
+              private http: HttpClient,
+              private config: AppConfig,
+              public dialogRef: MatDialogRef<AnnotationFormComponent>,
+              @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
     this.abstatPath = this.config.getConfig('abstat-path');
     this.annotationService.subjectsChange.subscribe(subjects => {
       this.isSubject = false;
@@ -261,7 +266,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.annotation = this.annotationService.getAnnotation(this.header);
+    this.header = this.dialogInputData.header;
+    this.annotation = this.dialogInputData.annotation;
     this.fillAllowedSourcesArray();
     this.buildForm();
     this.onChanges();
@@ -531,6 +537,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.annotationService.setAnnotation(this.header, this.annotation);
     this.annotationForm.markAsPristine();
     this.submitted = true;
+    this.dialogRef.close(this.annotation);
   }
 
   annotationsSuggestion() {

@@ -1,9 +1,9 @@
-<div style="text-align: center" *ngIf="dataLoading">
+<div style="text-align: center" [hidden]="!dataLoading">
   <span class="spinner spinner-lg" style="margin-top: 200px">
     Loading...
   </span>
 </div>
-<div class="btn-group" *ngIf="!dataLoading">
+<div class="btn-group" [hidden]="dataLoading">
   <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="annotationService.getAnnotations().length === 0">
     <clr-icon shape="floppy"></clr-icon> Create graph
   </button>
@@ -15,30 +15,10 @@
     </button>
     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
       <label class="dropdown-header">Formats</label>
-      <button type="button" clrDropdownItem (click)="persistTransformation('nt')" >.nt</button>
-      <button type="button" clrDropdownItem (click)="persistTransformation('ttl')" >.ttl</button>
-      <button type="button" clrDropdownItem (click)="persistTransformation('rdf')" >.rdf</button>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('nt')" >.nt</button>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')" >.ttl</button>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')" >.rdf</button>
     </clr-dropdown-menu>
   </clr-dropdown>
 </div>
-<table class="table table-compact" *ngIf="!dataLoading">
-  <thead>
-    <tr>
-      <th *ngFor="let h of annotationService.headers" class="left">
-        <app-annotation-form [header]='h'></app-annotation-form>
-      </th>
-    </tr>
-    <tr>
-      <th *ngFor="let h of annotationService.headers">
-        {{h}}
-      </th>
-    </tr>
-  </thead>
-  <tbody class="vertical-border">
-    <tr *ngFor="let row of annotationService.data">
-      <td *ngFor="let header of annotationService.headers">
-        {{row[header]}}
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div id="handsontable" [hidden]="dataLoading"></div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
-import {Annotation} from './annotation.model';
+import { Annotation } from './annotation.model';
 
 @Injectable()
 export class AnnotationService {
@@ -22,7 +22,7 @@ export class AnnotationService {
     this.subjectsChange.subscribe((value) => {
       this.subjects = value;
     });
-  };
+  }
 
   updateSubjects(subjects) {
     this.subjectsChange.next(subjects);

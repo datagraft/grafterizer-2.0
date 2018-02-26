@@ -11,6 +11,7 @@ import {AnnotationFormComponent} from './annotation-form/annotation-form.compone
 import {ClarityModule} from 'clarity-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatDialogModule} from '@angular/material';
 
 @NgModule({
   imports: [
@@ -21,8 +22,10 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     ClarityModule,
     FormsModule,
     ReactiveFormsModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatDialogModule
   ],
+  entryComponents: [AnnotationFormComponent],
   declarations: [
     TabularAnnotationComponent,
     TabularAnnotationDetailComponent,
