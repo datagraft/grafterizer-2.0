@@ -36,7 +36,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private transformations: SelectItem[];
   private selected: any;
   private modalEnabled = false;
-  private subscription: Subscription;
   private message: any;
 
   private transformationSubscription: Subscription;
@@ -111,7 +110,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.selectedFunctionSubscription.unsubscribe();
     this.transformationSubscription.unsubscribe();
