@@ -27,7 +27,6 @@ declare var Handsontable: any;
   templateUrl: './tabular-annotation.component.html',
   styleUrls: ['./tabular-annotation.component.css'],
 })
-
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
@@ -93,7 +92,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.container, this.settings);
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
-        if (event.realTarget.nodeName === 'BUTTON' || event.realTarget.nodeName === 'CLR-ICON') {
+        if (event.realTarget.nodeName === 'BUTTON' || (
+          event.realTarget.nodeName === 'CLR-ICON' && event.path[1] && event.path[1].nodeName === 'BUTTON')) {
           blockCalculations.cells = true;
           this.openDialogForSelectedColumn(coords.col);
         }
