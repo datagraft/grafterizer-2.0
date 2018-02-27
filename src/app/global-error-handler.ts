@@ -26,8 +26,9 @@ export class GlobalErrorHandler implements ErrorHandler {
     console.log('error!');
     console.log(message);
     this.globalErrors.push(message);
+    const tmpHack: any = this.injector;
     // I have no idea why this works...
-    this.injector.changeGlobalErrors(this.globalErrors);
+    tmpHack.changeGlobalErrors(this.globalErrors);
     console.log(this.globalErrorRepSvc);
   }
 }
