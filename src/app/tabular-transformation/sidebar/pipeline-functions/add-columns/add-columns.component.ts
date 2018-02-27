@@ -56,7 +56,6 @@ export class AddColumnsComponent implements OnInit {
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
-          console.log(this.previewedDataColumns);
         }
       });
   }

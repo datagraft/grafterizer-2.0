@@ -12,10 +12,12 @@
 
 <make-dataset class="sin-flex"></make-dataset>
 
+<add-columns class="sin-flex"></add-columns>
+
+<custom-function-modal class="sin-flex"></custom-function-modal>
+
 <derive-column [modalEnabled]="selected.id=='DeriveColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="deriveColumnFunction"
   [columns]="headers" [transformation]="transformationObj"></derive-column>
-
-<add-columns class="sin-flex"></add-columns>
 
 <!--<take-rows [modalEnabled]="selected.id=='DropRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="dropRowsFunction"></take-rows>
 
@@ -39,15 +41,11 @@
 <merge-columns [modalEnabled]="selected.id=='MergeColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mergeColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers"></merge-columns>
 
-
-
 <deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [columns]="headers"></deduplicate>
 
 <add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
   [columns]="headers"></add-row>
-
-
 
 <map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mapcFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></map-columns>
@@ -58,6 +56,4 @@
 <filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows>
 
-<utility-function [modalEnabled]="selected.id=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function>
-
-<custom-function-modal [modalEnabled]="selected.id=='CustomFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></custom-function-modal>-->
+<utility-function [modalEnabled]="selected.id=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function>-->

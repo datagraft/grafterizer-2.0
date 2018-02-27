@@ -53,7 +53,6 @@ export class AppComponent implements OnInit {
                   self.transformationSvc.changeTransformationObj(transformationObj);
                   if (paramMap.has('filestoreId')) {
                     console.log(transformationObj.pipelines[0].functions)
-                    console.log('app.component')
                     this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                   }
                 },

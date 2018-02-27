@@ -8,7 +8,7 @@ import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
-import { CodemirrorModule } from 'ng2-codemirror';
+import { CodemirrorModule } from '@nomadreservations/ngx-codemirror';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';

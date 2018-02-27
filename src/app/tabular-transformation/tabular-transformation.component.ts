@@ -58,17 +58,12 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
-      { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
+      { label: 'Custom function', value: { id: 'CustomFunctionDeclaration', defaultParams: null } }
     ];
     route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
   ngOnInit() {
-    //    this.transformationSubscription =
-    //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
-    //      this.transformationObj = message;
-    //    });
-
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.previewedTransformationObj = previewedTransformation;
@@ -77,7 +72,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
-        console.log(previewedData);
         this.graftwerkData = previewedData;
         //        this.handsonTable.showLoading = true;
         //        this.handsonTable.displayJsEdnData(this.graftwerkData);
@@ -103,6 +97,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
     this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
       .then((result) => {
+        console.log(this.previewedTransformationObj);
         this.transformationSvc.changeGraftwerkData(result);
         // TODO these actions should be delegated to the profiling component
         this.profilingComponent.loadJSON(result);

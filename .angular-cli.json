@@ -23,6 +23,7 @@
       "prefix": "app",
       "styles": [
         "styles.css",
+        "../node_modules/codemirror/lib/codemirror.css",
         "../node_modules/semantic-ui/dist/semantic.min.css",
         "../node_modules/datavoyager/lib-test/style.css",
         "../node_modules/clarity-icons/clarity-icons.min.css",
@@ -33,7 +34,7 @@
         "../node_modules/font-awesome/css/font-awesome.min.css",
         "../node_modules/primeng/resources/primeng.min.css",
         "../node_modules/primeng/resources/themes/omega/theme.css",
-        "../node_modules/codemirror/theme/mdn-like.css",
+        "../node_modules/codemirror/theme/monokai.css",
         "../src/assets/handsontable.full.css"
       ],
       "scripts": [
