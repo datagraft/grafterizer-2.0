@@ -13,19 +13,11 @@ export class AnnotationService {
   public isFull = false;
 
   public subjects = new Map<string, string>();
-  subjectsChange: Subject<Map<string, string>> = new Subject<Map<string, string>>();
 
   constructor(public http: Http) {
     this.annotations = {};
     this.headers = [];
     this.data = [];
-    this.subjectsChange.subscribe((value) => {
-      this.subjects = value;
-    });
-  }
-
-  updateSubjects(subjects) {
-    this.subjectsChange.next(subjects);
   }
 
   // call the remote service that try to annotate the table, after that map the results in the arrays into annotationService
@@ -54,13 +46,11 @@ export class AnnotationService {
 
   setAnnotation(columnHeader: string, annotation: Annotation) {
     this.subjects.set(columnHeader, annotation.subject);
-    this.updateSubjects(this.subjects);
     this.annotations[columnHeader] = annotation;
   }
 
   removeAnnotation(columnHeader: string) {
     this.subjects.delete(columnHeader);
-    this.updateSubjects(this.subjects);
     delete this.annotations[columnHeader];
   }
 

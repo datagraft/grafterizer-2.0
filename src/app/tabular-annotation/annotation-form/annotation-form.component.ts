@@ -243,30 +243,15 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
               public dialogRef: MatDialogRef<AnnotationFormComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
     this.abstatPath = this.config.getConfig('abstat-path');
-    this.annotationService.subjectsChange.subscribe(subjects => {
-      this.isSubject = false;
-      let i = 0;
-      const subjectsLabel = [];
-      subjects.forEach((value: String) => {
-        if (value === this.header) {
-          this.isSubject = true;
-          subjectsLabel.push(i);
-          if (this.submitted && this.annotation && this.annotationForm) {
-            if (this.isValuesTypeNotValid(this.annotation.columnValuesType)) {
-              this.submitted = false;
-              this.annotationService.removeAnnotation(this.header);
-              // Force the form to re-check itself -> produce the error on columnValuesType
-              this.changeValuesType(this.annotation.columnValuesType);
-            }
-          }
-        }
-        i++;
-      });
-    });
   }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
+    this.annotationService.subjects.forEach((value: string) => {
+      if (value === this.header) {
+        this.isSubject = true;
+      }
+    });
     this.annotation = this.dialogInputData.annotation;
     this.fillAllowedSourcesArray();
     this.buildForm();
@@ -330,9 +315,15 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
        this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
       }
     }
-    this.changeValuesType(valuesType);
+    this.changeValuesType(valuesType); // this method marks the field as dirty
+    this.annotationForm.get('columnInfo.columnValuesType').markAsPristine();
+
     this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
     if (this.annotationForm.get('relationship.subject').invalid) { // check if the subject column exists)
+      this.annotationForm.get('relationship.subject').markAsDirty();
+      this.annotationService.removeAnnotation(this.header);
+      this.submitted = false;
+    } else if (this.annotationForm.get('columnInfo.columnValuesType').invalid) { // check if the values type is valid
       this.annotationForm.get('relationship.subject').markAsDirty();
       this.annotationService.removeAnnotation(this.header);
       this.submitted = false;
