@@ -36,8 +36,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   public saveLoading: boolean;
   public retrieveRDFLoading: boolean;
-  public graphNotSaved: boolean;
   public dataLoading: boolean;
+
+  public saveButtonDisabled: boolean;
+  public rdfButtonDisabled: boolean;
 
   /**
    * Return the namespace of a URL
@@ -61,7 +63,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.dataLoading = true;
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
-    this.graphNotSaved = true;
+    this.saveButtonDisabled = true;
+    this.rdfButtonDisabled = true;
   }
 
   ngOnInit() {
@@ -138,6 +141,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.hot.updateSettings({
         colHeaders: (col) => this.getTableHeader(col)
       });
+      this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
     });
   }
 
@@ -214,13 +218,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         (result) => {
           console.log(result);
           console.log('Data uploaded');
-          this.graphNotSaved = false;
+          this.rdfButtonDisabled = false;
           this.saveLoading = false;
         },
         (error) => {
           console.log('Error updating transformation');
           console.log(error);
-          this.graphNotSaved = true;
+          this.rdfButtonDisabled = true;
           this.saveLoading = false;
         });
     }

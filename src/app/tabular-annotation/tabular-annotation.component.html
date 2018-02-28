@@ -4,11 +4,11 @@
   </span>
 </div>
 <div class="btn-group" [hidden]="dataLoading">
-  <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="annotationService.getAnnotations().length === 0">
+  <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
     <clr-icon shape="floppy"></clr-icon> Create graph
   </button>
   <clr-dropdown>
-    <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="graphNotSaved" clrDropdownTrigger>
+    <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
       <clr-icon shape="download"></clr-icon>
       Create RDF triples
       <clr-icon shape="caret down"></clr-icon>
