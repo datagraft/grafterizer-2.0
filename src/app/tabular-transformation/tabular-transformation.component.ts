@@ -10,6 +10,7 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
 import { Subscription } from 'rxjs/Subscription';
+import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -30,22 +31,22 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
-  private previewedTransformationObj: any;
   private graftwerkData: any;
 
-  private transformationSubscription: Subscription;
-  private previewedTransformationSubscription: Subscription;
   private dataSubscription: Subscription;
+
+  private previewErrorSubscription: Subscription;
+  private previewError: string;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
-  private previewError: string;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
                private transformationSvc: TransformationService, private routingService: RoutingService,
-               private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
+               private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef,
+  private globalErrorSvc: GlobalErrorReportingService) {
     this.differ = differs.find({}).create();
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
@@ -64,17 +65,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    //    this.transformationSubscription =
-    //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
-    //      this.transformationObj = message;
-    //    });
-
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-      this.previewedTransformationObj = previewedTransformation;
-      this.updatePreviewedData();
-    });
-
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         console.log(previewedData);
@@ -87,39 +77,21 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
         this.cd.detectChanges();
       }
     });
+
+    this.previewErrorSubscription = this.globalErrorSvc.previewErrorObs.subscribe((previewError) => {
+      if (previewError) {
+        this.previewError = previewError;
+      } else {
+        delete this.previewError;
+      }
+      
+    });
   }
 
   ngOnDestroy() {
     //    this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-    this.previewedTransformationSubscription.unsubscribe();
-  }
-
-
-  updatePreviewedData() {
-    delete this.previewError;
-    this.profilingComponent.progressbar = true;
-    const paramMap = this.route.snapshot.paramMap;
-    const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
-      .then((result) => {
-      this.transformationSvc.changeGraftwerkData(result);
-      // TODO these actions should be delegated to the profiling component
-      this.profilingComponent.loadJSON(result);
-      this.profilingComponent.refresh(this.handsontableSelection);
-      this.loadedDataHeaders = result[':column-names'].map(o => o.substring(1, o.length));
-      this.profilingComponent.progressbar = false;
-    }, (err) => {
-      this.previewError = err;
-      this.transformationSvc.changeGraftwerkData(
-        {
-          ':column-names': [],
-          ':rows': []
-        });
-      console.log(err);
-      // TODO: move this to profiling component
-      this.profilingComponent.progressbar = false;
-    })
+    this.previewErrorSubscription.unsubscribe();
   }
 
   tableSelectionChanged(newSelection: any) {

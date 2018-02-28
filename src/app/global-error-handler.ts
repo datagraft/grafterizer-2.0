@@ -22,13 +22,14 @@ export class GlobalErrorHandler implements ErrorHandler {
   }
 
   handleError(error) {
-    const message = error.message ? error.message : error.toString();
-    console.log('error!');
-    console.log(message);
-    this.globalErrors.push(message);
-    const tmpHack: any = this.injector;
-    // I have no idea why this works...
-    tmpHack.changeGlobalErrors(this.globalErrors);
-    console.log(this.globalErrorRepSvc);
+    if (error) {
+      const message = error.message ? error.message : error.toString();
+      console.log('error!');
+      console.log(error);
+      this.globalErrors.push(message);
+      const tmpHack: any = this.injector;
+      // I have no idea why this works...
+      tmpHack.changeGlobalErrors(this.globalErrors);
+    }
   }
 }

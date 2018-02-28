@@ -21,8 +21,12 @@ import * as data from '../assets/data.json';
 export class AppComponent implements OnInit {
   private basic = true;
   private url: any = 'transformation/new/';
-  private subscription: Subscription;
-  private routeSubscription: Subscription;
+  private routingServiceSubscription: Subscription;
+  private initRouteSubscription: Subscription;
+  private updateDataRouteSubscription: Subscription;
+
+  private previewedTransformationSubscription: Subscription;
+  private previewedTransformationObj: any;
 
   private globalErrorSubscription: Subscription;
   private globalErrors: Array<any>;
@@ -32,15 +36,16 @@ export class AppComponent implements OnInit {
                public messageSvc: DataGraftMessageService, private routingService: RoutingService,
                private globalErrorRepSvc: GlobalErrorReportingService) {
 
-    this.subscription = this.routingService.getMessage().subscribe(message => {
-      this.url = message;
+    this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
+      this.url = url;
     });
 }
 
 
   ngOnInit() {
+    console.log('INITIALISING APP COMPONENT ');
     const self = this;
-    this.routeSubscription = this.router.events.subscribe(
+    this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
         if (event instanceof NavigationEnd) {
           const paramMap = self.route.firstChild.snapshot.paramMap;
@@ -55,16 +60,57 @@ export class AppComponent implements OnInit {
                 }
               },
               (error) => {
-                console.log(error)
+                console.log(error);
               });
           }
-          self.routeSubscription.unsubscribe();
+          self.initRouteSubscription.unsubscribe();
+        }
+      });
+
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.previewedTransformationObj = previewedTransformation;
+        // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
+        if (!this.route.firstChild) {
+          // We use this subscription to catch the moment when the navigation has ended
+          this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
+            // If the event for navigation end is emitted, the child components are initialised.
+            // We can proceed to updating the previewed data.
+            if (event instanceof NavigationEnd) {
+              this.updatePreviewedData();
+              // this subscription is no longer needed for the rest of the life of the app component
+              this.updateDataRouteSubscription.unsubscribe();
+            }
+          });
+        } else {
+          // the sub-components are already initialised, so we can get the route parameters as normal
+          this.updatePreviewedData();
         }
       });
 
     this.globalErrorSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
       this.globalErrors = globalErrors;
     });
+  }
+
+  updatePreviewedData() {
+    this.globalErrorRepSvc.changePreviewError(undefined);
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+
+    if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+        .then((result) => {
+          this.transformationSvc.changeGraftwerkData(result);
+        }, (err) => {
+          this.globalErrorRepSvc.changePreviewError(err);
+          this.transformationSvc.changeGraftwerkData(
+            {
+              ':column-names': [],
+              ':rows': []
+            });
+        });
+    }
   }
 
   onClose(index) {
