@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AnnotationService } from './annotation.service';
+import {AnnotationService} from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
@@ -11,12 +11,9 @@ import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
 import { Http } from '@angular/http';
-import { Annotation } from './annotation.model';
+import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {
-  AnnotationFormComponent, ColumnTypes,
-  XSDDatatypes
-} from './annotation-form/annotation-form.component';
+import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
 
@@ -153,10 +150,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
       '</button>';
     if (annotation) {
-      if ((annotation.isSubject && annotation.columnValuesType !== ColumnTypes.URI) ||
-        (!this.annotationService.headers.includes(annotation.subject))) {
+      if (annotation.status === AnnotationStatuses.wrong) {
         HTMLHeader += '<clr-icon shape="error-standard" class="is-danger is-solid"></clr-icon>';
-      } else {
+      } else if (annotation.status === AnnotationStatuses.warning) {
+        HTMLHeader += '<clr-icon shape="warning-standard" class="is-warning is-solid"></clr-icon>';
+      } else if (annotation.status === AnnotationStatuses.valid) {
         HTMLHeader += '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
       }
     }

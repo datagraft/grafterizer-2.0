@@ -3,7 +3,7 @@ import {AnnotationService} from '../annotation.service';
 import {Observable} from 'rxjs/Observable';
 import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {Annotation} from '../annotation.model';
+import {Annotation, ColumnTypes, XSDDatatypes} from '../annotation.model';
 import * as nlp from 'wink-nlp-utils';
 import {HttpParams, HttpClient} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
@@ -170,25 +170,6 @@ class CustomValidators {
     };
   }
 }
-
-export const ColumnTypes = {
-  URI: 'URI' as 'URI',
-  Literal: 'Literal' as 'Literal',
-};
-
-export const XSDDatatypes = {
-  'byte': 'https://www.w3.org/2001/XMLSchema#byte',
-  'short': 'https://www.w3.org/2001/XMLSchema#short',
-  'integer': 'https://www.w3.org/2001/XMLSchema#int',
-  'long': 'https://www.w3.org/2001/XMLSchema#integer',
-  'decimal': 'https://www.w3.org/2001/XMLSchema#decimal',
-  'float': 'https://www.w3.org/2001/XMLSchema#float',
-  'double': 'https://www.w3.org/2001/XMLSchema#double',
-  'boolean': 'https://www.w3.org/2001/XMLSchema#boolean',
-  'date': 'https://www.w3.org/2001/XMLSchema#dateTime',
-  'string': 'https://www.w3.org/2001/XMLSchema#string',
-  'custom': ''
-};
 
 @Component({
   selector: 'app-annotation-form',

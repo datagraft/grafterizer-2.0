@@ -1,3 +1,29 @@
+export const ColumnTypes = {
+  URI: 'URI' as 'URI',
+  Literal: 'Literal' as 'Literal',
+};
+
+export const XSDDatatypes = {
+  'byte': 'https://www.w3.org/2001/XMLSchema#byte',
+  'short': 'https://www.w3.org/2001/XMLSchema#short',
+  'integer': 'https://www.w3.org/2001/XMLSchema#int',
+  'long': 'https://www.w3.org/2001/XMLSchema#integer',
+  'decimal': 'https://www.w3.org/2001/XMLSchema#decimal',
+  'float': 'https://www.w3.org/2001/XMLSchema#float',
+  'double': 'https://www.w3.org/2001/XMLSchema#double',
+  'boolean': 'https://www.w3.org/2001/XMLSchema#boolean',
+  'date': 'https://www.w3.org/2001/XMLSchema#dateTime',
+  'string': 'https://www.w3.org/2001/XMLSchema#string',
+  'custom': ''
+};
+
+export const AnnotationStatuses = {
+  invalid: 'invalid' as 'invalid',
+  wrong: 'wrong' as 'wrong',
+  warning: 'warning' as 'warning',
+  valid: 'valid' as 'valid',
+};
+
 export class Annotation {
 
   columnHeader: string;
@@ -24,6 +50,7 @@ export class Annotation {
 
   // Helper
   isSubject: boolean;
+  status: string;
 
   constructor(obj?: any) {
     this.subject = obj && obj.subject || '';
@@ -42,5 +69,6 @@ export class Annotation {
     this.columnDatatypePrefix = obj && obj.columnDatatypePrefix || '';
     this.langTag = obj && obj.langTag || '';
     this.isSubject = obj && obj.isSubject || '';
+    this.status = obj && obj.status || '';
   }
 }
