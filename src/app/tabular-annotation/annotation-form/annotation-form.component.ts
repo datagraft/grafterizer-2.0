@@ -524,7 +524,12 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         }
       }
     }
-    this.isObject = this.annotation.subject !== '' && this.annotation.property !== '';
+    this.annotationService.subjects.forEach((value: string) => {
+      if (value === this.header) {
+        this.isSubject = true;
+      }
+    });
+    this.annotation.isSubject = this.isSubject;
     this.annotationService.setAnnotation(this.header, this.annotation);
     this.annotationForm.markAsPristine();
     this.submitted = true;

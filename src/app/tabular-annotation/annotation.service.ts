@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
-import { Subject } from 'rxjs/Subject';
 import { Annotation } from './annotation.model';
 
 @Injectable()
@@ -9,49 +7,30 @@ export class AnnotationService {
   private annotations;
   public headers: string[];
   public data;
+  public subjects;
 
-  public isFull = false;
-
-  public subjects = new Map<string, string>();
-
-  constructor(public http: Http) {
+  constructor() {
     this.annotations = {};
     this.headers = [];
     this.data = [];
-  }
-
-  // call the remote service that try to annotate the table, after that map the results in the arrays into annotationService
-  getRemoteResponse() {
-    // TODO: change url
-    this.http.request('http://localhost:3000/response').subscribe((res: Response) => {
-      const response = res.json();
-      // get annotation from remote service
-      // first get annotation of named entity columns
-      // after get annotation of literal columns
-      // in the end (it doesn't even matter) sort annotation through the id
-      this.annotations = response.neCols.map((obj: Object) => {
-        return new Annotation(obj);
-      });
-      const b = response.litCols.map((obj: Object) => {
-        return new Annotation(obj);
-      });
-
-      this.annotations = this.annotations.concat(b);
-    },
-      (err: any) => {
-        console.log(err);
-      });
-    this.isFull = true;
+    this.subjects = new Map<string, string>();
   }
 
   setAnnotation(columnHeader: string, annotation: Annotation) {
-    this.subjects.set(columnHeader, annotation.subject);
+    console.log(annotation);
+    console.log(annotation.subject);
+    if (annotation.subject !== '') {
+      this.subjects.set(columnHeader, annotation.subject);
+    }
+    console.log(this.subjects);
     this.annotations[columnHeader] = annotation;
+    this.updateSubjects();
   }
 
   removeAnnotation(columnHeader: string) {
     this.subjects.delete(columnHeader);
     delete this.annotations[columnHeader];
+    this.updateSubjects();
   }
 
   getAnnotation(columnHeader: string): Annotation {
@@ -81,5 +60,11 @@ export class AnnotationService {
       }
     });
     return annotations;
+  }
+
+  private updateSubjects() {
+    Object.values(this.annotations).forEach((ann) => {
+      this.annotations[ann.columnHeader].isSubject = Array.from(this.subjects.values()).includes(ann.columnHeader);
+    });
   }
 }

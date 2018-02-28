@@ -148,12 +148,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const header = this.annotationService.headers[col];
     const annotation = this.annotationService.getAnnotation(header);
     const buttonIconShape = annotation ? 'pencil' : 'plus';
-    return '<span> ' +
-      header +
+    let HTMLHeader = header +
       '<button class="btn btn-sm btn-link btn-icon">' +
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
-      '</button>' +
-      '</span>';
+      '</button>';
+    if (annotation) {
+      if ((annotation.isSubject && annotation.columnValuesType !== ColumnTypes.URI) ||
+        (!this.annotationService.headers.includes(annotation.subject))) {
+        HTMLHeader += '<clr-icon shape="error-standard" class="is-danger is-solid"></clr-icon>';
+      } else {
+        HTMLHeader += '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
+      }
+    }
+    return HTMLHeader;
   }
 
   /**

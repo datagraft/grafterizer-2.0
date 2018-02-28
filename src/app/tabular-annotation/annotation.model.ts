@@ -22,6 +22,9 @@ export class Annotation {
   columnDatatypeNamespace: string; // auto-filled based on the vocabularies
   langTag: string;
 
+  // Helper
+  isSubject: boolean;
+
   constructor(obj?: any) {
     this.subject = obj && obj.subject || '';
     this.property = obj && obj.property || '';
@@ -38,5 +41,6 @@ export class Annotation {
     this.columnDatatypeNamespace = obj && obj.columnDatatypeNamespace || '';
     this.columnDatatypePrefix = obj && obj.columnDatatypePrefix || '';
     this.langTag = obj && obj.langTag || '';
+    this.isSubject = obj && obj.isSubject || '';
   }
 }
