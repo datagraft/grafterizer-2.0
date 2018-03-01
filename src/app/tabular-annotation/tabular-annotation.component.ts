@@ -161,6 +161,20 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       } else if (annotation.status === AnnotationStatuses.valid) {
         HTMLHeader += '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
       }
+      HTMLHeader += '<br>';
+      let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnType : annotation.columnDatatype;
+      let property = annotation.property;
+      let subject = annotation.subject;
+
+      type = '<span style="color: green">' + type + '</span>';
+      property = '<span style="color: blue">' + property + '</span>';
+      subject = '<span style="color: gray">' + subject + '</span>';
+
+      if (annotation.subject !== '') {
+        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;">' + property + ' (' + type + ')<br>sourceCol: ' + subject + '</p>';
+      } else {
+        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;"> (' + type + ')</p>';
+      }
     }
     return HTMLHeader;
   }
