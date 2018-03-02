@@ -55,10 +55,10 @@ class CustomValidators {
         const valuesTypeValue = columnValuesTypeControl.value;
 
         if (subjectValue !== '' && propertyValue === '') {
-          return {'invalidProperty': {errorMessage: 'A property requires a source column'}};
+          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
         }
         if (propertyValue !== '' && subjectValue === '') {
-          return {'invalidSubject': {errorMessage: 'A source requires a property'}};
+          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
         }
         if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
           return {
