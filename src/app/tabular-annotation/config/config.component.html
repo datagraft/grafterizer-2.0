@@ -1,0 +1,14 @@
+<h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
+<div mat-dialog-content>
+  <p>Which summaries do you prefer?</p>
+  <div class="form-group">
+  <tag-input [(ngModel)]="summaries">
+    <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
+                        [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
+  </tag-input>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
+  <button mat-button class="btn btn-sm btn-link" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
+</div>

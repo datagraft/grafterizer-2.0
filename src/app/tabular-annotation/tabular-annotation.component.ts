@@ -16,6 +16,7 @@ import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
+import {ConfigComponent} from './config/config.component';
 
 declare var Handsontable: any;
 
@@ -145,6 +146,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
   }
 
+  openConfigDialog(): void {
+    const dialogRef = this.dialog.open(ConfigComponent, {
+      width: '700px'
+    });
+  }
+
   getTableHeader(col): string {
     const header = this.annotationService.headers[col];
     const annotation = this.annotationService.getAnnotation(header);
@@ -166,12 +173,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       let property = annotation.property;
       let subject = annotation.subject;
 
-      type = '<span style="color: green">' + type + '</span>';
-      property = '<span style="color: blue">' + property + '</span>';
-      subject = '<span style="color: gray">' + subject + '</span>';
+      type = '<span style="color: #48960C">' + type + '</span>';
+      property = '<span style="color: #5264AE">' + property + '</span>';
+      subject = '<span style="color: #737373">' + subject + '</span>';
 
       if (annotation.subject !== '') {
-        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;">' + property + ' (' + type + ')<br>sourceCol: ' + subject + '</p>';
+        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;">' +
+          property + '<br>&nbsp;&nbsp;&nbsp; (' + type + ')<br>sourceCol: ' + subject + '</p>';
       } else {
         HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;"> (' + type + ')</p>';
       }

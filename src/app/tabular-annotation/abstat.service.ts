@@ -6,7 +6,9 @@ import {Observable} from 'rxjs/Observable';
 
 @Injectable()
 export class AbstatService {
+
   private abstatBasePath: string;
+  private preferredSummaries: string[];
 
   static stringPreprocessing(string) {
     // remove special chars (e.g. _)
@@ -30,6 +32,7 @@ export class AbstatService {
 
   constructor(private config: AppConfig, private http: HttpClient) {
     this.abstatBasePath = this.config.getConfig('abstat-path');
+    this.preferredSummaries = [];
   }
 
   /**
@@ -41,12 +44,14 @@ export class AbstatService {
    */
   private abstatSuggestions(keyword, position) {
     if (keyword && position ) {
-
-      const params = new HttpParams()
+      let params = new HttpParams()
         .set('qString', keyword)
         .set('qPosition', position)
         .set('rows', '15')
         .set('start', '0');
+      if (this.preferredSummaries.length > 0) {
+        params = params.set('dataset', this.preferredSummaries.join(','));
+      }
       const url = this.abstatBasePath + '/api/v1/SolrSuggestions';
 
       return this.http
@@ -62,7 +67,7 @@ export class AbstatService {
    * @param {boolean} filter
    * @returns {Observable<any[]>}
    */
-  typeSuggestions = (keyword: any, filter = true): Observable<any[]> => {
+  public typeSuggestions = (keyword: any, filter = true): Observable<any[]> => {
     if (filter) {
       keyword = AbstatService.stringPreprocessing(keyword);
     }
@@ -75,10 +80,29 @@ export class AbstatService {
    * @param {boolean} filter
    * @returns {Observable<any[]>}
    */
-  propertySuggestions = (keyword: any, filter = true): Observable<any[]> => {
+  public propertySuggestions = (keyword: any, filter = true): Observable<any[]> => {
     if (filter) {
       keyword = AbstatService.stringPreprocessing(keyword);
     }
     return this.abstatSuggestions(keyword, 'pred');
+  }
+
+  public listSummaries = (): Observable<Response> => {
+    const url = this.abstatBasePath + '/api/v1/datasets';
+    return this.http
+      .get(url)
+      .map(res => {
+        const datasets = res['datasets'];
+        datasets.forEach(dataset => dataset['summary_name'] = dataset['URI'].substr(dataset['URI'].lastIndexOf('/') + 1));
+        return datasets;
+      });
+  }
+
+  public getPreferredSummaries(): string[] {
+    return this.preferredSummaries;
+  }
+
+  public updatePreferredSummaries(summaries: string[]) {
+    this.preferredSummaries = summaries;
   }
 }

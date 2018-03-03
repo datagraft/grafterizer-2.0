@@ -12,6 +12,8 @@ import {ClarityModule} from 'clarity-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatDialogModule} from '@angular/material';
+import {ConfigComponent} from './config/config.component';
+import {TagInputModule} from 'ngx-chips';
 
 @NgModule({
   imports: [
@@ -23,13 +25,15 @@ import {MatDialogModule} from '@angular/material';
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
-    MatDialogModule
+    MatDialogModule,
+    TagInputModule
   ],
-  entryComponents: [AnnotationFormComponent],
+  entryComponents: [AnnotationFormComponent, ConfigComponent],
   declarations: [
     TabularAnnotationComponent,
     TabularAnnotationDetailComponent,
-    AnnotationFormComponent
+    AnnotationFormComponent,
+    ConfigComponent
   ]
 })
 
