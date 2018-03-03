@@ -19,6 +19,7 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
+import { AbstatService } from './tabular-annotation/abstat.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -46,6 +47,7 @@ export function initConfig(config: AppConfig) {
     AppConfig,
     TransformationService,
     AnnotationService,
+    AbstatService,
     RoutingService,
     {
       provide: APP_INITIALIZER,

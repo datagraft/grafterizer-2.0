@@ -67,7 +67,7 @@
                         && (annotationForm.get('columnInfo.columnType').dirty || annotationForm.get('columnInfo.columnType').touched)
                         || annotationForm.hasError('invalidColumnType')"
                  auto-complete
-                 [source]="typeSuggestions"
+                 [source]="typeAutocomplete"
                  [list-formatter]="autocompleteListFormatter"
                  value-property-name="suggestion"
                  display-property-name="suggestion"
@@ -194,7 +194,7 @@
                             annotationForm.get('relationship.property').touched)
                             || annotationForm.hasError('invalidProperty')"
                  auto-complete
-                 [source]="propertySuggestions"
+                 [source]="propertyAutocomplete"
                  [list-formatter]="autocompleteListFormatter"
                  value-property-name="suggestion"
                  display-property-name="suggestion"

@@ -1,12 +1,10 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AnnotationService} from '../annotation.service';
-import {Observable} from 'rxjs/Observable';
-import {AppConfig} from '../../app.config';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Annotation, ColumnTypes, XSDDatatypes} from '../annotation.model';
-import * as nlp from 'wink-nlp-utils';
-import {HttpParams, HttpClient} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import {AbstatService} from '../abstat.service';
+import {Observable} from 'rxjs/Observable';
 
 class CustomValidators {
 
@@ -184,7 +182,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   isObject = false;
   submitted = false;
 
-  private abstatPath;
   public annotation: Annotation;
   displayURINamespace = false;
   displayDatatype = false;
@@ -198,32 +195,10 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   annotationForm: FormGroup;
 
-  static stringPreprocessing(string) {
-    // remove special chars (e.g. _)
-    string = nlp.string.retainAlphaNums(string);
-    // split camelCase words
-    string = string
-    // insert a space between lower & upper
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      // space before last upper in a sequence followed by lower
-      .replace(/\b([A-Z]+)([A-Z])([a-z])/, '$1 $2$3')
-      // uppercase the first character
-      .replace(/^./, function(str) { return str.toUpperCase(); });
-    // tokenize string
-    let tokens = nlp.string.tokenize(string);
-    // remove stop words
-    tokens = nlp.tokens.removeWords(tokens);
-    // create string from tokens
-    string = tokens.join(' ');
-    return string;
-  }
-
   constructor(public annotationService: AnnotationService,
-              private http: HttpClient,
-              private config: AppConfig,
+              private abstat: AbstatService,
               public dialogRef: MatDialogRef<AnnotationFormComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
-    this.abstatPath = this.config.getConfig('abstat-path');
   }
 
   ngOnInit() {
@@ -518,18 +493,15 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   annotationsSuggestion() {
-    // Preprocess the header before querying ABSTAT
-    const filteredHeader = AnnotationFormComponent.stringPreprocessing(this.header);
-
     // Set first ABSTAT type suggestion as initial value
-    this.typeSuggestions(filteredHeader).subscribe(suggestions => {
+    this.abstat.typeSuggestions(this.header).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('columnInfo.columnType').setValue(suggestions[0].suggestion);
       }
     });
 
     // Set first ABSTAT property suggestion as initial value
-    this.propertySuggestions(filteredHeader).subscribe(suggestions => {
+    this.abstat.propertySuggestions(this.header).subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('relationship.property').setValue(suggestions[0].suggestion);
       }
@@ -555,36 +527,12 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get suggestions from ABSTAT
-   * TODO: change the URI with ASIA path
-   * @param keyword
-   * @param position
-   * @returns {any}
-   */
-  abstatSuggestions(keyword, position) {
-    if (keyword && position ) {
-
-      const params = new HttpParams()
-        .set('qString', keyword)
-        .set('qPosition', position)
-        .set('rows', '15')
-        .set('start', '0');
-      const url = this.abstatPath + '/api/v1/SolrSuggestions';
-
-      return this.http
-        .get(url, {params: params})
-        .map(res => res['suggestions']);
-    }
-    return Observable.of([]);
-  }
-
-  /**
    * Search for type suggestions
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  typeSuggestions = (keyword: any): Observable<any[]> => {
-    return this.abstatSuggestions(keyword, 'subj');
+  typeAutocomplete = (keyword: any): Observable<any[]> => {
+    return this.abstat.typeSuggestions(keyword);
   }
 
   /**
@@ -592,8 +540,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  propertySuggestions = (keyword: any): Observable<any[]> => {
-    return this.abstatSuggestions(keyword, 'pred');
+  propertyAutocomplete = (keyword: any): Observable<any[]> => {
+    return this.abstat.propertySuggestions(keyword);
   }
 
   /**
