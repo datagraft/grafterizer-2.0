@@ -134,7 +134,7 @@ export class CustomFunctionModalComponent implements OnInit {
 
   accept() {
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
-    this.transformationSvc.changeTransformationObj(this.previewedTransformationObj);
+    this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
     this.modalEnabled = false;
   }
 

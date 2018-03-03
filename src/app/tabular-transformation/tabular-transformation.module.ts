@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
@@ -18,6 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
+import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { BoxplotComponent } from './profiling/boxplot/boxplot.component';
@@ -46,15 +47,14 @@ import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/ma
 import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
-import { PipelineEventsService } from './pipeline-events.service';
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
-// import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
+
+import { PipelineEventsService } from './pipeline-events.service';
+
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { AngularSplitModule } from 'angular-split';
-
 import { TagInputModule } from 'ngx-chips';
 
 @NgModule({
@@ -63,7 +63,7 @@ import { TagInputModule } from 'ngx-chips';
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
-    // TabularTransformationRoutingModule,
+    ReactiveFormsModule,
     NglModule.forRoot(),
     FlexLayoutModule,
     ClarityModule,
