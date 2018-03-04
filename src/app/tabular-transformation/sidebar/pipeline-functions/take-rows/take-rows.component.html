@@ -1,29 +1,24 @@
 <clr-modal [(clrModalOpen)]="modalEnabled">
   <h3 class="modal-title">Take rows</h3>
   <div class="modal-body">
-
-
     <div layout="row">
       <div class="toggle-switch">
-        <input [(ngModel)]="take" type="checkbox" id="toggle_1">
-        <label for="toggle_1">{{take?"Take rows":"Drop rows"}}</label>
+        <input [(ngModel)]="take" type="checkbox" id="toggle">
+        <label for="toggle">{{take?"Take rows":"Drop rows"}}</label>
       </div>
-
     </div>
     <div>
       <label for="indexfrominput">Index from:</label>
-      <input type="number" id="indexfrominput" [(ngModel)]="indexFrom" placeholder="From" size="25">
-
+      <input type="number" id="indexfrominput" [(ngModel)]="indexFrom" size="25">
       <label for="indextoinput">Index to:</label>
-      <input type="number" id="indextoinput" [(ngModel)]="indexTo" placeholder="To" size="25">
+      <input type="number" id="indextoinput" [(ngModel)]="indexTo" size="25">
     </div>
     <br>
     <div>
       <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+      <input type="text" id="comment" [(ngModel)]="docstring" size="125">
     </div>
   </div>
-
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>

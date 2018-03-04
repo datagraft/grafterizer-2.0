@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { TransformationService } from '../../../../transformation.service';
+import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
+
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'take-rows',
@@ -10,58 +13,118 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 export class TakeRowsComponent implements OnInit {
 
-  @Input() private function: any;
-  @Input() private modalEnabled;
-  @Output() private emitter = new EventEmitter();
+  private modalEnabled: boolean;
+  private visible: boolean;
 
-  private indexFrom: Number;
-  private indexTo: Number;
+  private indexFrom: number;
+  private indexTo: number;
   private take: boolean;
-  private docstring: String;
+  private docstring: string;
 
-  constructor() { }
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
 
-  initFunction() {
-    this.indexFrom = 0;
-    this.indexTo = 0;
-    this.take = true;
-    this.docstring = null;
-    this.function = new transformationDataModel.DropRowsFunction(
-      this.indexFrom, this.indexTo, this.take, this.docstring);
-  }
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
-    this.initFunction();
+    this.visible = false;
+    this.indexFrom = null;
+    this.indexTo = null;
+    this.take = true;
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'DropRowsFunction') {
+        this.modalEnabled = true;
+        this.indexFrom = this.currentlySelectedFunction.indexFrom;
+        this.indexTo = this.currentlySelectedFunction.indexTo;
+        this.take = this.currentlySelectedFunction.take;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'DropRowsFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.function) {
-      if (!this.function) {
-        // console.log('New function');
-      }
-      else {
-        console.log('Edit function');
-        if (this.function.__type == 'AddColumnsFunction') {
-          this.indexFrom = this.function.indexFrom;
-          this.indexTo = this.function.indexTo;
-          this.take = this.function.take;
-          this.docstring = this.function.docstring;
-        }
-      }
+  ngOnDestroy() {
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  setVisibleDropDown() {
+    this.visible = true;
+  }
+
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-  }
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      const newFunction = new transformationDataModel.DropRowsFunction(this.indexFrom, this.indexTo, this.take, this.docstring);
 
-  accept() {
-    this.function.indexFrom = this.indexFrom;
-    this.function.indexTo = this.indexTo;
-    this.function.take = this.take;
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.initFunction();
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
     this.modalEnabled = false;
   }
 
-  cancel() { this.modalEnabled = false; }
+  private editDeriveColumnsFunction(instanceObj): any {
+    instanceObj.indexFrom = this.indexFrom;
+    instanceObj.indexTo = this.indexTo;
+    instanceObj.take = this.take;
+    instanceObj.docstring = this.docstring;
+    console.log(this.currentlySelectedFunction)
+  }
+
+  private resetModal() {
+    // resets the fields of the modal
+    this.indexFrom = null;
+    this.indexTo = null;
+    this.take = true;
+    this.docstring = null;
+  }
+
+  private cancel() {
+    this.resetModal();
+    this.modalEnabled = false;
+  }
 
 }

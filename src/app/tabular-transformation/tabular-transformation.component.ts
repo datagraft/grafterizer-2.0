@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
@@ -24,7 +24,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private partialPipeline: any;
   private pipelineDefaultState: any;
   private recommendations: any;
-  private differ: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
@@ -45,8 +44,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
-    private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
-    this.differ = differs.find({}).create();
+    private route: ActivatedRoute, private router: Router) {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -78,7 +76,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
         this.profilingComponent.loadJSON(this.graftwerkData);
         this.profilingComponent.refresh(this.handsontableSelection);
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
-        this.cd.detectChanges();
       }
     });
   }
@@ -95,7 +92,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
       .then((result) => {
         console.log(this.previewedTransformationObj);
         this.transformationSvc.changeGraftwerkData(result);
