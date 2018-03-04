@@ -1,6 +1,13 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AnnotationService} from '../annotation.service';
-import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import {Annotation, ColumnTypes, XSDDatatypes} from '../annotation.model';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {AbstatService} from '../abstat.service';
@@ -125,24 +132,32 @@ class CustomValidators {
   }
 
   /**
-   * Requires the column type to be set when the columnValuesType is 'URI'
-   * @param {string} columnType
+   * Requires at least one column type to be set when the columnValuesType is 'URI'
+   * @param {string} columnTypes
    * @param {string} columnValuesType
    * @returns {ValidatorFn}
    */
-  static columnTypeValidator(columnType: string, columnValuesType: string): ValidatorFn {
+  static columnTypesValidator(columnTypes: string, columnValuesType: string): ValidatorFn {
     return (group: FormGroup): { [key: string]: any } => {
-      const typeControl = group.get(columnType);
+      const typesControls = (group.get(columnTypes) as FormArray).controls;
       const valuesTypeControl = group.get(columnValuesType);
-
-      if (typeControl && valuesTypeControl) {
-        const typeValue = typeControl.value;
+      if (typesControls && valuesTypeControl) {
         const valuesTypeValue = valuesTypeControl.value;
-        if (valuesTypeValue === ColumnTypes.URI && typeValue === '') {
-          return {'invalidColumnType': {errorMessage: 'A column type is required'}};
+        if (valuesTypeValue === ColumnTypes.URI) {
+          let error = true;
+          for (let i = 0; i < typesControls.length; ++i) {
+            const typeValue = typesControls[i].get('columnType').value;
+            if (typeValue !== '') {
+              error = false;
+              break;
+            }
+          }
+          if (error) {
+            return {'invalidColumnTypes': {errorMessage: 'At least one column type is required'}};
+          }
         }
-        return null;
       }
+      return null;
     };
   }
 
@@ -227,7 +242,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   buildForm() {
     this.annotationForm = new FormGroup({
       columnInfo: new FormGroup({
-        columnType: new FormControl('', CustomValidators.URLValidator()),
+        columnTypes: new FormArray([ this.createColType()]),
         columnValuesType: new FormControl('', this.subjectValuesTypeValidator()),
         urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
@@ -242,10 +257,26 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
       CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
       CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
-      CustomValidators.columnTypeValidator('columnInfo.columnType', 'columnInfo.columnValuesType'),
+      CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
       CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
       ]
     ));
+  }
+
+  createColType(): FormGroup  {
+    return new FormGroup({
+      columnType: new FormControl('', CustomValidators.URLValidator())
+    });
+  }
+
+  addColType(index: number): void {
+    const columnTypes = this.annotationForm.get('columnInfo.columnTypes') as FormArray;
+    columnTypes.insert(index + 1, this.createColType());
+  }
+
+  deleteColType(index: number): void {
+    const columnTypes = this.annotationForm.get('columnInfo.columnTypes') as FormArray;
+    columnTypes.removeAt(index);
   }
 
   setFormFromAnnotation() {
@@ -255,7 +286,11 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const valuesType = this.annotation.columnValuesType;
     this.annotationForm.get('columnInfo.columnValuesType').setValue(valuesType);
     if (valuesType === ColumnTypes.URI) {
-      this.annotationForm.get('columnInfo.columnType').setValue(this.annotation.columnType);
+      const types = this.annotation.columnTypes;
+      for (let i = 0; i < types.length; ++i) {
+        (this.annotationForm.get('columnInfo.columnTypes') as FormArray).controls[i].get('columnType').setValue(types[i]);
+        this.addColType(i);
+      }
       this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.annotation.urifyNamespace);
     } else if (valuesType === ColumnTypes.Literal) {
       const xsdDatatype = this.annotation.columnDatatype;
@@ -324,7 +359,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         let changed = false;
         const oldAnnotation = this.annotationService.getAnnotation(this.header);
         const literalProps = ['columnDatatype', 'customDatatype', 'langTag'];
-        const URIProps = ['columnType', 'urifyNamespace'];
+        const URIProps = ['columnTypes', 'urifyNamespace'];
         const commonProps = ['subject', 'property'];
 
         const newValuesType = valuesObj.columnInfo.columnValuesType;
@@ -462,10 +497,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     const valuesType = this.annotationForm.get('columnInfo.columnValuesType').value;
     this.annotation.columnValuesType = valuesType;
     if (valuesType === ColumnTypes.URI) {
-      this.annotation.columnType = this.annotationForm.get('columnInfo.columnType').value;
-      if (this.annotation.columnType['suggestion']) { // when user select a suggestion from the autocomplete
-        this.annotation.columnType = this.annotation.columnType['suggestion'];
-      }
+      const types = [];
+      (this.annotationForm.get('columnInfo.columnTypes') as FormArray).controls.forEach(ctrl => {
+        let val = ctrl.get('columnType').value;
+        if (val['suggestion']) { // when user select a suggestion from the autocomplete
+          val = val['suggestion'];
+        }
+        if (val !== '') {
+          types.push(val);
+        }
+      });
+      this.annotation.columnTypes = types;
       // Use the URL href instead of the user input
       const uriNamespace = this.annotationForm.get('columnInfo.urifyNamespace').value;
       this.annotation.urifyNamespace = new URL(uriNamespace).href;
@@ -496,7 +538,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     // Set first ABSTAT type suggestion as initial value
     this.abstat.typeSuggestions(this.header).subscribe(suggestions => {
       if (suggestions.length > 0) {
-        this.annotationForm.get('columnInfo.columnType').setValue(suggestions[0].suggestion);
+        (this.annotationForm.get('columnInfo.columnTypes') as FormArray).controls[0].get('columnType').setValue(suggestions[0].suggestion);
       }
     });
 

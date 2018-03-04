@@ -58,33 +58,40 @@
           </clr-tooltip>
         </div>
         <div class="form-group" *ngIf="displayType">
-          <label class="required" for="columnType">Column Type</label>
-          <label for="columnType"
-                 aria-haspopup="true"
-                 role="tooltip"
-                 class="tooltip tooltip-validation tooltip-sm"
-                 [class.invalid]="annotationForm.get('columnInfo.columnType').invalid
-                        && (annotationForm.get('columnInfo.columnType').dirty || annotationForm.get('columnInfo.columnType').touched)
-                        || annotationForm.hasError('invalidColumnType')"
-                 auto-complete
-                 [source]="typeAutocomplete"
-                 [list-formatter]="autocompleteListFormatter"
-                 value-property-name="suggestion"
-                 display-property-name="suggestion"
-                 select-value-of="suggestion"
-                 loading-text="Querying ABSTAT..."
-                 (valueChanged)="annotationForm.get('columnInfo.columnType').setValue($event)"
-                 min-chars="2">
-            <input id="columnType"
-                   type="text"
-                   formControlName="columnType"
-                   placeholder="Insert column type"
-                   size="35"/>
-            <span *ngIf="annotationForm.hasError('invalidColumnType')"
-                  class="tooltip-content"> {{annotationForm.errors['invalidColumnType'].errorMessage}}</span>
-            <span *ngIf="annotationForm.get('columnInfo.columnType').hasError('invalidURL')"
-                  class="tooltip-content"> {{annotationForm.get('columnInfo.columnType').errors['invalidURL'].errorMessage}} </span>
-          </label>
+          <label class="required" for="columnType">Column Types</label>
+          <div formArrayName="columnTypes"
+               *ngFor="let type of annotationForm.get('columnInfo.columnTypes').controls; let i = index;">
+            <div [formGroupName]="i" style="display: flex">
+              <label for="columnType"
+                     aria-haspopup="true"
+                     role="tooltip"
+                     class="tooltip tooltip-validation tooltip-sm"
+                     [class.invalid]="annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').invalid
+                          && (annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').dirty || annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').touched)
+                          || annotationForm.hasError('invalidColumnTypes')"
+                     auto-complete
+                     [source]="typeAutocomplete"
+                     [list-formatter]="autocompleteListFormatter"
+                     value-property-name="suggestion"
+                     display-property-name="suggestion"
+                     select-value-of="suggestion"
+                     loading-text="Querying ABSTAT..."
+                     (valueChanged)="annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').setValue($event)"
+                     min-chars="2">
+                <input id="columnType"
+                       type="text"
+                       formControlName="columnType"
+                       placeholder="Insert column type"
+                       size="35"/>
+                <span *ngIf="annotationForm.hasError('invalidColumnTypes')"
+                      class="tooltip-content"> {{annotationForm.errors['invalidColumnTypes'].errorMessage}}</span>
+                <span *ngIf="annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').hasError('invalidURL')"
+                      class="tooltip-content"> {{annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').errors['invalidURL'].errorMessage}} </span>
+              </label>
+              <clr-icon style="margin-top: .25rem;" *ngIf="annotationForm.get('columnInfo.columnTypes').controls.length > 1" shape="minus-circle" (click)="deleteColType(i)"></clr-icon>
+              <clr-icon style="margin-top: .25rem;" shape="plus-circle" (click)="addColType(i)"></clr-icon>
+            </div>
+          </div>
         </div>
         <div class="form-group" *ngIf="displayDatatype">
           <label class="required" for="columnDatatype">Column datatype: </label>

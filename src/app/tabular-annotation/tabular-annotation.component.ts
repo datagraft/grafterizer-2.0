@@ -169,7 +169,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         HTMLHeader += '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
       }
       HTMLHeader += '<br>';
-      let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnType : annotation.columnDatatype;
+      let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
       let property = annotation.property;
       let subject = annotation.subject;
 
@@ -288,8 +288,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach((annotation) => {
       // reset all prefixes (useful when the user deletes for instnce the "property" field)
       annotation.urifyPrefix = '';
-      annotation.columnTypeNamespace = '';
-      annotation.columnTypePrefix = '';
+      annotation.columnTypesNamespace = [];
+      annotation.columnTypesPrefix = [];
       annotation.columnDatatypeNamespace = '';
       annotation.columnDatatypePrefix = '';
 
@@ -297,9 +297,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         annotation.urifyPrefix = this.getPrefixForNamespace(annotation.urifyNamespace);
       }
 
-      if (annotation.columnType !== '') {
-        annotation.columnTypeNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnType));
-        annotation.columnTypePrefix = this.getPrefixForNamespace(annotation.columnTypeNamespace);
+      for (let i = 0; i < annotation.columnTypes.length; ++i) {
+        annotation.columnTypesNamespace.push(TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnTypes[i])));
+        annotation.columnTypesPrefix.push(this.getPrefixForNamespace(annotation.columnTypesNamespace[i]));
       }
 
       if (annotation.columnDatatype !== '') {
@@ -403,10 +403,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     // Create the rdf:type prop - all URI annotations must provide their own rdf type
-    const typePrefix = annotation.columnTypePrefix;
-    const type = annotation.columnType.substring(annotation.columnTypeNamespace.length);
-    const typeNode = new transformationDataModel.ConstantURI(typePrefix, type, [], []);
-    properties.push(new transformationDataModel.Property('rdf', 'type', [], [typeNode]));
+    for (let i = 0; i < annotation.columnTypes.length; ++i) {
+      const typePrefix = annotation.columnTypesPrefix[i];
+      const type = annotation.columnTypes[i].substring(annotation.columnTypesNamespace[i].length);
+      const typeNode = new transformationDataModel.ConstantURI(typePrefix, type, [], []);
+      properties.push(new transformationDataModel.Property('rdf', 'type', [], [typeNode]));
+    }
     return properties;
   }
 

@@ -36,9 +36,9 @@ export class Annotation {
   propertyPrefix: string; // auto-filled based on the vocabularies
 
   // URI
-  columnType: string;
-  columnTypeNamespace: string; // auto-filled based on the vocabularies
-  columnTypePrefix: string; // auto-filled based on the vocabularies
+  columnTypes: string[];
+  columnTypesNamespace: string[]; // auto-filled based on the vocabularies
+  columnTypesPrefix: string[]; // auto-filled based on the vocabularies
   urifyNamespace: string;
   urifyPrefix: string; // auto-filled based on the vocabularies
 
@@ -57,9 +57,9 @@ export class Annotation {
     this.property = obj && obj.property || '';
     this.propertyPrefix = obj && obj.propertyPrefix || '';
     this.propertyNamespace = obj && obj.propertyNamespace || '';
-    this.columnType = obj && obj.columnType || '';
-    this.columnTypePrefix = obj && obj.columnTypePrefix || '';
-    this.columnTypeNamespace = obj && obj.columnTypeNamespace || '';
+    this.columnTypes = obj && obj.columnTypes || [];
+    this.columnTypesPrefix = obj && obj.columnTypePrefix || [];
+    this.columnTypesNamespace = obj && obj.columnTypeNamespace || [];
     this.columnHeader = obj && obj.header || '';
     this.columnValuesType = obj && obj.columnValuesType || '';
     this.urifyPrefix = obj && obj.urifyPrefix || '';
