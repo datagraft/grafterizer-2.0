@@ -22,6 +22,8 @@
 
 <take-rows class="sin-flex"></take-rows>
 
+<shift-column class="sin-flex"></shift-column>
+
 <!-- <split-columns [modalEnabled]="selected.id=='SplitFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="splitFunction"
   [defaultParams]="selected.defaultParams"></split-columns>
 
@@ -29,8 +31,6 @@
   [defaultParams]="selected.defaultParams" [columns]="headers"></sort-dataset>
 
 <shift-row [modalEnabled]="selected.id=='ShiftRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-row>
-
-<shift-column [modalEnabled]="selected.id=='ShiftColumnFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></shift-column>
 
 <reshape-dataset [modalEnabled]="selected.id=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
 

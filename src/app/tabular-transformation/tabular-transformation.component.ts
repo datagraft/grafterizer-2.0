@@ -48,11 +48,11 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
-      { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
