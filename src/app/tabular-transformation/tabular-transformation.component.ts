@@ -49,6 +49,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
       { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
@@ -92,7 +93,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 100)
       .then((result) => {
         console.log(this.previewedTransformationObj);
         this.transformationSvc.changeGraftwerkData(result);
