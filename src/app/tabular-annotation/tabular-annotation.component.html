@@ -3,11 +3,11 @@
     Loading...
   </span>
 </div>
-<div class="btn-group" [hidden]="dataLoading">
+<div class="btn-group pull-right" style="padding: .5em" [hidden]="dataLoading">
   <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
     <clr-icon shape="floppy"></clr-icon> Create graph
   </button>
-  <clr-dropdown>
+  <clr-dropdown *ngIf="false">
     <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
       <clr-icon shape="download"></clr-icon>
       Create RDF triples
@@ -20,8 +20,8 @@
       <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')" >.rdf</button>
     </clr-dropdown-menu>
   </clr-dropdown>
+  <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
+    <clr-icon shape="cog"></clr-icon>
+  </button>
 </div>
-<button type="button" class="btn btn-info-outline pull-right" (click)="openConfigDialog()">
-  <clr-icon shape="cog"></clr-icon>
-</button>
 <div id="handsontable" [hidden]="dataLoading"></div>
