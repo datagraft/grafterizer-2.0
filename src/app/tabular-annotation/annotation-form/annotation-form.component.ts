@@ -205,6 +205,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   displayCustomDatatype = false;
 
   allowedSources: string[];
+  availableNamespaces: string[];
   availableColumnValuesTypes = Object.keys(ColumnTypes);
   availableDatatypes = Object.keys(XSDDatatypes);
 
@@ -224,6 +225,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       }
     });
     this.annotation = this.dialogInputData.annotation;
+    this.availableNamespaces = [];
+    this.dialogInputData.rdfVocabs.forEach(vocab => this.availableNamespaces.push(vocab.namespace));
     this.fillAllowedSourcesArray();
     this.buildForm();
     this.onChanges();
@@ -481,6 +484,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   changeSourceColumn(sourceColValue) {
     const formElement = this.annotationForm.get('relationship.subject');
     formElement.setValue(sourceColValue);
+    formElement.markAsDirty();
+  }
+
+  /**
+   * Set the value for the formElemement urifyNamespace (it cannot be done automatically)
+   * TODO: remove this method when Clarity will expose the autocomplete functionality
+   * @param namespaceValue
+   */
+  changeUrifyNamespace(namespaceValue) {
+    const formElement = this.annotationForm.get('columnInfo.urifyNamespace');
+    formElement.setValue(namespaceValue);
     formElement.markAsDirty();
   }
 

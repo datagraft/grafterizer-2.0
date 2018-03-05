@@ -135,7 +135,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
       width: '700px',
-      data: { header: currentHeader, annotation: currentAnnotation}
+      data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs}
     });
 
     dialogRef.afterClosed().subscribe(result => {
