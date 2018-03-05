@@ -41,7 +41,6 @@ export class AbstatService {
       const slashIdx = string.lastIndexOf('/');
       const hashIdx = string.lastIndexOf('#');
       const colonIdx = string.lastIndexOf(':');
-      console.log(slashIdx, hashIdx, colonIdx);
       string = string.substr(Math.max(slashIdx, hashIdx, colonIdx));
     }
     return string;
