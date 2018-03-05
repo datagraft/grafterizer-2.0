@@ -1,0 +1,136 @@
+button.sin-rdf-mapping-node-button {
+    text-align: left;
+    width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 23px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.sin-rdf-mapping-node-type {
+    font-style: normal;
+    text-overflow: ellipsis;
+    text-align: center;
+    padding: 0px 2px 2px;
+}
+
+.sin-rdf-mapping-prefix-text {
+    color: rgb(200, 200, 200);
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    width: 167px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 0px 0px;
+}
+
+.sin-rdf-mapping-node-text {
+    width: 167px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    padding: 0px 8px;
+    border: 0px;
+}
+
+.sin-rdf-mapping-column-name-text {
+    font-style: italic;
+}
+
+.sin-rdf-mapping-blank-node {
+    text-align: left;
+    line-height: 23px;
+    padding-left: 3px;
+}
+
+button.rdf-mapping-property-button {
+    text-align: left;
+    width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 23px;
+    padding-left: 3px;
+    margin: 6px, 8px, 6px, 8px;
+}
+
+i.rdf-mapping-icon-background-inset {
+    color: rgba(200, 200, 200, 0.8);
+    text-shadow: 1px 4px 6px #FAFAFA, 0 0 0 #000, 1px 4px 6px #FAFAFA;
+}
+
+graph-mapping.md-button[disabled],
+.md-button.md-raised[disabled] {
+    color: rgba(0, 0, 0, 0.87);
+    i.rdf-mapping-icon-background-inset {
+        text-shadow: 1px 3px 4px #E1E1E1, 0 0 #000, 1px 3px 4px #E1E1E1;
+    }
+}
+
+.sin-rdf-node-actions {
+    align-self: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.sin-rdf-mapping-node {
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.sin-node-action {
+    font-size: 27px;
+}
+
+button.rdf-mapping-property-button {
+    text-align: left;
+    width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 23px;
+    padding-left: 3px;
+    margin-left: 8px;
+    margin-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.sin-property-button-icon {
+    padding-right: 6px;
+}
+
+.sin-rdf-property-actions {
+    align-self: center;
+}
+
+.sin-property-action {
+    font-size: 27px;
+}
+
+.sin-property-button-text {
+    text-align: left;
+    width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 23px;
+}
+
+.sin-rdf-node-literal-text {
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.sin-rdf-mapping-blank-node-text {
+    text-align: left;
+    line-height: 23px;
+    padding-left: 3px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}

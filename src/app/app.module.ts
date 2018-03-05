@@ -21,6 +21,7 @@ import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
+import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -46,6 +47,7 @@ export function initConfig(config: AppConfig) {
   ],
   providers: [
     AppConfig,
+    GlobalErrorReportingService,
     TransformationService,
     AnnotationService,
     RoutingService,
@@ -57,7 +59,8 @@ export function initConfig(config: AppConfig) {
     },
     {
       provide: ErrorHandler,
-      useClass: GlobalErrorHandler
+      useClass: GlobalErrorHandler,
+      deps: [GlobalErrorReportingService]
     }
   ],
   bootstrap: [AppComponent]

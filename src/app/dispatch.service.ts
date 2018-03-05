@@ -289,10 +289,6 @@ export class DispatchService {
       .toPromise();
   }
 
-  //  public updateTransformation(): Promise<any> {
-  //
-  //  }
-
   // Helper method. Submits Transformation metadata (description and keywords).
   private postMetadata(id: string, publisher: string, description: string, keywords: Array<string>): Promise<any> {
     const url = this.computeTransformationURL(publisher, id) + '/metadata';

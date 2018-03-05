@@ -64,7 +64,6 @@ export class CustomFunctionModalComponent implements OnInit {
   ngOnDestroy() {
     this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
-    this.editor.unsubscribe();
   }
 
   onCodeChange($event) {

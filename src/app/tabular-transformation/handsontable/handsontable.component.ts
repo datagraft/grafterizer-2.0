@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
 import {
@@ -37,8 +37,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   @Input() suggestions;
   @Output() emitter = new EventEmitter();
 
-  constructor(private transformationSvc: TransformationService) {
-    this.showLoading = true;
+  constructor(private transformationSvc: TransformationService, private cd: ChangeDetectorRef) {
     this.data = [];
   }
 
@@ -80,16 +79,19 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     this.hot = new Handsontable(this.container, this.settings);
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.showLoading = true;
+        console.log('previewed');
+      });
+
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
       if (message) {
         console.log('Data Changed');
         this.displayJsEdnData(message);
       }
     });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.showLoading = true;
-      });
+
   }
 
   ngOnDestroy() {
@@ -144,8 +146,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public displayJsEdnData(data: JSON) {
-    this.showLoading = true;
-    // console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
       const rowData = data[':rows'];
@@ -167,6 +167,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
           data: data[':rows']
         });
       }
+      console.log('removing loading bar..');
       this.showLoading = false;
     } else {
       // TODO error handling one day!!

@@ -1,0 +1,31 @@
+<div fxflex fxLayout="row" fxLayoutAlign="start start">
+  <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
+    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{'(Column literal) ' + (node.literalValue.hasOwnProperty('value') ? node.literalValue.value : node.literalValue) }}"
+      matTooltipPosition="below" matTooltipShowDelay="1000">
+      <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
+        <div fxflex *ngIf="node.nodeCondition.length === 0">
+          <i class="fa fa-columns"></i>
+        </div>
+        <div fxflex *ngIf="node.nodeCondition.length > 0">
+          <i class="fa fa-filter"></i>
+          <i class="fa fa-columns"></i>
+        </div>
+        <div class="rdf-mapping-node-text">
+          <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text sin-rdf-node-literal-text">
+            {{ node.literalValue.hasOwnProperty('value') ? node.literalValue.value : node.literalValue }}
+          </div>
+        </div>
+      </div>
+    </button>
+    <div *ngIf="parent.__type === 'Graph'" class="sin-rdf-node-actions" [style.visibility]="showActions ? 'visible' : 'hidden'">
+      <div fxflex fxLayoutAlign="start center">
+        <button mat-icon-button (click)="addSiblingNode()">
+          <mat-icon aria-label="Add a sibling node" class="sin-node-action">add_circle</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeNode()">
+          <mat-icon aria-label="Remove current node" class="sin-node-action">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
