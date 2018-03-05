@@ -30,6 +30,23 @@ export class AbstatService {
     return string;
   }
 
+  /**
+   * If the given string starts with 'http', returns the last component of the URL.
+   * The last component is detected by looking at '/', '#' and ':'.
+   * @param string
+   * @returns {any}
+   */
+  static filterURI(string) {
+    if (string.startsWith('http')) {
+      const slashIdx = string.lastIndexOf('/');
+      const hashIdx = string.lastIndexOf('#');
+      const colonIdx = string.lastIndexOf(':');
+      console.log(slashIdx, hashIdx, colonIdx);
+      string = string.substr(Math.max(slashIdx, hashIdx, colonIdx));
+    }
+    return string;
+  }
+
   constructor(private config: AppConfig, private http: HttpClient) {
     this.abstatBasePath = this.config.getConfig('abstat-path');
     this.preferredSummaries = [];
@@ -68,6 +85,7 @@ export class AbstatService {
    * @returns {Observable<any[]>}
    */
   public typeSuggestions = (keyword: any, filter = true): Observable<any[]> => {
+    keyword = AbstatService.filterURI(keyword);
     if (filter) {
       keyword = AbstatService.stringPreprocessing(keyword);
     }
@@ -81,6 +99,7 @@ export class AbstatService {
    * @returns {Observable<any[]>}
    */
   public propertySuggestions = (keyword: any, filter = true): Observable<any[]> => {
+    keyword = AbstatService.filterURI(keyword);
     if (filter) {
       keyword = AbstatService.stringPreprocessing(keyword);
     }
