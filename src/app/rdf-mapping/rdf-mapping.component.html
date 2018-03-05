@@ -1,4 +1,2 @@
-<p>
-  rdf-mapping works!
-</p>
 <button class="btn">Edit RDF mapping prefixes</button>
+<graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>

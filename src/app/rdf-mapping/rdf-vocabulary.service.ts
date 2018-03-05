@@ -55,6 +55,7 @@ export class RdfVocabularyService {
     );
   }
 
+  // Get all default vocabulary definitions from the vocabulary service
   private getDefaultVocabs(): Promise<any> {
     return this.http
       .get(this.vocabSvcPath + '/getAll')
