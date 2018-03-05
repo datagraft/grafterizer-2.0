@@ -31,7 +31,6 @@ export class CustomFunctionModalComponent implements OnInit {
   private previewedTransformationObj: any;
   private previewedTransformationSubscription: Subscription;
 
-  private transformation: any;
   private selected: any;
   private nameWarning: boolean = false;
 
@@ -44,12 +43,7 @@ export class CustomFunctionModalComponent implements OnInit {
       this.pipelineEvent = currentEvent;
       if (currentEvent.newStepType === 'CustomFunctionDeclaration') {
         if (this.functions[0] == null) {
-          for (let cfd of this.previewedTransformationObj.customFunctionDeclarations) {
-            if (cfd.group === 'UTILITY') {
-              this.functions.push({ label: cfd.name, value: cfd });
-              this.customFunctionDeclarations.push(cfd);
-            }
-          }
+          this.retreiveCustomFunctions();
         }
         this.modalEnabled = true;
       }
@@ -62,20 +56,15 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    // TODO: set cursor to the end of line
-    /*     let cm = this.editor.instance;
-        setTimeout(() => {
-          cm.refresh();
-          let posCursor = { line: 0, ch: 0 };
-          posCursor.line = cm.doc.children[0].lines.length - 1;
-          posCursor.ch = cm.doc.children[0].lines[posCursor.line].text.length;
-          cm.doc.setCursor(posCursor);
-        }, 200); */
+    this.codeMirror.instance$.subscribe((editor) => {
+      this.editor = editor;
+    });
   }
 
   ngOnDestroy() {
     this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
+    this.editor.unsubscribe();
   }
 
   onCodeChange($event) {
@@ -108,6 +97,15 @@ export class CustomFunctionModalComponent implements OnInit {
     }
   }
 
+  retreiveCustomFunctions() {
+    for (let cfd of this.previewedTransformationObj.customFunctionDeclarations) {
+      if (cfd.group === 'UTILITY') {
+        this.functions.push({ label: cfd.name, value: cfd });
+        this.customFunctionDeclarations.push(cfd);
+      }
+    }
+  }
+
   private randomA = ['convert', 'do', 'analyse', 'parse', 'process', 'ignore', 'compute', 'apply'];
   private randomB = ['method', 'value', 'object', 'world', 'data', 'data', 'life', 'rabbit'];
 
@@ -132,6 +130,14 @@ export class CustomFunctionModalComponent implements OnInit {
     this.selected = { clojureCode: '' };
   }
 
+  resetModal() {
+    this.functions = [];
+    this.customFunctionDeclarations = [];
+    this.retreiveCustomFunctions();
+    this.selected = { clojureCode: '' };
+    this.editor.setValue('');
+  }
+
   accept() {
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
     this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
@@ -139,6 +145,7 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   cancel() {
+    this.resetModal();
     this.modalEnabled = false;
   }
 

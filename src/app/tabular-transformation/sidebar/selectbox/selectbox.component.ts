@@ -22,19 +22,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private function: any;
-  private addColumnsFunction: any;
-  private addRowFunction: any;
-  private makeDatasetFunction: any;
-  private dropRowsFunction: any;
-  private splitFunction: any;
-  private deriveColumnFunction: any;
-  private mergeColumnsFunction: any;
-  private renameColumnsFunction: any;
-  private grepFunction: any;
-  private sortDatasetFunction: any;
-  private mapcFunction: any;
-
   private transformations: SelectItem[];
   private selected: any;
   private modalEnabled = false;
@@ -59,7 +46,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       this.transformations = this.suggestions;
     }
     this.selected = { id: null, defaultParams: null };
-    // console.log(this.selected);
   }
 
   ngOnInit() {
@@ -131,29 +117,29 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       newStepType: this.selected.id // TODO NEED TO CHANGE THIS
     });
     // Functions that don't require additional user input
-    switch (this.selected.id) {
-      case 'add-row-above':
-      case 'add-row-below':
-        this.emitFunction(new AddRowFunction(this.selected.defaultParams.position, this.selected.defaultParams.values, ''));
-        break;
-      case 'make-dataset-header':
-        this.emitFunction(new MakeDatasetFunction(
-          [], null, undefined, this.selected.defaultParams.moveFirstRowToHeader, null));
-        break;
-      case 'map-columns-uc':
-        this.emitFunction(new MapcFunction(
-          this.selected.defaultParams.keyFunctionPairs, null));
-        break;
-      case 'take-rows-delete':
-        this.emitFunction(new DropRowsFunction(
-          this.selected.defaultParams.indexFrom, this.selected.defaultParams.indexTo, this.selected.defaultParams.take, null));
-        break;
-      case 'take-columns-delete':
-        this.emitFunction(new ColumnsFunction(
-          [this.selected.defaultParams.colToDelete], null, null, false, null));
-        break;
-      default:
-        break;
-    }
+    /*     switch (this.selected.id) {
+          case 'add-row-above':
+          case 'add-row-below':
+            this.emitFunction(new AddRowFunction(this.selected.defaultParams.position, this.selected.defaultParams.values, ''));
+            break;
+          case 'make-dataset-header':
+            this.emitFunction(new MakeDatasetFunction(
+              [], null, undefined, this.selected.defaultParams.moveFirstRowToHeader, null));
+            break;
+          case 'map-columns-uc':
+            this.emitFunction(new MapcFunction(
+              this.selected.defaultParams.keyFunctionPairs, null));
+            break;
+          case 'take-rows-delete':
+            this.emitFunction(new DropRowsFunction(
+              this.selected.defaultParams.indexFrom, this.selected.defaultParams.indexTo, this.selected.defaultParams.take, null));
+            break;
+          case 'take-columns-delete':
+            this.emitFunction(new ColumnsFunction(
+              [this.selected.defaultParams.colToDelete], null, null, false, null));
+            break;
+          default:
+            break;
+        } */
   }
 }

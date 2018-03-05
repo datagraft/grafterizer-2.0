@@ -32,7 +32,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private previewedTransformationObj: any;
   private graftwerkData: any;
 
-  private transformationSubscription: Subscription;
   private previewedTransformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
@@ -83,7 +82,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    //    this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     this.previewedTransformationSubscription.unsubscribe();
   }
@@ -94,7 +92,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
     this.profilingComponent.progressbar = true;
     const paramMap = this.route.snapshot.paramMap;
     const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 100)
+    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure)
       .then((result) => {
         console.log(this.previewedTransformationObj);
         this.transformationSvc.changeGraftwerkData(result);

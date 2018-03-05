@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -14,15 +14,15 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeColumnsComponent implements OnInit {
 
-  private modalEnabled: Boolean;
-  private visible: Boolean;
+  private modalEnabled: boolean;
+  private visible: boolean;
   private takecolumnsmode;
 
   private columnsArray: any[] = [];
   private indexFrom;
   private indexTo;
   private take;
-  private docstring: String;
+  private docstring: string;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -31,7 +31,7 @@ export class TakeColumnsComponent implements OnInit {
   private pipelineEvent: any = { startEdit: false };
 
   private previewedDataSubscription: Subscription;
-  private previewedDataColumns: String[] = [];
+  private previewedDataColumns: string[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -59,7 +59,7 @@ export class TakeColumnsComponent implements OnInit {
         else {
           this.takecolumnsmode = 'indices';
           this.indexFrom = this.currentlySelectedFunction.indexFrom;
-          this.indexFrom = this.currentlySelectedFunction.indexTo;
+          this.indexTo = this.currentlySelectedFunction.indexTo;
         }
         this.columnsArray = this.currentlySelectedFunction.columnsArray;
         this.take = this.currentlySelectedFunction.take;
@@ -139,7 +139,6 @@ export class TakeColumnsComponent implements OnInit {
 
   private resetModal() {
     // resets the fields of the modal
-    this.columnsArray = [];
     this.indexFrom = null;
     this.indexTo = null;
     this.take = true;

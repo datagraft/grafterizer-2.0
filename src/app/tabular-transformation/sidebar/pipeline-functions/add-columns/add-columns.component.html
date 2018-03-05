@@ -1,28 +1,27 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
   <h3 class="modal-title">Add columns</h3>
   <div class="modal-body">
-
-    <br>
     <div *ngFor="let columnSpec of columnsArray; let id = index">
       <div class="row ">
         <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1">
-          <clr-icon suiPopup popupText="Remove column" popupPlacement="left top" shape="remove" size="22" (click)="removeColumn(id)"></clr-icon>
+          <clr-icon shape="remove" size="22" (click)="removeColumn(id)"></clr-icon>
         </button>
         <div class="removablePropertyName">
-          <label for="{{'colname'+id}}">Name of new column:</label>
-          <input type="text" id="{{'colname'+id}}" [(ngModel)]="columnSpec.colName" placeholder="Column name" size="35">
+          <label for="{{'colname'+id}}">Name of new column</label>
+          <input type="text" id="{{'colname'+id}}" [(ngModel)]="columnSpec.colName" size="25">
+        </div>
+        <div class="removablePropertyFields">
+          <label for="{{'value'+id}}">Value</label>
+          <input type="text" id="{{'value'+id}}" [(ngModel)]="columnSpec.colValue" size="25">
         </div>
       </div>
-      <div class="removablePropertyFields">
-        <br>
-        <label for="{{'value'+id}}">Value:</label>
-        <input type="text" id="{{'value'+id}}" [(ngModel)]="columnSpec.colValue" placeholder="Value" size="35">
-      </div>
+      <br>
     </div>
     <button class="btn btn-primary" (click)="addColumn()">Add more columns</button>
     <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+      <br>
+      <label for="comment">Comment</label>
+      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
     </div>
   </div>
   <div class="modal-footer">

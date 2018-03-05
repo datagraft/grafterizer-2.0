@@ -1,8 +1,8 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
   <h3 class="modal-title">Shift column</h3>
   <div class="modal-body">
     <div class="select">
-      <select id="form-group-3" name="form-group-dropdown" [(ngModel)]="colFrom">
+      <select id="form-group" name="form-group-dropdown" [(ngModel)]="colFrom">
         <option *ngFor="let header of previewedDataColumns" [ngValue]="header">{{header.value}}</option>
       </select>
     </div>
@@ -19,13 +19,13 @@
     </form>
     <br>
     <div *ngIf="shiftcolmode=='position'">
-      <label for="indexTo">Index to:</label>
+      <label for="indexTo">Move to index:</label>
       <input type="number" id="position" [(ngModel)]="indexTo" size="25">
     </div>
     <br>
     <div>
       <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" size="125">
+      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
     </div>
   </div>
   <div class="modal-footer">

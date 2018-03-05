@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -111,7 +111,6 @@ export class TakeRowsComponent implements OnInit {
     instanceObj.indexTo = this.indexTo;
     instanceObj.take = this.take;
     instanceObj.docstring = this.docstring;
-    console.log(this.currentlySelectedFunction)
   }
 
   private resetModal() {

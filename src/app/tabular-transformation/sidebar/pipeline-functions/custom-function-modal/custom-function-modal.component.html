@@ -15,8 +15,7 @@
         </p-listbox>
       </div>
       <div class="editor">
-        <ngx-codemirror #editor [(ngModel)]="selected.clojureCode" [config]="configurationObject" (init)="onInit" (blur)="onBlur"
-          (focus)="onFocus" (ngModelChange)="onCodeChange($event)"></ngx-codemirror>
+        <ngx-codemirror #editor [(ngModel)]="selected.clojureCode" [config]="configurationObject" (ngModelChange)="onCodeChange($event)"></ngx-codemirror>
       </div>
       <clr-alert *ngIf="nameWarning" [clrAlertType]="'alert-warning'" [clrAlertClosable]="false" (clrAlertClosedChange)="onClose()">
         <div class="alert-item">

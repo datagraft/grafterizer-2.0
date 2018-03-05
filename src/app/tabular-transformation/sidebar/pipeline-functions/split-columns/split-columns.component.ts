@@ -17,7 +17,7 @@ export class SplitColumnsComponent implements OnInit {
 
   private colName: any;
   private separator: string;
-  private docstring: String;
+  private docstring: string;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;

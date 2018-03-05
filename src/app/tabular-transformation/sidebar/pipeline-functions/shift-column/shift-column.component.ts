@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -17,7 +17,7 @@ export class ShiftColumnComponent implements OnInit {
   private modalEnabled: boolean;
 
   private colFrom: any;
-  private indexTo;
+  private indexTo: number;
   private shiftcolmode: string;
   private docstring: String;
 
@@ -98,6 +98,9 @@ export class ShiftColumnComponent implements OnInit {
       });
     }
     else if (this.pipelineEvent.createNew) {
+      if (this.colFrom === undefined) {
+        this.colFrom = this.previewedDataColumns[0];
+      }
       // create object with user input
       const newFunction = new transformationDataModel.ShiftColumnFunction(
         this.colFrom, this.indexTo, this.shiftcolmode, this.docstring);

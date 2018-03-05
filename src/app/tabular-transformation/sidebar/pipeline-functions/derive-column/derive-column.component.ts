@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -13,8 +13,8 @@ import { TransformationService } from 'app/transformation.service';
 
 export class DeriveColumnComponent implements OnInit {
 
-  private modalEnabled: Boolean;
-  private visible: Boolean;
+  private modalEnabled: boolean;
+  private visible: boolean;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -25,10 +25,10 @@ export class DeriveColumnComponent implements OnInit {
   private previewedTransformationSubscription: Subscription;
   private previewedDataSubscription: Subscription;
 
-  private newColName: String;
+  private newColName: string;
   private selectedCustomFunction: any;
-  private docstring: String;
-  private previewedDataColumns: String[] = [];
+  private docstring: string;
+  private previewedDataColumns: string[] = [];
   private customFunctions: any[] = [];
   private colsToDeriveFrom: any[] = [];
 
@@ -142,7 +142,6 @@ export class DeriveColumnComponent implements OnInit {
     // resets the fields of the modal
     this.newColName = null;
     this.docstring = null;
-    this.colsToDeriveFrom = [];
     this.selectedCustomFunction = null;
   }
 

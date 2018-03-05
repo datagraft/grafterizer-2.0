@@ -30,7 +30,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   // we keep subscription objects so we can unsubscribe after destroying the component
   private transformationSubscription: Subscription;
-  private previewedTransformationSubscription: Subscription;
   private pipelineEventsSubscription: Subscription;
   private currentlySelectedFunctionSubscription: Subscription;
 
@@ -63,26 +62,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
       }
     });
 
-    //    this.previewedTransformationSubscription = this.transformationService.currentPreviewedTransformationObj.subscribe(
-    //      (previewedTransformation) => {
-    //        this.previewedTransformationObj = previewedTransformation;
-    //        console.log(this.previewedTransformationObj);
-    //        // null safety first (currentlySelectedFunction.currentFunction may be empty on initialisation)
-    //        if (this.previewedTransformationObj.pipelines.length) {
-    //          console.log(this.pipelineEvent);
-    //          const previewedIndex = this.getIndexOfPreviewedFunction();
-    //          if (previewedIndex >= 0) {
-    //            this.pipelineElement.selectedIndex = previewedIndex;
-    //          } else if (this.steps.length) {
-    //            if (this.pipelineElement.selected) {
-    //              this.pipelineElement.selectedIndex = this.steps.length - 1;
-    //            }
-    //
-    //            this.steps[this.steps.length - 1].isPreviewed = true;
-    //          }
-    //        }
-    //      });
-
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction;
     });
@@ -95,7 +74,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
-    //    this.previewedTransformationSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
   }
@@ -118,8 +96,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   verboseLabels(label) {
     switch (label) {
-      case 'DropRowsFunction':
-        return 'Rows deleted'
+      case 'ColumnsFunction':
+        return 'Columns deleted'
       case 'MakeDatasetFunction':
         return 'Headers created'
       case 'UtilityFunction':

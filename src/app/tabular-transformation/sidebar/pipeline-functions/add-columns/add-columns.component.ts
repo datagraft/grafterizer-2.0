@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class AddColumnsComponent implements OnInit {
 
-  modalEnabled = false;
+  private modalEnabled: boolean;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,14 +24,16 @@ export class AddColumnsComponent implements OnInit {
   private previewedDataSubscription: Subscription;
   private previewedDataColumns: any;
 
-  private colname: String = '';
+  private colname: string = '';
   private columnsArray: any = [];
-  private docstring: String = '';
+  private docstring: string = '';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
+
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
     });

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
@@ -19,7 +19,7 @@ export class ShiftRowComponent implements OnInit {
   private indexFrom: number;
   private indexTo: number;
   private shiftrowmode: string;
-  private docstring: String;
+  private docstring: string;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
