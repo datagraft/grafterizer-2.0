@@ -1,29 +1,27 @@
-<button class="btn btn-default" [disabled]="annotationService.getAnnotations().length === 0" (click)="saveAnnotation()">Annotations to Graph</button>
-
-<table class="table table-compact">
-  <thead>
-    <tr>
-      <th *ngFor="let h of annotationService.headers" class="left">
-        <app-annotation-form [header]='h'></app-annotation-form>
-      </th>
-    </tr>
-    <tr>
-      <th *ngFor="let h of annotationService.headers">
-        {{h}}
-      </th>
-    </tr>
-  </thead>
-  <tbody class="vertical-border">
-    <tr *ngFor="let row of annotationService.data">
-      <td *ngFor="let header of annotationService.headers">
-        {{row[header]}}
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- <nav>
-  <a routerLink="/tabular-annotation/detail" routerLinkActive="active">Tabular Annotation Detail</a>
-</nav>
-
-<router-outlet></router-outlet> -->
+<div style="text-align: center" [hidden]="!dataLoading">
+  <span class="spinner spinner-lg" style="margin-top: 200px">
+    Loading...
+  </span>
+</div>
+<div class="btn-group pull-right" style="padding: .5em" [hidden]="dataLoading">
+  <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
+    <clr-icon shape="floppy"></clr-icon> Create graph
+  </button>
+  <clr-dropdown *ngIf="false">
+    <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
+      <clr-icon shape="download"></clr-icon>
+      Create RDF triples
+      <clr-icon shape="caret down"></clr-icon>
+    </button>
+    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+      <label class="dropdown-header">Formats</label>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>
+      <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>
+    </clr-dropdown-menu>
+  </clr-dropdown>
+  <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
+    <clr-icon shape="cog"></clr-icon>
+  </button>
+</div>
+<div id="handsontable" [hidden]="dataLoading"></div>

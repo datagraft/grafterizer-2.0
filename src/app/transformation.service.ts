@@ -14,8 +14,8 @@ export class TransformationService {
   private dispatchPath: string;
   private graftwerkCachePath: string;
   // GLOBAL TRANSFORMATION OBJECT
-//  private transformationObj: any;
-//  private graftwerkData: any;
+  //  private transformationObj: any;
+  //  private graftwerkData: any;
 
   private previewedTransformationObjSource: BehaviorSubject<any>;
   public currentPreviewedTransformationObj: Observable<any>;
@@ -94,15 +94,15 @@ export class TransformationService {
     const options = new RequestOptions({ withCredentials: true, params: params });
     return this.http.get(url, options)
       .map(
-      (response: Response) => {
-        return response.json();
-      })
+        (response: Response) => {
+          return response.json();
+        })
       .toPromise()
       .then(
-      (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash, 'pipe');
-      },
-      (error) => this.errorHandler(error));
+        (dispatchResponse) => {
+          return this.pollCacheService(dispatchResponse.hash, 'pipe');
+        },
+        (error) => this.errorHandler(error));
   }
 
   public previewTransformation(filestoreID: string, clojure: string, page?: number, pageSize?: number): Promise<any> {
@@ -120,10 +120,10 @@ export class TransformationService {
       .map((response: Response) => response.json())
       .toPromise()
       .then(
-      (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash, 'pipe');
-      },
-      (error) => this.errorHandler(error));
+        (dispatchResponse) => {
+          return this.pollCacheService(dispatchResponse.hash, 'pipe');
+        },
+        (error) => this.errorHandler(error));
   }
 
   public getTransformationLink(filestoreID: string, transformationID: string, transformationType: string, rdfFormat?: string): string {
@@ -145,11 +145,11 @@ export class TransformationService {
       .map((response) => response.json())
       .toPromise()
       .then(
-      (dispatchResponse) => {
-        return this.pollCacheService(dispatchResponse.hash, transformationType);
-      },
-      (error) => this.errorHandler(error)
-    );
+        (dispatchResponse) => {
+          return this.pollCacheService(dispatchResponse.hash, transformationType);
+        },
+        (error) => this.errorHandler(error)
+      );
   }
 
   private pollCacheService(hash: string, transformationType: string): Promise<any> {
@@ -160,8 +160,8 @@ export class TransformationService {
     const obs = new Observable(observer => {
       observer.next();
     })
-    .switchMap(() => this.http.get(statusUrl, options))
-    .map((response) => response.json());
+      .switchMap(() => this.http.get(statusUrl, options))
+      .map((response) => response.json());
     return new Promise((resolve, reject) => {
       const sub = obs.subscribe(
         (result) => {
@@ -179,10 +179,10 @@ export class TransformationService {
               })
               .toPromise()
               .then(
-              (transformationResult) => {
-                resolve(transformationResult);
-              },
-              (error) => reject(error));
+                (transformationResult) => {
+                  resolve(transformationResult);
+                },
+                (error) => reject(error));
           }
         },
         (error) => {

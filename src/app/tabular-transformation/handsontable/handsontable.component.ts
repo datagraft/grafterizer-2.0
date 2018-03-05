@@ -91,7 +91,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         this.displayJsEdnData(message);
       }
     });
-
   }
 
   ngOnDestroy() {

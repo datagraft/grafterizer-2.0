@@ -30,6 +30,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
+  private previewedTransformationObj: any;
   private graftwerkData: any;
 
   private dataSubscription: Subscription;
