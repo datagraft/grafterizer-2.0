@@ -161,13 +161,22 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
       '</button>';
     if (annotation) {
+      let statusIcon = '';
+      let tooltipContent = '';
       if (annotation.status === AnnotationStatuses.wrong) {
-        HTMLHeader += '<clr-icon shape="error-standard" class="is-danger is-solid"></clr-icon>';
+        statusIcon = '<clr-icon shape="error-standard" class="is-danger is-solid"></clr-icon>';
+        tooltipContent = 'This column is not correctly annotated';
       } else if (annotation.status === AnnotationStatuses.warning) {
-        HTMLHeader += '<clr-icon shape="warning-standard" class="is-warning is-solid"></clr-icon>';
+        statusIcon = '<clr-icon shape="warning-standard" class="is-warning is-solid"></clr-icon>';
+        tooltipContent = 'This column annotation depends on <i>' + annotation.subject + '</i> column, which is not correctly annotated';
       } else if (annotation.status === AnnotationStatuses.valid) {
-        HTMLHeader += '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
+        statusIcon = '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
+        tooltipContent = 'This column is properly annotated';
       }
+      HTMLHeader += '<label role="tooltip" aria-haspopup="true" class="tooltip tooltip-sm tooltip-bottom-right">' +
+        statusIcon +
+        '    <span class="tooltip-content">' + tooltipContent + '</span>' +
+        '</label>';
       HTMLHeader += '<br>';
       let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
       let property = annotation.property;
