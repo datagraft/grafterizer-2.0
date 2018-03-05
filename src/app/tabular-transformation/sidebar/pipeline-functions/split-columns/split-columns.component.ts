@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
-import { CompleterService, CompleterData } from 'ng2-completer';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
+
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'split-columns',
@@ -8,65 +11,126 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./split-columns.component.css']
 })
 
-export class SplitColumnsComponent implements OnInit, OnChanges {
+export class SplitColumnsComponent implements OnInit {
 
-  @Input() function: any;
-  @Input() modalEnabled;
-  @Input() defaultParams;
-  @Output() emitter = new EventEmitter();
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  private columns: String[];
+  private modalEnabled: boolean;
+
   private colName: any;
-  private separator: String;
+  private separator: string;
   private docstring: String;
 
-  constructor() { }
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private previewedDataSubscription: Subscription;
+  private previewedDataColumns: any[] = [];
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-    this.modalEnabled = false;
-    this.initFunction();
-  }
 
-  initFunction() {
-    this.columns = ["county", "ColumnName2", "ColumnName3", "zzz", "aaa", "qqq"];
-    this.colName = { id: 0, value: '' };
+    this.modalEnabled = false;
     this.separator = null;
     this.docstring = null;
-    this.function = new transformationDataModel.SplitFunction(
-      this.colName, this.separator, this.docstring);
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'SplitFunction') {
+        this.modalEnabled = true;
+        this.colName = this.currentlySelectedFunction.colName;
+        this.separator = this.currentlySelectedFunction.separator;
+        this.docstring = this.currentlySelectedFunction.docstring;
+        for (let header of this.previewedDataColumns) {
+          if (this.colName.id === header.id) {
+            this.previewedDataColumns[header.id] = this.colName;
+          }
+        }
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'SplitFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+            return { id: idx, value: v.substring(1, v.length) };
+          });
+        }
+      });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.function) {
-      if (!this.function) {
-        // console.log('New function');
-      }
-      else if (changes.defaultParams && this.defaultParams) {
-        if (this.defaultParams.colToSplit) {
-          this.colName = this.defaultParams.colToSplit;
-        }
-      }
-      else {
-        console.log('Edit function');
-        if (this.function.__type == 'SplitFunction') {
-          this.colName = this.function.colName;
-          this.separator = this.function.separator;
-          this.docstring = this.function.docstring;
-        }
-      }
+  ngOnDestroy() {
+    this.previewedDataSubscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editSplitColumnFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-  }
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      const newFunction = new transformationDataModel.SplitFunction(
+        this.colName, this.separator, this.docstring);
+      console.log(newFunction)
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
 
-  accept() {
-    this.function.colName = this.colName;
-    this.function.separator = this.separator;
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.initFunction();
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
     this.modalEnabled = false;
   }
 
-  cancel() { this.modalEnabled = false; }
+  private editSplitColumnFunction(instanceObj): any {
+    instanceObj.colName = this.colName;
+    instanceObj.separator = this.separator;
+    instanceObj.docstring = this.docstring;
+  }
+
+  private resetModal() {
+    // resets the fields of the modal
+    this.colName = null;
+    this.separator = '';
+    this.docstring = null;
+  }
+
+  private cancel() {
+    this.resetModal();
+    this.modalEnabled = false;
+  }
 
 }
