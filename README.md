@@ -6,7 +6,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ### Prerequisites
 
-Run `npm install -g @angular/cli` to install Angular CLI.
+Run the following commands to install Angular CLI:
+
+`npm install -g @angular/cli`
+
+`npm install --save @angular/material @angular/cdk`
 
 ### Dependencies
 
