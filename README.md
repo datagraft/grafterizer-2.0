@@ -2,9 +2,17 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.0.
 
-## Install
+## Installation
 
-Run `npm install`
+### Prerequisites
+
+Run the following commands to install Angular CLI:
+`npm install -g @angular/cli`
+`npm npm install --save @angular/material @angular/cdk`
+
+### Install
+
+Run `npm install` to install other packages.
 
 ## Development server
 
