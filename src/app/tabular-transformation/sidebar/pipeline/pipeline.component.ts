@@ -124,6 +124,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         return 'Row shifted'
       case 'SplitFunction':
         return 'Column splitted'
+      case 'MergeColumnsFunction':
+        return 'Columns merged'
       default:
         return label;
     }

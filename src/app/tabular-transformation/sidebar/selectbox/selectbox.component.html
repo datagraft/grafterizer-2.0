@@ -28,6 +28,8 @@
 
 <split-columns class="sin-flex"></split-columns>
 
+<merge-columns class="sin-flex"></merge-columns>
+
 <!-- <sort-dataset [modalEnabled]="selected.id=='SortDatasetFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="sortDatasetFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers"></sort-dataset>
 
@@ -35,9 +37,6 @@
 
 <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
-
-<merge-columns [modalEnabled]="selected.id=='MergeColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mergeColumnsFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers"></merge-columns>
 
 <deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [columns]="headers"></deduplicate>

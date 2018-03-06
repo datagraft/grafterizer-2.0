@@ -99,8 +99,10 @@ export class AppComponent implements OnInit {
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 200)
         .then((result) => {
+          console.log(this.previewedTransformationObj.pipelines[0]);
+          console.log(result);
           this.transformationSvc.changeGraftwerkData(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);
