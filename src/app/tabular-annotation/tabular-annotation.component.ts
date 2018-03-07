@@ -68,7 +68,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.dataLoading = true;
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
-    this.saveButtonDisabled = true;
+    this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
     this.rdfButtonDisabled = true;
   }
 
