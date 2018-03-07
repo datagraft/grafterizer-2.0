@@ -17,6 +17,7 @@ import { AnnotationFormComponent } from './annotation-form/annotation-form.compo
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
+import {Subscription} from 'rxjs/Subscription';
 
 declare var Handsontable: any;
 
@@ -30,6 +31,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
+
+  private transformationSubscription: Subscription;
+  private dataSubscription: Subscription;
 
   private container: any;
   private settings: any;
@@ -104,10 +108,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         this.hot.render();
       }
     });
-    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
-    this.transformationSvc.currentGraftwerkData.subscribe(message => {
+
+    this.transformationSubscription =
+      this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
+        this.transformationObj = transformationObj;
+      });
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
       this.dataLoading = true;
-      this.graftwerkData = message;
+      this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':column-names']) {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
@@ -124,6 +132,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.transformationSubscription.unsubscribe();
+    this.dataSubscription.unsubscribe();
     //    this.transformationSvc.changeTransformationObj(this.transformationObj);
     //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
