@@ -2,7 +2,10 @@
 <div mat-dialog-content>
   <p>Which summaries do you prefer?</p>
   <div class="form-group">
-  <tag-input [(ngModel)]="summaries">
+  <tag-input [(ngModel)]="summaries"
+             [onlyFromAutocomplete]="true"
+             [placeholder]="'Add another summary'"
+             [secondaryPlaceholder]="'Choose a summary'">
     <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
                         [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
   </tag-input>

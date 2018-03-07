@@ -109,12 +109,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.dataLoading = true;
       this.graftwerkData = message;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':column-names']) {
-        this.annotationService.headers = this.graftwerkData[':column-names'];
+        // Clean header name (remove leading ':' from the EDN response)
+        this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
         this.annotationService.data = this.graftwerkData[':rows'];
-        const columns = [];
-        this.annotationService.headers.forEach((h) => columns.push({ data: h }));
         this.hot.updateSettings({
-          columns: columns,
+          columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
           colHeaders: (col) => this.getTableHeader(col)
         });
         this.hot.loadData(this.annotationService.data);
@@ -209,6 +208,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
      */
     annotations = this.updatePrefixesNamespaces(annotations);
 
+    console.log(annotations);
+
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
 
@@ -217,6 +218,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     } else {
       this.transformationObj.graphs.push(graph);
     }
+
+    console.log(this.transformationObj);
 
     // Save the new transformation
     this.transformationSvc.changeTransformationObj(this.transformationObj);
@@ -228,7 +231,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       const existingTransformationID = paramMap.get('transformationId');
       const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-      const newTransformationName = 'test-graft-transformation';
+      console.log(someClojure);
+      const newTransformationName = 'test-graft-transformation-ocorp';
       const isPublic = false;
       const newTransformationDescription = 'testing graft created from annotations';
       const newTransformationKeywords = ['graft', 'annotations'];
@@ -337,16 +341,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // Build all object nodes
     // NOTE: the subelements array of these nodes should be always empty (otherwise, a BLANK NODE will be produced)
     annotations.forEach(annotation => {
-      // TODO: to be removed when the header will be cleaned before fetching data
-      let cleanHeader = annotation.columnHeader;
-      if (cleanHeader.startsWith(':')) {
-        cleanHeader = cleanHeader.substring(1);
-      }
-
       if (annotation.columnValuesType === ColumnTypes.URI) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
           { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': cleanHeader },
+          { 'id': 0, 'value': annotation.columnHeader },
           [], // node conditions
           [], // subelements
         );
@@ -356,7 +354,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           datatype = 'custom';
         }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          { 'id': 0, 'value': cleanHeader },
+          { 'id': 0, 'value': annotation.columnHeader },
           { 'id': 0, 'name': datatype }, // datatype
           null, // on empty
           null, // on error
@@ -370,15 +368,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // Build all roots nodes
     // NOTE: all URI columns are roots, because of their 'rdf:type' property
     annotations.forEach((annotation) => {
-      // TODO: to be removed when the header will be cleaned before fetching data
-      let cleanHeader = annotation.columnHeader;
-      if (cleanHeader.startsWith(':')) {
-        cleanHeader = cleanHeader.substring(1);
-      }
       if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
           { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': cleanHeader },
+          { 'id': 0, 'value': annotation.columnHeader },
           [], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
@@ -455,6 +448,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
     if (existingPrefix) {
+      console.log(existingPrefix);
       prefix = existingPrefix;
     } else {
       const url = new URL(namespace);
