@@ -2056,8 +2056,19 @@ Transformation.revive = function (data) {
     currPipeline.functions = functions;
     pipelines.push(currPipeline);
   }
-  return new Transformation(data.customFunctionDeclarations, data.prefixers, pipelines, data.graphs, data.rdfVocabs);
+  var transformation = new Transformation(data.customFunctionDeclarations, data.prefixers, pipelines, data.graphs, data.rdfVocabs);
+  // Utility for ASIA
+  // TODO: remove this member function when ASIA will be fully compatible with the Graph model
+  if (data.annotations) {
+    transformation.setAnnotations(data.annotations);
+  }
+  return transformation;
 };
+// Utility for ASIA
+// TODO: remove this member function when ASIA will be fully compatible with the Graph model
+Transformation.prototype.setAnnotations = function (annotations) {
+  this.annotations = annotations;
+}
 Transformation.prototype.addGraphAfter = function (graph, graphToAdd) {
 
   var index = this.graphs.indexOf(graph);
