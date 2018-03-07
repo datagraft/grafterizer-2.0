@@ -58,9 +58,9 @@ export class Annotation {
     this.propertyPrefix = obj && obj.propertyPrefix || '';
     this.propertyNamespace = obj && obj.propertyNamespace || '';
     this.columnTypes = obj && obj.columnTypes || [];
-    this.columnTypesPrefix = obj && obj.columnTypePrefix || [];
-    this.columnTypesNamespace = obj && obj.columnTypeNamespace || [];
-    this.columnHeader = obj && obj.header || '';
+    this.columnTypesPrefix = obj && obj.columnTypesPrefix || [];
+    this.columnTypesNamespace = obj && obj.columnTypesNamespace || [];
+    this.columnHeader = obj && obj.columnHeader || '';
     this.columnValuesType = obj && obj.columnValuesType || '';
     this.urifyPrefix = obj && obj.urifyPrefix || '';
     this.urifyNamespace = obj && obj.urifyNamespace || '';
