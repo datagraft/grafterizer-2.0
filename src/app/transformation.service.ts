@@ -14,8 +14,8 @@ export class TransformationService {
   private dispatchPath: string;
   private graftwerkCachePath: string;
   // GLOBAL TRANSFORMATION OBJECT
-//  private transformationObj: any;
-//  private graftwerkData: any;
+  //  private transformationObj: any;
+  //  private graftwerkData: any;
 
   private previewedTransformationObjSource: BehaviorSubject<any>;
   public currentPreviewedTransformationObj: Observable<any>;

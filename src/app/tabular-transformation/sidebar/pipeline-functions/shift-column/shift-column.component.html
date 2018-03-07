@@ -1,34 +1,33 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
   <h3 class="modal-title">Shift column</h3>
   <div class="modal-body">
-    <!-- TODO: Find better autocomplete component -->
-    <ng2-completer [(ngModel)]="colFrom" [datasource]="columns" [minSearchLength]="0" [selectOnFocus]="true" [autoHighlight]="true"
-      [openOnClick]="true" [autoMatch]="true"></ng2-completer>
-    <form action="">
+    <div class="select">
+      <select id="form-group" name="form-group-dropdown" [(ngModel)]="colFrom">
+        <option *ngFor="let header of previewedDataColumns" [ngValue]="header">{{header.value}}</option>
+      </select>
+    </div>
+    <br>
+    <form action="colmode">
       <div class="radio">
-        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="position" id="mode_1">
+        <input type="radio" [(ngModel)]="shiftcolmode" name="mode" value="position" id="mode_1">
         <label for="mode_1">Shift to index</label>
       </div>
       <div class="radio">
-        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="eods" id="mode_2">
+        <input type="radio" [(ngModel)]="shiftcolmode" name="mode" value="eods" id="mode_2">
         <label for="mode_2">Shift to the rightmost position</label>
       </div>
-
     </form>
-    <div *ngIf="shiftrowmode=='position'">
-      <label for="indexTo">Index to:</label>
-      <input type="number" id="position" [(ngModel)]="indexTo" placeholder="To" size="25">
+    <br>
+    <div *ngIf="shiftcolmode=='position'">
+      <label for="indexTo">Move to index:</label>
+      <input type="number" id="position" [(ngModel)]="indexTo" size="25">
     </div>
     <br>
     <div>
       <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
     </div>
   </div>
-
-
-
-
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>

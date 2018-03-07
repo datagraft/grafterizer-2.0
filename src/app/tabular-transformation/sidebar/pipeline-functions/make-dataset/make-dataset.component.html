@@ -32,6 +32,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">{{ pipelineEvent.startEdit ? 'Edit' : 'Create' }}</button>
   </div>
 </clr-modal>

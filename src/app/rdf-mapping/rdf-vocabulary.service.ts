@@ -21,40 +21,41 @@ export class RdfVocabularyService {
     // load the default vocabularies from the server
     this.getDefaultVocabs()
       .then(
-      (result) => {
-        this.defaultVocabularies = new Map<string, Vocabulary>();
-        const vocabs = this.mapVocabularies(result);
-        vocabs.forEach((vocab) => {
-          // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
-          const name_space = vocab.namespace === 'http://rdfs.org/sioc/ns#' ? 'http://rdfs.org/sioc/ns' : vocab.namespace;
-          this.getVocabularyClassesAndProperties(vocab.name, name_space)
-            .then(
-            (classAndProps) => {
-              // add classes and properties to the vocabulary
-              const classes = [];
-              const properties = [];
-              classAndProps['classResult'].forEach((classResult) => {
-                if (classResult.value !== 'null') {
-                  classes.push(classResult.value);
-                }
-              });
-              classAndProps['propertyResult'].forEach((propertyResult) => {
-                if (propertyResult.value !== 'null') {
-                  properties.push(propertyResult.value);
-                }
-              });
-              vocab.classes = classes;
-              vocab.properties = properties;
-              this.defaultVocabularies.set(vocab.name, vocab);
-            },
-            (error) => this.errorHandler(error)
-          );
-        });
-      },
-      (error) => this.errorHandler(error)
-    );
+        (result) => {
+          this.defaultVocabularies = new Map<string, Vocabulary>();
+          const vocabs = this.mapVocabularies(result);
+          vocabs.forEach((vocab) => {
+            // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
+            const name_space = vocab.namespace === 'http://rdfs.org/sioc/ns#' ? 'http://rdfs.org/sioc/ns' : vocab.namespace;
+            this.getVocabularyClassesAndProperties(vocab.name, name_space)
+              .then(
+                (classAndProps) => {
+                  // add classes and properties to the vocabulary
+                  const classes = [];
+                  const properties = [];
+                  classAndProps['classResult'].forEach((classResult) => {
+                    if (classResult.value !== 'null') {
+                      classes.push(classResult.value);
+                    }
+                  });
+                  classAndProps['propertyResult'].forEach((propertyResult) => {
+                    if (propertyResult.value !== 'null') {
+                      properties.push(propertyResult.value);
+                    }
+                  });
+                  vocab.classes = classes;
+                  vocab.properties = properties;
+                  this.defaultVocabularies.set(vocab.name, vocab);
+                },
+                (error) => this.errorHandler(error)
+              );
+          });
+        },
+        (error) => this.errorHandler(error)
+      );
   }
 
+  // Get all default vocabulary definitions from the vocabulary service
   private getDefaultVocabs(): Promise<any> {
     return this.http
       .get(this.vocabSvcPath + '/getAll')

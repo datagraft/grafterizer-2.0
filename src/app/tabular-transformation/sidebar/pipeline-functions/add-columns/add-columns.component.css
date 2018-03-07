@@ -3,5 +3,6 @@
 }
 
 .removablePropertyFields {
-  padding: 0 3em 0 4em;
+  padding: 1em 0 0 0;
+  padding-left: 25px;
 }

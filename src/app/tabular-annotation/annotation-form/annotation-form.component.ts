@@ -1,5 +1,5 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {AnnotationService} from '../annotation.service';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { AnnotationService } from '../annotation.service';
 import {
   AbstractControl,
   FormArray,
@@ -8,10 +8,10 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import {Annotation, ColumnTypes, XSDDatatypes} from '../annotation.model';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {AbstatService} from '../abstat.service';
-import {Observable} from 'rxjs/Observable';
+import { Annotation, ColumnTypes, XSDDatatypes } from '../annotation.model';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { AbstatService } from '../abstat.service';
+import { Observable } from 'rxjs/Observable';
 
 class CustomValidators {
 
@@ -31,9 +31,9 @@ class CustomValidators {
         const langTagValue = langTagControl.value;
         if (datatypeValue === 'string') {
           if (langTagValue.length === 0) {
-            return {'invalidLangTag': {errorMessage: 'Language tag is required for strings'}};
+            return { 'invalidLangTag': { errorMessage: 'Language tag is required for strings' } };
           } else if (langTagValue.length !== 2) {
-            return {'invalidLangTag': {errorMessage: 'Language tag must be of 2 chars'}};
+            return { 'invalidLangTag': { errorMessage: 'Language tag must be of 2 chars' } };
           }
         }
         return null;
@@ -60,15 +60,15 @@ class CustomValidators {
         const valuesTypeValue = columnValuesTypeControl.value;
 
         if (subjectValue !== '' && propertyValue === '') {
-          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
+          return { 'invalidProperty': { errorMessage: 'A source requires a property' } };
         }
         if (propertyValue !== '' && subjectValue === '') {
-          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
+          return { 'invalidSubject': { errorMessage: 'A property requires a source' } };
         }
         if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
           return {
-            'invalidSubject': {errorMessage: 'Literal columns require a source'},
-            'invalidProperty': {errorMessage: 'Literal columns require a property'}
+            'invalidSubject': { errorMessage: 'Literal columns require a source' },
+            'invalidProperty': { errorMessage: 'Literal columns require a property' }
           };
         }
         return null;
@@ -81,9 +81,9 @@ class CustomValidators {
    * @returns {ValidatorFn}
    */
   static subjectValidator(allowedSources: string[]): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} => {
+    return (control: AbstractControl): { [key: string]: any } => {
       if (control.value !== '' && allowedSources && allowedSources.indexOf(control.value) === -1) {
-        return {'invalidSubject': {errorMessage: 'This subject is not allowed'}};
+        return { 'invalidSubject': { errorMessage: 'This subject is not allowed' } };
       }
       return null;
     };
@@ -94,17 +94,17 @@ class CustomValidators {
    * @returns {ValidatorFn}
    */
   static URLValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} => {
+    return (control: AbstractControl): { [key: string]: any } => {
       try {
         if (control.value !== '') {
           const url = new URL(control.value);
           if (url.host === '') {
-            return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+            return { 'invalidURL': { errorMessage: 'This URL is not valid' } };
           }
         }
         return null;
       } catch (error) {
-        return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+        return { 'invalidURL': { errorMessage: 'This URL is not valid' } };
       }
     };
   }
@@ -124,7 +124,7 @@ class CustomValidators {
         const datatypeValue = dataTypeControl.value;
         const customTypeValue = customTypeControl.value;
         if (datatypeValue === 'custom' && customTypeValue === '') {
-          return {'invalidCustomDatatype': {errorMessage: 'A custom datatype must be specified'}};
+          return { 'invalidCustomDatatype': { errorMessage: 'A custom datatype must be specified' } };
         }
         return null;
       }
@@ -153,7 +153,7 @@ class CustomValidators {
             }
           }
           if (error) {
-            return {'invalidColumnTypes': {errorMessage: 'At least one column type is required'}};
+            return { 'invalidColumnTypes': { errorMessage: 'At least one column type is required' } };
           }
         }
       }
@@ -176,7 +176,7 @@ class CustomValidators {
         const urifyNamespaceValue = urifyNamespaceControl.value;
         const valuesTypeValue = valuesTypeControl.value;
         if (valuesTypeValue === ColumnTypes.URI && urifyNamespaceValue === '') {
-          return {'invalidUrifyNamespace': {errorMessage: 'An URIfy namespace is required'}};
+          return { 'invalidUrifyNamespace': { errorMessage: 'An URIfy namespace is required' } };
         }
         return null;
       }
@@ -212,9 +212,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   annotationForm: FormGroup;
 
   constructor(public annotationService: AnnotationService,
-              private abstat: AbstatService,
-              public dialogRef: MatDialogRef<AnnotationFormComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
+    private abstat: AbstatService,
+    public dialogRef: MatDialogRef<AnnotationFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
   }
 
   ngOnInit() {
@@ -245,7 +245,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   buildForm() {
     this.annotationForm = new FormGroup({
       columnInfo: new FormGroup({
-        columnTypes: new FormArray([ this.createColType()]),
+        columnTypes: new FormArray([this.createColType()]),
         columnValuesType: new FormControl('', this.subjectValuesTypeValidator()),
         urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
@@ -262,11 +262,11 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
       CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
       CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
-      ]
+    ]
     ));
   }
 
-  createColType(): FormGroup  {
+  createColType(): FormGroup {
     return new FormGroup({
       columnType: new FormControl('', CustomValidators.URLValidator())
     });
@@ -306,7 +306,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         this.annotationForm.get('columnInfo.customDatatype').setValue(this.annotation.columnDatatype);
       }
       if (datatype === 'string') {
-       this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
+        this.annotationForm.get('columnInfo.langTag').setValue(this.annotation.langTag);
       }
     }
     this.changeValuesType(valuesType); // this method marks the field as dirty
@@ -429,12 +429,12 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   subjectValuesTypeValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} => {
+    return (control: AbstractControl): { [key: string]: any } => {
       if (control.value === '') {
-        return { 'invalidColumnValuesType': {errorMessage: 'Column values type is required'}, 'missingColumnValuesType': true};
+        return { 'invalidColumnValuesType': { errorMessage: 'Column values type is required' }, 'missingColumnValuesType': true };
       }
       if (this.isValuesTypeNotValid(control.value)) {
-        return { 'invalidColumnValuesType': {errorMessage: 'A subject column must be of type URI'}};
+        return { 'invalidColumnValuesType': { errorMessage: 'A subject column must be of type URI' } };
       }
       return null;
     };

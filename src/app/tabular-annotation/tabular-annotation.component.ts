@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {AnnotationService} from './annotation.service';
+import { AnnotationService } from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
@@ -11,12 +11,12 @@ import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
 import { Http } from '@angular/http';
-import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
+import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
-import {ConfigComponent} from './config/config.component';
+import { ConfigComponent } from './config/config.component';
 
 declare var Handsontable: any;
 
@@ -98,7 +98,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           blockCalculations.cells = true;
           this.openDialogForSelectedColumn(coords.col);
         }
-        return ;
+        return;
       },
       afterLoadData: () => {
         this.hot.render();
@@ -124,8 +124,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 
   openDialogForSelectedColumn(headerIdx): void {
@@ -134,7 +134,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
       width: '700px',
-      data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs}
+      data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -250,18 +250,18 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         newTransformationDescription + ' new',
         newTransformationKeywords.concat('four'),
         newTransformationConfiguration).then(
-        (result) => {
-          console.log(result);
-          console.log('Data uploaded');
-          this.rdfButtonDisabled = false;
-          this.saveLoading = false;
-        },
-        (error) => {
-          console.log('Error updating transformation');
-          console.log(error);
-          this.rdfButtonDisabled = true;
-          this.saveLoading = false;
-        });
+          (result) => {
+            console.log(result);
+            console.log('Data uploaded');
+            this.rdfButtonDisabled = false;
+            this.saveLoading = false;
+          },
+          (error) => {
+            console.log('Error updating transformation');
+            console.log(error);
+            this.rdfButtonDisabled = true;
+            this.saveLoading = false;
+          });
     }
     this.saveLoading = false;
   }
@@ -466,7 +466,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         ++i;
       }
       // TODO: create a new RDFVocabulary instance
-      this.transformationObj.rdfVocabs.push({name: prefix, namespace: namespace, fromServer: false});
+      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     }
     return prefix;
   }

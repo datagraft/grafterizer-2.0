@@ -1,9 +1,6 @@
 <clr-modal [(clrModalOpen)]="modalEnabled">
   <h3 class="modal-title">Take columns</h3>
   <div class="modal-body">
-
-
-
     <div class="toggle-switch">
       <input [(ngModel)]="take" type="checkbox" id="toggle_1">
       <label for="toggle_1">{{take?"Take only listed columns":"Take all columns EXCEPT of listed"}}</label>
@@ -17,30 +14,31 @@
         <input type="radio" [(ngModel)]="takecolumnsmode" name="mode" value="indices" id="mode_2">
         <label for="mode_2">Specify range of column indices</label>
       </div>
-
     </form>
-
+    <br>
     <div *ngIf="takecolumnsmode=='colnames'">
       <label for="colnames">Column names:</label>
-<!--
-      <rl-tag-input [(ngModel)]="columnsArray" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
-        placeholder="Column names" id="colnames"></rl-tag-input>
--->
+      <tag-input id="tag" [(ngModel)]="columnsArray" [ngModelOptions]="{standalone: true}" [identifyBy]="'id'" [displayBy]="'value'"
+        [placeholder]="'Select columns'" [secondaryPlaceholder]="'Select columns'" size="150" [onlyFromAutocomplete]="true"
+        [dragZone]="items" [ripple]="false" theme='minimal' (onFocus)="setVisibleDropDown()">
+        <tag-input-dropdown id="tag" [hidden]="!visible" [focusFirstElement]="true" [showDropdownIfEmpty]="true" [keepOpen]="false"
+          [appendToBody]="false" [limitItemsTo]="3" [autocompleteItems]="previewedDataColumns" [identifyBy]="'id'" [displayBy]="'value'">
+        </tag-input-dropdown>
+      </tag-input>
     </div>
     <div *ngIf="takecolumnsmode=='indices'">
       <label for="indexfrominput">Index from:</label>
-      <input type="number" id="indexfrominput" [(ngModel)]="indexFrom" placeholder="From" size="25">
+      <input type="number" id="indexfrominput" [(ngModel)]="indexFrom" size="25">
 
       <label for="indextoinput">Index to:</label>
-      <input type="number" id="indextoinput" [(ngModel)]="indexTo" placeholder="To" size="25">
+      <input type="number" id="indextoinput" [(ngModel)]="indexTo" size="25">
     </div>
     <br>
     <div>
       <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+      <input type="text" id="comment" [(ngModel)]="docstring" size="125">
     </div>
   </div>
-
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>

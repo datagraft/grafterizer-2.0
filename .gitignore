@@ -46,3 +46,7 @@ Thumbs.db
 # Other
 .orig
 semantic.json
+src/assets/jot.json
+
+# Visual Studio
+.vs/*

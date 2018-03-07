@@ -2,7 +2,7 @@
 
 .CodeMirror {
     border: 1px solid #eee;
-    padding-left: 1em;
-    height: auto;
-    max-width: 800px;
+    padding-left: 10px;
+    height: 350px;
+    width: 800px;
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
@@ -10,6 +10,7 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import * as generateClojure from 'assets/generateclojure.js';
 import { Subscription } from 'rxjs/Subscription';
+import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -24,7 +25,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private partialPipeline: any;
   private pipelineDefaultState: any;
   private recommendations: any;
-  private differ: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
@@ -33,91 +33,62 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private previewedTransformationObj: any;
   private graftwerkData: any;
 
-  private transformationSubscription: Subscription;
-  private previewedTransformationSubscription: Subscription;
   private dataSubscription: Subscription;
+
+  private previewErrorSubscription: Subscription;
+  private previewError: string;
 
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
+
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
-    private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef) {
-    this.differ = differs.find({}).create();
+    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
+      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
-      { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
-      { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
+      { label: 'Custom function', value: { id: 'CustomFunctionDeclaration', defaultParams: null } }
     ];
     route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
   ngOnInit() {
-    //    this.transformationSubscription =
-    //      this.transformationSvc.currentTransformationObj.subscribe((message) => {
-    //      this.transformationObj = message;
-    //    });
-
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-        this.updatePreviewedData();
-        console.log(this.previewedTransformationObj);
-      });
-
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
-        console.log(previewedData);
         this.graftwerkData = previewedData;
         //        this.handsonTable.showLoading = true;
         //        this.handsonTable.displayJsEdnData(this.graftwerkData);
         this.profilingComponent.loadJSON(this.graftwerkData);
         this.profilingComponent.refresh(this.handsontableSelection);
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
-        this.cd.detectChanges();
-        setTimeout(() => {
-          //          this.pipelineComponent.generateLabels();
-        });
       }
+    });
+
+    this.previewErrorSubscription = this.globalErrorSvc.previewErrorObs.subscribe((previewError) => {
+      if (previewError) {
+        this.previewError = previewError;
+      } else {
+        delete this.previewError;
+      }
+
     });
   }
 
   ngOnDestroy() {
-    //    this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-    this.previewedTransformationSubscription.unsubscribe();
-    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
-  }
-
-  updatePreviewedData() {
-    this.profilingComponent.progressbar = true;
-    const paramMap = this.route.snapshot.paramMap;
-    const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-    this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 100)
-      .then((result) => {
-        this.transformationSvc.changeGraftwerkData(result);
-        //      this.handsonTable.showLoading = true;
-        //      this.handsonTable.displayJsEdnData(result);
-        this.profilingComponent.loadJSON(result);
-        this.profilingComponent.refresh(this.handsontableSelection);
-        //      this.pipelineComponent.generateLabels();
-        this.loadedDataHeaders = result[':column-names'].map(o => o.substring(1, o.length));
-        this.profilingComponent.progressbar = false;
-      }, (err) => {
-        // TODO - remove loading bar?
-        //      this.handsonTable.showLoading = false;
-        console.log(err);
-      })
+    this.previewErrorSubscription.unsubscribe();
   }
 
   tableSelectionChanged(newSelection: any) {
@@ -137,7 +108,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       headers.push(this.handsonTable.hot.getColHeader(j));
     }
     const recommend = this.recommenderService.getRecommendationWithParams(
-      newSelection.row, newSelection.col, newSelection.row2, newSelection.col2, newSelection.totalRows, newSelection.totalCols, data, headers);
+      newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
+      newSelection.totalRows, newSelection.totalCols, data, headers);
     this.recommendations = recommend;
   }
 

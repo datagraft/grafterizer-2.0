@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 
 @Component({
@@ -11,63 +14,140 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 export class TakeColumnsComponent implements OnInit {
 
-  @Input() function: any;
-  @Input() modalEnabled;
-  @Output() emitter = new EventEmitter();
+  private modalEnabled: boolean;
+  private visible: boolean;
+  private takecolumnsmode;
 
-  private columns: String[] = ["ColumnName1", "ColumnName2", "ColumnName3"];
-  private takecolumnsmode: String;
-  private indexFrom: Number;
-  private indexTo: Number;
-  private columnsArray: any;
-  private take: boolean;
-  private docstring: String;
+  private columnsArray: any[] = [];
+  private indexFrom;
+  private indexTo;
+  private take;
+  private docstring: string;
 
-  constructor() { }
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private previewedDataSubscription: Subscription;
+  private previewedDataColumns: string[] = [];
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
-    this.initFunction();
+    this.visible = false;
+    this.indexFrom = null;
+    this.indexTo = null;
+    this.take = true;
+    this.takecolumnsmode = 'colnames';
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'ColumnsFunction') {
+        this.modalEnabled = true;
+        if (this.currentlySelectedFunction.indexFrom === null && this.currentlySelectedFunction.indexTo === null) {
+          this.takecolumnsmode = 'colnames';
+        }
+        else {
+          this.takecolumnsmode = 'indices';
+          this.indexFrom = this.currentlySelectedFunction.indexFrom;
+          this.indexTo = this.currentlySelectedFunction.indexTo;
+        }
+        this.columnsArray = this.currentlySelectedFunction.columnsArray;
+        this.take = this.currentlySelectedFunction.take;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'ColumnsFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+            return { id: idx, value: v.substring(1, v.length) };
+          });
+        }
+      });
   }
 
-  initFunction() {
-    this.columnsArray = [];
-    this.indexFrom = 0;
-    this.indexTo = 0;
+  ngOnDestroy() {
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  setVisibleDropDown() {
+    this.visible = true;
+  }
+
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
+    }
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      const newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
+        this.indexFrom, this.indexTo, this.take, this.docstring);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
+    this.modalEnabled = false;
+  }
+
+  private editDeriveColumnsFunction(instanceObj): any {
+    instanceObj.columnsArray = this.columnsArray;
+    instanceObj.indexFrom = this.indexFrom;
+    instanceObj.indexTo = this.indexTo;
+    instanceObj.take = this.take;
+    instanceObj.docstring = this.docstring;
+  }
+
+  private resetModal() {
+    // resets the fields of the modal
+    this.indexFrom = null;
+    this.indexTo = null;
     this.take = true;
     this.docstring = null;
-    this.function = new transformationDataModel.ColumnsFunction(this.columnsArray,
-      this.indexFrom, this.indexTo, this.take, this.docstring);
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.function) {
-      if (!this.function) {
-        // console.log('New function');
-      }
-      else {
-        console.log('Edit function');
-        if (this.function.__type == 'ColumnsFunction') {
-          this.columnsArray = this.function.columnsArray;
-          this.indexFrom = this.function.indexFrom;
-          this.indexTo = this.function.indexTo;
-          this.take = this.function.take;
-          this.docstring = this.function.docstring;
-        }
-      }
-    }
-  }
-
-  accept() {
-    this.function.columnsArray = this.columnsArray;
-    this.function.indexFrom = this.indexFrom;
-    this.function.indexTo = this.indexTo;
-    this.function.take = this.take;
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
+  private cancel() {
+    this.resetModal();
     this.modalEnabled = false;
   }
-
-  cancel() { this.modalEnabled = false; }
 
 }

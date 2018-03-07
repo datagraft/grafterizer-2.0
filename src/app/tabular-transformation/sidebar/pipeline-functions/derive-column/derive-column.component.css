@@ -1,10 +1,15 @@
-.removablePropertyFields 
-{ 
-     
-    padding: 0.8em 0.2em 0 0;
-} 
-.removablePropertyButton
-{ 
-     
-    padding: 0;
-} 
+#form-group-2-label {
+    padding-top: 20px;
+}
+
+#form-group-4 {
+    padding-top: 20px;
+}
+
+#comments-label {
+    padding-top: 20px;
+}
+
+#tag {
+    margin-left: -10px;
+}

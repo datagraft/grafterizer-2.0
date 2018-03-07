@@ -20,7 +20,7 @@
         <span class="nav-text">Tabular Annotation</span>
       </a>
       <!--       <a routerLink="/transformation/new/data-exploration" routerLinkActive="active" class="nav-link">
-        <span class="nav-text">Data Exploration</span>
+      <span class="nav-text">Data Exploration</span>
       </a> -->
     </div>
     <div class="header-actions">
@@ -29,6 +29,20 @@
       </a>
     </div>
   </header>
+  <clr-alerts>
+    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
+      <div class="alert-item">
+        <span class="alert-text">
+          Woops - something went wrong! If the problem persists, try reloading the application.
+          <br />
+          {{error.toString().substring(0,200) + " [...]"}}
+        </span>
+        <div class="alert-actions">
+          <button class="btn alert-action" (click)="onClose(i)">Close</button>
+        </div>
+      </div>
+    </clr-alert>
+  </clr-alerts>
   <div class="content-container">
     <!-- Conditional CSS class attachment to the element -->
     <div [ngClass]="{'content-area-no-padding': router.url == '/tabular-transformation/new' || '/data-exploration'}">

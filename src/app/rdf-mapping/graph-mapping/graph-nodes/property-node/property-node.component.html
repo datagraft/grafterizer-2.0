@@ -1,0 +1,44 @@
+<div fxLayout="row" fxLayoutAlign="start start">
+  <div fxLayout="column" fxLayoutAlign="start start" class="sin-property-button-container" (mouseenter)="showPropertyActions()"
+    (mouseleave)="hidePropertyActions()">
+    <button mat-button matTooltip="{{property.prefix ? property.prefix + ':' : '' }}{{property.propertyName}}" class="rdf-mapping-property-button"
+      (click)="editProperty()" matTooltipShowDelay="1000">
+      <div fxLayout="row" fxLayoutAlign="start start">
+        <div *ngIf="property.propertyCondition.length === 0" class="sin-property-button-icon">
+          <i class="fa fa-arrow-right fa-1x"></i>
+        </div>
+        <div *ngIf="property.propertyCondition.length > 0" class="sin-property-button-icon">
+          <i class="fa fa-filter fa-1x"></i>
+        </div>
+        <div *ngIf="property.propertyCondition.length > 0" class="sin-property-button-icon">
+          <i class="fa fa-arrow-right fa-1x"></i>
+        </div>
+        <div class="sin-property-button-text">
+          {{ (property.prefix ? property.prefix + ':': '') + property.propertyName }}
+        </div>
+      </div>
+    </button>
+    <div class="sin-rdf-property-actions" [style.visibility]="showActions ? 'visible' : 'hidden'">
+      <div fxflex fxLayoutAlign="start center">
+        <button mat-icon-button (click)="addSiblingProperty()">
+          <mat-icon aria-label="Add a sibling property" class="sin-property-action">add_circle</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeProperty()">
+          <mat-icon aria-label="Remove current property" class="sin-property-action">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="start start">
+    <button mat-button matTooltip="Add a new node" aria-label="Add property" (click)="clickAddNode()" [hidden]="property.subElements.length!=0">
+      <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add node
+    </button>
+    <div fxLayout="column" *ngFor="let node of property.subElements">
+      <constant-uri-node *ngIf="node.__type=='ConstantURI'" [node]="node" [parent]="property"></constant-uri-node>
+      <column-uri-node *ngIf="node.__type=='ColumnURI'" [node]="node" [parent]="property"></column-uri-node>
+      <constant-literal-node *ngIf="node.__type=='ConstantLiteral'" [node]="node" [parent]="property"></constant-literal-node>
+      <column-literal-node *ngIf="node.__type=='ColumnLiteral'" [node]="node" [parent]="property"></column-literal-node>
+      <blank-node *ngIf="node.__type=='BlankNode'" [node]="node" [parent]="property"></blank-node>
+    </div>
+  </div>
+</div>

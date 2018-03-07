@@ -6,10 +6,12 @@
       </label>
     </div>
   </div>
-  <mat-vertical-stepper #pipelineElement class="stepper" *ngIf="showPipeline"(selectionChange)="selectFunction($event)">
+  <mat-vertical-stepper #pipelineElement class="stepper" *ngIf="showPipeline" (selectionChange)="selectFunction($event)">
     <div class="pipeline-steps" *ngFor="let step of steps; let i = index">
-      <mat-step id="{{i}}" value="function-name" [stepControl]="AbstractControl" completed="true"  previewed="false">
-        <ng-template matStepLabel><div id="{{i}}">{{verboseLabels(step.__type)}}</div></ng-template>
+      <mat-step id="{{i}}" value="function-name" [stepControl]="AbstractControl" completed="true" previewed="false">
+        <ng-template matStepLabel>
+          <div id="{{i}}">{{verboseLabels(step.__type)}}</div>
+        </ng-template>
         <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="triggerPipelineEvent($event)" *ngIf="!step.isPreviewed">
           <mat-icon aria-label="visibility">visibility</mat-icon>
         </button>
@@ -19,10 +21,20 @@
         <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="edit" (click)="triggerPipelineEvent($event)">
           <mat-icon aria-label="mode_edit">mode_edit</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="remove" (click)="triggerPipelineEvent($event)">
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="remove" (click)="openDeleteConfirmationModal($event)">
           <mat-icon aria-label="remove_circle_outline">delete</mat-icon>
         </button>
       </mat-step>
     </div>
   </mat-vertical-stepper>
+  <clr-modal [(clrModalOpen)]="deleteConfirmationModal">
+    <h3 class="modal-title">Delete function?</h3>
+    <div class="modal-body">
+      Once you delete a function, you cannot get it back.
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="deleteConfirmationModal = false">Cancel</button>
+      <button type="button" class="btn btn-warning" (click)="deleteConfirmationModal = false; confirmDelete()">Delete</button>
+    </div>
+  </clr-modal>
 </div>
