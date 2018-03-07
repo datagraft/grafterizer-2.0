@@ -10,14 +10,13 @@ import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
-import { Http } from '@angular/http';
 import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
-import {Subscription} from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
 
 declare var Handsontable: any;
 
@@ -62,8 +61,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, private route: ActivatedRoute, private routingService: RoutingService,
-    public http: Http, public dialog: MatDialog) {
+    public annotationService: AnnotationService, private route: ActivatedRoute,
+              private routingService: RoutingService, public dialog: MatDialog) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.dataLoading = true;
     this.saveLoading = false;
@@ -120,6 +119,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
         this.annotationService.data = this.graftwerkData[':rows'];
+        if (this.transformationObj['annotations']) {
+          this.transformationObj['annotations'].forEach(annotationObj => {
+            const annotation = new Annotation(annotationObj);
+            this.annotationService.setAnnotation(annotation.columnHeader, annotation);
+          });
+          this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
+        }
         this.hot.updateSettings({
           columns: this.graftwerkData[':column-names'].map(h => ({data: h})), // don't remove leading ':' here!
           colHeaders: (col) => this.getTableHeader(col)
@@ -132,6 +138,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     //    this.transformationSvc.changeTransformationObj(this.transformationObj);
@@ -187,7 +194,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
       HTMLHeader += '<br>';
-      let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
+      let type = annotation.columnValuesType === ColumnTypes.URI ?
+        annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
       let property = annotation.property;
       let subject = annotation.subject;
 
@@ -218,8 +226,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
      */
     annotations = this.updatePrefixesNamespaces(annotations);
 
-    console.log(annotations);
-
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
 
@@ -229,9 +235,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.transformationObj.graphs.push(graph);
     }
 
-    console.log(this.transformationObj);
-
     // Save the new transformation
+    this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSvc.changeTransformationObj(this.transformationObj);
 
     // Persist the Graph to DataGraft
@@ -241,10 +246,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       const existingTransformationID = paramMap.get('transformationId');
       const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-      console.log(someClojure);
-      const newTransformationName = 'test-graft-transformation-ocorp';
+      const newTransformationName = existingTransformationID;
       const isPublic = false;
-      const newTransformationDescription = 'testing graft created from annotations';
+      const newTransformationDescription = 'graft created from annotations';
       const newTransformationKeywords = ['graft', 'annotations'];
       const newTransformationConfiguration = {
         type: 'graft',
@@ -255,10 +259,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       return this.dispatch.updateTransformation(existingTransformationID,
         publisher,
-        newTransformationName + '-new',
+        newTransformationName,
         isPublic,
-        newTransformationDescription + ' new',
-        newTransformationKeywords.concat('four'),
+        newTransformationDescription,
+        newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
             console.log(result);
@@ -458,7 +462,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
     if (existingPrefix) {
-      console.log(existingPrefix);
       prefix = existingPrefix;
     } else {
       const url = new URL(namespace);
