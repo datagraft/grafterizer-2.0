@@ -86,7 +86,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       });
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
-      if (message) {
+      if (typeof message[":column-names"] !== 'undefined' && message[":column-names"].length > 0) {
         console.log('Data Changed');
         this.displayJsEdnData(message);
       }
