@@ -127,7 +127,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
         }
         this.hot.updateSettings({
-          columns: this.graftwerkData[':column-names'].map(h => ({data: h})), // don't remove leading ':' here!
+          columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
           colHeaders: (col) => this.getTableHeader(col)
         });
         this.hot.loadData(this.annotationService.data);
