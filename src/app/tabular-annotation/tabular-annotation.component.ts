@@ -359,7 +359,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
           {'id': 0, 'value': annotation.urifyPrefix},
           {'id': 0, 'value': annotation.columnHeader},
-          [], // node conditions
+          [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           [], // subelements
         );
       } else if (annotation.columnValuesType === ColumnTypes.Literal) {
@@ -374,7 +374,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           null, // on error
           annotation.langTag,
           annotation.columnDatatype,
-          [], // nodeCondition
+          [this.getEmptyCondition(annotation.columnHeader)], // nodeCondition
         );
       }
     });
@@ -386,7 +386,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
           {'id': 0, 'value': annotation.urifyPrefix},
           {'id': 0, 'value': annotation.columnHeader},
-          [], // node conditions
+          [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
       }
@@ -396,6 +396,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const rootsList = [];
     Object.keys(rootNodes).forEach(key => rootsList.push(rootNodes[key]));
     return new transformationDataModel.Graph(graphURI, rootsList);
+  }
+
+  /**
+   * Return the "empty" condition for the given column
+   * @param columnHeader
+   * @returns {transformationDataModel.Condition}
+   */
+  private getEmptyCondition(columnHeader) {
+    const column = {'id': 0, 'value': columnHeader};
+    const operator = {'id': 0, 'name': 'Not empty'};
+    const conj = null;
+    const operand = '';
+    return new transformationDataModel.Condition(column, operator, operand, conj);
   }
 
   /**

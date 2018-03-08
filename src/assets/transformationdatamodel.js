@@ -1733,7 +1733,7 @@ ColumnURI.revive = function (data) {
 };
 this.ColumnURI = ColumnURI;
 
-var Condition = function (column, operator, operand, conj) {
+export function Condition(column, operator, operand, conj) {
   this.column = column;
   this.operator = operator;
   this.operand = operand;
