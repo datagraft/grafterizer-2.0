@@ -177,6 +177,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
       '</button>';
     if (annotation) {
+      // STATUS ICON
       let statusIcon = '';
       let tooltipContent = '';
       if (annotation.status === AnnotationStatuses.wrong) {
@@ -194,20 +195,45 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
       HTMLHeader += '<br>';
-      let type = annotation.columnValuesType === ColumnTypes.URI ?
-        annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
-      let property = annotation.property;
-      let subject = annotation.subject;
 
-      type = '<span style="color: #48960C">' + type + '</span>';
-      property = '<span style="color: #5264AE">' + property + '</span>';
-      subject = '<span style="color: #737373">' + subject + '</span>';
+      // ANNOTATION DETAILS
+      let annInfoLabel: string;
+      let annInfoTypes: string;
+      let annInfoValues: string;
+
+      // TYPES
+      if (annotation.columnValuesType === ColumnTypes.URI) {
+        annInfoLabel = '<p class="p7 ann-info-label">Type(s):</p>';
+        annInfoTypes = '';
+        for (let i = 0; i < annotation.columnTypes.length; ++i) {
+          const type = annotation.columnTypes[i];
+          const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+          annInfoTypes += '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+        }
+      } else {
+        annInfoLabel = '<p class="p7 ann-info-label">Datatype:</p>';
+        const type = annotation.columnDatatype;
+        const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+        annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+      }
+      annInfoValues = '<div class="ann-info-values">' + annInfoTypes + '</div>';
+      HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
 
       if (annotation.subject !== '') {
-        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;">' +
-          property + '<br>&nbsp;&nbsp;&nbsp; (' + type + ')<br>sourceCol: ' + subject + '</p>';
-      } else {
-        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;"> (' + type + ')</p>';
+        // PROPERTY
+        annInfoLabel = '<p class="p7 ann-info-label">Prop:</p>';
+        const prop = annotation.property;
+        const shortProp = prop.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(prop)).length);
+        const annInfoProp = '<span class="p7 ann-info-prop" title="' + prop + '">' + shortProp + '</span>';
+        annInfoValues = '<div class="ann-info-values">' + annInfoProp + '</div>';
+        HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
+
+        // SOURCE
+        annInfoLabel = '<p class="p7 ann-info-label">SourceCol:</p>';
+        const source = annotation.subject;
+        const annInfoSource = '<span class="p7 ann-info-source">' + source + '</span>';
+        annInfoValues = '<div class="ann-info-values">' + annInfoSource + '</div>';
+        HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
       }
     }
     return HTMLHeader;
