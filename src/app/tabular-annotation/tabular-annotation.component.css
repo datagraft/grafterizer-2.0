@@ -39,3 +39,26 @@
   margin-top: 0 !important;
   margin-bottom: 0.2em !important;
 }
+
+.options {
+  position: absolute;
+  top:60px;left:0;right:0;height:50px;
+}
+
+.hot-wrapper {
+  position: absolute;
+  overflow: hidden;
+  top: 110px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.spinner {
+  margin-top: 10%;
+}
+
+.hot-hidden {
+  visibility: hidden
+}
+

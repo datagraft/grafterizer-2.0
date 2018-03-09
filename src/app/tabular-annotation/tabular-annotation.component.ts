@@ -32,6 +32,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   private graftwerkData: any;
 
   private transformationSubscription: Subscription;
+  private previewedTransformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
   private container: any;
@@ -64,7 +65,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     public annotationService: AnnotationService, private route: ActivatedRoute,
               private routingService: RoutingService, public dialog: MatDialog) {
     route.url.subscribe(() => this.routingService.concatURL(route));
-    this.dataLoading = true;
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
     this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
@@ -72,7 +72,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.dataLoading = true;
     this.container = document.getElementById('handsontable');
     this.settings = {
       data: [],
@@ -82,8 +81,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       manualColumnResize: true,
       columnSorting: false,
       viewportColumnRenderingOffset: 40,
-      height: 660,
-      width: 1610,
       wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
@@ -105,15 +102,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       },
       afterLoadData: () => {
         this.hot.render();
-      }
+        this.dataLoading = false;
+      },
     });
 
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.dataLoading = true;
+      });
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
-      this.dataLoading = true;
       this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':column-names']) {
         // Clean header name (remove leading ':' from the EDN response)
@@ -132,17 +133,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         });
         this.hot.loadData(this.annotationService.data);
       }
-      this.dataLoading = false;
     });
-    this.dataLoading = false;
   }
 
   ngOnDestroy() {
     this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+    this.previewedTransformationSubscription.unsubscribe();
   }
 
   openDialogForSelectedColumn(headerIdx): void {
