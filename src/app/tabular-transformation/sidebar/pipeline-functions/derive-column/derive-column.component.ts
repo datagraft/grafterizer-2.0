@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
-import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
+
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'derive-column',
@@ -8,122 +11,143 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./derive-column.component.css']
 })
 
-export class DeriveColumnComponent implements OnInit, OnChanges {
+export class DeriveColumnComponent implements OnInit {
 
-  @Input() function: any;
-  @Input() modalEnabled;
-  @Input() columns: String[];
-  @Input() transformation: any;  // Transformation is needed to search for prefixers/functions  
-  @Output() emitter = new EventEmitter();
+  private modalEnabled: boolean;
+  private visible: boolean;
 
-  private tr1: any;
-  private newColName: String;
-  private colsToDeriveFrom: any;
-  private deriveFunctions: any[]; // type customFunctionDeclaration
-  private params: any[];
-  private docstring: String;
-  private dataService: CompleterData;
-  private functionNames: any[];
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
 
-  constructor() { }
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private previewedTransformationSubscription: Subscription;
+  private previewedDataSubscription: Subscription;
+
+  private newColName: string;
+  private selectedCustomFunction: any;
+  private docstring: string;
+  private previewedDataColumns: string[] = [];
+  private customFunctions: any[] = [];
+  private colsToDeriveFrom: any[] = [];
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
-    this.initFunction();
-  }
+    this.visible = false;
 
-  initFunction() {
-    this.newColName = null;
-    this.colsToDeriveFrom = [];
-    this.deriveFunctions = [];
-    this.params = [[]];
-    this.docstring = null;
-    this.functionNames = [];
-    this.function = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(null, [])], this.docstring);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.transformation) {
-      for (let f of this.transformation.customFunctionDeclarations) {
-        // this.functionNames.push(f.name);
-      }
-    }
-    if (changes.function) {
-      if (!this.function) {
-        // console.log('New function');
-        this.deriveFunctions = [undefined];
-      }
-      else {
-        console.log('Edit function');
-        if (this.function.__type == 'DeriveColumnFunction') {
-          this.newColName = this.function.newColName;
-          this.colsToDeriveFrom = this.function.colsToDeriveFrom.map(o => o.value);
-          this.deriveFunctions = [];
-          this.params = [[]];
-          for (let availableFunction of this.function.functionsToDeriveWith) {
-            this.deriveFunctions.push(availableFunction.funct.name);
-            this.params.push(availableFunction.functParams);
-          }
-          this.docstring = this.function.docstring;
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        if (previewedTransformation) {
+          this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+            return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+          });
         }
+      });
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'DeriveColumnFunction') {
+        this.modalEnabled = true;
+        this.newColName = this.currentlySelectedFunction.newColName;
+        this.colsToDeriveFrom = this.currentlySelectedFunction.colsToDeriveFrom;
+        this.selectedCustomFunction = this.currentlySelectedFunction.functionsToDeriveWith["0"].funct;
+        for (let funct of this.customFunctions) {
+          if (this.selectedCustomFunction.id === funct.id) {
+            this.customFunctions[funct.id] = this.selectedCustomFunction;
+          }
+        }
+        this.docstring = this.currentlySelectedFunction.docstring;
       }
-    }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'DeriveColumnFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+            return { id: idx, value: v.substring(1, v.length) };
+          });
+        }
+      });
   }
 
-  findCustomFunctionByName(transformation, name) {
-    for (let f of transformation.customFunctionDeclarations) {
-      if (f.name == name)
-        return f;
-    }
+  ngOnDestroy() {
+    this.previewedTransformationSubscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  reduceFunctionParams(idx) {
-    var params = [];
-    var f = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[idx]);
-    if (!f) return params;
-    if (!f.hasOwnProperty('clojureCode')) return params;
-    if (!f.clojureCode) return params;
-    var d = f.clojureCode.match(/\[(.*?)\]/g);
-    if (d) {
-      d[0] = d[0].replace(/^\[|\]$/g, '');
-      params = d[0].split(" ");
-      params.splice(0, 1);
-    }
-    for (let i of this.colsToDeriveFrom.length) {
-      params.splice(0, 1);
-    }
-    return params;
+  setVisibleDropDown() {
+    this.visible = true;
   }
 
-  onFunctionSelected(selected: CompleterItem, idx) { }
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
 
-  addDeriveFunction() {
-    this.deriveFunctions.push(undefined);
-    this.params.push([]);
-  }
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
 
-  removeFunction(idx) {
-    this.deriveFunctions.splice(idx, 1);
-    this.params.splice(idx, 1);
-  }
-
-  accept() {
-    this.function.newColName = this.newColName;
-    this.function.colsToDeriveFrom = [];
-    for (let i = 0; i < this.colsToDeriveFrom.length; ++i) {
-      this.function.colsToDeriveFrom.push({ id: 0, value: this.colsToDeriveFrom[i] });
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-    this.function.functionsToDeriveWith = [];
-    for (let i = 0; i < this.deriveFunctions.length; ++i) {
-      let cf = this.findCustomFunctionByName(this.transformation, this.deriveFunctions[i]);
-      this.function.functionsToDeriveWith.push(new transformationDataModel.FunctionWithArgs(cf, this.params[i]));
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      const newFunction = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(this.selectedCustomFunction, [])], this.docstring);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
     }
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.initFunction();
+    this.resetModal();
     this.modalEnabled = false;
   }
 
-  cancel() { this.modalEnabled = false; }
+  private editDeriveColumnsFunction(instanceObj): any {
+    instanceObj.newColName = this.newColName;
+    instanceObj.docstring = this.docstring;
+    instanceObj.colsToDeriveFrom = this.colsToDeriveFrom;
+    instanceObj.functionsToDeriveWith["0"].funct = this.selectedCustomFunction;
+  }
+
+  private resetModal() {
+    // resets the fields of the modal
+    this.newColName = null;
+    this.docstring = null;
+    this.selectedCustomFunction = null;
+  }
+
+  private cancel() {
+    this.resetModal();
+    this.modalEnabled = false;
+  }
 
 }

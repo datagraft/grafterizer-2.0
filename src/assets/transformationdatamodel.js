@@ -472,12 +472,8 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   for (i = 0; i < this.colsToMerge.length; ++i) {
     colsToMerge.val.push(new jsedn.kw(':' + this.colsToMerge[i].value));
   }
-  var values = [new jsedn.sym('new-tabular/merge-columns'), colsToMerge, new jsedn.parse('"' + this.separator + '"')];
-  if (this.newColName)
-    values.push(new jsedn.kw(':' + this.newColName));
-  return new jsedn.List(values);
-  /*if (this.separator === "") return new jsedn.List([new jsedn.sym('merge-columns'),colsToMerge,new jsedn.sym('""'), this.newColName ? new jsedn.kw(':'+this.newColName) : null]);
-  else return new jsedn.List([new jsedn.sym('merge-columns'),colsToMerge, new jsedn.sym('"'+this.separator+'"'), this.newColName ? new jsedn.kw(':'+this.newColName) : null ]);*/
+  var regex = new jsedn.List([jsedn.sym('read-string'), '#\"' + this.separator + '\"']);
+  return new jsedn.List([jsedn.sym('new-tabular/merge-columns'), colsToMerge, regex, jsedn.kw(':' + this.newColName)]);
 };
 this.MergeColumnsFunction = MergeColumnsFunction;
 
@@ -1733,7 +1729,7 @@ ColumnURI.revive = function (data) {
 };
 this.ColumnURI = ColumnURI;
 
-var Condition = function (column, operator, operand, conj) {
+export function Condition(column, operator, operand, conj) {
   this.column = column;
   this.operator = operator;
   this.operand = operand;

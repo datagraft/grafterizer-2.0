@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, KeyValueDiffers, DoCheck, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
@@ -25,12 +25,12 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private partialPipeline: any;
   private pipelineDefaultState: any;
   private recommendations: any;
-  private differ: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
+  private previewedTransformationObj: any;
   private graftwerkData: any;
 
   private dataSubscription: Subscription;
@@ -44,22 +44,23 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
 
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
-               private transformationSvc: TransformationService, private routingService: RoutingService,
-               private route: ActivatedRoute, private router: Router, private differs: KeyValueDiffers, private cd: ChangeDetectorRef,
-  private globalErrorSvc: GlobalErrorReportingService) {
-    this.differ = differs.find({}).create();
+    private transformationSvc: TransformationService, private routingService: RoutingService,
+    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
+      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
-      { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
-      { label: 'Custom function', value: { id: 'UtilityFunction', defaultParams: null } }
+      { label: 'Custom function', value: { id: 'CustomFunctionDeclaration', defaultParams: null } }
     ];
     route.url.subscribe(() => this.routingService.concatURL(route));
   }
@@ -67,14 +68,12 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
-        console.log(previewedData);
         this.graftwerkData = previewedData;
         //        this.handsonTable.showLoading = true;
         //        this.handsonTable.displayJsEdnData(this.graftwerkData);
         this.profilingComponent.loadJSON(this.graftwerkData);
         this.profilingComponent.refresh(this.handsontableSelection);
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
-        this.cd.detectChanges();
       }
     });
 
@@ -84,12 +83,11 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       } else {
         delete this.previewError;
       }
-      
+
     });
   }
 
   ngOnDestroy() {
-    //    this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     this.previewErrorSubscription.unsubscribe();
   }

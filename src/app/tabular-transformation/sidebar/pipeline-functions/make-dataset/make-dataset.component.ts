@@ -29,7 +29,7 @@ export class MakeDatasetComponent implements OnInit {
   private numberOfColumns: Number = undefined;
   private docstring: String = 'Create headers for the data';
 
-  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) {}
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
     this.modalEnabled = false;
@@ -54,7 +54,7 @@ export class MakeDatasetComponent implements OnInit {
         } else {
           this.makedatasetmode = 'colnames';
           this.columnsArray = this.currentlySelectedFunction.columnsArray.map((o) => {
-            return {display: o.value, value: o.value}
+            return { display: o.value, value: o.value }
           });
         }
       }

@@ -7,6 +7,7 @@ import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
 import { RoutingService } from './routing.service';
 import { GlobalErrorReportingService } from './global-error-reporting.service';
+import { PipelineEventsService } from './tabular-transformation/pipeline-events.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -32,14 +33,14 @@ export class AppComponent implements OnInit {
   private globalErrors: Array<any>;
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
-               public dispatch: DispatchService, private transformationSvc: TransformationService,
-               public messageSvc: DataGraftMessageService, private routingService: RoutingService,
-               private globalErrorRepSvc: GlobalErrorReportingService) {
+    public dispatch: DispatchService, private transformationSvc: TransformationService,
+    public messageSvc: DataGraftMessageService, private routingService: RoutingService,
+    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
 
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.url = url;
     });
-}
+  }
 
 
   ngOnInit() {
@@ -52,16 +53,16 @@ export class AppComponent implements OnInit {
           if (paramMap.has('publisher') && paramMap.has('transformationId')) {
             self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
               .then(
-              (result) => {
-                const transformationObj = transformationDataModel.Transformation.revive(result);
-                self.transformationSvc.changeTransformationObj(transformationObj);
-                if (paramMap.has('filestoreId')) {
-                  this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                }
-              },
-              (error) => {
-                console.log(error);
-              });
+                (result) => {
+                  const transformationObj = transformationDataModel.Transformation.revive(result);
+                  self.transformationSvc.changeTransformationObj(transformationObj);
+                  if (paramMap.has('filestoreId')) {
+                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  }
+                },
+                (error) => {
+                  console.log(error);
+                });
           }
           self.initRouteSubscription.unsubscribe();
         }
@@ -77,9 +78,16 @@ export class AppComponent implements OnInit {
             // If the event for navigation end is emitted, the child components are initialised.
             // We can proceed to updating the previewed data.
             if (event instanceof NavigationEnd) {
-              this.updatePreviewedData();
-              // this subscription is no longer needed for the rest of the life of the app component
-              this.updateDataRouteSubscription.unsubscribe();
+              this.pipelineEventsSvc.changePipelineEvent({
+                startEdit: false, // true when we click on the 'Edit' icon of a function
+                commitEdit: false, // true when we click 'OK' after editing a function
+                preview: false, // true when we are previewing a step in the pipeline
+                delete: false, // true when we are deleting a step in the pipeline
+                createNew: false, // true when we are adding a new step to the pipeline
+                newStepType: "", // type of the new step to be added to the pipeline
+                defaultParams: {}, // default parameters for a new step (could be given by recommender)
+                commitCreateNew: false // true when we click OK after creating a new function
+              });
             }
           });
         } else {
@@ -124,14 +132,14 @@ export class AppComponent implements OnInit {
       const file: File = fileList[0];
       this.dispatch.uploadFile(file)
         .then(
-        (result) => {
-          console.log('Successfully uploaded file!');
-          console.log(result);
-        },
-        (error) => {
-          console.log('Error uploading file!');
-          console.log(error);
-        });
+          (result) => {
+            console.log('Successfully uploaded file!');
+            console.log(result);
+          },
+          (error) => {
+            console.log('Error uploading file!');
+            console.log(error);
+          });
     }
   }
 

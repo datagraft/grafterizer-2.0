@@ -1,44 +1,36 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
   <h3 class="modal-title">Derive Column</h3>
   <div class="modal-body">
-
-    <div>
-      <label for="comment">Name of new column:</label>
-      <input type="text" id="name" [(ngModel)]="newColName" placeholder="New column name" size="125">
-    </div>
-
-    <br>
-    <label for="colnames">Column names:</label>
-<!--
-    <rl-tag-input [(ngModel)]="colsToDeriveFrom" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
-      placeholder="Column names" id="colnames"></rl-tag-input>
--->
-    <label for="df">Functions to derive with:</label>
-    <div id="df" *ngFor="let deriveFunction of deriveFunctions; index as idx;">
-      <div class="row">
-        <button class="btn btn-link btn-icon-link removablePropertyButton"> 
-        <clr-icon  shape="remove" size="22"  (click)="removeFunction(idx)"></clr-icon> 
- 
-    </button>
-        <div class="row">
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="deriveFunctions[idx]" [datasource]="functionNames" [openOnFocus]="true"
-            [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false" (selected)="onFunctionSelected($event, idx)"></ng2-completer>
-
-          <div *ngFor="let param of reduceFunctionParams(idx); index as i;">
-            <label for="{{'param'+i}}">{{param}}</label>
-            <input type="text" id="{{'param'+i}}" [(ngModel)]="params[idx][i]" size="10">
-
+    <form>
+      <section class="form-block">
+        <div class="form-group">
+          <label for="form-group-1">Name of new column</label>
+          <input type="text" id="form-group-1" [(ngModel)]="newColName" [ngModelOptions]="{standalone: true}" size="45">
+        </div>
+        <div class="form-group">
+          <label for="form-group-2" id="form-group-2-label">Select columns</label>
+          <tag-input id="tag" [(ngModel)]="colsToDeriveFrom" [ngModelOptions]="{standalone: true}" [identifyBy]="'id'" [displayBy]="'value'"
+            [placeholder]="'Select columns here'" [secondaryPlaceholder]="'Select columns here'" size="150" [onlyFromAutocomplete]="true"
+            [dragZone]="items" [ripple]="false" theme='minimal' (onFocus)="setVisibleDropDown()">
+            <tag-input-dropdown id="tag" [hidden]="!visible" [focusFirstElement]="true" [showDropdownIfEmpty]="true" [keepOpen]="false"
+              [appendToBody]="false" [limitItemsTo]="3" [autocompleteItems]="previewedDataColumns" [identifyBy]="'id'" [displayBy]="'value'">
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="form-group">
+          <label for="form-group-3">Select derive function</label>
+          <div class="select">
+            <select id="form-group-3" name="form-group-dropdown" [(ngModel)]="selectedCustomFunction">
+              <option *ngFor="let customFunction of customFunctions" [ngValue]="customFunction">{{customFunction.name}}</option>
+            </select>
           </div>
         </div>
-      </div>
-    </div>
-    <button class="btn btn-primary" (click)="addDeriveFunction()">Compose with</button>
-    <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
-
+        <div class="form-group" id="form-group-4">
+          <label for="form-group-4" id="comments-label">Comments</label>
+          <input type="text" id="form-group-4-input" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
+        </div>
+      </section>
+    </form>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

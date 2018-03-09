@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router'
+import {ActivatedRoute} from '@angular/router';
 import {AnnotationService} from './annotation.service';
 import {INglDatatableRowClick, INglDatatableSort} from 'ng-lightning/ng-lightning';
 import {Annotation} from './annotation.model';
@@ -114,11 +114,11 @@ export class TabularAnnotationDetailComponent implements OnInit, OnDestroy {
   // }
 
   dataTypeSelect(dataType) {
-    if (dataType === 'URL') {
-      this.annotation.columnType = dataType;
-    } else {
-      this.annotation.columnType = dataType;
-    }
+    // if (dataType === 'URL') {
+    //   this.annotation.columnTypes = dataType;
+    // } else {
+    //   this.annotation.columnTypes = dataType;
+    // }
   }
 
   onRowClick($event: INglDatatableRowClick) {

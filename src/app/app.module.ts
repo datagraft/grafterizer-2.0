@@ -22,6 +22,7 @@ import { RoutingService } from './routing.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
+import { AbstatService } from './tabular-annotation/abstat.service';
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -50,6 +51,7 @@ export function initConfig(config: AppConfig) {
     GlobalErrorReportingService,
     TransformationService,
     AnnotationService,
+    AbstatService,
     RoutingService,
     {
       provide: APP_INITIALIZER,

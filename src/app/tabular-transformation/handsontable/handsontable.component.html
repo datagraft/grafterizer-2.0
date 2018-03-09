@@ -1,4 +1,4 @@
-<div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" [hidden]="!showLoading">
+<div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
   <div class="spinner">
     <span class="spinner spinner-lg" fxflex>
       Loading...
