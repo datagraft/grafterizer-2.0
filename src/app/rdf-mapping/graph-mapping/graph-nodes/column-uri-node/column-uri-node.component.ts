@@ -1,8 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewContainerRef, ViewChild } from '@angular/core';
+import { RdfNodeMappingDialogComponent } from '../../rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
+import { RdfNodeMappingDialogAnchorDirective } from '../../rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 
 @Component({
   selector: 'column-uri-node',
   templateUrl: './column-uri-node.component.html',
+  entryComponents: [RdfNodeMappingDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class ColumnUriNodeComponent implements OnInit {
@@ -10,11 +13,15 @@ export class ColumnUriNodeComponent implements OnInit {
   @Input() parent: any;
   private showActions = false;
 
-  constructor() {
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
+
+  constructor(private viewContainer: ViewContainerRef) {
 
   }
 
   editNode() {
+    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.selectTab('uri');
     console.log('Edit Node' + this.node);
   }
 

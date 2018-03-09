@@ -1,7 +1,7 @@
 <div fxflex fxLayout="row" fxLayoutAlign="start start">
   <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
     <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{node.prefix ? '(Constant URI) ' + node.prefix + ':' + node.constant : '(Constant URI) ' + node.constant}}"
-      matTooltipPosition="below" matTooltipShowDelay="1000">
+      matTooltipPosition="below" matTooltipShowDelay="500">
       <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
         <div fxflex *ngIf="node.nodeCondition.length === 0">
           <i class="fa fa-columns"></i>
@@ -38,3 +38,4 @@
     </div>
   </div>
 </div>
+<div rdfNodeMappingDialogAnchor></div>

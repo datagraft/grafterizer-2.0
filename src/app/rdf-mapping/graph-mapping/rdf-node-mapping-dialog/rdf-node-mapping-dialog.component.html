@@ -1,0 +1,95 @@
+<clr-modal [(clrModalOpen)]="openNodeMappingDialog" [clrModalClosable]="false" [clrModalSize]="'xl'" #nodeDefinitionModal>
+  <div class="modal-body">
+    <clr-tabs>
+      <clr-tab>
+        <button clrTabLink>URI node</button>
+        <ng-template [(clrIfActive)]="uriNodeTabSelected">
+          <clr-tab-content>
+            <div fxLayout="column" class="sin-dialog-content-padding">
+              <div class="sin-mapping-source-container">
+                <label>Select mapping source type</label>
+                <div class="select">
+                  <select #mappingSourceType id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                    <option value="dataset-col">From dataset column</option>
+                    <option value="free-defined">Free-defined text</option>
+                  </select>
+                </div>
+              </div>
+              <br/>
+
+              <div class="form-group" *ngIf="mappingSourceType.value === 'dataset-col'">
+                <br/>
+                <label>Select node prefix</label>
+                <ng-select class="sin-prefix-select" [items]="prefixes" [(ngModel)]="selectedPrefix">
+                </ng-select>
+                <br/>
+                <label>Select column</label>
+                <ng-select class="sin-column-select" [items]="columns" [(ngModel)]="selectedColumn">
+                </ng-select>
+              </div>
+              <div class="form-group" style="width: 100%;" *ngIf="mappingSourceType.value === 'free-defined'">
+                <mat-form-field style="width: 100%;">
+                  <input matInput placeholder="Node name" [formControl]="nodeIRIFormControl">
+                  <mat-error *ngIf="nodeIRIFormControl.hasError('invalid_iri') && !nodeIRIFormControl.hasError('required')">
+                    Please use a prefixed name, or a valid IRI
+                  </mat-error>
+                  <mat-error *ngIf="nodeIRIFormControl.hasError('required')">
+                    IRI is
+                    <strong>required</strong>
+                  </mat-error>
+                </mat-form-field>
+                <!-- <label style="min-width:150px; padding-top:15px;">Node IRI</label>
+                <input style="min-width:200px; height: 51.5px; padding-bottom: 18px;" [(ngModel)]="nodeIRI" type="text"> -->
+              </div>
+            </div>
+            <mat-slide-toggle (change)="conditionToggleChanged($event)">
+              Specify condition
+            </mat-slide-toggle>
+            <div *ngIf="nodeConditionChecked">
+              <div fxLayout="row">
+                <div fxLayout="column">
+                  <label style="min-width:150px; padding-top:15px;">Column</label>
+                  <ng-select style="min-width:200px;" class="sin-condition-column-select" [items]="columns" [(ngModel)]="selectedConditionColumn"></ng-select>
+                </div>
+                <div fxLayout="column" style="padding-left:20px">
+                  <label style="min-width:150px; padding-top:15px;">Operator</label>
+                  <ng-select style="min-width:200px" class="sin-condition-operator-select" [items]="conditionOperators" [(ngModel)]="selectedOperator"
+                    bindValue="id" bindLabel="name"></ng-select>
+                </div>
+                <div fxLayout="column" style="padding-left:20px; " *ngIf="selectedOperator">
+                  <label style="padding-top:15px;">{{selectedOperator.id === 6 ? "Custom code" : "Operand"}}</label>
+                  <input style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="conditionOperand" type="text">
+                </div>
+              </div>
+            </div>
+            <div class="sin-prefix-select-offset"></div>
+
+          </clr-tab-content>
+        </ng-template>
+      </clr-tab>
+
+      <clr-tab>
+        <button clrTabLink>Literal node</button>
+        <ng-template [(clrIfActive)]="literalNodeTabSelected">
+          <clr-tab-content>
+            Literal node content
+          </clr-tab-content>
+        </ng-template>
+      </clr-tab>
+
+      <clr-tab>
+        <button clrTabLink>Blank node</button>
+        <ng-template [(clrIfActive)]="blankNodeSelected">
+          <clr-tab-content>
+            Blank node content
+          </clr-tab-content>
+        </ng-template>
+      </clr-tab>
+
+    </clr-tabs>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="ok()">Ok</button>
+  </div>
+</clr-modal>

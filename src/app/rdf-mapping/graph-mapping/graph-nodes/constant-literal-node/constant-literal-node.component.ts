@@ -1,8 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
 
 @Component({
   selector: 'constant-literal-node',
   templateUrl: './constant-literal-node.component.html',
+  entryComponents: [RdfNodeMappingDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class ConstantLiteralNodeComponent implements OnInit {

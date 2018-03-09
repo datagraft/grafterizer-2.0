@@ -1,8 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewContainerRef, ViewChild } from '@angular/core';
+import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
+import { RdfNodeMappingDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 
 @Component({
   selector: 'column-literal-node',
   templateUrl: './column-literal-node.component.html',
+  entryComponents: [RdfNodeMappingDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class ColumnLiteralNodeComponent implements OnInit {
@@ -10,12 +13,16 @@ export class ColumnLiteralNodeComponent implements OnInit {
   @Input() parent: any;
   private showActions = false;
 
-  constructor() { }
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
+
+  constructor(private viewContainer: ViewContainerRef) { }
 
   ngOnInit() {
   }
 
   editNode() {
+    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.selectTab('literal');
     console.log('Edit Node' + this.node);
   }
 

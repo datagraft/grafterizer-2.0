@@ -9,6 +9,8 @@ export class GraphMappingComponent implements OnInit {
 
   @Input() graph;
 
+  private openNodeMappingDialog = false;
+
   constructor() { }
 
   ngOnInit() {

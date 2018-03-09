@@ -1,3 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
+.ng-select.sin-condition-column-select .ng-control .ng-value-container .ng-input>input,
+.ng-select.sin-condition-operator-select .ng-control .ng-value-container .ng-input>input,
+.ng-select.sin-prefix-select .ng-control .ng-value-container .ng-input>input,
+.ng-select.sin-column-select .ng-control .ng-value-container .ng-input>input {
+    cursor: pointer;
+    padding-left: 0px !important;
+}
+
+ng-select.sin-prefix-select ng-dropdown-panel .ng-dropdown-panel-items,
+ng-select.sin-column-select ng-dropdown-panel .ng-dropdown-panel-items,
+ng-select.sin-condition-column-select ng-dropdown-panel .ng-dropdown-panel-items,
+ng-select.sin-condition-operator-select ng-dropdown-panel .ng-dropdown-panel-items {
+    max-height: 130px;
+}
