@@ -16,35 +16,26 @@
                 </div>
               </div>
               <br/>
-
               <div class="form-group" *ngIf="mappingSourceType.value === 'dataset-col'">
                 <br/>
                 <label>Select node prefix</label>
-                <ng-select class="sin-prefix-select" [items]="prefixes" [(ngModel)]="selectedPrefix">
-                </ng-select>
+                <ng-select class="sin-prefix-select" [items]="prefixes" [(ngModel)]="selectedPrefix"></ng-select>
                 <br/>
                 <label>Select column</label>
-                <ng-select class="sin-column-select" [items]="columns" [(ngModel)]="selectedColumn">
-                </ng-select>
+                <ng-select class="sin-column-select" [items]="columns" [(ngModel)]="selectedColumn"></ng-select>
               </div>
               <div class="form-group" style="width: 100%;" *ngIf="mappingSourceType.value === 'free-defined'">
                 <mat-form-field style="width: 100%;">
                   <input matInput placeholder="Node name" [formControl]="nodeIRIFormControl">
-                  <mat-error *ngIf="nodeIRIFormControl.hasError('invalid_iri') && !nodeIRIFormControl.hasError('required')">
-                    Please use a prefixed name, or a valid IRI
-                  </mat-error>
-                  <mat-error *ngIf="nodeIRIFormControl.hasError('required')">
-                    IRI is
+                  <mat-error *ngIf="nodeIRIFormControl.hasError('invalid_iri') && !nodeIRIFormControl.hasError('required')">Please use a prefixed name, or a valid IRI </mat-error>
+                  <mat-error *ngIf="nodeIRIFormControl.hasError('required')">IRI is
                     <strong>required</strong>
                   </mat-error>
                 </mat-form-field>
-                <!-- <label style="min-width:150px; padding-top:15px;">Node IRI</label>
-                <input style="min-width:200px; height: 51.5px; padding-bottom: 18px;" [(ngModel)]="nodeIRI" type="text"> -->
+                <!-- <label style="min-width:150px; padding-top:15px;">Node IRI</label><input style="min-width:200px; height: 51.5px; padding-bottom: 18px;" [(ngModel)]="nodeIRI" type="text">-->
               </div>
             </div>
-            <mat-slide-toggle (change)="conditionToggleChanged($event)">
-              Specify condition
-            </mat-slide-toggle>
+            <mat-slide-toggle [checked]="nodeConditionChecked" (change)="conditionToggleChanged($event)">Specify condition </mat-slide-toggle>
             <div *ngIf="nodeConditionChecked">
               <div fxLayout="row">
                 <div fxLayout="column">
@@ -57,35 +48,459 @@
                     bindValue="id" bindLabel="name"></ng-select>
                 </div>
                 <div fxLayout="column" style="padding-left:20px; " *ngIf="selectedOperator">
-                  <label style="padding-top:15px;">{{selectedOperator.id === 6 ? "Custom code" : "Operand"}}</label>
+                  <label style="padding-top:15px;"> {{ selectedOperator.id===6 ? "Custom code": "Operand" }}
+                  </label>
                   <input style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="conditionOperand" type="text">
                 </div>
               </div>
             </div>
             <div class="sin-prefix-select-offset"></div>
-
           </clr-tab-content>
         </ng-template>
       </clr-tab>
-
       <clr-tab>
         <button clrTabLink>Literal node</button>
         <ng-template [(clrIfActive)]="literalNodeTabSelected">
           <clr-tab-content>
-            Literal node content
+            <div fxLayout="column" class="sin-dialog-content-padding">
+              <div class="sin-mapping-source-container">
+                <label>Select mapping source type</label>
+                <div class="select">
+                  <select #mappingSourceType id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                    <option value="dataset-col">From dataset column</option>
+                    <option value="free-defined">Free-defined text</option>
+                  </select>
+                </div>
+              </div>
+              <br/>
+              <div fxLayout="column" class="form-group" *ngIf="mappingSourceType.value === 'dataset-col'">
+                <div fxLayout="row" fxLayoutAlign="start center">
+                  <br/>
+                  <label style="width: 100px">Select column</label>
+                  <ng-select class="sin-literal-column-select" [items]="columns" [(ngModel)]="selectedColumn"></ng-select>
+                  <mat-slide-toggle (change)="assignDatatypeToggleChanged($event)">Assign data type</mat-slide-toggle>
+                </div>
+                <div fxLayout="row" fxLayoutAlign="start center" *ngIf="assignDataTypeChecked">
+                  <label style="width: 100px">Data type</label>
+                  <ng-select class="sin-column-datatype" [items]="dataTypes" [(ngModel)]="selectedDataType" bindValue="id" bindLabel="name"></ng-select>
+                  <mat-form-field style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
+                    <input matInput placeholder="Value on error" [(ngModel)]="valueOnError">
+                  </mat-form-field>
+                  <mat-form-field style="width: 15%; padding-top: 30.5px; padding-bottom: 18px;">
+                    <input matInput placeholder="Value on empty" [(ngModel)]="valueOnEmpty">
+                  </mat-form-field>
+                </div>
+                <button mat-button aria-label="Show/hide documentation" (click)="showDocumentation = !showDocumentation" [hidden]="!assignDataTypeChecked">
+                  <span [hidden]="showDocumentation">
+                    <i class="fa fa-angle-down"></i> Show documentation</span>
+                  <span [hidden]="!showDocumentation">
+                    <i class="fa fa-angle-up"></i> Hide documentation</span>
+                </button>
+                <div class="sin-api-doc-docstring" [hidden]="!showDocumentation || !assignDataTypeChecked" layout="column">
+                  <p> Convert given value to the specified datatype. Supported datatypes (with corresponding xsd types) : </p>
+                  <table>
+                    <tr>
+                      <td> Name of data type </td>
+                      <td> XSD datatype </td>
+                      <td> Value space </td>
+                    </tr>
+
+                    <tr>
+                      <td> String </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#string" target="_blank"> xsd:string </a>
+                      </td>
+                      <td> Character strings </td>
+                    </tr>
+
+                    <tr>
+                      <td> Boolean </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#boolean" target="_blank">xsd:boolean </a>
+                      </td>
+                      <td> true,false </td>
+                    </tr>
+
+                    <tr>
+                      <td> Decimal </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#decimal" target="_blank"> xsd:decimal </a>
+                      </td>
+                      <td> Arbitrary-precision decimal numbers </td>
+                    </tr>
+
+                    <tr>
+                      <td> Integer </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#integer" target="_blank">xsd:integer </a>
+                      </td>
+                      <td> Arbitrary-size integer numbers
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> Double </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#double" target="_blank"> xsd:double </a>
+                      </td>
+                      <td> 64-bit floating point numbers </td>
+                    </tr>
+                    <tr>
+                      <td> Float </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#float" target="_blank"> xsd:float </a>
+                      </td>
+                      <td> 32-bit floating point numbers </td>
+                    </tr>
+
+                    <tr>
+                      <td> DateTime </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#dateTime" target="_blank">xsd:dateTime </a>
+                      </td>
+                      <td> Date and time with or without timezone </td>
+                    </tr>
+
+                    <tr>
+                      <td> Date </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#date" target="_blank"> xsd:date </a>
+                      </td>
+                      <td> Dates (yyyy-mm-dd) with or without timezone </td>
+                    </tr>
+                    <tr>
+                      <td> Time </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#time" target="_blank"> xsd:time </a>
+                      </td>
+                      <td> Times (hh:mm:ss.sss…) with or without timezone </td>
+                    </tr>
+                    <tr>
+                      <td> DateTimeStamp </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#dateTimeStamp" target="_blank">xsd:dateTimeStamp </a>
+                      </td>
+                      <td> Date and time with required timezone
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td> gYear </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#gYear" target="_blank">xsd:gYear </a>
+                      </td>
+                      <td> Gregorian calendar year
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> gMonth </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#gMonth" target="_blank">xsd:gMonth </a>
+                      </td>
+                      <td> Gregorian calendar month
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> gDay </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#gDay" target="_blank"> xsd:gDay </a>
+                      </td>
+                      <td> Gregorian calendar day of the month
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> gYearMonth </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#gYearMonth" target="_blank">xsd:gYearMonth </a>
+                      </td>
+                      <td> Gregorian calendar year and month
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> gMonthDay </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#gMonthDay" target="_blank">xsd:gMonthDay </a>
+                      </td>
+                      <td> Gregorian calendar month and day
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> duration </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#duration" target="_blank">xsd:duration </a>
+                      </td>
+                      <td> Duration of time
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> yearMonthDuration </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#yearMonthDuration" target="_blank">xsd:yearMonthDuration </a>
+                      </td>
+                      <td> Duration of time (months and years only)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> dayTimeDuration </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#dayTimeDuration" target="_blank">xsd:dayTimeDuration </a>
+                      </td>
+                      <td> Duration of time (days, hours, minutes, seconds only)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> Byte </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#byte" target="_blank">xsd:byte </a>
+                      </td>
+                      <td> -128…+127 (8 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> Short </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#short" target="_blank">xsd:short </a>
+                      </td>
+                      <td> -32768…+32767 (16 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> int </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#int" target="_blank">xsd:int </a>
+                      </td>
+                      <td> -2147483648…+2147483647 (32 bit) </td>
+                    </tr>
+
+                    <tr>
+                      <td> Long </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#long" target="_blank">xsd:long </a>
+                      </td>
+                      <td> -9223372036854775808…+9223372036854775807 (64 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> unsignedByte </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#unsignedByte" target="_blank">xsd:unsignedByte </a>
+                      </td>
+                      <td> 0…255 (8 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> unsignedShort </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#unsignedShort" target="_blank">xsd:unsignedShort </a>
+                      </td>
+                      <td> 0…65535 (16 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> unsignedInt </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#unsignedInt" target="_blank">xsd:unsignedInt </a>
+                      </td>
+                      <td> 0…4294967295 (32 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> unsignedLong </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#unsignedLong" target="_blank">xsd:unsignedLong </a>
+                      </td>
+                      <td> 0…18446744073709551615 (64 bit) </td>
+                    </tr>
+                    <tr>
+                      <td> positiveInteger </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#positiveInteger" target="_blank">xsd:positiveInteger </a>
+                      </td>
+                      <td> Integer numbers >0 </td>
+                    </tr>
+                    <tr>
+                      <td> nonNegativeInteger </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#nonNegativeInteger" target="_blank">xsd:nonNegativeInteger </a>
+                      </td>
+                      <td> Integer numbers ≥0 </td>
+                    </tr>
+                    <tr>
+                      <td> negativeInteger </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#negativeInteger" target="_blank">xsd:negativeInteger </a>
+                      </td>
+                      <td> Integer numbers &lt;0 </td>
+                    </tr>
+                    <tr>
+                      <td> nonPositiveInteger </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#nonPositiveInteger" target="_blank">xsd:nonPositiveInteger </a>
+                      </td>
+                      <td> Integer numbers ≤0 </td>
+                    </tr>
+                    <tr>
+                      <td> hexBinary </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#hexBinary" target="_blank">xsd:hexBinary </a>
+                      </td>
+                      <td> Hex-encoded binary data
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> base64Binary </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#base64Binary" target="_blank">xsd:base64Binary </a>
+                      </td>
+                      <td> Base64-encoded binary data
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> anyURI </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#anyURI" target="_blank">xsd:anyURI </a>
+                      </td>
+                      <td> Absolute or relative URIs and IRIs
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> language </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#language" target="_blank">xsd:language </a>
+                      </td>
+                      <td> Language tags
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> normalizedString </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#normalizedString" target="_blank">xsd:normalizedString </a>
+                      </td>
+                      <td> Whitespace-normalized strings
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> token </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#token" target="_blank">xsd:token </a>
+                      </td>
+                      <td> Tokenized strings
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> NMTOKEN </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#NMTOKEN" target="_blank">xsd:NMTOKEN </a>
+                      </td>
+                      <td> XML NMTOKENs
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> Name </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#Name" target="_blank">xsd:Name </a>
+                      </td>
+                      <td> XML Names
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> NCName </td>
+                      <td>
+                        <a href="https://www.w3.org/TR/xmlschema11-2/#NCName" target="_blank">xsd:NCName </a>
+                      </td>
+                      <td> XML NCNames
+
+                      </td>
+                    </tr>
+                  </table>
+                  <p> Optional parameters :</p>
+                  <ul>
+                    <li>
+                      <p>on-error -- specifies value, that should be used to replace non-valid arguments.
+                      </p>
+                      <p> By default function replaces all non-valid values with 0 for all numeric types, </p>
+                      <p> "false" for data type boolean and "31.12.2099" for dates; </p>
+                    </li>
+                    <li>
+                      <p>on-empty -- specifies value, that should be used to replace empty(nil) arguments.
+                      </p>
+                      <p>By default function replaces all empty values with 0 for all numeric types, "false" for </p>
+                      <p>data type boolean and "31.12.2099" for dates, "Unknown" for strings</p>
+                    </li>
+                  </ul>
+                  <p> It is possible to construct language-tagged string literals by filling in an input field labeled "Language
+                    tag". </p>
+                  <p> To assign a datatype not mentioned on the list of available datatypes for conversion it is possible to
+                    use "custom" datatype option. In this case, the URI that defines a datatype should be specified in the
+                    input field labeled "Data type URI"</p>
+                  <p> When converting to literals of data type "date", dates are validated and date format is recognized automatically.
+                    Different rows in a dataset may have different date formats. Recognized date formats(priority is defined
+                    by this order): </p>
+                  <ol>
+                    <li>"dd.MM.yyyy"</li>
+                    <li>"dd/MM/yyyy"</li>
+                    <li>"dd-MM-yyyy"</li>
+                    <li>"MM.dd.yyyy"</li>
+                    <li>"MM/dd/yyyy"</li>
+                    <li>"MM-dd-yyyy"</li>
+                    <li>"yyyy.MM.dd"</li>
+                    <li>"yyyy/MM/dd"</li>
+                    <li>"yyyy-MM-dd"</li>
+                  </ol>
+                  <p> When converting to literals of data type "boolean", following values are recognized as false:
+                  </p>
+                  <ul>
+                    <li>"false" (as string);</li>
+                    <li>"0" (as string);</li>
+                    <li>"" (empty string);</li>
+                    <li>
+                      <i>false</i> (as java.lang.Boolean);</li>
+                    <li>0 (as java.lang.Integer);</li>
+                    <li>nil.</li>
+                  </ul>
+                  <p> Other values will be converted to the value
+                    <i>true</i>. </p>
+                </div>
+              </div>
+              <div fxLayout="column" class="form-group" *ngIf="mappingSourceType.value === 'free-defined'">
+                <mat-form-field style="width: 100%;">
+                  <input matInput placeholder="Node name">
+                </mat-form-field>
+              </div>
+            </div>
+            <mat-slide-toggle [checked]="nodeConditionChecked" (change)="conditionToggleChanged($event)">Specify condition </mat-slide-toggle>
+            <div *ngIf="nodeConditionChecked">
+              <div fxLayout="row">
+                <div fxLayout="column">
+                  <label style="min-width:150px; padding-top:15px;">Column</label>
+                  <ng-select style="min-width:200px;" class="sin-condition-column-select" [items]="columns" [(ngModel)]="selectedConditionColumn"></ng-select>
+                </div>
+                <div fxLayout="column" style="padding-left:20px">
+                  <label style="min-width:150px; padding-top:15px;">Operator</label>
+                  <ng-select style="min-width:200px" class="sin-condition-operator-select" [items]="conditionOperators" [(ngModel)]="selectedOperator"
+                    bindValue="id" bindLabel="name"></ng-select>
+                </div>
+                <div fxLayout="column" style="padding-left:20px; " *ngIf="selectedOperator">
+                  <label style="padding-top:15px;"> {{ selectedOperator.id===6 ? "Custom code": "Operand" }}
+                  </label>
+                  <input style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="conditionOperand" type="text">
+                </div>
+              </div>
+            </div>
+            <div class="sin-prefix-select-offset"></div>
           </clr-tab-content>
         </ng-template>
       </clr-tab>
-
       <clr-tab>
         <button clrTabLink>Blank node</button>
         <ng-template [(clrIfActive)]="blankNodeSelected">
           <clr-tab-content>
-            Blank node content
+            <br/>
+            <i>No properties need to be defined for blank nodes.</i>
           </clr-tab-content>
         </ng-template>
       </clr-tab>
-
     </clr-tabs>
   </div>
   <div class="modal-footer">

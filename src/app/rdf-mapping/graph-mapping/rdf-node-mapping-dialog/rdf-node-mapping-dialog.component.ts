@@ -12,6 +12,7 @@ import { MatAutocomplete } from '@angular/material';
 })
 export class RdfNodeMappingDialogComponent implements OnInit {
 
+  private assignDataTypeChecked: boolean;
   private openNodeMappingDialog = true;
   private uriNodeTabSelected: boolean;
   private literalNodeTabSelected: boolean;
@@ -62,7 +63,180 @@ export class RdfNodeMappingDialogComponent implements OnInit {
 
   private nodeConditionChecked = false;
 
+  private showDocumentation = false;
+
   private nodeIRI: string;
+
+  dataTypes = [
+    {
+      id: 0,
+      name: 'byte'
+    },
+    {
+      id: 1,
+      name: 'short'
+    },
+    {
+      id: 2,
+      name: 'integer'
+    },
+    {
+      id: 3,
+      name: 'long'
+    },
+    {
+      id: 4,
+      name: 'decimal'
+    },
+
+    {
+      id: 5,
+      name: 'float'
+    },
+    {
+      id: 6,
+      name: 'double'
+    },
+
+    {
+      id: 7,
+      name: 'boolean'
+    },
+
+    {
+      id: 8,
+      name: 'datetime'
+    },
+    {
+      id: 9,
+      name: 'string'
+    },
+    {
+      id: 10,
+      name: 'custom'
+    },
+
+    {
+      id: 11,
+      name: 'date'
+    },
+    {
+      id: 12,
+      name: 'time'
+    },
+    {
+      id: 13,
+      name: 'dateTimeStamp'
+    },
+    {
+      id: 14,
+      name: 'gYear'
+    },
+    {
+      id: 15,
+      name: 'gMonth'
+    },
+    {
+      id: 16,
+      name: 'gDay'
+    },
+    {
+      id: 17,
+      name: 'gYearMonth'
+    },
+    {
+      id: 18,
+      name: 'gMonthDay'
+    },
+    {
+      id: 19,
+      name: 'duration'
+    },
+    {
+      id: 20,
+      name: 'yearMonthDuration'
+    },
+    {
+      id: 21,
+      name: 'dayTimeDuration'
+    },
+    {
+      id: 22,
+      name: 'int'
+    },
+    {
+      id: 23,
+      name: 'unsignedByte'
+    },
+    {
+      id: 24,
+      name: 'unsignedShort'
+    },
+    {
+      id: 25,
+      name: 'unsignedInt'
+    },
+    {
+      id: 26,
+      name: 'unsignedLong'
+    },
+    {
+      id: 27,
+      name: 'positiveInteger'
+    },
+    {
+      id: 28,
+      name: 'nonNegativeInteger'
+    },
+    {
+      id: 29,
+      name: 'negativeInteger'
+    },
+    {
+      id: 30,
+      name: 'nonPositiveInteger'
+    },
+    {
+      id: 31,
+      name: 'hexBinary'
+    },
+    {
+      id: 32,
+      name: 'base64Binary'
+    },
+    {
+      id: 33,
+      name: 'anyURI'
+    },
+    {
+      id: 34,
+      name: 'language'
+    },
+    {
+      id: 35,
+      name: 'normalizedString'
+    },
+    {
+      id: 36,
+      name: 'token'
+    },
+    {
+      id: 37,
+      name: 'NMTOKEN'
+    },
+    {
+      id: 38,
+      name: 'Name'
+    },
+    {
+      id: 39,
+      name: 'NCName'
+    }
+  ];
+  private selectedDataType: any;
+  private valueOnError: any;
+  private valueOnEmpty: any;
+
 
   nodeIRIFormControl = new FormControl('', [
     Validators.required,
@@ -167,5 +341,9 @@ export class RdfNodeMappingDialogComponent implements OnInit {
 
   conditionToggleChanged(event) {
     this.nodeConditionChecked = event.checked;
+  }
+
+  assignDatatypeToggleChanged(event) {
+    this.assignDataTypeChecked = event.checked;
   }
 }

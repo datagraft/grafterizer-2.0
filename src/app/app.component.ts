@@ -44,7 +44,6 @@ export class AppComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log('INITIALISING APP COMPONENT ');
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
