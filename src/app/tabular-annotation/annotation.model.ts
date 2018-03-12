@@ -4,16 +4,16 @@ export const ColumnTypes = {
 };
 
 export const XSDDatatypes = {
-  'byte': 'https://www.w3.org/2001/XMLSchema#byte',
-  'short': 'https://www.w3.org/2001/XMLSchema#short',
-  'integer': 'https://www.w3.org/2001/XMLSchema#int',
-  'long': 'https://www.w3.org/2001/XMLSchema#integer',
-  'decimal': 'https://www.w3.org/2001/XMLSchema#decimal',
-  'float': 'https://www.w3.org/2001/XMLSchema#float',
-  'double': 'https://www.w3.org/2001/XMLSchema#double',
-  'boolean': 'https://www.w3.org/2001/XMLSchema#boolean',
-  'date': 'https://www.w3.org/2001/XMLSchema#dateTime',
-  'string': 'https://www.w3.org/2001/XMLSchema#string',
+  'byte': 'http://www.w3.org/2001/XMLSchema#byte',
+  'short': 'http://www.w3.org/2001/XMLSchema#short',
+  'integer': 'http://www.w3.org/2001/XMLSchema#int',
+  'long': 'http://www.w3.org/2001/XMLSchema#integer',
+  'decimal': 'http://www.w3.org/2001/XMLSchema#decimal',
+  'float': 'http://www.w3.org/2001/XMLSchema#float',
+  'double': 'http://www.w3.org/2001/XMLSchema#double',
+  'boolean': 'http://www.w3.org/2001/XMLSchema#boolean',
+  'date': 'http://www.w3.org/2001/XMLSchema#dateTime',
+  'string': 'http://www.w3.org/2001/XMLSchema#string',
   'custom': ''
 };
 
