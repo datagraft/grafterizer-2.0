@@ -225,8 +225,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       }
     });
     this.annotation = this.dialogInputData.annotation;
-    this.availableNamespaces = [];
-    this.dialogInputData.rdfVocabs.forEach(vocab => this.availableNamespaces.push(vocab.namespace));
+    const namespacesSet = new Set<string>();
+    this.dialogInputData.rdfVocabs.forEach(vocab => namespacesSet.add(vocab.namespace));
+    this.availableNamespaces = Array.from(namespacesSet);
     this.fillAllowedSourcesArray();
     this.buildForm();
     this.onChanges();
