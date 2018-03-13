@@ -1,6 +1,8 @@
-import { Component, OnInit, Input, ViewContainerRef, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewContainerRef, ViewChild, OnDestroy } from '@angular/core';
 import { RdfNodeMappingDialogComponent } from '../../rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
 import { RdfNodeMappingDialogAnchorDirective } from '../../rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
+import { TransformationService } from 'app/transformation.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'column-uri-node',
@@ -8,15 +10,25 @@ import { RdfNodeMappingDialogAnchorDirective } from '../../rdf-node-mapping-dial
   entryComponents: [RdfNodeMappingDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
-export class ColumnUriNodeComponent implements OnInit {
+export class ColumnUriNodeComponent implements OnInit, OnDestroy {
   @Input() node: any;
   @Input() parent: any;
   private showActions = false;
 
+  private transformationSubscription: Subscription;
+  private transformationObj: any;
+  private nodeRemoveModal = false;
+
   @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
 
-  constructor(private viewContainer: ViewContainerRef) {
+  constructor(private transformationSvc: TransformationService, private viewContainer: ViewContainerRef) {
 
+  }
+
+  ngOnInit() {
+    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+      this.transformationObj = transformation;
+    });
   }
 
   getPrefixName(): string {
@@ -30,15 +42,25 @@ export class ColumnUriNodeComponent implements OnInit {
   editNode() {
     let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(this.node, this.parent, null);
-    console.log('Edit Node' + this.node);
   }
 
   addSiblingNode() {
-    console.log('ADD SIBLING NODE');
+    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.loadNode(null, this.parent, this.node);
   }
 
   removeNode() {
-    console.log('REMOVE NODE');
+    this.nodeRemoveModal = true;
+  }
+
+  cancelDelete() {
+    this.nodeRemoveModal = false;
+  }
+
+  confirmDelete() {
+    this.parent.removeChild(this.node);
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.nodeRemoveModal = false;
   }
 
   showNodeActions() {
@@ -49,8 +71,8 @@ export class ColumnUriNodeComponent implements OnInit {
     this.showActions = false;
   }
 
-  ngOnInit() {
-    console.log(this.node);
+  ngOnDestroy() {
+    this.transformationSubscription.unsubscribe();
   }
 
 }

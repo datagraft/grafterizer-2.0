@@ -39,3 +39,13 @@
   </div>
 </div>
 <div rdfNodeMappingDialogAnchor></div>
+<clr-modal [(clrModalOpen)]="nodeRemoveModal" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to remove this node?</h3>
+  <div class="modal-body">
+    Once you delete a node, you cannot get it back.
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelDelete()">Cancel</button>
+    <button type="button" class="btn btn-warning" (click)="confirmDelete()">Delete</button>
+  </div>
+</clr-modal>

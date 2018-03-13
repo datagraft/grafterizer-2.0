@@ -646,105 +646,111 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
   }
 
   // Load a node in the dialog
-  public loadNode(node, parentNode, siblingNode) {
-    this.editedNode = node;
+  public loadNode(editedNode, parentNode, siblingNode) {
+    this.editedNode = editedNode;
     this.parentNode = parentNode;
     this.siblingNode = siblingNode;
-    console.log(node);
-    // Select node condition; currently we only view the first condition - we can later add support for more conditions
-    if (node.nodeCondition.length > 0) {
-      this.loadNodeCondition(node.nodeCondition[0]);
-    }
-    // load everything in the relevant variables
-    switch (node.__type) {
-      case 'ColumnURI':
-        // Select URI node tab
-        this.selectTab('uri');
+    console.log(editedNode);
+    console.log(parentNode);
+    console.log(siblingNode);
+    // In case we are editing a node we need to load it
+    if (editedNode) {
+      // Select node condition; currently we only view the first condition - we can later add support for more conditions
+      if (editedNode.nodeCondition.length > 0) {
+        this.loadNodeCondition(editedNode.nodeCondition[0]);
+      }
+      // load everything in the relevant variables
+      switch (editedNode.__type) {
+        case 'ColumnURI':
+          // Select URI node tab
+          this.selectTab('uri');
 
-        // Select source type
-        this.selectedSourceType = 'dataset-col';
+          // Select source type
+          this.selectedSourceType = 'dataset-col';
 
-        // Select prefix
-        if (node.prefix) {
-          this.selectedPrefix = typeof node.prefix === 'object' ? node.prefix.value : node.prefix;
-        }
-
-        // Select column
-        if (node.column) {
-          this.selectedColumn = typeof node.column === 'object' ? node.column.value : node.column;
-        }
-        break;
-      case 'ConstantURI':
-        this.selectTab('uri');
-        this.selectedSourceType = 'free-defined';
-
-        // Load constant URI
-        if (node.constant) {
-          if (node.prefix) {
-            this.nodeIRI = node.prefix + ':' + node.constant;
-          } else {
-            this.nodeIRI = typeof node.constant === 'string' ? node.constant : node.constant.value;
+          // Select prefix
+          if (editedNode.prefix) {
+            this.selectedPrefix = typeof editedNode.prefix === 'object' ? editedNode.prefix.value : editedNode.prefix;
           }
 
-        }
+          // Select column
+          if (editedNode.column) {
+            this.selectedColumn = typeof editedNode.column === 'object' ? editedNode.column.value : editedNode.column;
+          }
+          break;
+        case 'ConstantURI':
+          this.selectTab('uri');
+          this.selectedSourceType = 'free-defined';
 
-        break;
-      case 'ColumnLiteral':
-        // Select literal tab
-        this.selectTab('literal');
-        this.selectedSourceType = 'dataset-col';
+          // Load constant URI
+          if (editedNode.constant) {
+            if (editedNode.prefix) {
+              this.nodeIRI = editedNode.prefix + ':' + editedNode.constant;
+            } else {
+              this.nodeIRI = typeof editedNode.constant === 'string' ? editedNode.constant : editedNode.constant.value;
+            }
 
-        // Load column value
-        if (node.literalValue) {
-          this.selectedColumn = typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue;
-        }
+          }
 
-        // Load datatype value (if any)
-        if (node.datatype) {
-          if (node.datatype.name) {
-            if (!(node.datatype.name === 'unspecified')) {
-              this.assignDataTypeChecked = true;
-              this.selectedDataType = node.datatype.id;
+          break;
+        case 'ColumnLiteral':
+          // Select literal tab
+          this.selectTab('literal');
+          this.selectedSourceType = 'dataset-col';
+
+          // Load column value
+          if (editedNode.literalValue) {
+            this.selectedColumn = typeof editedNode.literalValue === 'object' ? editedNode.literalValue.value : editedNode.literalValue;
+          }
+
+          // Load datatype value (if any)
+          if (editedNode.datatype) {
+            if (editedNode.datatype.name) {
+              if (!(editedNode.datatype.name === 'unspecified')) {
+                this.assignDataTypeChecked = true;
+                this.selectedDataType = editedNode.datatype.id;
+              }
             }
           }
-        }
 
-        // Load value on empty string
-        if (node.onEmpty) {
-          this.valueOnEmpty = node.onEmpty;
-        }
+          // Load value on empty string
+          if (editedNode.onEmpty) {
+            this.valueOnEmpty = editedNode.onEmpty;
+          }
 
-        // Load value on error
-        if (node.onError) {
-          this.valueOnError = node.onError;
-        }
+          // Load value on error
+          if (editedNode.onError) {
+            this.valueOnError = editedNode.onError;
+          }
 
-        // Load language tag
-        if (node.langTag) {
-          this.langTag = node.langTag;
-        }
+          // Load language tag
+          if (editedNode.langTag) {
+            this.langTag = editedNode.langTag;
+          }
 
-        // Load language tag
-        if (node.datatypeURI) {
-          this.customTypeURI = node.datatypeURI;
-        }
-        break;
-      case 'ConstantLiteral':
-        this.selectTab('literal');
-        this.selectedSourceType = 'free-defined';
+          // Load language tag
+          if (editedNode.datatypeURI) {
+            this.customTypeURI = editedNode.datatypeURI;
+          }
+          break;
+        case 'ConstantLiteral':
+          this.selectTab('literal');
+          this.selectedSourceType = 'free-defined';
 
-        if (node.literalValue) {
-          this.literalNodeValue = typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue;
-        }
+          if (editedNode.literalValue) {
+            this.literalNodeValue = typeof editedNode.literalValue === 'object' ? editedNode.literalValue.value : editedNode.literalValue;
+          }
 
-        break;
-      case 'BlankNode':
-        this.selectTab('blank');
-        break;
+          break;
+        case 'BlankNode':
+          this.selectTab('blank');
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
+
   }
 
   loadNodeCondition(nodeCondition) {
