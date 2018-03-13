@@ -466,7 +466,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Help method that returns the prefix of a known namespace.
+   * Help method that returns the prefix of a known namespace (by looking only at the rdfVocabs list).
    * @param {string} namespace
    * @returns {any} the prefix if the given namespace is known, null otherwise
    */
@@ -479,11 +479,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if a vocab with the given prefix does not exist.
+   * Check if a vocab with the given prefix does not exist, i.e. the selected prefix is available.
    * @param {string} prefix
    * @returns {boolean} true if the given prefix is not already used in a vocab, false otherwise
    */
-  private isPrefixValid(prefix: string) {
+  private isPrefixAvailable(prefix: string) {
     const existingPrefix = this.transformationObj.rdfVocabs.filter(vocab => (vocab.name === prefix));
     return existingPrefix.length === 0;
   }
@@ -498,8 +498,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   getPrefixForNamespace(namespace: string) {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
-    if (existingPrefix) {
-      prefix = existingPrefix;
+    if (existingPrefix) { // NOTE: modify RDFVocab instances to avoid getting errors from vocabulary service
+      prefix = existingPrefix + '1';
     } else {
       const url = new URL(namespace);
       // first 2 letter of the URL domain
@@ -511,13 +511,15 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         .substr(0, 2);
       prefix = prefix.toLowerCase();
       let i = 1;
-      while (!this.isPrefixValid(prefix)) {
-        prefix = prefix += i;
+      while (!this.isPrefixAvailable(prefix)) {
+        const idx = prefix.lastIndexOf(String(i - 1));
+        prefix = idx > 0 ? prefix + i : prefix.substr(0, idx) + i;
         ++i;
       }
-      // TODO: create a new RDFVocabulary instance
-      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     }
+    // TODO: create a new RDFVocabulary instance
+    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
+
     return prefix;
   }
 }
