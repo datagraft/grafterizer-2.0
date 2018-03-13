@@ -19,9 +19,17 @@ export class ColumnUriNodeComponent implements OnInit {
 
   }
 
+  getPrefixName(): string {
+    return typeof this.node.prefix === 'object' ? this.node.prefix.value : this.node.prefix;
+  }
+
+  getNodeColumnName(): string {
+    return typeof this.node.column === 'object' ? this.node.column.value : this.node.column;
+  }
+
   editNode() {
     let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
-    componentRef.instance.selectTab('uri');
+    componentRef.instance.loadNode(this.node, this.parent, null);
     console.log('Edit Node' + this.node);
   }
 

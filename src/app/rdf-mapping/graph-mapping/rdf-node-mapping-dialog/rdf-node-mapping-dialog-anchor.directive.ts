@@ -8,7 +8,7 @@ export class RdfNodeMappingDialogAnchorDirective {
 
   constructor(private viewContainer: ViewContainerRef, private componentFactoryResolver: ComponentFactoryResolver) { }
 
-  createDialog(dialogComponent: { new(): RdfNodeMappingDialogComponent }): ComponentRef<RdfNodeMappingDialogComponent> {
+  createDialog(dialogComponent: { new(...args: any[]): RdfNodeMappingDialogComponent }): ComponentRef<RdfNodeMappingDialogComponent> {
     this.viewContainer.clear();
 
     let dialogComponentFactory =

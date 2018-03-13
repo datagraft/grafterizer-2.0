@@ -23,7 +23,7 @@ export class BlankNodeComponent implements OnInit {
 
   editNode() {
     let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
-    componentRef.instance.selectTab('blank');
+    componentRef.instance.loadNode(this.node, this.parent, null);
     console.log('Edit Node' + this.node);
   }
 

@@ -1,5 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewContainerRef, ViewChild } from '@angular/core';
 import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
+import { RdfNodeMappingDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 
 @Component({
   selector: 'constant-literal-node',
@@ -12,12 +13,22 @@ export class ConstantLiteralNodeComponent implements OnInit {
   @Input() parent: any;
   private showActions = false;
 
-  constructor() { }
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
+
+  constructor(private viewContainer: ViewContainerRef) {
+
+  }
 
   ngOnInit() {
   }
 
+  getNodeLiteralValue(): string {
+    return typeof this.node.literalValue === 'object' ? this.node.literalValue.value : this.node.literalValue;
+  }
+
   editNode() {
+    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.loadNode(this.node, this.parent, null);
     console.log('Edit Node' + this.node);
   }
 

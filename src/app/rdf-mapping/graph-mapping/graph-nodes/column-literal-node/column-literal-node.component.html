@@ -1,6 +1,6 @@
 <div fxflex fxLayout="row" fxLayoutAlign="start start">
   <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
-    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{'(Column literal) ' + (node.literalValue.hasOwnProperty('value') ? node.literalValue.value : node.literalValue) }}"
+    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{'(Column literal) ' + getNodeLiteralValue() }}"
       matTooltipPosition="below" matTooltipShowDelay="500">
       <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
         <div fxflex *ngIf="node.nodeCondition.length === 0">
@@ -12,7 +12,7 @@
         </div>
         <div class="rdf-mapping-node-text">
           <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text sin-rdf-node-literal-text">
-            {{ node.literalValue.hasOwnProperty('value') ? node.literalValue.value : node.literalValue }}
+            {{ getNodeLiteralValue() }}
           </div>
         </div>
       </div>

@@ -20,9 +20,13 @@ export class ColumnLiteralNodeComponent implements OnInit {
   ngOnInit() {
   }
 
+  getNodeLiteralValue(): string {
+    return typeof this.node.literalValue === 'object' ? this.node.literalValue.value : this.node.literalValue;
+  }
+
   editNode() {
     let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
-    componentRef.instance.selectTab('literal');
+    componentRef.instance.loadNode(this.node, this.parent, null);
     console.log('Edit Node' + this.node);
   }
 

@@ -1,6 +1,6 @@
 <div fxflex fxLayout="row" fxLayoutAlign="start start">
   <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
-    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{node.prefix ? '(Column URI) ' + node.prefix + ':' + node.column.value : '(Column URI) ' + node.column.value}}"
+    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{ node.prefix ? '(Column URI) ' + node.prefix + ':' + getNodeColumnName() : '(Column URI) ' + getNodeColumnName() }}"
       matTooltipPosition="below" matTooltipShowDelay="500">
       <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
         <div fxflex *ngIf="node.nodeCondition.length === 0">
@@ -11,9 +11,9 @@
           <i class="fa fa-columns"></i>
         </div>
         <div class="rdf-mapping-node-text">
-          <div class="sin-rdf-mapping-prefix-text">{{node.prefix ? '(' + (node.prefix.hasOwnProperty('id') ? node.prefix.value : node.prefix) + ')' : 'no prefix'}}
+          <div class="sin-rdf-mapping-prefix-text">{{node.prefix ? '(' + getPrefixName() + ')' : 'no prefix'}}
           </div>
-          <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text">{{node.column.value}}
+          <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text">{{ getNodeColumnName() }}
           </div>
         </div>
       </div>

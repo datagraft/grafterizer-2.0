@@ -9,7 +9,7 @@
               <div class="sin-mapping-source-container">
                 <label>Select mapping source type</label>
                 <div class="select">
-                  <select #mappingSourceType id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
                     <option value="dataset-col">From dataset column</option>
                     <option value="free-defined">Free-defined text</option>
                   </select>
@@ -22,17 +22,19 @@
                 <ng-select class="sin-prefix-select" [items]="prefixes" [(ngModel)]="selectedPrefix"></ng-select>
                 <br/>
                 <label>Select column</label>
-                <ng-select class="sin-column-select" [items]="columns" [(ngModel)]="selectedColumn"></ng-select>
+                <ng-select *ngIf="columns.length > 0" class="sin-column-select" [items]="columns" [(ngModel)]="selectedColumn"></ng-select>
+                <mat-form-field *ngIf="columns.length === 0" style="width: 50%; padding-top: 30.5px; padding-bottom: 18px; margin-left: 15px;">
+                  <input matInput placeholder="Type in column name" [(ngModel)]="selectedColumn">
+                </mat-form-field>
               </div>
               <div class="form-group" style="width: 100%;" *ngIf="mappingSourceType.value === 'free-defined'">
                 <mat-form-field style="width: 100%;">
-                  <input matInput placeholder="Node name" [formControl]="nodeIRIFormControl">
+                  <input matInput placeholder="Node name" [formControl]="nodeIRIFormControl" [(ngModel)]="nodeIRI">
                   <mat-error *ngIf="nodeIRIFormControl.hasError('invalid_iri') && !nodeIRIFormControl.hasError('required')">Please use a prefixed name, or a valid IRI </mat-error>
                   <mat-error *ngIf="nodeIRIFormControl.hasError('required')">IRI is
                     <strong>required</strong>
                   </mat-error>
                 </mat-form-field>
-                <!-- <label style="min-width:150px; padding-top:15px;">Node IRI</label><input style="min-width:200px; height: 51.5px; padding-bottom: 18px;" [(ngModel)]="nodeIRI" type="text">-->
               </div>
             </div>
             <mat-slide-toggle [checked]="nodeConditionChecked" (change)="conditionToggleChanged($event)">Specify condition </mat-slide-toggle>
@@ -40,7 +42,9 @@
               <div fxLayout="row">
                 <div fxLayout="column">
                   <label style="min-width:150px; padding-top:15px;">Column</label>
-                  <ng-select style="min-width:200px;" class="sin-condition-column-select" [items]="columns" [(ngModel)]="selectedConditionColumn"></ng-select>
+                  <ng-select *ngIf="columns.length !== 0" style="min-width:200px;" class="sin-condition-column-select" [items]="columns" [(ngModel)]="selectedConditionColumn"></ng-select>
+                  <input *ngIf="columns.length === 0" style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="selectedConditionColumn"
+                    type="text">
                 </div>
                 <div fxLayout="column" style="padding-left:20px">
                   <label style="min-width:150px; padding-top:15px;">Operator</label>
@@ -66,7 +70,7 @@
               <div class="sin-mapping-source-container">
                 <label>Select mapping source type</label>
                 <div class="select">
-                  <select #mappingSourceType id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
                     <option value="dataset-col">From dataset column</option>
                     <option value="free-defined">Free-defined text</option>
                   </select>
@@ -78,16 +82,22 @@
                   <br/>
                   <label style="width: 100px">Select column</label>
                   <ng-select class="sin-literal-column-select" [items]="columns" [(ngModel)]="selectedColumn"></ng-select>
-                  <mat-slide-toggle (change)="assignDatatypeToggleChanged($event)">Assign data type</mat-slide-toggle>
+                  <mat-slide-toggle [checked]="assignDataTypeChecked" (change)="assignDatatypeToggleChanged($event)">Assign data type</mat-slide-toggle>
                 </div>
                 <div fxLayout="row" fxLayoutAlign="start center" *ngIf="assignDataTypeChecked">
                   <label style="width: 100px">Data type</label>
                   <ng-select class="sin-column-datatype" [items]="dataTypes" [(ngModel)]="selectedDataType" bindValue="id" bindLabel="name"></ng-select>
-                  <mat-form-field style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
+                  <mat-form-field *ngIf="selectedDataType !== 9 && selectedDataType !== 10" style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
                     <input matInput placeholder="Value on error" [(ngModel)]="valueOnError">
                   </mat-form-field>
-                  <mat-form-field style="width: 15%; padding-top: 30.5px; padding-bottom: 18px;">
+                  <mat-form-field *ngIf="selectedDataType !== 10" style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
                     <input matInput placeholder="Value on empty" [(ngModel)]="valueOnEmpty">
+                  </mat-form-field>
+                  <mat-form-field *ngIf="selectedDataType === 9" style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
+                    <input matInput placeholder="Language tag" [(ngModel)]="langTag">
+                  </mat-form-field>
+                  <mat-form-field *ngIf="selectedDataType === 10" style="width: 15%; padding-top: 30.5px; padding-bottom: 18px; margin-right: 15px;">
+                    <input matInput placeholder="Datatype URI" [(ngModel)]="customTypeURI">
                   </mat-form-field>
                 </div>
                 <button mat-button aria-label="Show/hide documentation" (click)="showDocumentation = !showDocumentation" [hidden]="!assignDataTypeChecked">
@@ -465,7 +475,7 @@
               </div>
               <div fxLayout="column" class="form-group" *ngIf="mappingSourceType.value === 'free-defined'">
                 <mat-form-field style="width: 100%;">
-                  <input matInput placeholder="Node name">
+                  <input matInput placeholder="Literal value" [(ngModel)]="literalNodeValue">
                 </mat-form-field>
               </div>
             </div>
