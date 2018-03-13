@@ -11,36 +11,17 @@ import { RdfNodeMappingDialogAnchorDirective } from 'app/rdf-mapping/graph-mappi
 export class BlankNodeComponent implements OnInit {
   @Input() node: any;
   @Input() parent: any;
-  private showActions = false;
 
   @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
 
   constructor(private viewContainer: ViewContainerRef) { }
 
   ngOnInit() {
-    console.log(this.node);
   }
 
   editNode() {
     let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(this.node, this.parent, null);
-    console.log('Edit Node' + this.node);
-  }
-
-  addSiblingNode() {
-    console.log('ADD SIBLING NODE');
-  }
-
-  removeNode() {
-    console.log('REMOVE NODE');
-  }
-
-  showNodeActions() {
-    this.showActions = true;
-  }
-
-  hideNodeActions() {
-    this.showActions = false;
   }
 
 }

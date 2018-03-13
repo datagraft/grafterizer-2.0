@@ -13,16 +13,6 @@
         </div>
       </div>
     </button>
-    <div *ngIf="parent.__type === 'Graph'" [style.visibility]="showActions ? 'visible' : 'hidden'" class="sin-rdf-node-actions">
-      <div fxflex fxLayoutAlign="start center">
-        <button mat-icon-button (click)="addSiblingNode()">
-          <mat-icon aria-label="Add a sibling node" class="sin-node-action">add_circle</mat-icon>
-        </button>
-        <button mat-icon-button (click)="removeNode()">
-          <mat-icon aria-label="Remove current node" class="sin-node-action">delete</mat-icon>
-        </button>
-      </div>
-    </div>
   </div>
 
   <div style="padding-top:8px" fxflex fxLayout="column" fxLayoutAlign="start start">

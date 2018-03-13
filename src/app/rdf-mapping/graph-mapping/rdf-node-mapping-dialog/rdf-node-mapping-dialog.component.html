@@ -503,7 +503,7 @@
         </ng-template>
       </clr-tab>
       <clr-tab>
-        <button clrTabLink>Blank node</button>
+        <button clrTabLink [disabled]="parentNode.__type === 'Graph'">Blank node</button>
         <ng-template [(clrIfActive)]="blankNodeSelected">
           <clr-tab-content>
             <br/>
