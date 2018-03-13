@@ -10,6 +10,25 @@
                         [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
   </tag-input>
   </div>
+
+  <form #configForm="ngForm">
+
+    <div class="toggle-switch">
+      <input [(ngModel)]="advancedSettings" [ngModelOptions]="{standalone: true}" type="checkbox" id="advancedSettings">
+      <label for="advancedSettings">Advanced settings</label>
+    </div>
+
+    <div class="form-group" *ngIf="advancedSettings">
+      <label for="endpoint">ABSTAT endpoint: </label>
+      <div class="select">
+        <select id="endpoint"
+                name="endpoint"
+                [(ngModel)]="selectedEndpoint">
+          <option *ngFor="let endpoint of abstatEndpointsNames" [value]="endpoint">{{endpoint}}</option>
+        </select>
+      </div>
+    </div>
+  </form>
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
