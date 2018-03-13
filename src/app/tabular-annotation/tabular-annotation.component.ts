@@ -67,7 +67,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
-    this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
+    this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
     this.rdfButtonDisabled = true;
   }
 
@@ -125,7 +125,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
             const annotation = new Annotation(annotationObj);
             this.annotationService.setAnnotation(annotation.columnHeader, annotation);
           });
-          this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
+          this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
         }
         this.hot.updateSettings({
           columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
@@ -156,7 +156,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.hot.updateSettings({
         colHeaders: (col) => this.getTableHeader(col)
       });
-      this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
+      this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
     });
   }
 
