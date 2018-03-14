@@ -1,39 +1,30 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
-  <h3 class="modal-title">Sort dataset</h3>
-
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
+  <h3 class="modal-title">Sort Column</h3>
   <div class="modal-body">
-    <div *ngFor="let sorting of sortings; let idx = index">
-
-
-      <div class="row ">
-        <button class="btn btn-link btn-icon-link removablePropertyButton" [disabled]="sortings.length === 1"> 
-           <clr-icon  suiPopup popupText="Remove sorting" popupPlacement="left top" shape="remove" size="22"  (click)="removeSorting(idx)"></clr-icon> 
-       </button>
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.colname" [datasource]="columns" [openOnFocus]="true"
-          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
-
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="sorting.sorttype" [datasource]="sortTypes" [openOnFocus]="true"
-          [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
-
-        <div class="checkbox removablePropertyFields">
-          <input type="checkbox" [(ngModel)]="sorting.order" id="{{'checkrads_1'+idx}}">
-          <label for="{{'checkrads_1'+idx}}">Reverse order</label>
+    <form>
+      <section class="form-block">
+        <div class="form-group">
+          <label for="form-group-1">Select column</label>
+          <div class="select">
+            <select id="form-group-1" name="form-group-dropdown" [(ngModel)]="selectedColumn">
+              <option *ngFor="let colname of previewedDataColumns" [ngValue]="colname">{{colname.value}}</option>
+            </select>
+          </div>
         </div>
-
-      </div>
-    </div>
-    <button class="btn btn-primary" (click)="addColnameSorttype()">Add column</button>
-
-
-
-
-
-
-    <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
+        <div class="form-group">
+          <label for="form-group-2">Select sort type</label>
+          <div class="select">
+            <select id="form-group-2" name="form-group-dropdown" [(ngModel)]="sorttype">
+              <option *ngFor="let sorttype of sortTypes" [ngValue]="sorttype">{{sorttype}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="form-group-3">
+          <label for="form-group-3" id="comments-label">Comments</label>
+          <input type="text" id="form-group-3-input" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
+        </div>
+      </section>
+    </form>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

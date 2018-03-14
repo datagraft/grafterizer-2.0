@@ -1,7 +1,9 @@
-import { Component, OnInit, Input, Output, OnChanges, SimpleChanges, EventEmitter } from '@angular/core';
-import { CompleterService, CompleterData } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 
 @Component({
@@ -10,69 +12,138 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./sort-dataset.component.css']
 })
 
-export class SortDatasetComponent implements OnInit, OnChanges {
+export class SortDatasetComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() function: any;
-  @Output() emitter = new EventEmitter();
-  @Input() defaultParams;
+  private modalEnabled: boolean;
+  private visible: boolean;
 
-  // TODO: Pass column names of the uploaded dataset
-  @Input() columns: String[] = [];
-  private sortTypes: String[] = ["Alphabetical", "Numerical", "By length", "Date"];
-  private sortings: any[] = [];
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
 
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
 
-  private docstring: String;
+  private previewedDataSubscription: Subscription;
 
-  constructor() {
-    if (!this.function) {
-      this.sortings = [new transformationDataModel.ColnameSorttype("", "", false)];
-      this.function = new transformationDataModel.SortDatasetFunction(
-        this.sortings, this.docstring);
-    }
-    else {
-      for (let sorting in this.function.colnamesSorttypesMap) {
-        this.sortings.push(sorting);
-      }
-    }
-  }
+  private sortTypes: string[] = ["Alphabetical", "Numerical", "By length", "Date"];
+  private selectedColumn: any;
+  private order: boolean;
+  private sorttype: any;
+  private colnamesSorttypesMap: any[] = [];
+  private previewedDataColumns: any[] = [];
+  private docstring: string;
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
-  }
+    this.visible = false;
+    this.order = false;
 
-  addColnameSorttype() {
-    this.sortings.push(new transformationDataModel.ColnameSorttype("", "", false));
-  }
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
 
-  removeSorting(idx: number) {
-    this.sortings.splice(idx, 1);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-
-    if (changes.defaultParams && this.defaultParams) {
-      if (this.defaultParams.colsToSort) {
-
-        this.sortings = [];
-        for (let colname of this.defaultParams.colsToSort) {
-          this.sortings.push(new transformationDataModel.ColnameSorttype(colname, "", false));
+    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+            return { id: idx, value: v.substring(1, v.length) };
+          });
         }
-      }
+      });
 
-    }
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'SortDatasetFunction') {
+        this.modalEnabled = true;
+        this.colnamesSorttypesMap = this.currentlySelectedFunction.colnamesSorttypesMap;
+        this.selectedColumn = this.colnamesSorttypesMap[0].colname;
+        for (let col of this.previewedDataColumns) {
+          if (this.selectedColumn.id === col.id) {
+            this.previewedDataColumns[col.id] = this.selectedColumn.id;
+          }
+        }
+        this.order = this.colnamesSorttypesMap[0].order;
+        this.sorttype = this.colnamesSorttypesMap[0].sorttype;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'SortDatasetFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
   }
-  accept() {
-    for (let sorting in this.function.sortings) {
-      this.function.colnamesSorttypesMap.push(sorting);
+
+  ngOnDestroy() {
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  setVisibleDropDown() {
+    this.visible = true;
+  }
+
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editSortColumnsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      this.colnamesSorttypesMap.push(new transformationDataModel.ColnameSorttype(this.selectedColumn, this.sorttype, this.order));
+      const newFunction = new transformationDataModel.SortDatasetFunction(this.colnamesSorttypesMap, this.docstring);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
     this.modalEnabled = false;
   }
 
-  cancel() {
+  private editSortColumnsFunction(instanceObj): any {
+    for (let obj of instanceObj.colnamesSorttypesMap) {
+      obj.colname = this.selectedColumn;
+      obj.order = this.order;
+      obj.sorttype = this.sorttype;
+    }
+    instanceObj.docstring = this.docstring;
+  }
+
+  private resetModal() {
+    // resets the fields of the modal
+    this.sorttype = null;
+    this.order = null;
+    this.docstring = null;
+  }
+
+  private cancel() {
+    this.resetModal();
     this.modalEnabled = false;
   }
 
