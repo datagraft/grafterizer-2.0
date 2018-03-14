@@ -1,12 +1,8 @@
-#form-group-1 {
+.form-group {
     padding-top: 20px;
 }
 
-#form-group-3 {
-    padding-top: 20px;
-}
-
-#comments-label {
+#label {
     padding-top: 20px;
 }
 
