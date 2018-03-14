@@ -148,7 +148,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const currentAnnotation = this.annotationService.getAnnotation(currentHeader);
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
-      width: '700px',
+      width: '750px',
       data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs }
     });
 
@@ -162,7 +162,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   openConfigDialog(): void {
     const dialogRef = this.dialog.open(ConfigComponent, {
-      width: '700px'
+      width: '600px'
     });
   }
 
