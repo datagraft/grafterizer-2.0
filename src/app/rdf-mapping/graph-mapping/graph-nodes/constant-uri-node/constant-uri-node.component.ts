@@ -3,11 +3,13 @@ import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf
 import { RdfNodeMappingDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 import { TransformationService } from 'app/transformation.service';
 import { Subscription } from 'rxjs';
+import { PropertyNodeDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/property-node-dialog/property-node-dialog-anchor.directive';
+import { PropertyNodeDialogComponent } from 'app/rdf-mapping/graph-mapping/property-node-dialog/property-node-dialog.component';
 
 @Component({
   selector: 'constant-uri-node',
   templateUrl: './constant-uri-node.component.html',
-  entryComponents: [RdfNodeMappingDialogComponent],
+  entryComponents: [RdfNodeMappingDialogComponent, PropertyNodeDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class ConstantUriNodeComponent implements OnInit, OnDestroy {
@@ -19,9 +21,10 @@ export class ConstantUriNodeComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private transformationObj: any;
 
-  @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) rdfNodeDialogAnchor: RdfNodeMappingDialogAnchorDirective;
+  @ViewChild(PropertyNodeDialogAnchorDirective) propertyDialogAnchor: PropertyNodeDialogAnchorDirective;
 
-  constructor(private transformationSvc: TransformationService, private viewContainer: ViewContainerRef) {
+  constructor(private transformationSvc: TransformationService) {
 
   }
 
@@ -36,12 +39,17 @@ export class ConstantUriNodeComponent implements OnInit, OnDestroy {
   }
 
   editNode() {
-    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(this.node, this.parent, null);
   }
 
+  addChildNode() {
+    let componentRef = this.propertyDialogAnchor.createDialog(PropertyNodeDialogComponent);
+    componentRef.instance.loadProperty(null, this.node, null);
+  }
+
   addSiblingNode() {
-    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(null, this.parent, this.node);
   }
 

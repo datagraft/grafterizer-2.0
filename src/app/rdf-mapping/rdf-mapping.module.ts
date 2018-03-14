@@ -24,6 +24,8 @@ import { MatInputModule } from '@angular/material';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { PropertyNodeDialogComponent } from './graph-mapping/property-node-dialog/property-node-dialog.component';
+import { PropertyNodeDialogAnchorDirective } from './graph-mapping/property-node-dialog/property-node-dialog-anchor.directive';
 
 
 
@@ -57,7 +59,9 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     BlankNodeComponent,
     GraphMappingComponent,
     RdfNodeMappingDialogComponent,
-    RdfNodeMappingDialogAnchorDirective
+    RdfNodeMappingDialogAnchorDirective,
+    PropertyNodeDialogComponent,
+    PropertyNodeDialogAnchorDirective
   ]
 })
 

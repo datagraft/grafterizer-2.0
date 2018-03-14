@@ -3,11 +3,13 @@ import { RdfNodeMappingDialogComponent } from '../../rdf-node-mapping-dialog/rdf
 import { RdfNodeMappingDialogAnchorDirective } from '../../rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 import { TransformationService } from 'app/transformation.service';
 import { Subscription } from 'rxjs';
+import { PropertyNodeDialogComponent } from '../../property-node-dialog/property-node-dialog.component';
+import { PropertyNodeDialogAnchorDirective } from '../../property-node-dialog/property-node-dialog-anchor.directive';
 
 @Component({
   selector: 'column-uri-node',
   templateUrl: './column-uri-node.component.html',
-  entryComponents: [RdfNodeMappingDialogComponent],
+  entryComponents: [RdfNodeMappingDialogComponent, PropertyNodeDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class ColumnUriNodeComponent implements OnInit, OnDestroy {
@@ -19,7 +21,8 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
   private transformationObj: any;
   private nodeRemoveModal = false;
 
-  @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) rdfNodeDialogAnchor: RdfNodeMappingDialogAnchorDirective;
+  @ViewChild(PropertyNodeDialogAnchorDirective) propertyDialogAnchor: PropertyNodeDialogAnchorDirective;
 
   constructor(private transformationSvc: TransformationService, private viewContainer: ViewContainerRef) {
 
@@ -40,12 +43,12 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
   }
 
   editNode() {
-    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(this.node, this.parent, null);
   }
 
   addSiblingNode() {
-    let componentRef = this.dialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
     componentRef.instance.loadNode(null, this.parent, this.node);
   }
 
@@ -55,6 +58,11 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
 
   cancelDelete() {
     this.nodeRemoveModal = false;
+  }
+
+  addChildNode() {
+    let componentRef = this.propertyDialogAnchor.createDialog(PropertyNodeDialogComponent);
+    componentRef.instance.loadProperty(null, this.node, null);
   }
 
   confirmDelete() {

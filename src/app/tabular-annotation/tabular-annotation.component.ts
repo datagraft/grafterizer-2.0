@@ -63,7 +63,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
     public annotationService: AnnotationService, private route: ActivatedRoute,
-              private routingService: RoutingService, public dialog: MatDialog) {
+    private routingService: RoutingService, public dialog: MatDialog) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -252,11 +252,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
-
-    if (this.transformationObj.graphs.length > 0) { // overwrite first graph - TODO: check it
-      this.transformationObj.graphs[0] = graph;
-    } else {
+    if (this.transformationObj.graphs.length === 0) { // overwrite first graph - TODO: check it
+      this.transformationObj.graphs.push(new transformationDataModel.Graph('', []));
       this.transformationObj.graphs.push(graph);
+    } else if (this.transformationObj.graphs.length === 1) {
+      this.transformationObj.graphs.push(graph);
+    } else if (this.transformationObj.graphs.length > 1) {
+      this.transformationObj.graphs[1] = graph;
     }
 
     // Save the new transformation
@@ -381,8 +383,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach(annotation => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          {'id': 0, 'value': annotation.urifyPrefix},
-          {'id': 0, 'value': annotation.columnHeader},
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': annotation.columnHeader },
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           [], // subelements
         );
@@ -392,8 +394,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           datatype = 'custom';
         }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          {'id': 0, 'value': annotation.columnHeader},
-          {'id': 0, 'name': datatype}, // datatype
+          { 'id': 0, 'value': annotation.columnHeader },
+          { 'id': 0, 'name': datatype }, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
@@ -408,8 +410,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach((annotation) => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          {'id': 0, 'value': annotation.urifyPrefix},
-          {'id': 0, 'value': annotation.columnHeader},
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': annotation.columnHeader },
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
@@ -428,8 +430,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @returns {transformationDataModel.Condition}
    */
   private getEmptyCondition(columnHeader) {
-    const column = {'id': 0, 'value': columnHeader};
-    const operator = {'id': 0, 'name': 'Not empty'};
+    const column = { 'id': 0, 'value': columnHeader };
+    const operator = { 'id': 0, 'name': 'Not empty' };
     const conj = null;
     const operand = '';
     return new transformationDataModel.Condition(column, operator, operand, conj);

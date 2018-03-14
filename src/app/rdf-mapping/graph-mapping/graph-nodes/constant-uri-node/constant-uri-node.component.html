@@ -30,7 +30,7 @@
     </div>
   </div>
   <div style="padding-top:8px" fxflex fxLayout="column" fxLayoutAlign="start start" *ngIf="parent.__type === 'Graph'">
-    <button matTooltip="Add a new property" mat-button aria-label="Add property" ng-click="clickAddChildProperty()" [hidden]="node.subElements.length!=0">
+    <button matTooltip="Add a new property" mat-button aria-label="Add property" (click)="addChildNode()" [hidden]="node.subElements.length!=0">
       <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add property
     </button>
     <div *ngFor="let property of node.subElements">
@@ -39,6 +39,7 @@
   </div>
 </div>
 <div rdfNodeMappingDialogAnchor></div>
+<div propertyNodeDialogAnchor></div>
 <clr-modal [(clrModalOpen)]="nodeRemoveModal" [clrModalClosable]="false">
   <h3 class="modal-title">Are you sure you want to remove this node?</h3>
   <div class="modal-body">

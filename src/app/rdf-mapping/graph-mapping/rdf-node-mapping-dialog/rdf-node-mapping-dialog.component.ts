@@ -26,7 +26,7 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
   // The sibling node in case we are adding a new node after an existing node
   private siblingNode: any;
 
-  // Opening mapping dialog is controlled using this variabls
+  // Opening mapping dialog is controlled using this variables
   private openNodeMappingDialog = true;
 
   // Boolean attributes that determine which tab has been selected in the dialog
@@ -337,6 +337,8 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.rdfVocabsSubscription.unsubscribe();
+    this.dataSubscription.unsubscribe();
+    this.transformationSubscription.unsubscribe();
   }
 
   isValidIRI(control: AbstractControl): ValidationErrors {
@@ -417,10 +419,6 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
   onClickedExit() {
     this.openNodeMappingDialog = false;
     this.close.emit('closed dialog');
-  }
-
-  mappingTypeSelectChanged(selectedType) {
-    console.log(selectedType);
   }
 
   cancel() {
@@ -650,9 +648,6 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
     this.editedNode = editedNode;
     this.parentNode = parentNode;
     this.siblingNode = siblingNode;
-    console.log(editedNode);
-    console.log(parentNode);
-    console.log(siblingNode);
     // In case we are editing a node we need to load it
     if (editedNode) {
       // Select node condition; currently we only view the first condition - we can later add support for more conditions

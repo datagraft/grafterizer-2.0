@@ -1,0 +1,38 @@
+<clr-modal [(clrModalOpen)]="openPropertyMappingDialog" [clrModalClosable]="false" [clrModalSize]="'lg'" #nodeDefinitionModal>
+  <h3 class="modal-title">Specify property node</h3>
+  <div class="modal-body">
+    <div class="modal-dialog" fxLayout="column" style="min-height:60%" flex>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Property name" [formControl]="propertyNameFormControl" [(ngModel)]="propertyNodeValue">
+        <mat-error *ngIf="propertyNameFormControl.hasError('invalid_iri') && !propertyNameFormControl.hasError('required')">Please use a prefixed name, or a valid IRI </mat-error>
+        <mat-error *ngIf="propertyNameFormControl.hasError('required')">Property name must be specified.</mat-error>
+      </mat-form-field>
+      <mat-slide-toggle [checked]="nodeConditionChecked" (change)="conditionToggleChanged($event)">Specify condition </mat-slide-toggle>
+      <div *ngIf="nodeConditionChecked">
+        <div fxLayout="row">
+          <div fxLayout="column">
+            <label style="min-width:150px; padding-top:15px;">Column</label>
+            <ng-select *ngIf="columns.length !== 0" style="min-width:200px;" class="sin-condition-column-select" [items]="columns" [(ngModel)]="selectedConditionColumn"></ng-select>
+            <input *ngIf="columns.length === 0" style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="selectedConditionColumn"
+              type="text">
+          </div>
+          <div fxLayout="column" style="padding-left:20px">
+            <label style="min-width:150px; padding-top:15px;">Operator</label>
+            <ng-select style="min-width:200px" class="sin-condition-operator-select" [items]="conditionOperators" [(ngModel)]="selectedOperator"
+              bindValue="id" bindLabel="name"></ng-select>
+          </div>
+          <div fxLayout="column" style="padding-left:20px; " *ngIf="selectedOperator">
+            <label style="padding-top:15px;"> {{ selectedOperator === 6 ? "Custom code": "Operand" }}
+            </label>
+            <input style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="conditionOperand" type="text">
+          </div>
+        </div>
+      </div>
+      <div class="sin-prefix-select-offset"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="ok()">Ok</button>
+  </div>
+</clr-modal>
