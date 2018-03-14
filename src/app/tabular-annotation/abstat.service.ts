@@ -133,4 +133,12 @@ export class AbstatService {
   public updatePreferredSummaries(summaries: string[]) {
     this.preferredSummaries = summaries;
   }
+
+  public getCurrentEndpoint(): string {
+    return this.abstatBasePath;
+  }
+
+  public updateEndpoint(endpoint: string) {
+    this.abstatBasePath = endpoint;
+  }
 }

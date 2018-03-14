@@ -72,7 +72,7 @@ export class AnnotationService {
     });
   }
 
-  private getAnnotationStatus(annotation) {
+  private getAnnotationStatus(annotation, stopRecursion = false) {
     // If I'm not valid, return my status
     if (!this.headers.includes(annotation.columnHeader)) {
       return AnnotationStatuses.wrong; // the annotation is related to a column that does not exist
@@ -83,18 +83,19 @@ export class AnnotationService {
     }
     // If I have a subject, my status depends on my subject's status
     let parentStatus = null;
-    if (annotation.subject !== '') {
+    if (annotation.subject !== '' && !stopRecursion) {
       const parentAnnotation = this.annotations[annotation.subject];
       if (!parentAnnotation) {
         return AnnotationStatuses.warning; // subject is set, but its column is not annotated yet -> potential error
       } else {
-        parentStatus = this.getAnnotationStatus(parentAnnotation);
+        stopRecursion = parentAnnotation.subject === annotation.columnHeader; // I'm the subject of my subject -> avoid infinite loop!
+        parentStatus = this.getAnnotationStatus(parentAnnotation, stopRecursion);
         if (parentStatus !== AnnotationStatuses.valid) {
           return AnnotationStatuses.warning; // if my subject is wrong or warning, I'm warning
         }
       }
     }
-    // If I have not a subject, I'm valid
+    // If I have not a subject or if my subject is valid, I'm valid
     return AnnotationStatuses.valid;
   }
 }
