@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { AppConfig } from '../app.config';
 import { TransformationService } from '../transformation.service';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface Vocabulary {
   name: string;
@@ -15,44 +16,74 @@ export class RdfVocabularyService {
   private vocabSvcPath: string;
   // Default vocabularies maintained by the vocabulary service
   public defaultVocabularies: Map<string, Vocabulary>;
+  public transformationVocabularies: Map<string, Vocabulary>;
 
-  constructor(private http: Http, private config: AppConfig) {
+  private allRdfVocabSource: BehaviorSubject<any>;
+  public allRdfVocabObservable: Observable<any>;
+
+  constructor(private http: Http, private config: AppConfig, private transformationSvc: TransformationService) {
     this.vocabSvcPath = this.config.getConfig('vocabulary-service-path');
+    this.defaultVocabularies = new Map<string, Vocabulary>();
+    this.transformationVocabularies = new Map<string, Vocabulary>();
+    this.allRdfVocabSource = new BehaviorSubject<any>({
+      defaultVocabs: Array.from(this.defaultVocabularies.values()),
+      transformationVocabs: Array.from(this.transformationVocabularies.values())
+    });
+    this.allRdfVocabObservable = this.allRdfVocabSource.asObservable();
     // load the default vocabularies from the server
-    this.getDefaultVocabs()
-      .then(
-        (result) => {
-          this.defaultVocabularies = new Map<string, Vocabulary>();
-          const vocabs = this.mapVocabularies(result);
-          vocabs.forEach((vocab) => {
-            // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
-            const name_space = vocab.namespace === 'http://rdfs.org/sioc/ns#' ? 'http://rdfs.org/sioc/ns' : vocab.namespace;
-            this.getVocabularyClassesAndProperties(vocab.name, name_space)
-              .then(
-                (classAndProps) => {
-                  // add classes and properties to the vocabulary
-                  const classes = [];
-                  const properties = [];
-                  classAndProps['classResult'].forEach((classResult) => {
-                    if (classResult.value !== 'null') {
-                      classes.push(classResult.value);
-                    }
-                  });
-                  classAndProps['propertyResult'].forEach((propertyResult) => {
-                    if (propertyResult.value !== 'null') {
-                      properties.push(propertyResult.value);
-                    }
-                  });
-                  vocab.classes = classes;
-                  vocab.properties = properties;
-                  this.defaultVocabularies.set(vocab.name, vocab);
-                },
-                (error) => this.errorHandler(error)
-              );
+    this.getDefaultVocabs().then((result) => {
+      const vocabs = this.mapVocabularies(result);
+      vocabs.forEach((vocab) => {
+        // duct-tape solution to a bug in the Vocabulary service with a wrongly defined namespace 'sioc'
+        const name_space = vocab.namespace === 'http://rdfs.org/sioc/ns#' ? 'http://rdfs.org/sioc/ns' : vocab.namespace;
+        this.getVocabularyClassesAndProperties(vocab.name, name_space)
+          .then(
+            (classAndProps) => {
+              // add classes and properties to the vocabulary
+              const classes = [];
+              const properties = [];
+              classAndProps['classResult'].forEach((classResult) => {
+                if (classResult.value !== 'null') {
+                  classes.push(classResult.value);
+                }
+              });
+              classAndProps['propertyResult'].forEach((propertyResult) => {
+                if (propertyResult.value !== 'null') {
+                  properties.push(propertyResult.value);
+                }
+              });
+              vocab.classes = classes;
+              vocab.properties = properties;
+              this.defaultVocabularies.set(vocab.name, vocab);
+            },
+            (error) => this.errorHandler(error)
+          );
+      });
+    },
+      (error) => this.errorHandler(error)
+    );
+    this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+      this.transformationVocabularies = new Map<string, Vocabulary>();
+      transformation.rdfVocabs.forEach((rdfVocab) => {
+        if (!rdfVocab.fromServer) {
+          this.transformationVocabularies.set(rdfVocab.name, {
+            name: rdfVocab.name,
+            namespace: rdfVocab.namespace,
+            properties: rdfVocab.properties,
+            classes: rdfVocab.classes,
           });
-        },
-        (error) => this.errorHandler(error)
-      );
+
+        }
+      });
+      this.updateVocabs();
+    });
+  }
+
+  private updateVocabs() {
+    this.allRdfVocabSource.next({
+      defaultVocabs: Array.from(this.defaultVocabularies.values()),
+      transformationVocabs: Array.from(this.transformationVocabularies.values())
+    });
   }
 
   // Get all default vocabulary definitions from the vocabulary service

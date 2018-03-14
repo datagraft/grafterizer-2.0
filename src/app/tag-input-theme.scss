@@ -1,15 +1,6 @@
 @import "node_modules/ngx-chips/dist/modules/core/styles/core/_core.scss";
-
-$datagraft-tag-input-theme: (
-  height: 28px,
-  line-height: 28px,
-);
-$datagraft-tags-theme: (
-  height: 24px,
-  line-height: 24px,
-  
-);
-
+$datagraft-tag-input-theme: ( height: 28px, line-height: 28px, );
+$datagraft-tags-theme: ( height: 24px, line-height: 24px, );
 // apply theme to the container
 /deep/ .ng2-tag-input.datagraft-tag-input-theme {
     @include tag-input-theme($datagraft-tag-input-theme);
@@ -24,3 +15,5 @@ $datagraft-tags-theme: (
 /deep/ .ng2-tag-input.datagraft-tags-theme tag delete-icon {
     @include icon-theme($datagraft-tags-theme);
 }
+
+@import "~@ng-select/ng-select/themes/material.theme.css";

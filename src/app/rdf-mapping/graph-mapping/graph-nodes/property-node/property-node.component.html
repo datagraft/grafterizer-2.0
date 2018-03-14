@@ -2,7 +2,7 @@
   <div fxLayout="column" fxLayoutAlign="start start" class="sin-property-button-container" (mouseenter)="showPropertyActions()"
     (mouseleave)="hidePropertyActions()">
     <button mat-button matTooltip="{{property.prefix ? property.prefix + ':' : '' }}{{property.propertyName}}" class="rdf-mapping-property-button"
-      (click)="editProperty()" matTooltipShowDelay="1000">
+      (click)="editProperty()" matTooltipShowDelay="500">
       <div fxLayout="row" fxLayoutAlign="start start">
         <div *ngIf="property.propertyCondition.length === 0" class="sin-property-button-icon">
           <i class="fa fa-arrow-right fa-1x"></i>

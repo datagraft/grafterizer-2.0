@@ -44,7 +44,6 @@ export class AppComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log('INITIALISING APP COMPONENT ');
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
@@ -107,10 +106,8 @@ export class AppComponent implements OnInit {
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 200)
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
         .then((result) => {
-          // console.log(result);
-          // console.log(this.previewedTransformationObj.pipelines[0]);
           this.transformationSvc.changeGraftwerkData(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);
