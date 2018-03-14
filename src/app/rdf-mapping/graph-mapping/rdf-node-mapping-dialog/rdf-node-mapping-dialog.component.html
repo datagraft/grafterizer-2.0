@@ -9,7 +9,7 @@
               <div class="sin-mapping-source-container">
                 <label>Select mapping source type</label>
                 <div class="select">
-                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType">
                     <option value="dataset-col">From dataset column</option>
                     <option value="free-defined">Free-defined text</option>
                   </select>
@@ -52,7 +52,7 @@
                     bindValue="id" bindLabel="name"></ng-select>
                 </div>
                 <div fxLayout="column" style="padding-left:20px; " *ngIf="selectedOperator">
-                  <label style="padding-top:15px;"> {{ selectedOperator.id===6 ? "Custom code": "Operand" }}
+                  <label style="padding-top:15px;"> {{ selectedOperator === 6 ? "Custom code": "Operand" }}
                   </label>
                   <input style="min-width:200px; padding-top: 32.5px; padding-bottom: 18px;" [(ngModel)]="conditionOperand" type="text">
                 </div>
@@ -70,7 +70,7 @@
               <div class="sin-mapping-source-container">
                 <label>Select mapping source type</label>
                 <div class="select">
-                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType" (change)="mappingTypeSelectChanged(mappingSourceType.value)">
+                  <select #mappingSourceType [(ngModel)]="selectedSourceType" id="mappingType">
                     <option value="dataset-col">From dataset column</option>
                     <option value="free-defined">Free-defined text</option>
                   </select>
