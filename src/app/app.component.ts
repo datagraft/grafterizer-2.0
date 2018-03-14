@@ -7,6 +7,7 @@ import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
 import { RoutingService } from './routing.service';
 import { GlobalErrorReportingService } from './global-error-reporting.service';
+import { PipelineEventsService } from './tabular-transformation/pipeline-events.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -34,7 +35,7 @@ export class AppComponent implements OnInit {
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
-    private globalErrorRepSvc: GlobalErrorReportingService) {
+    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
 
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.url = url;
@@ -77,9 +78,16 @@ export class AppComponent implements OnInit {
             // If the event for navigation end is emitted, the child components are initialised.
             // We can proceed to updating the previewed data.
             if (event instanceof NavigationEnd) {
-              this.updatePreviewedData();
-              // this subscription is no longer needed for the rest of the life of the app component
-              this.updateDataRouteSubscription.unsubscribe();
+              this.pipelineEventsSvc.changePipelineEvent({
+                startEdit: false, // true when we click on the 'Edit' icon of a function
+                commitEdit: false, // true when we click 'OK' after editing a function
+                preview: false, // true when we are previewing a step in the pipeline
+                delete: false, // true when we are deleting a step in the pipeline
+                createNew: false, // true when we are adding a new step to the pipeline
+                newStepType: "", // type of the new step to be added to the pipeline
+                defaultParams: {}, // default parameters for a new step (could be given by recommender)
+                commitCreateNew: false // true when we click OK after creating a new function
+              });
             }
           });
         } else {
@@ -101,8 +109,8 @@ export class AppComponent implements OnInit {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
       this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 200)
         .then((result) => {
-          console.log(this.previewedTransformationObj.pipelines[0]);
-          console.log(result);
+          // console.log(result);
+          // console.log(this.previewedTransformationObj.pipelines[0]);
           this.transformationSvc.changeGraftwerkData(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);

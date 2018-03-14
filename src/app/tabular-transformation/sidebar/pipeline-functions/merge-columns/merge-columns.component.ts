@@ -44,7 +44,6 @@ export class MergeColumnsComponent implements OnInit {
 
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
       this.pipelineEvent = currentEvent;
-      console.log(this.pipelineEvent);
       // In case we clicked edit
       if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MergeColumnsFunction') {
         this.modalEnabled = true;
