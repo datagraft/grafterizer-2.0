@@ -1,27 +1,31 @@
 <div style="text-align: center" [hidden]="!dataLoading">
-  <span class="spinner spinner-lg" style="margin-top: 200px">
+  <span class="spinner spinner-lg">
     Loading...
   </span>
 </div>
-<div class="btn-group pull-right" style="padding: .5em" [hidden]="dataLoading">
-  <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
-    <clr-icon shape="floppy"></clr-icon> Create graph
-  </button>
-  <clr-dropdown *ngIf="false">
-    <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
-      <clr-icon shape="download"></clr-icon>
-      Create RDF triples
-      <clr-icon shape="caret down"></clr-icon>
+<div class="options" [hidden]="dataLoading">
+  <div class="btn-group pull-right" style="padding: .5em">
+    <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
+      <clr-icon shape="floppy"></clr-icon> Update graph
     </button>
-    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-      <label class="dropdown-header">Formats</label>
-      <button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>
-      <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>
-      <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>
-    </clr-dropdown-menu>
-  </clr-dropdown>
-  <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
-    <clr-icon shape="cog"></clr-icon>
-  </button>
+    <clr-dropdown *ngIf="false">
+      <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
+        <clr-icon shape="download"></clr-icon>
+        Create RDF triples
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+        <label class="dropdown-header">Formats</label>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
+      <clr-icon shape="cog"></clr-icon>
+    </button>
+  </div>
 </div>
-<div id="handsontable" [hidden]="dataLoading"></div>
+<div class="hot-wrapper" [ngClass]="{'hot-hidden': dataLoading}">
+  <div id="handsontable"></div>
+</div>

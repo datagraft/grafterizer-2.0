@@ -10,13 +10,13 @@ import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
-import { Http } from '@angular/http';
 import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
+import { Subscription } from 'rxjs/Subscription';
 
 declare var Handsontable: any;
 
@@ -30,6 +30,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
+
+  private transformationSubscription: Subscription;
+  private previewedTransformationSubscription: Subscription;
+  private dataSubscription: Subscription;
 
   private container: any;
   private settings: any;
@@ -58,18 +62,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, private route: ActivatedRoute, private routingService: RoutingService,
-    public http: Http, public dialog: MatDialog) {
+    public annotationService: AnnotationService, private route: ActivatedRoute,
+              private routingService: RoutingService, public dialog: MatDialog) {
     route.url.subscribe(() => this.routingService.concatURL(route));
-    this.dataLoading = true;
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
-    this.saveButtonDisabled = true;
+    this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
     this.rdfButtonDisabled = true;
   }
 
   ngOnInit() {
-    this.dataLoading = true;
     this.container = document.getElementById('handsontable');
     this.settings = {
       data: [],
@@ -79,8 +81,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       manualColumnResize: true,
       columnSorting: false,
       viewportColumnRenderingOffset: 40,
-      height: 660,
-      width: 1610,
       wordWrap: true,
       stretchH: 'all',
       className: 'htCenter htMiddle',
@@ -102,30 +102,45 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       },
       afterLoadData: () => {
         this.hot.render();
-      }
+        this.dataLoading = false;
+      },
     });
-    this.transformationSvc.currentTransformationObj.subscribe(message => this.transformationObj = message);
-    this.transformationSvc.currentGraftwerkData.subscribe(message => {
-      this.dataLoading = true;
-      this.graftwerkData = message;
+
+    this.transformationSubscription =
+      this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
+        this.transformationObj = transformationObj;
+      });
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.dataLoading = true;
+      });
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+      this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':column-names']) {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
         this.annotationService.data = this.graftwerkData[':rows'];
+        if (this.transformationObj['annotations']) {
+          this.transformationObj['annotations'].forEach(annotationObj => {
+            const annotation = new Annotation(annotationObj);
+            this.annotationService.setAnnotation(annotation.columnHeader, annotation);
+          });
+          this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
+        }
         this.hot.updateSettings({
           columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
           colHeaders: (col) => this.getTableHeader(col)
         });
         this.hot.loadData(this.annotationService.data);
       }
-      this.dataLoading = false;
     });
-    this.dataLoading = false;
   }
 
   ngOnDestroy() {
-    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+    this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
+    this.transformationSubscription.unsubscribe();
+    this.dataSubscription.unsubscribe();
+    this.previewedTransformationSubscription.unsubscribe();
   }
 
   openDialogForSelectedColumn(headerIdx): void {
@@ -141,7 +156,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.hot.updateSettings({
         colHeaders: (col) => this.getTableHeader(col)
       });
-      this.saveButtonDisabled = this.annotationService.getValidAnnotations().length === 0;
+      this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
     });
   }
 
@@ -160,6 +175,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
       '</button>';
     if (annotation) {
+      // STATUS ICON
       let statusIcon = '';
       let tooltipContent = '';
       if (annotation.status === AnnotationStatuses.wrong) {
@@ -177,19 +193,45 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
       HTMLHeader += '<br>';
-      let type = annotation.columnValuesType === ColumnTypes.URI ? annotation.columnTypes.join(',<br>&nbsp;&nbsp;&nbsp;') : annotation.columnDatatype;
-      let property = annotation.property;
-      let subject = annotation.subject;
 
-      type = '<span style="color: #48960C">' + type + '</span>';
-      property = '<span style="color: #5264AE">' + property + '</span>';
-      subject = '<span style="color: #737373">' + subject + '</span>';
+      // ANNOTATION DETAILS
+      let annInfoLabel: string;
+      let annInfoTypes: string;
+      let annInfoValues: string;
+
+      // TYPES
+      if (annotation.columnValuesType === ColumnTypes.URI) {
+        annInfoLabel = '<p class="p7 ann-info-label">Type(s):</p>';
+        annInfoTypes = '';
+        for (let i = 0; i < annotation.columnTypes.length; ++i) {
+          const type = annotation.columnTypes[i];
+          const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+          annInfoTypes += '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+        }
+      } else {
+        annInfoLabel = '<p class="p7 ann-info-label">Datatype:</p>';
+        const type = annotation.columnDatatype;
+        const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+        annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+      }
+      annInfoValues = '<div class="ann-info-values">' + annInfoTypes + '</div>';
+      HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
 
       if (annotation.subject !== '') {
-        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;">' +
-          property + '<br>&nbsp;&nbsp;&nbsp; (' + type + ')<br>sourceCol: ' + subject + '</p>';
-      } else {
-        HTMLHeader += '<p class="p7" style="text-align: left; margin-top: 0;"> (' + type + ')</p>';
+        // PROPERTY
+        annInfoLabel = '<p class="p7 ann-info-label">Prop:</p>';
+        const prop = annotation.property;
+        const shortProp = prop.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(prop)).length);
+        const annInfoProp = '<span class="p7 ann-info-prop" title="' + prop + '">' + shortProp + '</span>';
+        annInfoValues = '<div class="ann-info-values">' + annInfoProp + '</div>';
+        HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
+
+        // SOURCE
+        annInfoLabel = '<p class="p7 ann-info-label">SourceCol:</p>';
+        const source = annotation.subject;
+        const annInfoSource = '<span class="p7 ann-info-source">' + source + '</span>';
+        annInfoValues = '<div class="ann-info-values">' + annInfoSource + '</div>';
+        HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
       }
     }
     return HTMLHeader;
@@ -208,8 +250,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
      */
     annotations = this.updatePrefixesNamespaces(annotations);
 
-    console.log(annotations);
-
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
 
@@ -219,9 +259,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.transformationObj.graphs.push(graph);
     }
 
-    console.log(this.transformationObj);
-
     // Save the new transformation
+    this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSvc.changeTransformationObj(this.transformationObj);
 
     // Persist the Graph to DataGraft
@@ -231,10 +270,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       const existingTransformationID = paramMap.get('transformationId');
       const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-      console.log(someClojure);
-      const newTransformationName = 'test-graft-transformation-ocorp';
+      const newTransformationName = existingTransformationID;
       const isPublic = false;
-      const newTransformationDescription = 'testing graft created from annotations';
+      const newTransformationDescription = 'graft created from annotations';
       const newTransformationKeywords = ['graft', 'annotations'];
       const newTransformationConfiguration = {
         type: 'graft',
@@ -245,10 +283,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       return this.dispatch.updateTransformation(existingTransformationID,
         publisher,
-        newTransformationName + '-new',
+        newTransformationName,
         isPublic,
-        newTransformationDescription + ' new',
-        newTransformationKeywords.concat('four'),
+        newTransformationDescription,
+        newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
             console.log(result);
@@ -343,9 +381,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach(annotation => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': annotation.columnHeader },
-          [], // node conditions
+          {'id': 0, 'value': annotation.urifyPrefix},
+          {'id': 0, 'value': annotation.columnHeader},
+          [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           [], // subelements
         );
       } else if (annotation.columnValuesType === ColumnTypes.Literal) {
@@ -354,13 +392,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           datatype = 'custom';
         }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          { 'id': 0, 'value': annotation.columnHeader },
-          { 'id': 0, 'name': datatype }, // datatype
+          {'id': 0, 'value': annotation.columnHeader},
+          {'id': 0, 'name': datatype}, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
           annotation.columnDatatype,
-          [], // nodeCondition
+          [this.getEmptyCondition(annotation.columnHeader)], // nodeCondition
         );
       }
     });
@@ -370,9 +408,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach((annotation) => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': annotation.columnHeader },
-          [], // node conditions
+          {'id': 0, 'value': annotation.urifyPrefix},
+          {'id': 0, 'value': annotation.columnHeader},
+          [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
       }
@@ -382,6 +420,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const rootsList = [];
     Object.keys(rootNodes).forEach(key => rootsList.push(rootNodes[key]));
     return new transformationDataModel.Graph(graphURI, rootsList);
+  }
+
+  /**
+   * Return the "empty" condition for the given column
+   * @param columnHeader
+   * @returns {transformationDataModel.Condition}
+   */
+  private getEmptyCondition(columnHeader) {
+    const column = {'id': 0, 'value': columnHeader};
+    const operator = {'id': 0, 'name': 'Not empty'};
+    const conj = null;
+    const operand = '';
+    return new transformationDataModel.Condition(column, operator, operand, conj);
   }
 
   /**
@@ -415,7 +466,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Help method that returns the prefix of a known namespace.
+   * Help method that returns the prefix of a known namespace (by looking only at the rdfVocabs list).
    * @param {string} namespace
    * @returns {any} the prefix if the given namespace is known, null otherwise
    */
@@ -428,11 +479,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if a vocab with the given prefix does not exist.
+   * Check if a vocab with the given prefix does not exist, i.e. the selected prefix is available.
    * @param {string} prefix
    * @returns {boolean} true if the given prefix is not already used in a vocab, false otherwise
    */
-  private isPrefixValid(prefix: string) {
+  private isPrefixAvailable(prefix: string) {
     const existingPrefix = this.transformationObj.rdfVocabs.filter(vocab => (vocab.name === prefix));
     return existingPrefix.length === 0;
   }
@@ -447,9 +498,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   getPrefixForNamespace(namespace: string) {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
-    if (existingPrefix) {
-      console.log(existingPrefix);
-      prefix = existingPrefix;
+    if (existingPrefix) { // NOTE: modify RDFVocab instances to avoid getting errors from vocabulary service
+      prefix = existingPrefix + '1';
     } else {
       const url = new URL(namespace);
       // first 2 letter of the URL domain
@@ -461,13 +511,15 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         .substr(0, 2);
       prefix = prefix.toLowerCase();
       let i = 1;
-      while (!this.isPrefixValid(prefix)) {
-        prefix = prefix += i;
+      while (!this.isPrefixAvailable(prefix)) {
+        const idx = prefix.lastIndexOf(String(i - 1));
+        prefix = idx > 0 ? prefix + i : prefix.substr(0, idx) + i;
         ++i;
       }
-      // TODO: create a new RDFVocabulary instance
-      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     }
+    // TODO: create a new RDFVocabulary instance
+    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
+
     return prefix;
   }
 }
