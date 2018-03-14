@@ -63,7 +63,7 @@
                 value-property-name="suggestion" display-property-name="suggestion" select-value-of="suggestion" loading-text="Querying ABSTAT..."
                 (valueChanged)="annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').setValue($event)"
                 min-chars="2">
-                <input id="columnType" type="text" formControlName="columnType" placeholder="Insert column type" size="35" />
+                <input id="columnType" type="text" formControlName="columnType" placeholder="Insert column type" size="45" />
                 <span *ngIf="annotationForm.hasError('invalidColumnTypes')" class="tooltip-content"> {{annotationForm.errors['invalidColumnTypes'].errorMessage}}</span>
                 <span *ngIf="annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').hasError('invalidURL')" class="tooltip-content">
                 {{annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').errors['invalidURL'].errorMessage}}
@@ -88,7 +88,7 @@
           <label for="customDatatype" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm" [class.invalid]="annotationForm.get('columnInfo.customDatatype').invalid
                         && (annotationForm.get('columnInfo.customDatatype').dirty || annotationForm.get('columnInfo.customDatatype').touched) ||
                         annotationForm.hasError('invalidCustomDatatype')">
-            <input id="customDatatype" type="text" formControlName="customDatatype" size="35">
+            <input id="customDatatype" type="text" formControlName="customDatatype" size="45">
             <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidCustomDatatype')">
               {{annotationForm.errors['invalidCustomDatatype'].errorMessage}}
             </span>
@@ -98,7 +98,7 @@
         <div class="form-group" *ngIf="displayDatatype && displayLangTag">
           <label for="langTag" class="required">Language tag</label>
           <label for="langTag" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm" [class.invalid]="annotationForm.hasError('invalidLangTag')">
-            <input id="langTag" type="text" formControlName="langTag" size="35">
+            <input id="langTag" type="text" formControlName="langTag" size="45">
             <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidLangTag')">
               {{annotationForm.errors['invalidLangTag'].errorMessage}}
             </span>
@@ -119,7 +119,7 @@
                         annotationForm.get('columnInfo.urifyNamespace').touched)
                         || annotationForm.hasError('invalidUrifyNamespace')" auto-complete [source]="availableNamespaces"
             (valueChanged)="changeUrifyNamespace($event)">
-            <input id="urifyNamespace" type="text" formControlName="urifyNamespace" placeholder="Insert a namespace" size="35" />
+            <input id="urifyNamespace" type="text" formControlName="urifyNamespace" placeholder="Insert a namespace" size="45" />
             <span *ngIf="annotationForm.get('columnInfo.urifyNamespace').hasError('invalidURL')" class="tooltip-content"> {{annotationForm.get('columnInfo.urifyNamespace').errors['invalidURL'].errorMessage}} </span>
             <span *ngIf="annotationForm.hasError('invalidUrifyNamespace')" class="tooltip-content"> {{annotationForm.errors['invalidUrifyNamespace'].errorMessage}}</span>
           </label>
@@ -134,7 +134,7 @@
           <label for="subject" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm" [class.invalid]="annotationForm.get('relationship.subject').invalid
                         && (annotationForm.get('relationship.subject').dirty || annotationForm.get('relationship.subject').touched)
                         || annotationForm.hasError('invalidSubject')" auto-complete [source]="allowedSources" (valueChanged)="changeSourceColumn($event)">
-            <input id="subject" type="text" formControlName="subject" placeholder="Choose a source column" size="35">
+            <input id="subject" type="text" formControlName="subject" placeholder="Choose a source column" size="45">
             <span *ngIf="annotationForm.get('relationship.subject').hasError('invalidSubject')" class="tooltip-content">{{annotationForm.get('relationship.subject').errors['invalidSubject'].errorMessage}}</span>
             <span *ngIf="annotationForm.hasError('invalidSubject')" class="tooltip-content">{{annotationForm.errors['invalidSubject'].errorMessage}}</span>
           </label>
@@ -148,7 +148,7 @@
             [list-formatter]="autocompleteListFormatter" value-property-name="suggestion" display-property-name="suggestion"
             select-value-of="suggestion" loading-text="Querying ABSTAT..." (valueChanged)="annotationForm.get('relationship.property').setValue($event)"
             min-chars="2">
-            <input id="property" type="text" formControlName="property" placeholder="Insert relationship property" size="35">
+            <input id="property" type="text" formControlName="property" placeholder="Insert relationship property" size="45">
             <span *ngIf="annotationForm.get('relationship.property').hasError('invalidURL')" class="tooltip-content"> {{annotationForm.get('relationship.property').errors['invalidURL'].errorMessage}} </span>
             <span *ngIf="annotationForm.hasError('invalidProperty')" class="tooltip-content"> {{annotationForm.errors['invalidProperty'].errorMessage}}</span>
           </label>
