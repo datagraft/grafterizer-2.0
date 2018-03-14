@@ -31,3 +31,7 @@ ng-select.sin-column-datatype {
     margin-left: 10px;
     margin-right: 39px;
 }
+
+.mat-vertical-stepper-header {
+    padding: 14px !important;
+}
