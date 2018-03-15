@@ -435,6 +435,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Help method that returns the prefix of a known namespace (by looking only at the rdfVocabs list).
+   * If a namespace has more than one prefix, the first prefix is returned.
    * @param {string} namespace
    * @returns {any} the prefix if the given namespace is known, null otherwise
    */
@@ -466,9 +467,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   getPrefixForNamespace(namespace: string) {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
-    if (existingPrefix) { // NOTE: modify RDFVocab instances to avoid getting errors from vocabulary service
-      prefix = existingPrefix + '1';
-    } else {
+    if (existingPrefix) {
+      prefix = existingPrefix;
+    } else { // construct a new custom prefix
       const url = new URL(namespace);
       // first 2 letter of the URL domain
       prefix = url.host.replace('www.', '')
@@ -484,10 +485,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         prefix = idx > 0 ? prefix + i : prefix.substr(0, idx) + i;
         ++i;
       }
+      // TODO: create a new RDFVocabulary instance
+      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     }
-    // TODO: create a new RDFVocabulary instance
-    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
-
     return prefix;
   }
 }
