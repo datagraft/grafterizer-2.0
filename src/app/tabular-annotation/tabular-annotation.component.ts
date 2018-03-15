@@ -252,57 +252,23 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
-    if (this.transformationObj.graphs.length === 0) { // overwrite first graph - TODO: check it
+    // if empty graph array --> push new rdf-tree-mapping graph(index 0) + tabular-annotation graph(index 1)
+    if (this.transformationObj.graphs.length === 0) {
       this.transformationObj.graphs.push(new transformationDataModel.Graph('', []));
       this.transformationObj.graphs.push(graph);
-    } else if (this.transformationObj.graphs.length === 1) {
+    }
+    // if rdf-tree-mapping graph exists --> push tabular-annotation graph
+    else if (this.transformationObj.graphs.length === 1) {
       this.transformationObj.graphs.push(graph);
-    } else if (this.transformationObj.graphs.length > 1) {
+    }
+    // if tabular-annotation graph exists --> replace/ update tabular-annotation graph
+    else if (this.transformationObj.graphs.length > 1) {
       this.transformationObj.graphs[1] = graph;
     }
 
     // Save the new transformation
     this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSvc.changeTransformationObj(this.transformationObj);
-
-    // Persist the Graph to DataGraft
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
-      const publisher = paramMap.get('publisher');
-
-      const existingTransformationID = paramMap.get('transformationId');
-      const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-      const newTransformationName = existingTransformationID;
-      const isPublic = false;
-      const newTransformationDescription = 'graft created from annotations';
-      const newTransformationKeywords = ['graft', 'annotations'];
-      const newTransformationConfiguration = {
-        type: 'graft',
-        command: 'my-graft',
-        code: someClojure,
-        json: JSON.stringify(this.transformationObj)
-      };
-
-      return this.dispatch.updateTransformation(existingTransformationID,
-        publisher,
-        newTransformationName,
-        isPublic,
-        newTransformationDescription,
-        newTransformationKeywords,
-        newTransformationConfiguration).then(
-          (result) => {
-            console.log(result);
-            console.log('Data uploaded');
-            this.rdfButtonDisabled = false;
-            this.saveLoading = false;
-          },
-          (error) => {
-            console.log('Error updating transformation');
-            console.log(error);
-            this.rdfButtonDisabled = true;
-            this.saveLoading = false;
-          });
-    }
     this.saveLoading = false;
   }
 
