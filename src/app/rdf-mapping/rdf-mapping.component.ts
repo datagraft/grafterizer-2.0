@@ -1,14 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { RoutingService } from '../routing.service';
 import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
+import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
+import { RdfPrefixManagementDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
 
 @Component({
   selector: 'rdf-mapping',
   templateUrl: './rdf-mapping.component.html',
   styleUrls: ['./rdf-mapping.component.css'],
+  entryComponents: [RdfPrefixManagementDialogComponent],
   providers: [RdfVocabularyService]
 })
 
@@ -21,6 +24,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
+  @ViewChild(RdfPrefixManagementDialogAnchorDirective) rdfPrefixManagementAnchor: RdfPrefixManagementDialogAnchorDirective;
+
   constructor(private routingService: RoutingService, private route: ActivatedRoute, private router: Router,
     private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
@@ -30,8 +35,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
-      this.transformationObj = transformationObj;
-    });
+        this.transformationObj = transformationObj;
+      });
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
       this.graftwerkData = graftwerkData;
     });
@@ -40,7 +45,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-//    this.transformationSvc.changeTransformationObj(this.transformationObj);
-//    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+  }
+  openPrefixManagementDialog() {
+    let componentRef = this.rdfPrefixManagementAnchor.createDialog(RdfPrefixManagementDialogComponent);
   }
 }

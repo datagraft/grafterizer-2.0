@@ -26,6 +26,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { PropertyNodeDialogComponent } from './graph-mapping/property-node-dialog/property-node-dialog.component';
 import { PropertyNodeDialogAnchorDirective } from './graph-mapping/property-node-dialog/property-node-dialog-anchor.directive';
+import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
+import { RdfPrefixManagementDialogAnchorDirective } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 
 
@@ -48,6 +51,7 @@ import { PropertyNodeDialogAnchorDirective } from './graph-mapping/property-node
     MatAutocompleteModule,
     MatDividerModule,
     MatSlideToggleModule,
+    MatExpansionModule
   ],
   declarations: [
     RdfMappingComponent,
@@ -61,7 +65,9 @@ import { PropertyNodeDialogAnchorDirective } from './graph-mapping/property-node
     RdfNodeMappingDialogComponent,
     RdfNodeMappingDialogAnchorDirective,
     PropertyNodeDialogComponent,
-    PropertyNodeDialogAnchorDirective
+    PropertyNodeDialogAnchorDirective,
+    RdfPrefixManagementDialogComponent,
+    RdfPrefixManagementDialogAnchorDirective
   ]
 })
 

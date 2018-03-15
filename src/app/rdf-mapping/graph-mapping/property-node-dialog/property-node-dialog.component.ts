@@ -90,7 +90,8 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private transformationObj: any;
 
-  constructor(private rdfVocabSvc: RdfVocabularyService, private transformationSvc: TransformationService) { }
+  constructor(private rdfVocabSvc: RdfVocabularyService, private transformationSvc: TransformationService) {
+  }
 
   ngOnInit() {
     this.rdfVocabsSubscription = this.rdfVocabSvc.allRdfVocabObservable.subscribe((rdfVocabsObj) => {
