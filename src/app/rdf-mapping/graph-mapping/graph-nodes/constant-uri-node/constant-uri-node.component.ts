@@ -1,31 +1,70 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ViewContainerRef, OnDestroy } from '@angular/core';
+import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
+import { RdfNodeMappingDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
+import { TransformationService } from 'app/transformation.service';
+import { Subscription } from 'rxjs';
+import { PropertyNodeDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/property-node-dialog/property-node-dialog-anchor.directive';
+import { PropertyNodeDialogComponent } from 'app/rdf-mapping/graph-mapping/property-node-dialog/property-node-dialog.component';
 
 @Component({
   selector: 'constant-uri-node',
   templateUrl: './constant-uri-node.component.html',
+  entryComponents: [RdfNodeMappingDialogComponent, PropertyNodeDialogComponent],
   styleUrls: ['../graph-mapping-node-components.scss']
 })
-export class ConstantUriNodeComponent implements OnInit {
+export class ConstantUriNodeComponent implements OnInit, OnDestroy {
   @Input() node: any;
   @Input() parent: any;
   private showActions = false;
 
-  constructor() { }
+  private nodeRemoveModal = false;
+  private transformationSubscription: Subscription;
+  private transformationObj: any;
+
+  @ViewChild(RdfNodeMappingDialogAnchorDirective) rdfNodeDialogAnchor: RdfNodeMappingDialogAnchorDirective;
+  @ViewChild(PropertyNodeDialogAnchorDirective) propertyDialogAnchor: PropertyNodeDialogAnchorDirective;
+
+  constructor(private transformationSvc: TransformationService) {
+
+  }
 
   ngOnInit() {
-    console.log(this.node);
+    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+      this.transformationObj = transformation;
+    });
+  }
+
+  ngOnDestroy() {
+    this.transformationSubscription.unsubscribe();
   }
 
   editNode() {
-    console.log('Edit Node' + this.node);
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.loadNode(this.node, this.parent, null);
+  }
+
+  addChildNode() {
+    let componentRef = this.propertyDialogAnchor.createDialog(PropertyNodeDialogComponent);
+    componentRef.instance.loadProperty(null, this.node, null);
   }
 
   addSiblingNode() {
-    console.log('ADD SIBLING NODE');
+    let componentRef = this.rdfNodeDialogAnchor.createDialog(RdfNodeMappingDialogComponent);
+    componentRef.instance.loadNode(null, this.parent, this.node);
   }
 
   removeNode() {
-    console.log('REMOVE NODE');
+    this.nodeRemoveModal = true;
+  }
+
+  cancelDelete() {
+    this.nodeRemoveModal = false;
+  }
+
+  confirmDelete() {
+    this.parent.removeChild(this.node);
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.nodeRemoveModal = false;
   }
 
   showNodeActions() {

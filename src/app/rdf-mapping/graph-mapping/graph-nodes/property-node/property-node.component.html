@@ -2,7 +2,7 @@
   <div fxLayout="column" fxLayoutAlign="start start" class="sin-property-button-container" (mouseenter)="showPropertyActions()"
     (mouseleave)="hidePropertyActions()">
     <button mat-button matTooltip="{{property.prefix ? property.prefix + ':' : '' }}{{property.propertyName}}" class="rdf-mapping-property-button"
-      (click)="editProperty()" matTooltipShowDelay="1000">
+      (click)="editProperty()" matTooltipShowDelay="500">
       <div fxLayout="row" fxLayoutAlign="start start">
         <div *ngIf="property.propertyCondition.length === 0" class="sin-property-button-icon">
           <i class="fa fa-arrow-right fa-1x"></i>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <div fxLayout="row" fxLayoutAlign="start start">
-    <button mat-button matTooltip="Add a new node" aria-label="Add property" (click)="clickAddNode()" [hidden]="property.subElements.length!=0">
+    <button mat-button matTooltip="Add a new node" aria-label="Add property" (click)="addChildNode()" [hidden]="property.subElements.length!=0">
       <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add node
     </button>
     <div fxLayout="column" *ngFor="let node of property.subElements">
@@ -42,3 +42,15 @@
     </div>
   </div>
 </div>
+<div propertyNodeDialogAnchor></div>
+<div rdfNodeMappingDialogAnchor></div>
+<clr-modal [(clrModalOpen)]="propertyRemoveModal" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to remove this node?</h3>
+  <div class="modal-body">
+    Once you delete a node, you cannot get it back.
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelDelete()">Cancel</button>
+    <button type="button" class="btn btn-warning" (click)="confirmDelete()">Delete</button>
+  </div>
+</clr-modal>

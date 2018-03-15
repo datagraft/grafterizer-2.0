@@ -1,7 +1,7 @@
 <div fxflex fxLayout="row" fxLayoutAlign="start start">
   <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
-    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{node.prefix ? '(Column URI) ' + node.prefix + ':' + node.column.value : '(Column URI) ' + node.column.value}}"
-      matTooltipPosition="below" matTooltipShowDelay="1000">
+    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{ node.prefix ? '(Column URI) ' + node.prefix + ':' + getNodeColumnName() : '(Column URI) ' + getNodeColumnName() }}"
+      matTooltipPosition="below" matTooltipShowDelay="500">
       <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
         <div fxflex *ngIf="node.nodeCondition.length === 0">
           <i class="fa fa-columns"></i>
@@ -11,9 +11,9 @@
           <i class="fa fa-columns"></i>
         </div>
         <div class="rdf-mapping-node-text">
-          <div class="sin-rdf-mapping-prefix-text">{{node.prefix ? '(' + (node.prefix.hasOwnProperty('id') ? node.prefix.value : node.prefix) + ')' : 'no prefix'}}
+          <div class="sin-rdf-mapping-prefix-text">{{node.prefix ? '(' + getPrefixName() + ')' : 'no prefix'}}
           </div>
-          <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text">{{node.column.value}}
+          <div class="sin-rdf-mapping-node-text sin-rdf-mapping-column-name-text">{{ getNodeColumnName() }}
           </div>
         </div>
       </div>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <div style="padding-top:8px" fxflex fxLayout="column" fxLayoutAlign="start start" *ngIf="parent.__type === 'Graph'">
-    <button matTooltip="Add a new property" mat-button aria-label="Add property" ng-click="clickAddChildProperty()" [hidden]="node.subElements.length!=0">
+    <button matTooltip="Add a new property" mat-button aria-label="Add property" (click)="addChildNode()" [hidden]="node.subElements.length!=0">
       <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add property
     </button>
     <div *ngFor="let property of node.subElements">
@@ -38,3 +38,15 @@
     </div>
   </div>
 </div>
+<div rdfNodeMappingDialogAnchor></div>
+<div propertyNodeDialogAnchor></div>
+<clr-modal [(clrModalOpen)]="nodeRemoveModal" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to remove this node?</h3>
+  <div class="modal-body">
+    Once you delete a node, you cannot get it back.
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelDelete()">Cancel</button>
+    <button type="button" class="btn btn-warning" (click)="confirmDelete()">Delete</button>
+  </div>
+</clr-modal>

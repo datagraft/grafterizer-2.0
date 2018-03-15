@@ -495,26 +495,6 @@ export function DeriveColumnFunction(newColName, colsToDeriveFrom, functionsToDe
       }
     }
   }
-  /*  this.paramsToFunctions = paramsToFunctions;
-  var deriveFunc;
-  var i;
-
-  if (functionsToDeriveWith !== null) {
-    for (i = 0; i < functionsToDeriveWith.length; ++i) {
-      deriveFunc = functionsToDeriveWith[i];
-      if (deriveFunc !== null) {
-        if (!(deriveFunc instanceof CustomFunctionDeclaration) && deriveFunc.__type ===
-            'CustomFunctionDeclaration') {
-          functionsToDeriveWith[i] = CustomFunctionDeclaration.revive(deriveFunc);
-        }
-
-        if (!(deriveFunc instanceof Prefixer) && deriveFunc.__type === 'Prefixer') {
-          functionsToDeriveWith[i] = Prefixer.revive(deriveFunc);
-        }
-      }
-    }
-  }
-*/
   this.functionsToDeriveWith = functionsToDeriveWith;
   this.__type = 'DeriveColumnFunction';
   if (!docstring) {
@@ -596,23 +576,6 @@ DeriveColumnFunction.prototype.generateClojure = function () {
     compFuncts = compFuncts.concat(deriveFuncts);
     values.push(new jsedn.List(compFuncts));
   }
-
-  /*   if (this.paramsToFunctions[0]) values.push(new jsedn.List([jsedn.sym(this.functionsToDeriveWith[0].name),
-                                                               '' + this.paramsToFunctions[0]]));
-    else
-      values.push(jsedn.sym(this.functionsToDeriveWith[0].name));
-  } else {
-    var comp = 'comp ';
-    for (i = 0; i < this.functionsToDeriveWith.length; ++i) {
-      deriveFunc = this.functionsToDeriveWith[i];
-      if (this.paramsToFunctions[i]) comp += '(' + deriveFunc.name + ' "' + this.paramsToFunctions[i] + '") ';
-      else
-        comp += deriveFunc.name + ' ';
-    }
-
-    values.push(new jsedn.List([jsedn.sym(comp)]));
-  }
-*/
   return new jsedn.List(values);
 };
 this.DeriveColumnFunction = DeriveColumnFunction;
@@ -1698,7 +1661,7 @@ ConstantURI.revive = function (data) {
 this.ConstantURI = ConstantURI;
 
 export function ColumnURI(prefix, columnName, nodeCondition, subElements) {
-  URINode.call(this, prefix.value, subElements);
+  URINode.call(this, typeof prefix === 'object' ?  prefix.value : prefix, subElements);
   this.column = columnName;
   this.nodeCondition = nodeCondition;
   this.__type = 'ColumnURI';
@@ -2144,15 +2107,42 @@ Transformation.prototype.getColumnKeysFromGraphNodes = function () {
   for (var j = 0; j < this.graphs.length; ++j)
     for (var i = 0; i < this.graphs[j].graphRoots.length; ++i) {
       rootNode = this.graphs[j].graphRoots[i];
-      if (rootNode instanceof ColumnURI)
-        if (requestedColumnKeys.indexOf(rootNode.column.value) === -1)
-          requestedColumnKeys.push(rootNode.column.value);
-      if (rootNode instanceof ColumnLiteral)
-        if (requestedColumnKeys.indexOf(rootNode.literalValue.value) === -1)
-          requestedColumnKeys.push(rootNode.literalValue.value);
-      for (var k = 0; k < rootNode.nodeCondition.length; ++k)
-        if (rootNode.nodeCondition[k].column && requestedColumnKeys.indexOf(rootNode.nodeCondition[k].column.value) === -1)
-          requestedColumnKeys.push(rootNode.nodeCondition[k].column.value);
+      if (rootNode instanceof ColumnURI) {
+        // Support for 'legacy' transformations where, instead of strings, columns are objects (for whatever reason....)
+        if (typeof rootNode.column === 'object') {
+          if (requestedColumnKeys.indexOf(rootNode.column.value) === -1) {
+            requestedColumnKeys.push(rootNode.column.value);
+          }
+        } else if (typeof rootNode.column === 'string') {
+          if (requestedColumnKeys.indexOf(rootNode.column) === -1) {
+            requestedColumnKeys.push(rootNode.column);
+          }
+        }
+      }
+      if (rootNode instanceof ColumnLiteral) {
+        // Support for 'legacy' transformations where, instead of strings, columns are objects (for whatever reason....)
+        if (typeof rootNode.column === 'object') {
+          if (requestedColumnKeys.indexOf(rootNode.literalValue.value) === -1) {
+            requestedColumnKeys.push(rootNode.literalValue.value);
+          }
+        } else if (typeof rootNode.column === 'string') {
+          if (requestedColumnKeys.indexOf(rootNode.literalValue) === -1) {
+            requestedColumnKeys.push(rootNode.literalValue);
+          }
+        }
+      }
+      for (var k = 0; k < rootNode.nodeCondition.length; ++k) {
+        // Support for 'legacy' transformations where, instead of strings, columns are objects (for whatever reason....)
+        if (typeof rootNode.nodeCondition[k].column === 'object') {
+          if (requestedColumnKeys.indexOf(rootNode.nodeCondition[k].column.value) === -1) {
+            requestedColumnKeys.push(rootNode.nodeCondition[k].column.value);
+          }
+        } else if (typeof rootNode.nodeCondition[k].column === 'string') {
+          if (requestedColumnKeys.indexOf(rootNode.nodeCondition[k].column) === -1) {
+            requestedColumnKeys.push(rootNode.nodeCondition[k].column);
+          }
+        }
+      }
       requestedColumnKeys = getKeysFromSubs(rootNode, requestedColumnKeys);
     }
 
@@ -2240,27 +2230,59 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 this.Transformation = Transformation;
 
 // TODO should this just be a prototype function of every RDFElement?
-export function getKeysFromSubs(rootNode, subColKeys) {
-  for (var i = 0; i < rootNode.subElements.length; ++i) {
-    if (rootNode.subElements[i] instanceof ColumnURI)
-      if (subColKeys.indexOf(rootNode.subElements[i].column.value) === -1)
-        subColKeys.push(rootNode.subElements[i].column.value);
-    if (rootNode.subElements[i] instanceof ColumnLiteral)
-
-      if (subColKeys.indexOf(rootNode.subElements[i].literalValue.value) === -1)
-        subColKeys.push(rootNode.subElements[i].literalValue.value);
-
-    if (rootNode.subElements[i] instanceof Property)
-      for (var j = 0; j < rootNode.subElements[i].propertyCondition.length; ++j)
-        if (rootNode.subElements[i].propertyCondition[j].column && subColKeys.indexOf(rootNode.subElements[i].propertyCondition[j].column.value) === -1)
-          subColKeys.push(rootNode.subElements[i].propertyCondition[j].column.value);
-    if (rootNode.subElements[i].__type !== "Property") {
-      for (var j = 0; j < rootNode.subElements[i].nodeCondition.length; ++j)
-        if (rootNode.subElements[i].nodeCondition[j].column && subColKeys.indexOf(rootNode.subElements[i].nodeCondition[j].column.value) === -1)
-          subColKeys.push(rootNode.subElements[i].nodeCondition[j].column.value);
+export function getKeysFromSubs(node, columnKeys) {
+  for (var i = 0; i < node.subElements.length; ++i) {
+    if (node.subElements[i] instanceof ColumnURI) {
+      if (typeof node.subElements[i].column === 'object') {
+        if (columnKeys.indexOf(node.subElements[i].column.value) === -1) {
+          columnKeys.push(node.subElements[i].column.value);
+        }
+      } else if (typeof node.subElements[i].column === 'string') {
+        if (columnKeys.indexOf(node.subElements[i].column) === -1) {
+          columnKeys.push(node.subElements[i].column);
+        }
+      }
     }
-    getKeysFromSubs(rootNode.subElements[i], subColKeys);
+    if (node.subElements[i] instanceof ColumnLiteral) {
+      if (typeof node.subElements[i].literalValue === 'object') {
+        if (columnKeys.indexOf(node.subElements[i].literalValue.value) === -1) {
+          columnKeys.push(node.subElements[i].literalValue.value);
+        }
+      } else if (typeof node.subElements[i].literalValue === 'string') {
+        if (columnKeys.indexOf(node.subElements[i].literalValue) === -1) {
+          columnKeys.push(node.subElements[i].literalValue);
+        }
+      }
+    }
+
+    if (node.subElements[i] instanceof Property) {
+      for (var j = 0; j < node.subElements[i].propertyCondition.length; ++j) {
+        if (typeof node.subElements[i].propertyCondition[j].column === 'object') {
+          if (node.subElements[i].propertyCondition[j].column && columnKeys.indexOf(node.subElements[i].propertyCondition[j].column.value) === -1) {
+            columnKeys.push(node.subElements[i].propertyCondition[j].column.value);
+          }
+        } else if (typeof node.subElements[i].propertyCondition[j].column === 'string') {
+          if (columnKeys.indexOf(node.subElements[i].propertyCondition[j].column) === -1) {
+            columnKeys.push(node.subElements[i].propertyCondition[j].column);
+          }
+        }
+      }
+    }
+    if (node.subElements[i].__type !== "Property") {
+      for (var j = 0; j < node.subElements[i].nodeCondition.length; ++j) {
+        if (typeof node.subElements[i].nodeCondition[j].column === 'object') {
+          if (columnKeys.indexOf(node.subElements[i].nodeCondition[j].column.value) === -1) {
+            columnKeys.push(node.subElements[i].nodeCondition[j].column.value);
+          }
+        } else if (typeof node.subElements[i].nodeCondition[j].column === 'string') {
+          if (columnKeys.indexOf(node.subElements[i].nodeCondition[j].column) === -1) {
+            columnKeys.push(node.subElements[i].nodeCondition[j].column);
+          }
+        }
+      }
+    }
+    getKeysFromSubs(node.subElements[i], columnKeys);
   }
 
-  return subColKeys;
-};
+  return columnKeys;
+}

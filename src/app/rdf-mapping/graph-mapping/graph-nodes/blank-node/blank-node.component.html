@@ -1,6 +1,7 @@
 <div fxLayout="row" fxLayoutAlign="start start">
   <div fxLayoutAlign="start start">
-    <button mat-raised-button fxFlex class="sin-rdf-mapping-node-button" aria-label="blank node" (click)="editNode()" matTooltip="RDF blank node">
+    <button mat-raised-button fxFlex class="sin-rdf-mapping-node-button" aria-label="blank node" (click)="editNode()" matTooltip="RDF blank node"
+      matTooltipShowDelay="500">
       <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
         <div fxflex>
           <i class="fa fa-circle-thin"></i>
@@ -12,20 +13,10 @@
         </div>
       </div>
     </button>
-    <div *ngIf="parent.__type === 'Graph'" [style.visibility]="showActions ? 'visible' : 'hidden'" class="sin-rdf-node-actions">
-      <div fxflex fxLayoutAlign="start center">
-        <button mat-icon-button (click)="addSiblingNode()">
-          <mat-icon aria-label="Add a sibling node" class="sin-node-action">add_circle</mat-icon>
-        </button>
-        <button mat-icon-button (click)="removeNode()">
-          <mat-icon aria-label="Remove current node" class="sin-node-action">delete</mat-icon>
-        </button>
-      </div>
-    </div>
   </div>
 
   <div style="padding-top:8px" fxflex fxLayout="column" fxLayoutAlign="start start">
-    <button matTooltip="Add a new property" mat-button aria-label="Add property" (click)="addChildProperty()" [hidden]="node.subElements.length!=0">
+    <button matTooltip="Add a new property" mat-button aria-label="Add property" (click)="addChildNode()" [hidden]="node.subElements.length!=0">
       <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add property
     </button>
     <div *ngFor="let property of node.subElements">
@@ -33,3 +24,5 @@
     </div>
   </div>
 </div>
+<div rdfNodeMappingDialogAnchor></div>
+<div propertyNodeDialogAnchor></div>

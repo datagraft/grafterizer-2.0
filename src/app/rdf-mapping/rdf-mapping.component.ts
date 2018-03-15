@@ -30,10 +30,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
-        this.transformationObj = transformationObj;
-
-
-      });
+      this.transformationObj = transformationObj;
+    });
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
       this.graftwerkData = graftwerkData;
     });
@@ -42,7 +40,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
-    //    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    //    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
+//    this.transformationSvc.changeTransformationObj(this.transformationObj);
+//    this.transformationSvc.changeGraftwerkData(this.graftwerkData);
   }
 }

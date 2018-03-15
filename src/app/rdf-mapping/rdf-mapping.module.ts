@@ -13,7 +13,22 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { GraphMappingComponent } from './graph-mapping/graph-mapping.component';
+import { RdfNodeMappingDialogComponent } from './graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
+import { ClarityModule } from 'clarity-angular';
+import { RdfNodeMappingDialogAnchorDirective } from './graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { PropertyNodeDialogComponent } from './graph-mapping/property-node-dialog/property-node-dialog.component';
+import { PropertyNodeDialogAnchorDirective } from './graph-mapping/property-node-dialog/property-node-dialog-anchor.directive';
+
+
+
 
 
 @NgModule({
@@ -23,7 +38,16 @@ import { GraphMappingComponent } from './graph-mapping/graph-mapping.component';
     MatButtonModule,
     MatTooltipModule,
     FlexLayoutModule,
-    MatIconModule
+    MatIconModule,
+    ClarityModule,
+    MatInputModule,
+    FormsModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    MatAutocompleteModule,
+    MatDividerModule,
+    MatSlideToggleModule,
   ],
   declarations: [
     RdfMappingComponent,
@@ -33,7 +57,11 @@ import { GraphMappingComponent } from './graph-mapping/graph-mapping.component';
     ColumnLiteralNodeComponent,
     ConstantLiteralNodeComponent,
     BlankNodeComponent,
-    GraphMappingComponent
+    GraphMappingComponent,
+    RdfNodeMappingDialogComponent,
+    RdfNodeMappingDialogAnchorDirective,
+    PropertyNodeDialogComponent,
+    PropertyNodeDialogAnchorDirective
   ]
 })
 

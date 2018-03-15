@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
@@ -29,6 +30,9 @@ export class AppComponent implements OnInit {
   private previewedTransformationSubscription: Subscription;
   private previewedTransformationObj: any;
 
+  private transformationObjSourceSubscription: Subscription;
+  private transformationObjSource: any;
+
   private globalErrorSubscription: Subscription;
   private globalErrors: Array<any>;
 
@@ -42,9 +46,12 @@ export class AppComponent implements OnInit {
     });
   }
 
+  test() {
+    console.log('test OK')
+  }
+
 
   ngOnInit() {
-    console.log('INITIALISING APP COMPONENT ');
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
@@ -68,9 +75,16 @@ export class AppComponent implements OnInit {
         }
       });
 
+    this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
+      .subscribe((currentTransformationObj) => {
+        this.transformationObjSource = currentTransformationObj;
+        console.log(this.transformationObjSource);
+      });
+
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.previewedTransformationObj = previewedTransformation;
+        console.log(this.previewedTransformationObj);
         // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
         if (!this.route.firstChild) {
           // We use this subscription to catch the moment when the navigation has ended
@@ -107,10 +121,8 @@ export class AppComponent implements OnInit {
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 200)
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
         .then((result) => {
-          // console.log(result);
-          // console.log(this.previewedTransformationObj.pipelines[0]);
           this.transformationSvc.changeGraftwerkData(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);
@@ -142,6 +154,77 @@ export class AppComponent implements OnInit {
             console.log('Error uploading file!');
             console.log(error);
           });
+    }
+  }
+
+  save() {
+    // Persist the Graph to DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+      const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObjSource));
+      const newTransformationName = existingTransformationID;
+      const isPublic = false;
+      const newTransformationDescription = 'transformationobject updated';
+      const newTransformationKeywords = ['graft', 'annotations'];
+      const newTransformationConfiguration = {
+        type: 'pipe',
+        command: 'my-pipe',
+        code: someClojure,
+        json: JSON.stringify(this.transformationObjSource)
+      };
+
+      return this.dispatch.updateTransformation(existingTransformationID,
+        publisher,
+        newTransformationName,
+        isPublic,
+        newTransformationDescription,
+        newTransformationKeywords,
+        newTransformationConfiguration).then(
+          (result) => {
+            console.log(result);
+            console.log('Data uploaded');
+          },
+          (error) => {
+            console.log('Error updating transformation');
+            console.log(error);
+          });
+    }
+  }
+
+  saveTriplesToFile(data, filename) {
+    var blob = new Blob([data], { type: 'application/n-triples' }),
+      e = document.createEvent('MouseEvents'),
+      a = document.createElement('a')
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+    }
+    else {
+      var e = document.createEvent('MouseEvents'),
+        a = document.createElement('a');
+      a.download = filename;
+      a.href = window.URL.createObjectURL(blob);
+      a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+      e.initEvent('click', true, false);
+      a.dispatchEvent(e);
+    }
+  }
+
+  download() {
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+      const existingTransformationID = paramMap.get('transformationId');
+      const filestoreID = paramMap.get('filestoreId');
+      this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', 'nt').then(
+        (transformed) => {
+          this.saveTriplesToFile(transformed, 'triples.nt');
+        },
+        (error) => {
+          console.log('Error transforming file');
+          console.log(error);
+        }
+      );
     }
   }
 
