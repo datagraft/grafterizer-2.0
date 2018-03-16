@@ -174,7 +174,7 @@ export class TransformationService {
                   return jsedn.toJS(jsedn.parse(responseCache.text()));
                 } else {
                   // if transformation is a graft (or undefined), we pass the response as plain text
-                  return responseCache;
+                  return responseCache.text();
                 }
               })
               .toPromise()

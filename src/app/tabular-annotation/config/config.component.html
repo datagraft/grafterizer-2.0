@@ -4,8 +4,8 @@
   <div class="form-group">
   <tag-input [(ngModel)]="summaries"
              [onlyFromAutocomplete]="true"
-             [placeholder]="'Add another summary'"
-             [secondaryPlaceholder]="'Choose a summary'">
+             [placeholder]="'+ Summary'"
+             [secondaryPlaceholder]="'Summary'">
     <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
                         [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
   </tag-input>

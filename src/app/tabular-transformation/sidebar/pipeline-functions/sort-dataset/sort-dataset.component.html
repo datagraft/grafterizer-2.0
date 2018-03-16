@@ -4,7 +4,7 @@
     <form>
       <section class="form-block">
         <div class="form-group">
-          <label for="form-group-1">Select column</label>
+          <label for="form-group" id="label">Select column</label>
           <div class="select">
             <select id="form-group-1" name="form-group-dropdown" [(ngModel)]="selectedColumn">
               <option *ngFor="let colname of previewedDataColumns" [ngValue]="colname">{{colname.value}}</option>
@@ -12,15 +12,15 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="form-group-2">Select sort type</label>
+          <label for="form-group-2" id="label">Select sort type</label>
           <div class="select">
-            <select id="form-group-2" name="form-group-dropdown" [(ngModel)]="sorttype">
+            <select id="form-group" name="form-group-dropdown" [(ngModel)]="sorttype">
               <option *ngFor="let sorttype of sortTypes" [ngValue]="sorttype">{{sorttype}}</option>
             </select>
           </div>
         </div>
         <div class="form-group" id="form-group-3">
-          <label for="form-group-3" id="comments-label">Comments</label>
+          <label for="form-group" id="label">Comments</label>
           <input type="text" id="form-group-3-input" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
         </div>
       </section>

@@ -148,7 +148,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const currentAnnotation = this.annotationService.getAnnotation(currentHeader);
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
-      width: '700px',
+      width: '750px',
       data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs }
     });
 
@@ -162,7 +162,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   openConfigDialog(): void {
     const dialogRef = this.dialog.open(ConfigComponent, {
-      width: '700px'
+      width: '600px'
     });
   }
 
@@ -252,57 +252,23 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Create a new instance of graph
     const graph = this.buildGraph(annotations);
-    if (this.transformationObj.graphs.length === 0) { // overwrite first graph - TODO: check it
+    // if empty graph array --> push new rdf-tree-mapping graph(index 0) + tabular-annotation graph(index 1)
+    if (this.transformationObj.graphs.length === 0) {
       this.transformationObj.graphs.push(new transformationDataModel.Graph('', []));
       this.transformationObj.graphs.push(graph);
-    } else if (this.transformationObj.graphs.length === 1) {
+    }
+    // if rdf-tree-mapping graph exists --> push tabular-annotation graph
+    else if (this.transformationObj.graphs.length === 1) {
       this.transformationObj.graphs.push(graph);
-    } else if (this.transformationObj.graphs.length > 1) {
+    }
+    // if tabular-annotation graph exists --> replace/ update tabular-annotation graph
+    else if (this.transformationObj.graphs.length > 1) {
       this.transformationObj.graphs[1] = graph;
     }
 
     // Save the new transformation
     this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSvc.changeTransformationObj(this.transformationObj);
-
-    // Persist the Graph to DataGraft
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
-      const publisher = paramMap.get('publisher');
-
-      const existingTransformationID = paramMap.get('transformationId');
-      const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObj));
-      const newTransformationName = existingTransformationID;
-      const isPublic = false;
-      const newTransformationDescription = 'graft created from annotations';
-      const newTransformationKeywords = ['graft', 'annotations'];
-      const newTransformationConfiguration = {
-        type: 'graft',
-        command: 'my-graft',
-        code: someClojure,
-        json: JSON.stringify(this.transformationObj)
-      };
-
-      return this.dispatch.updateTransformation(existingTransformationID,
-        publisher,
-        newTransformationName,
-        isPublic,
-        newTransformationDescription,
-        newTransformationKeywords,
-        newTransformationConfiguration).then(
-          (result) => {
-            console.log(result);
-            console.log('Data uploaded');
-            this.rdfButtonDisabled = false;
-            this.saveLoading = false;
-          },
-          (error) => {
-            console.log('Error updating transformation');
-            console.log(error);
-            this.rdfButtonDisabled = true;
-            this.saveLoading = false;
-          });
-    }
     this.saveLoading = false;
   }
 
@@ -469,6 +435,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Help method that returns the prefix of a known namespace (by looking only at the rdfVocabs list).
+   * If a namespace has more than one prefix, the first prefix is returned.
    * @param {string} namespace
    * @returns {any} the prefix if the given namespace is known, null otherwise
    */
@@ -500,9 +467,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   getPrefixForNamespace(namespace: string) {
     const existingPrefix = this.getExistingPrefixFromNamespace(namespace);
     let prefix = '';
-    if (existingPrefix) { // NOTE: modify RDFVocab instances to avoid getting errors from vocabulary service
-      prefix = existingPrefix + '1';
-    } else {
+    if (existingPrefix) {
+      prefix = existingPrefix;
+    } else { // construct a new custom prefix
       const url = new URL(namespace);
       // first 2 letter of the URL domain
       prefix = url.host.replace('www.', '')
@@ -518,10 +485,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         prefix = idx > 0 ? prefix + i : prefix.substr(0, idx) + i;
         ++i;
       }
+      // TODO: create a new RDFVocabulary instance
+      this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     }
-    // TODO: create a new RDFVocabulary instance
-    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
-
     return prefix;
   }
 }
