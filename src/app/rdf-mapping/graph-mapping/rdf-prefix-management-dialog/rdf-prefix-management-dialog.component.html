@@ -2,34 +2,78 @@
   <h3 class="modal-title">Specify property node</h3>
   <div class="modal-body">
     <mat-accordion>
-      <mat-expansion-panel>
+      <mat-expansion-panel *ngFor="let transfVocab of transformationVocabs">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            Personal data
+            {{ transfVocab.name }}
           </mat-panel-title>
-          <mat-panel-description>
-            Type your name and age
+          <mat-panel-description fxLayoutAlign="space-between center">
+            <div>
+              {{'(' + transfVocab.namespace + ')'}}
+            </div>
+            <div>
+              <button mat-icon-button color="primary" id="{{transfVocab.name}}" value="edit" (click)="editVocab($event)">
+                <mat-icon aria-label="Edit prefix">mode_edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" id="{{transfVocab.name}}" value="delete" (click)="deleteVocab($event)">
+                <mat-icon aria-label="Delete prefix">delete</mat-icon>
+              </button>
+            </div>
+
           </mat-panel-description>
         </mat-expansion-panel-header>
+        <div fxFlex fxLayout="row" fxLayoutAlign="space-between flex-start">
+          <mat-list>
+            <h3 mat-subheader *ngIf="transfVocab.classes">Classes</h3>
+            <mat-list-item *ngFor="let class of transfVocab.classes">
+              <p mat-line>{{class}}</p>
+            </mat-list-item>
+          </mat-list>
 
-        <mat-form-field>
-          <input matInput placeholder="First name">
-        </mat-form-field>
-
-        <mat-form-field>
-          <input matInput placeholder="Age">
-        </mat-form-field>
+          <mat-list>
+            <h3 mat-subheader *ngIf="transfVocab.property">Properties</h3>
+            <mat-list-item *ngFor="let property of transfVocab.properties">
+              <p mat-line>{{property}}</p>
+            </mat-list-item>
+          </mat-list>
+        </div>
       </mat-expansion-panel>
-      <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+
+      <mat-expansion-panel *ngFor="let defVocab of defaultVocabs; let i = index">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            Self aware panel
+            {{ defVocab.name }}
           </mat-panel-title>
-          <mat-panel-description>
-            Currently I am {{panelOpenState ? 'open' : 'closed'}}
+          <mat-panel-description fxLayoutAlign="space-between center">
+            <div>
+              {{'(' + defVocab.namespace + ')'}}
+            </div>
+            <div>
+              <!-- <button mat-icon-button color="primary" id="{{defVocab.name}}" value="edit" (click)="editVocab($event)">
+                <mat-icon aria-label="Edit prefix">mode_edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" id="{{defVocab.name}}" value="delete" (click)="deleteVocab($event)">
+                <mat-icon aria-label="Delete prefix">delete</mat-icon>
+              </button> -->
+            </div>
+
           </mat-panel-description>
         </mat-expansion-panel-header>
-        <p>I'm visible because I am open</p>
+        <div fxFlex fxLayout="row" fxLayoutAlign="space-between flex-start">
+          <mat-list>
+            <h3 mat-subheader>Classes</h3>
+            <mat-list-item *ngFor="let class of defVocab.classes">
+              <p mat-line>{{class}}</p>
+            </mat-list-item>
+          </mat-list>
+
+          <mat-list>
+            <h3 mat-subheader>Properties</h3>
+            <mat-list-item *ngFor="let property of defVocab.properties">
+              <p mat-line>{{property}}</p>
+            </mat-list-item>
+          </mat-list>
+        </div>
       </mat-expansion-panel>
     </mat-accordion>
   </div>

@@ -48,4 +48,14 @@ export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
   done() {
     this.onClickedExit();
   }
+
+  editVocab(event) {
+    console.log('EDIT');
+    event.stopPropagation();
+  }
+
+  deleteVocab(event) {
+    event.stopPropagation();
+    console.log('DELETE ');
+  }
 }

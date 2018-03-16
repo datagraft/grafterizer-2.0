@@ -55,6 +55,7 @@ export class RdfVocabularyService {
               vocab.classes = classes;
               vocab.properties = properties;
               this.defaultVocabularies.set(vocab.name, vocab);
+              this.updateVocabs();
             },
             (error) => this.errorHandler(error)
           );
