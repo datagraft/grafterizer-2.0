@@ -344,43 +344,29 @@ export function constructRDFGraphFunction(transformation) {
 
   var currentGraphJsEdn = null;
   var currentRootJsEdn = null;
+  var currentGraphJsEdn = null;
+  // var currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), 'TODO not used']);
   for (i = 0; i < transformation.graphs.length; ++i) {
     currentGraph = transformation.graphs[i];
-
-    currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
-
+    if (i === 0) {
+      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
+    }
     // construct a vector for each of the roots and add it to the graph jsedn
     for (j = 0; j < currentGraph.graphRoots.length; ++j) {
-
       currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph);
-
-
-
       if (currentRootJsEdn) {
         if (currentRootJsEdn.constructor === Array) {
-          for (var i = 0; i < currentRootJsEdn.length; ++i) {
-
-            currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn[i]));
-
+          for (var k = 0; k < currentRootJsEdn.length; ++k) {
+            currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn[k]));
           }
         } else {
           currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn));
-
         }
-
-
       }
-
-
-
-
     }
-
     graphFunction.val.push(currentGraphJsEdn);
   }
-
   var result = new jsedn.List([jsedn.sym('def'), jsedn.sym('make-graph'), graphFunction]);
-
   return result;
 }
 
@@ -1033,7 +1019,6 @@ function generateGrafterCode(transformation) {
 
   var grafterCustomFunctions = constructUserFunctions();
   /* Graph Template */
-
   var graphTemplate = constructRDFGraphFunction(transformation);
 
   /* Pipeline Function */

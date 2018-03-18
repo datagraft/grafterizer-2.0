@@ -78,13 +78,12 @@ export class AppComponent implements OnInit {
     this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
       .subscribe((currentTransformationObj) => {
         this.transformationObjSource = currentTransformationObj;
-        console.log(this.transformationObjSource);
       });
+
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.previewedTransformationObj = previewedTransformation;
-        console.log(this.previewedTransformationObj);
         // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
         if (!this.route.firstChild) {
           // We use this subscription to catch the moment when the navigation has ended
@@ -228,4 +227,85 @@ export class AppComponent implements OnInit {
     }
   }
 
+  save() {
+    // Persist the Graph to DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+      const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+      const newTransformationName = existingTransformationID;
+      const isPublic = false;
+      const newTransformationDescription = 'transformationobject updated';
+      const newTransformationKeywords = ['pipe', 'graft', 'annotations'];
+      let transformationType = 'graft';
+      let transformationCommand = 'my-graft';
+      if (this.transformationObjSource.graphs === 0) {
+        transformationType = 'pipe';
+        transformationCommand = 'my-pipe';
+      }
+      const newTransformationConfiguration = {
+        type: transformationType,
+        command: transformationCommand,
+        code: clojureCode,
+        json: JSON.stringify(this.transformationObjSource)
+      };
+
+      return this.dispatch.updateTransformation(existingTransformationID,
+        publisher,
+        newTransformationName,
+        isPublic,
+        newTransformationDescription,
+        newTransformationKeywords,
+        newTransformationConfiguration).then(
+          (result) => {
+            console.log(result);
+            console.log('Data uploaded');
+          },
+          (error) => {
+            console.log('Error updating transformation');
+            console.log(error);
+          });
+    }
+  }
+
+  saveTriplesToFile(data, filename) {
+    var blob = new Blob([data], { type: 'application/n-triples' }),
+      e = document.createEvent('MouseEvents'),
+      a = document.createElement('a')
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+    }
+    else {
+      var e = document.createEvent('MouseEvents'),
+        a = document.createElement('a');
+      a.download = filename;
+      a.href = window.URL.createObjectURL(blob);
+      a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+      e.initEvent('click', true, false);
+      a.dispatchEvent(e);
+    }
+  }
+
+  download(rdfFormat: string = 'nt') {
+    this.save().then(
+      () => {
+        console.log('Data downloads');
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
+            (transformed) => {
+              this.saveTriplesToFile(transformed, 'triples.nt');
+            },
+            (error) => {
+              console.log('Error transforming file');
+              console.log(error);
+            }
+          );
+        }
+      }
+    );
+  }
 }
