@@ -30,9 +30,8 @@ import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-m
 import { RdfPrefixManagementDialogAnchorDirective } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
-
-
-
+import { AngularSplitModule } from 'angular-split';
+import { MatTabsModule } from '@angular/material/tabs';
 
 
 @NgModule({
@@ -53,7 +52,9 @@ import { MatListModule } from '@angular/material/list';
     MatDividerModule,
     MatSlideToggleModule,
     MatExpansionModule,
-    MatListModule
+    MatListModule,
+    AngularSplitModule,
+    MatTabsModule
   ],
   declarations: [
     RdfMappingComponent,

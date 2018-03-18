@@ -1,14 +1,18 @@
 <clr-modal [(clrModalOpen)]="openRdfPrefixManagementDialog" [clrModalClosable]="false" [clrModalSize]="'lg'" #rdfPrefixManagementModal>
-  <h3 class="modal-title">Specify property node</h3>
+  <h3 class="modal-title" fxLayoutAlign="space-between center">
+    <div>Edit RDF mapping prefixes</div>
+    <button *ngIf="!isEditVocab" mat-raised-button color="primary" (click)="addNewVocabulary()">Add new prefix</button>
+  </h3>
   <div class="modal-body">
-    <mat-accordion>
+
+    <mat-accordion *ngIf="!isEditVocab">
       <mat-expansion-panel *ngFor="let transfVocab of transformationVocabs">
         <mat-expansion-panel-header>
           <mat-panel-title>
             {{ transfVocab.name }}
           </mat-panel-title>
           <mat-panel-description fxLayoutAlign="space-between center">
-            <div>
+            <div class="sin-edit-prefix-namespace-text">
               {{'(' + transfVocab.namespace + ')'}}
             </div>
             <div>
@@ -31,7 +35,7 @@
           </mat-list>
 
           <mat-list>
-            <h3 mat-subheader *ngIf="transfVocab.property">Properties</h3>
+            <h3 mat-subheader *ngIf="transfVocab.properties">Properties</h3>
             <mat-list-item *ngFor="let property of transfVocab.properties">
               <p mat-line>{{property}}</p>
             </mat-list-item>
@@ -76,8 +80,24 @@
         </div>
       </mat-expansion-panel>
     </mat-accordion>
+
+    <div fxLayout="column" *ngIf="isEditVocab">
+      <mat-form-field style="width: 100%">
+        <input matInput placeholder="Vocabulary prefix name" [(ngModel)]="editedVocabPrefixName">
+      </mat-form-field>
+      <mat-form-field style="width: 100%">
+        <input matInput placeholder="Vocabulary namespace URI" [(ngModel)]="editedVocabNamespaceURI">
+      </mat-form-field>
+      <div fxLayout="row">
+        <input #vocabFile type="file" (change)="vocabFileChange($event)" placeholder="Upload file">
+        <button mat-button (click)="resetFileInput()">Reset file</button>
+      </div>
+
+    </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="done()">Done</button>
+    <button *ngIf="!isEditVocab" type="button" class="btn btn-primary" (click)="done()">Done</button>
+    <button *ngIf="isEditVocab" type="button" class="btn btn-primary" (click)="confirmVocabEdit()" [disabled]="!editedVocabPrefixName.trim() || !editedVocabNamespaceURI.trim() && !loadingVocabFile">Edit vocabulary</button>
+    <button *ngIf="isEditVocab" type="button" class="btn btn-primary" (click)="cancelVocabEdit()">Cancel</button>
   </div>
 </clr-modal>

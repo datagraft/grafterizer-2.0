@@ -7,6 +7,8 @@ import { Subscription } from 'rxjs/Subscription';
 import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
 import { RdfPrefixManagementDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
 
+declare var Handsontable: any;
+
 @Component({
   selector: 'rdf-mapping',
   templateUrl: './rdf-mapping.component.html',
@@ -16,6 +18,11 @@ import { RdfPrefixManagementDialogAnchorDirective } from 'app/rdf-mapping/graph-
 })
 
 export class RdfMappingComponent implements OnInit, OnDestroy {
+  previewedTransformationSubscription: Subscription;
+  private dataLoading: boolean;
+  private hot: any;
+  private settings: any;
+  private tableContainer: any;
   private vocabSvcPath: string;
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -23,6 +30,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
 
   private transformationSubscription: Subscription;
   private dataSubscription: Subscription;
+
 
   @ViewChild(RdfPrefixManagementDialogAnchorDirective) rdfPrefixManagementAnchor: RdfPrefixManagementDialogAnchorDirective;
 
@@ -35,11 +43,87 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
-      this.transformationObj = transformationObj;
-    });
+        this.transformationObj = transformationObj;
+      });
+    this.tableContainer = document.getElementById('previewTable');
+
+    // data: [],
+    // rowHeaders: true,
+    // colHeaders: [],
+    // autoColumnSize: true,
+    // manualColumnResize: true,
+    // columnSorting: false,
+    // viewportColumnRenderingOffset: 40,
+    // wordWrap: true,
+    // stretchH: 'all',
+    // className: 'htCenter htMiddle',
+    // observeDOMVisibility: true,
+    // preventOverflow: false,
+    // fillHandle: false,
+    // readOnly: true,
+    // observeChanges: true,
+    this.settings = {
+      data: [],
+      rowHeaders: true,
+      autoColumnSize: true,
+      manualColumnResize: true,
+      columnSorting: false,
+      viewportColumnRenderingOffset: 30,
+      wordWrap: true,
+      stretchH: 'all',
+      className: 'htCenter htMiddle',
+      observeDOMVisibility: true,
+      preventOverflow: false,
+      fillHandle: false,
+      readOnly: true,
+      height: "50vh",
+      afterChange: () => {
+        setTimeout(() => {
+          this.hot.render();
+        }, 10);
+      }
+    };
+    this.hot = new Handsontable(this.tableContainer, this.settings);
+
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.dataLoading = true;
+      });
+
+
+
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
-      this.graftwerkData = graftwerkData;
+      this.displayJsEdnData(graftwerkData);
     });
+  }
+
+  public displayJsEdnData(data: JSON) {
+    if (data[':column-names'] && data[':rows']) {
+      const columnNames = data[':column-names'];
+      const rowData = data[':rows'];
+      const columnMappings = [];
+      // Remove leading ':' from the EDN response
+      const colNamesClean = [];
+      columnNames.forEach((colname, index) => {
+        const colNameClean = colname.substring(1);
+        colNamesClean.push(colNameClean);
+        columnMappings.push({
+          data: colname
+        });
+      });
+
+      if (colNamesClean && columnMappings) {
+        this.hot.updateSettings({
+          colHeaders: colNamesClean,
+          columns: columnMappings,
+          data: data[':rows']
+        });
+      }
+      this.dataLoading = false;
+    } else {
+      // TODO error handling one day!!
+      throw new Error('Invalid format of data!');
+    }
   }
 
   ngOnDestroy() {

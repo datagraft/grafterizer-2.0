@@ -893,18 +893,19 @@ var namespaceMaps = [];
 
 //load a mapping between prefix and namespace from windows localStorage.
 //the storage is edited in propertydialog.js and mappingnodedefinitiondialog.js
-function loadNamespaceMapping(localVocabularies) {
+function loadNamespaceMapping(vocabularies) {
   //load user defined vocabulary
-  if (!localVocabularies) {
+  if (!vocabularies) {
     return;
   }
 
-  for (var i = localVocabularies.length - 1; i >= 0; i--) {
-    namespaceMap = {};
-
-    namespaceMap.prefix = localVocabularies[i].name;
-    namespaceMap.namespace = localVocabularies[i].namespace;
-    namespaceMaps.push(namespaceMap);
+  for (var i = vocabularies.length - 1; i >= 0; i--) {
+    if (!vocabularies[i].fromServer && !isSupportedPrefix(vocabularies[i].name)) {
+      namespaceMap = {};
+      namespaceMap.prefix = vocabularies[i].name;
+      namespaceMap.namespace = vocabularies[i].namespace;
+      namespaceMaps.push(namespaceMap);
+    }
   }
 }
 
