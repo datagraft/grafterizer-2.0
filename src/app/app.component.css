@@ -25,3 +25,7 @@ Similar to content-area class but without paddings */
   overflow-y: auto;
   padding: 0px;
 }
+
+.header-actions{
+  padding-right: 20px;
+}

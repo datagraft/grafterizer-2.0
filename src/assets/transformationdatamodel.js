@@ -1661,7 +1661,7 @@ ConstantURI.revive = function (data) {
 this.ConstantURI = ConstantURI;
 
 export function ColumnURI(prefix, columnName, nodeCondition, subElements) {
-  URINode.call(this, typeof prefix === 'object' ?  prefix.value : prefix, subElements);
+  URINode.call(this, typeof prefix === 'object' ? prefix.value : prefix, subElements);
   this.column = columnName;
   this.nodeCondition = nodeCondition;
   this.__type = 'ColumnURI';
@@ -1849,8 +1849,8 @@ BlankNode.revive = function (data) {
 this.BlankNode = BlankNode;
 
 export function RDFVocabulary(prefixName, namespaceURI, properties, classes) {
-  this.prefixName = prefixName;
-  this.namespaceURI = namespaceURI;
+  this.name = prefixName;
+  this.namespace = namespaceURI;
   this.properties = properties;
   this.classes = classes;
   this.fromServer = false;
@@ -1858,7 +1858,7 @@ export function RDFVocabulary(prefixName, namespaceURI, properties, classes) {
   this.__type = 'RDFVocabulary';
 };
 RDFVocabulary.revive = function (data) {
-  return new RDFVocabulary(data.prefixName, data.namespaceURI, data.properties, data.classes);
+  return new RDFVocabulary(data.name, data.namespace, data.properties, data.classes);
 };
 this.RDFVocabulary = RDFVocabulary;
 

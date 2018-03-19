@@ -1,2 +1,22 @@
-<button class="btn">Edit RDF mapping prefixes</button>
-<graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>
+<split direction="horizontal">
+  <split-area [size]="35" style="padding: 16px;">
+    <div rdfPrefixManagementDialogAnchor></div>
+    <button mat-button (click)="openPrefixManagementDialog()" style="margin-bottom: 16px;">
+      <i class="fa fa-cubes"></i>
+      Edit RDF mapping prefixes
+    </button>
+    <mat-tab-group>
+      <mat-tab label="Custom RDF mappings">
+        <graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>
+
+      </mat-tab>
+      <mat-tab label="Tabular Annotation mappings">
+        <graph-mapping *ngIf="transformationObj.graphs.length > 1" [graph]="transformationObj.graphs[1]"></graph-mapping>
+      </mat-tab>
+    </mat-tab-group>
+
+  </split-area>
+  <split-area [size]="65" style="overflow:hidden;">
+    <div id="previewTable" style="height: 92vh"></div>
+  </split-area>
+</split>

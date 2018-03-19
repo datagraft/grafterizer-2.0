@@ -78,13 +78,12 @@ export class AppComponent implements OnInit {
     this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
       .subscribe((currentTransformationObj) => {
         this.transformationObjSource = currentTransformationObj;
-        console.log(this.transformationObjSource);
       });
+
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.previewedTransformationObj = previewedTransformation;
-        console.log(this.previewedTransformationObj);
         // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
         if (!this.route.firstChild) {
           // We use this subscription to catch the moment when the navigation has ended
@@ -121,7 +120,7 @@ export class AppComponent implements OnInit {
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
-      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 1, 600)
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 60000000)
         .then((result) => {
           this.transformationSvc.changeGraftwerkData(result);
         }, (err) => {
@@ -163,15 +162,21 @@ export class AppComponent implements OnInit {
     if (paramMap.has('transformationId') && paramMap.has('publisher')) {
       const publisher = paramMap.get('publisher');
       const existingTransformationID = paramMap.get('transformationId');
-      const someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(this.transformationObjSource));
+      const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
       const newTransformationName = existingTransformationID;
       const isPublic = false;
       const newTransformationDescription = 'transformationobject updated';
-      const newTransformationKeywords = ['graft', 'annotations'];
+      const newTransformationKeywords = ['pipe', 'graft', 'annotations'];
+      let transformationType = 'graft';
+      let transformationCommand = 'my-graft';
+      if (this.transformationObjSource.graphs === 0) {
+        transformationType = 'pipe';
+        transformationCommand = 'my-pipe';
+      }
       const newTransformationConfiguration = {
-        type: 'pipe',
-        command: 'my-pipe',
-        code: someClojure,
+        type: transformationType,
+        command: transformationCommand,
+        code: clojureCode,
         json: JSON.stringify(this.transformationObjSource)
       };
 
@@ -211,21 +216,25 @@ export class AppComponent implements OnInit {
     }
   }
 
-  download() {
-    const paramMap = this.route.firstChild.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
-      const existingTransformationID = paramMap.get('transformationId');
-      const filestoreID = paramMap.get('filestoreId');
-      this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', 'nt').then(
-        (transformed) => {
-          this.saveTriplesToFile(transformed, 'triples.nt');
-        },
-        (error) => {
-          console.log('Error transforming file');
-          console.log(error);
+  download(rdfFormat: string = 'nt') {
+    this.save().then(
+      () => {
+        console.log('Data downloads');
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
+            (transformed) => {
+              this.saveTriplesToFile(transformed, 'triples.nt');
+            },
+            (error) => {
+              console.log('Error transforming file');
+              console.log(error);
+            }
+          );
         }
-      );
-    }
+      }
+    );
   }
-
 }
