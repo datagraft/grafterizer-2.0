@@ -5,7 +5,7 @@
     </label>
   </div> -->
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
-    [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'max-height':'360px'}">
+    [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
   </p-listbox>
   <!-- <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button> -->
 </div>
@@ -50,6 +50,4 @@
   [defaultParams]="selected.defaultParams"></group-dataset>
 
 <filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows>
-
-<utility-function [modalEnabled]="selected.id=='UtilityFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></utility-function> -->
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows> -->

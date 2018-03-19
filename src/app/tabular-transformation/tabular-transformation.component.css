@@ -2,8 +2,18 @@
   padding: 0px;
 }
 
-.sin-suggested-transformations {
-  padding-top: 15px;
+#input-field{
+  padding-top: 20px;
+  padding-bottom: 20px;  
+}
+
+#toggle{
+  padding-top: 30px;
+}
+
+#container{
+  height:360px;
+  margin-bottom: 9px;
 }
 
 .sin-pipeline {

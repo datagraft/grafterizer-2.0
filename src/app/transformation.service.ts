@@ -26,6 +26,9 @@ export class TransformationService {
   private graftwerkDataSource: BehaviorSubject<any>;
   public currentGraftwerkData: Observable<any>;
 
+  private transformationMetadata: BehaviorSubject<any>;
+  public currentTransformationMetadata: Observable<any>;
+
   public changePreviewedTransformationObj(message: any) {
     this.previewedTransformationObjSource.next(message);
   }
@@ -36,6 +39,10 @@ export class TransformationService {
 
   public changeGraftwerkData(message: any) {
     this.graftwerkDataSource.next(message);
+  }
+
+  public changeTransformationMetadata(message: any) {
+    this.transformationMetadata.next(message);
   }
 
   constructor(private http: Http, private config: AppConfig) {
@@ -50,9 +57,11 @@ export class TransformationService {
       ':rows': []
     });
     this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
+    this.transformationMetadata = new BehaviorSubject<any>({});
     this.currentTransformationObj = this.transformationObjSource.asObservable();
     this.currentGraftwerkData = this.graftwerkDataSource.asObservable();
     this.currentPreviewedTransformationObj = this.previewedTransformationObjSource.asObservable();
+    this.currentTransformationMetadata = this.transformationMetadata.asObservable();
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {

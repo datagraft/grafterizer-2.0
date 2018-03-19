@@ -16,6 +16,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
@@ -81,7 +84,10 @@ import { TagInputModule } from 'ngx-chips';
     MatIconModule,
     MatExpansionModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTabsModule,
+    MatInputModule,
+    MatSlideToggleModule
   ],
   declarations: [
     TabularTransformationComponent,

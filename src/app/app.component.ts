@@ -163,10 +163,17 @@ export class AppComponent implements OnInit {
       const publisher = paramMap.get('publisher');
       const existingTransformationID = paramMap.get('transformationId');
       const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
-      const newTransformationName = existingTransformationID;
-      const isPublic = false;
-      const newTransformationDescription = 'transformationobject updated';
-      const newTransformationKeywords = ['pipe', 'graft', 'annotations'];
+      let newTransformationName = null;
+      let newTransformationDescription = null;
+      let newTransformationKeywords = null;
+      let isPublic = null;
+      this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+        newTransformationName = result.title;
+        newTransformationDescription = result.description;
+        newTransformationKeywords = result.keywords;
+        isPublic = result.isPublic;
+      }
+      );
       let transformationType = 'graft';
       let transformationCommand = 'my-graft';
       if (this.transformationObjSource.graphs === 0) {
@@ -188,7 +195,6 @@ export class AppComponent implements OnInit {
         newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
-            console.log(result);
             console.log('Data uploaded');
           },
           (error) => {
