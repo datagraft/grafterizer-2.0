@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, DoCheck, ViewChild, AfterViewInit } from '@angular/core';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component'
@@ -19,7 +19,7 @@ import { GlobalErrorReportingService } from 'app/global-error-reporting.service'
   providers: [RecommenderService, DispatchService]
 })
 
-export class TabularTransformationComponent implements OnInit, OnDestroy {
+export class TabularTransformationComponent implements OnInit, OnDestroy, DoCheck {
 
   private function: any;
   private partialPipeline: any;
@@ -27,6 +27,12 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
   private recommendations: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
+
+  private metadata: any;
+  private title: string;
+  private description: string;
+  private keywords: string[];
+  private isPublic: boolean;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -53,10 +59,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
-      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
-      { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
+      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
@@ -83,13 +89,50 @@ export class TabularTransformationComponent implements OnInit, OnDestroy {
       } else {
         delete this.previewError;
       }
-
     });
+
+    const paramMap = this.route.snapshot.paramMap;
+    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+      this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
+        .then(
+          (result) => {
+            this.transformationSvc.changeTransformationMetadata(result);
+            this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
+            this.title = result.title;
+            this.description = result.description;
+            this.keywords = result.keywords;
+            this.isPublic = result.public;
+          },
+          (error) => {
+            console.log(error);
+          });
+    }
   }
 
   ngOnDestroy() {
     this.dataSubscription.unsubscribe();
     this.previewErrorSubscription.unsubscribe();
+  }
+
+  ngDoCheck() {
+    if (this.metadata !== undefined) {
+      if (this.title !== this.metadata.title) {
+        this.metadata.title = this.title;
+        this.transformationSvc.changeTransformationMetadata(this.metadata);
+      }
+      else if (this.description !== this.metadata.description) {
+        this.metadata.description = this.description;
+        this.transformationSvc.changeTransformationMetadata(this.metadata);
+      }
+      else if (this.keywords !== this.metadata.keywords) {
+        this.metadata.keywords = this.keywords;
+        this.transformationSvc.changeTransformationMetadata(this.metadata);
+      }
+      else if (this.isPublic !== this.metadata.isPublic) {
+        this.metadata.isPublic = this.isPublic;
+        this.transformationSvc.changeTransformationMetadata(this.metadata);
+      }
+    }
   }
 
   tableSelectionChanged(newSelection: any) {
