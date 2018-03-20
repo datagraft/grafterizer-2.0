@@ -21,6 +21,10 @@ import * as data from '../assets/data.json';
   providers: [DispatchService, DataGraftMessageService]
 })
 export class AppComponent implements OnInit {
+  private loadingNextStepMessage: string;
+  private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
+  private fillingWizard = false;
+  private showConfirmNextStepDialog = false;
   private basic = true;
   private url: any = 'transformation/new/';
   private routingServiceSubscription: Subscription;
@@ -36,11 +40,16 @@ export class AppComponent implements OnInit {
   private globalErrorSubscription: Subscription;
   private globalErrors: Array<any>;
 
+  private isEmbedded: boolean;
+
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
 
+    console.log("this.messageSvc.isEmbeddedMode()");
+    console.log(this.messageSvc.isEmbeddedMode());
+    this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.url = url;
     });
@@ -242,5 +251,65 @@ export class AppComponent implements OnInit {
         }
       }
     );
+  }
+
+  /**
+   * Navigate to previous step of SPARQL endpoint creation wizard when embedded in DataGraft 
+   */
+  goBack() {
+    this.messageSvc.setLocation(this.messageSvc.getPathBack());
+  }
+
+
+  /**
+   * Navigate to last step of SPARQL endpoint creation wizard when embedded in DataGraft
+   */
+  goNextStep() {
+    // fill wizard
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+      const transformedFileName = paramMap.get('filestoreId');
+      const transformationId = paramMap.get('transformationId');
+      const wizardIdRegexMatch = transformedFileName.match(/^upwizards--(\d+)$/);
+      const transformationType = 'graft'; // TODO this is hard-coded and will only work for RDF transformation wizards
+      if (wizardIdRegexMatch) {
+        this.loadingNextStepMessage = 'Computing transformation. Please wait...';
+        this.fillingWizard = true;
+        this.dispatch.fillDataGraftWizard(transformedFileName, transformationId, wizardIdRegexMatch[1], transformationType)
+          .then((result) => {
+            this.loadingNextStepMessage = 'Success! You will now be redirected to the next step...';
+            // wait 5 seconds and close dialog?
+            const location = '/myassets/upwizards/fill_sparql_endpoint/' + wizardIdRegexMatch[1];
+            this.messageSvc.setLocation(location);
+          }, (error) => {
+            console.log(error);
+            this.fillingWizard = false;
+            this.loadingNextStepMessage = 'Error: Failed to compute the result of the transformation. Please try again.'
+          });
+      } else {
+        // Error parsing the wizard ID - something
+        throw ('Error! Unable to find wizard ID.');
+      }
+    } else {
+      // Missing transformation ID or filestore ID
+      throw ('Error! Unable to find transformation and/or file IDs.');
+    }
+
+    // on success fillingWizard = false; setLocation
+    // on error fillingWizard = false
+    // close dialog
+    // this.showConfirmNextStepDialog = false;
+    // set location to next step
+  }
+
+  cancelNextStep() {
+    this.showConfirmNextStepDialog = false;
+  }
+  /**
+   * Open confirmation dialog for contining the wizard when embedded in DataGraft
+   */
+  openNextStepConfirmation() {
+
+    this.showConfirmNextStepDialog = true;
   }
 }

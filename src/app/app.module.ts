@@ -24,6 +24,11 @@ import { GlobalErrorHandler } from 'app/global-error-handler';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 import { AbstatService } from './tabular-annotation/abstat.service';
 
+import { MatButtonModule } from '@angular/material/button';
+import { DataGraftMessageService } from 'app/data-graft-message.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+
 export function initConfig(config: AppConfig) {
   return () => config.load();
 }
@@ -44,7 +49,9 @@ export function initConfig(config: AppConfig) {
     FormsModule,
     SuiModule,
     HttpModule,
-    HttpClientModule
+    HttpClientModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     AppConfig,
@@ -63,7 +70,8 @@ export function initConfig(config: AppConfig) {
       provide: ErrorHandler,
       useClass: GlobalErrorHandler,
       deps: [GlobalErrorReportingService]
-    }
+    },
+    DataGraftMessageService
   ],
   bootstrap: [AppComponent]
 })
