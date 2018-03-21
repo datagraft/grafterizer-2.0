@@ -1,7 +1,7 @@
 <div class="main-container">
 
   <header class="header-6">
-    <div class="branding">
+    <div class="branding" *ngIf="!isEmbedded">
       <a href="http://localhost:4200" class="nav-link">
         <img src="http://localhost:4200/assets/logo.png" height="24" width="48">
         <span class="title">
@@ -30,6 +30,8 @@
       <a href="javascript://" (click)="download()" title="Download" class="nav-link nav-icon">
         <clr-icon shape="download"></clr-icon>
       </a>
+      <button mat-raised-button *ngIf="isEmbedded" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
+      <button mat-raised-button *ngIf="isEmbedded" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next step</button>
     </div>
   </header>
   <clr-alerts>
@@ -52,3 +54,18 @@
     </div>
   </div>
 </div>
+
+<clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to continue?</h3>
+  <div class="modal-body">
+    <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
+    </mat-progress-spinner> -->
+    <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
+    <br/>
+    <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
+  </div>
+</clr-modal>
