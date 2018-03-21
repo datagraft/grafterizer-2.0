@@ -70,10 +70,12 @@ export class AppComponent implements OnInit {
             self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
               .then(
                 (result) => {
-                  const transformationObj = transformationDataModel.Transformation.revive(result);
-                  self.transformationSvc.changeTransformationObj(transformationObj);
-                  if (paramMap.has('filestoreId')) {
-                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  if (result !== 'Beginning OAuth Flow') {
+                    const transformationObj = transformationDataModel.Transformation.revive(result);
+                    self.transformationSvc.changeTransformationObj(transformationObj);
+                    if (paramMap.has('filestoreId')) {
+                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    }
                   }
                 },
                 (error) => {
