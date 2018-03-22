@@ -46,7 +46,7 @@ export class ProfilingComponent implements OnInit {
   showYAxis = true;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  xAxisLabel = 'Values';
+  xAxisLabel = 'Values (displaying at most 14 bins)';
   yAxisLabel = 'Number of values';
 
   // advanced pie advancedPieChart
@@ -141,7 +141,7 @@ export class ProfilingComponent implements OnInit {
     if (handsontableSelection) {
       this.statisticService.buildProfile(this.data, this.header, handsontableSelection);
       setTimeout(() => {
-        // console.log(this.statisticService.profile);
+        console.log(this.statisticService.profile);
         this.dataBarChart = this.statisticService.profile[2];
         this.dataAdvancedPieChart = this.statisticService.profile[3];
         this.dataBoxplot = this.statisticService.profile[5];
@@ -183,6 +183,8 @@ export class ProfilingComponent implements OnInit {
     this.outliersLayout = {
       paper_bgcolor: 'rgb(250,250,250)',
       plot_bgcolor: 'rgb(250,250,250)',
+      width: 300,
+      height: 350,
       margin: {
         t: 30,
         b: 0
@@ -218,6 +220,7 @@ export class ProfilingComponent implements OnInit {
     }
     this.profileSubset.chart = 2;
     this.chartSubsetEmit();
+    console.log()
   }
 
 }
