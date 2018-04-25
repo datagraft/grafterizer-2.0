@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Add columns</h3>
   <div class="modal-body">
     <div *ngFor="let columnSpec of columnsArray; let id = index">

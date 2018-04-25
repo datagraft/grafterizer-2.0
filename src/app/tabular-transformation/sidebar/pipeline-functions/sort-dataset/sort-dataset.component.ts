@@ -123,7 +123,6 @@ export class SortDatasetComponent implements OnInit {
       console.log('ERROR! Something bad happened!');
     }
     this.resetModal();
-    this.modalEnabled = false;
   }
 
   private editSortColumnsFunction(instanceObj): any {
@@ -136,6 +135,11 @@ export class SortDatasetComponent implements OnInit {
   }
 
   private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
     // resets the fields of the modal
     this.sorttype = null;
     this.order = null;
@@ -144,7 +148,6 @@ export class SortDatasetComponent implements OnInit {
 
   private cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }

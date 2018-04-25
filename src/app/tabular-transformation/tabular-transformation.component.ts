@@ -48,7 +48,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
-
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
     private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
@@ -65,8 +64,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
-      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
-      { label: 'Custom function', value: { id: 'CustomFunctionDeclaration', defaultParams: null } }
+      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
     ];
     route.url.subscribe(() => this.routingService.concatURL(route));
   }

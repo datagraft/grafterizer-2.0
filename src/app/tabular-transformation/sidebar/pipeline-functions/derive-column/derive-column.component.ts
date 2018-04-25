@@ -128,7 +128,6 @@ export class DeriveColumnComponent implements OnInit {
       console.log('ERROR! Something bad happened!');
     }
     this.resetModal();
-    this.modalEnabled = false;
   }
 
   private editDeriveColumnsFunction(instanceObj): any {
@@ -139,6 +138,11 @@ export class DeriveColumnComponent implements OnInit {
   }
 
   private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
     // resets the fields of the modal
     this.newColName = null;
     this.docstring = null;
@@ -147,7 +151,6 @@ export class DeriveColumnComponent implements OnInit {
 
   private cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }

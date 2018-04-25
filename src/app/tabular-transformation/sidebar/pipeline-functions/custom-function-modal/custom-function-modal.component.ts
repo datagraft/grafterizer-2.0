@@ -11,7 +11,7 @@ import 'codemirror/mode/clojure/clojure';
 import * as lodash from 'lodash';
 
 @Component({
-  selector: 'custom-function-modal',
+  selector: 'custom-function',
   templateUrl: './custom-function-modal.component.html',
   styleUrls: ['./custom-function-modal.component.css']
 })

@@ -112,7 +112,6 @@ export class SplitColumnsComponent implements OnInit {
       console.log('ERROR! Something bad happened!');
     }
     this.resetModal();
-    this.modalEnabled = false;
   }
 
   private editSplitColumnFunction(instanceObj): any {
@@ -122,6 +121,11 @@ export class SplitColumnsComponent implements OnInit {
   }
 
   private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
     // resets the fields of the modal
     this.colName = null;
     this.separator = '';
@@ -130,7 +134,6 @@ export class SplitColumnsComponent implements OnInit {
 
   private cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }

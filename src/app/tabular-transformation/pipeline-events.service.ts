@@ -23,6 +23,7 @@ export class PipelineEventsService {
       commitEdit: false, // true when we click 'OK' after editing a function
       preview: false, // true when we are previewing a step in the pipeline
       delete: false, // true when we are deleting a step in the pipeline
+      cancel: false, // true when we are cancelling a step in the pipeline      
       createNew: false, // true when we are adding a new step to the pipeline
       newStepType: "", // type of the new step to be added to the pipeline
       defaultParams: {}, // default parameters for a new step (could be given by recommender)

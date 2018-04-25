@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false">
   <h3 class="modal-title">Make dataset</h3>
   <div class="modal-body">
     <form action="">
@@ -18,7 +18,7 @@
     <br>
     <div *ngIf="makedatasetmode=='colnames'">
       <label for="colnames">Column names:</label>
-      <tag-input [(ngModel)]="columnsArray" dragZone="columnNames" placeholder="Add column name" id="colnames" ></tag-input>
+      <tag-input [(ngModel)]="columnsArray" dragZone="columnNames" placeholder="Add column name" id="colnames"></tag-input>
     </div>
     <div *ngIf="makedatasetmode=='ncolumns'">
       <label for="colnancolumnsmes">Number of columns:</label>

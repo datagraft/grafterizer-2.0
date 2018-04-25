@@ -108,8 +108,6 @@ export class AddColumnsComponent implements OnInit {
     } else {
       console.log('ERROR! Something bad happened!');
     }
-
-    this.modalEnabled = false;
     this.resetModal();
   }
 
@@ -119,15 +117,18 @@ export class AddColumnsComponent implements OnInit {
     instanceObj.isPreviewed = true;
   }
 
-  // resets the fields of the modal
   private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
+    // resets the fields of the modal
     this.columnsArray = [];
     this.docstring = 'Add columns';
   }
 
   private cancel() {
-    // change event
-    this.modalEnabled = false;
     this.resetModal();
   }
 

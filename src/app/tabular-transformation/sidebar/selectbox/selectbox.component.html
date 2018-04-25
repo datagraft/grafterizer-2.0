@@ -1,20 +1,18 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <!--   <div class="wrapper-labels">
-    <label for="label">
-      <strong>TRANSFORMATIONS</strong>
-    </label>
-  </div> -->
   <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
     [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
   </p-listbox>
-  <!-- <button class="btn btn-primary btn-sm" (click)="selected='custom-functions'">Edit custom functions</button> -->
+</div>
+
+<div id="btn-custom-functions">
+  <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
 </div>
 
 <make-dataset class="sin-flex"></make-dataset>
 
 <add-columns class="sin-flex"></add-columns>
 
-<custom-function-modal class="sin-flex"></custom-function-modal>
+<custom-function class="sin-flex"></custom-function>
 
 <derive-column class="sin-flex"></derive-column>
 

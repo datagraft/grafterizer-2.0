@@ -45,7 +45,6 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     if (this.suggestions) {
       this.transformations = this.suggestions;
     }
-    this.selected = { id: null, defaultParams: null };
   }
 
   ngOnInit() {
@@ -89,12 +88,17 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
           }
         });
       }
+
+      // in case we cancel adding a new step/ editing an existing step
+      if (this.pipelineEvent.cancel) {
+        this.selected = { id: null, defaultParams: null };
+      }
+
     });
 
     this.selectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selectedFunction) => {
       this.selectedFunction = selectedFunction;
     });
-
   }
 
   ngOnDestroy() {
@@ -113,33 +117,15 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       commitEdit: false,
       preview: false,
       delete: false,
+      cancel: false,
       createNew: true,
       newStepType: this.selected.id // TODO NEED TO CHANGE THIS
     });
-    // Functions that don't require additional user input
-    /*     switch (this.selected.id) {
-          case 'add-row-above':
-          case 'add-row-below':
-            this.emitFunction(new AddRowFunction(this.selected.defaultParams.position, this.selected.defaultParams.values, ''));
-            break;
-          case 'make-dataset-header':
-            this.emitFunction(new MakeDatasetFunction(
-              [], null, undefined, this.selected.defaultParams.moveFirstRowToHeader, null));
-            break;
-          case 'map-columns-uc':
-            this.emitFunction(new MapcFunction(
-              this.selected.defaultParams.keyFunctionPairs, null));
-            break;
-          case 'take-rows-delete':
-            this.emitFunction(new DropRowsFunction(
-              this.selected.defaultParams.indexFrom, this.selected.defaultParams.indexTo, this.selected.defaultParams.take, null));
-            break;
-          case 'take-columns-delete':
-            this.emitFunction(new ColumnsFunction(
-              [this.selected.defaultParams.colToDelete], null, null, false, null));
-            break;
-          default:
-            break;
-        } */
   }
+
+  openCustomFunctionModal() {
+    this.selected.id = 'CustomFunctionDeclaration';
+    this.onChange(null);
+  }
+
 }

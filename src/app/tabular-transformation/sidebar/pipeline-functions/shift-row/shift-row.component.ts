@@ -98,7 +98,6 @@ export class ShiftRowComponent implements OnInit {
       console.log('ERROR! Something bad happened!');
     }
     this.resetModal();
-    this.modalEnabled = false;
   }
 
   private editShiftColumnFunction(instanceObj): any {
@@ -109,6 +108,11 @@ export class ShiftRowComponent implements OnInit {
   }
 
   private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
     // resets the fields of the modal
     this.indexFrom = null;
     this.indexTo = null;
@@ -118,7 +122,6 @@ export class ShiftRowComponent implements OnInit {
 
   private cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }
