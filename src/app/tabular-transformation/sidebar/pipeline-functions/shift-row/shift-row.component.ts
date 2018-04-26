@@ -16,8 +16,8 @@ export class ShiftRowComponent implements OnInit {
 
   private modalEnabled: boolean;
 
-  private indexFrom: number;
-  private indexTo: number;
+  private indexFrom: string;
+  private indexTo: string;
   private shiftrowmode: string;
   private docstring: string;
 
@@ -32,9 +32,8 @@ export class ShiftRowComponent implements OnInit {
   ngOnInit() {
 
     this.modalEnabled = false;
-    this.indexTo = null;
     this.shiftrowmode = 'eods';
-    this.docstring = null;
+    this.docstring = 'Shift (move) row';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -83,7 +82,7 @@ export class ShiftRowComponent implements OnInit {
     else if (this.pipelineEvent.createNew) {
       // create object with user input
       const newFunction = new transformationDataModel.ShiftRowFunction(
-        this.indexFrom, this.indexTo, this.shiftrowmode, this.docstring);
+        parseInt(this.indexFrom), parseInt(this.indexTo), this.shiftrowmode, this.docstring);
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
         currentFunction: this.currentlySelectedFunction,
@@ -101,8 +100,8 @@ export class ShiftRowComponent implements OnInit {
   }
 
   private editShiftColumnFunction(instanceObj): any {
-    instanceObj.indexFrom = this.indexFrom;
-    instanceObj.indexTo = this.indexTo;
+    instanceObj.indexFrom = parseInt(this.indexFrom);
+    instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.shiftrowmode = this.shiftrowmode;
     instanceObj.docstring = this.docstring;
   }
@@ -117,7 +116,7 @@ export class ShiftRowComponent implements OnInit {
     this.indexFrom = null;
     this.indexTo = null;
     this.shiftrowmode = 'eods';
-    this.docstring = null;
+    this.docstring = 'Shift (move) row';
   }
 
   private cancel() {

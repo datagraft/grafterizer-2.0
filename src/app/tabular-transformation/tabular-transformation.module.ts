@@ -19,6 +19,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatChipsModule } from '@angular/material/chips';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
 import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
@@ -87,7 +89,9 @@ import { TagInputModule } from 'ngx-chips';
     MatProgressSpinnerModule,
     MatTabsModule,
     MatInputModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatChipsModule,
+    NgSelectModule
   ],
   declarations: [
     TabularTransformationComponent,

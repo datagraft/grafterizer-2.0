@@ -17,7 +17,7 @@ export class ShiftColumnComponent implements OnInit {
   private modalEnabled: boolean;
 
   private colFrom: any;
-  private indexTo: number;
+  private indexTo: string;
   private shiftcolmode: string;
   private docstring: String;
 
@@ -37,7 +37,7 @@ export class ShiftColumnComponent implements OnInit {
     this.modalEnabled = false;
     this.indexTo = null;
     this.shiftcolmode = 'eods';
-    this.docstring = null;
+    this.docstring = 'Shift (move) column';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -103,7 +103,7 @@ export class ShiftColumnComponent implements OnInit {
       }
       // create object with user input
       const newFunction = new transformationDataModel.ShiftColumnFunction(
-        this.colFrom, this.indexTo, this.shiftcolmode, this.docstring);
+        this.colFrom, parseInt(this.indexTo), this.shiftcolmode, this.docstring);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -123,7 +123,7 @@ export class ShiftColumnComponent implements OnInit {
 
   private editShiftColumnFunction(instanceObj): any {
     instanceObj.colFrom = this.colFrom;
-    instanceObj.indexTo = this.indexTo;
+    instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.shiftcolmode = this.shiftcolmode;
     instanceObj.docstring = this.docstring;
   }
@@ -138,7 +138,7 @@ export class ShiftColumnComponent implements OnInit {
     this.colFrom = null;
     this.indexTo = null;
     this.shiftcolmode = 'eods';
-    this.docstring = null;
+    this.docstring = 'Shift (move) column';
   }
 
   private cancel() {

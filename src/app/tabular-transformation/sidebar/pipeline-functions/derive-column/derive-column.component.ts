@@ -38,6 +38,7 @@ export class DeriveColumnComponent implements OnInit {
 
     this.modalEnabled = false;
     this.visible = false;
+    this.docstring = 'Derive column';
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -87,10 +88,6 @@ export class DeriveColumnComponent implements OnInit {
     this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
-  }
-
-  setVisibleDropDown() {
-    this.visible = true;
   }
 
   private accept() {
@@ -145,8 +142,9 @@ export class DeriveColumnComponent implements OnInit {
     this.modalEnabled = false;
     // resets the fields of the modal
     this.newColName = null;
-    this.docstring = null;
+    this.docstring = 'Derive column';
     this.selectedCustomFunction = null;
+    this.colsToDeriveFrom = null;
   }
 
   private cancel() {

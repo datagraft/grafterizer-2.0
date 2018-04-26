@@ -1,35 +1,24 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Merge columns</h3>
   <div class="modal-body">
-    <form>
-      <section class="form-block">
-        <div class="form-group">
-          <label for="new">Name of new column</label>
-          <input type="text" id="new" [(ngModel)]="newColName" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-        <div class="form-group">
-          <label for="dropdown" id="dropdown">Select columns</label>
-          <tag-input id="tag" [(ngModel)]="colsToMerge" [ngModelOptions]="{standalone: true}" [identifyBy]="'id'" [displayBy]="'value'"
-            [placeholder]="'Select columns here'" [secondaryPlaceholder]="'Select columns here'" size="150" [onlyFromAutocomplete]="true"
-            [dragZone]="items" [ripple]="false" theme='minimal' (onFocus)="setVisibleDropDown()">
-            <tag-input-dropdown id="tag" [hidden]="!visible" [focusFirstElement]="true" [showDropdownIfEmpty]="true" [keepOpen]="false"
-              [appendToBody]="false" [limitItemsTo]="3" [autocompleteItems]="previewedDataColumns" [identifyBy]="'id'" [displayBy]="'value'">
-            </tag-input-dropdown>
-          </tag-input>
-        </div>
-        <div class="form-group">
-          <label for="separator">Separator</label>
-          <input type="text" id="separator" [(ngModel)]="separator" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-        <div class="form-group" id="comments-form">
-          <label for="comment" id="comments-label">Comments</label>
-          <input type="text" id="comment" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-      </section>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+    <div fxLayout="column">
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Name of new column" [(ngModel)]="newColName">
+      </mat-form-field>
+      <br>
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select columns to merge" [(ngModel)]="colsToMerge"></ng-select>
+      <br>
+      <mat-form-field style="width: 100%; padding-bottom: 25px;">
+        <input matInput placeholder="Separator" [(ngModel)]="separator">
+      </mat-form-field>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+    </div>
   </div>
 </clr-modal>

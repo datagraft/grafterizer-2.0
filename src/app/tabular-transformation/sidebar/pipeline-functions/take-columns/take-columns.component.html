@@ -1,11 +1,12 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false">
   <h3 class="modal-title">Take columns</h3>
   <div class="modal-body">
-    <div class="toggle-switch">
-      <input [(ngModel)]="take" type="checkbox" id="toggle_1">
-      <label for="toggle_1">{{take?"Take only listed columns":"Take all columns EXCEPT of listed"}}</label>
-    </div>
-    <form action="">
+    <div fxLayout="column">
+      <div class="toggle-switch">
+        <input [(ngModel)]="take" type="checkbox" id="toggle_1">
+        <label for="toggle_1">{{take?"Take only listed columns":"Take all columns EXCEPT of listed"}}</label>
+      </div>
+      <br>
       <div class="radio">
         <input type="radio" [(ngModel)]="takecolumnsmode" name="mode" value="colnames" id="mode_1">
         <label for="mode_1">Specify column names</label>
@@ -14,8 +15,24 @@
         <input type="radio" [(ngModel)]="takecolumnsmode" name="mode" value="indices" id="mode_2">
         <label for="mode_2">Specify range of column indices</label>
       </div>
-    </form>
-    <br>
+      <div fxLayout="row" fxLayoutGap="60px">
+        <div fxFlex>
+          <mat-form-field style="width: 100%;">
+            <input matInput placeholder="Index from" [(ngModel)]="indexFrom">
+          </mat-form-field>
+        </div>
+        <div fxFlex>
+          <mat-form-field style="width: 100%;">
+            <input matInput placeholder="Move to index" [(ngModel)]="indexTo">
+          </mat-form-field>
+        </div>
+      </div>
+      <br>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
+      <br>
+    </div>
     <div *ngIf="takecolumnsmode=='colnames'">
       <label for="colnames">Column names:</label>
       <tag-input id="tag" [(ngModel)]="columnsArray" [ngModelOptions]="{standalone: true}" [identifyBy]="'id'" [displayBy]="'value'"

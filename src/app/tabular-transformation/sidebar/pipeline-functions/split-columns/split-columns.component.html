@@ -1,19 +1,16 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Split column</h3>
   <div class="modal-body">
-    <div class="select">
-      <select id="form-group" name="form-group-dropdown" [(ngModel)]="colName">
-        <option *ngFor="let header of previewedDataColumns" [ngValue]="header">{{header.value}}</option>
-      </select>
-    </div>
-    <br>
-    <label for="sep">Separator:</label>
-    <input type="text" id="sep" [(ngModel)]="separator" size="35">
-    <br>
-    <div>
+    <div fxLayout="column">
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select column to split" [(ngModel)]="colName"></ng-select>
       <br>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Separator" [(ngModel)]="separator">
+      </mat-form-field>
+      <mat-form-field style="width: 100%; padding-top: 25px;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
     </div>
   </div>
   <div class="modal-footer">

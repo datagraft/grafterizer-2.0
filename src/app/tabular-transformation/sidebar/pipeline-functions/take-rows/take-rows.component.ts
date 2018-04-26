@@ -16,8 +16,8 @@ export class TakeRowsComponent implements OnInit {
   private modalEnabled: boolean;
   private visible: boolean;
 
-  private indexFrom: number;
-  private indexTo: number;
+  private indexFrom: string;
+  private indexTo: string;
   private take: boolean;
   private docstring: string;
 
@@ -56,7 +56,6 @@ export class TakeRowsComponent implements OnInit {
         this.modalEnabled = true;
       }
     });
-
   }
 
   ngOnDestroy() {
@@ -87,7 +86,7 @@ export class TakeRowsComponent implements OnInit {
     }
     else if (this.pipelineEvent.createNew) {
       // create object with user input
-      const newFunction = new transformationDataModel.DropRowsFunction(this.indexFrom, this.indexTo, this.take, this.docstring);
+      const newFunction = new transformationDataModel.DropRowsFunction(parseInt(this.indexFrom), parseInt(this.indexTo), this.take, this.docstring);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -106,8 +105,8 @@ export class TakeRowsComponent implements OnInit {
   }
 
   private editDeriveColumnsFunction(instanceObj): any {
-    instanceObj.indexFrom = this.indexFrom;
-    instanceObj.indexTo = this.indexTo;
+    instanceObj.indexFrom = parseInt(this.indexFrom);
+    instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.take = this.take;
     instanceObj.docstring = this.docstring;
   }

@@ -1,30 +1,17 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Sort Column</h3>
   <div class="modal-body">
-    <form>
-      <section class="form-block">
-        <div class="form-group">
-          <label for="form-group" id="label">Select column</label>
-          <div class="select">
-            <select id="form-group-1" name="form-group-dropdown" [(ngModel)]="selectedColumn">
-              <option *ngFor="let colname of previewedDataColumns" [ngValue]="colname">{{colname.value}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="form-group-2" id="label">Select sort type</label>
-          <div class="select">
-            <select id="form-group" name="form-group-dropdown" [(ngModel)]="sorttype">
-              <option *ngFor="let sorttype of sortTypes" [ngValue]="sorttype">{{sorttype}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group" id="form-group-3">
-          <label for="form-group" id="label">Comments</label>
-          <input type="text" id="form-group-3-input" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-      </section>
-    </form>
+    <div fxLayout="column">
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select column to sort" [(ngModel)]="selectedColumn"></ng-select>
+      <br>
+      <ng-select class="ng-select" [items]="sortTypes" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select sort type" [(ngModel)]="sorttype"></ng-select>
+      <br>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

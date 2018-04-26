@@ -2,27 +2,27 @@
   <h3 class="modal-title">Add columns</h3>
   <div class="modal-body">
     <div *ngFor="let columnSpec of columnsArray; let id = index">
-      <div class="row ">
-        <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1">
-          <clr-icon shape="remove" size="22" (click)="removeColumn(id)"></clr-icon>
-        </button>
-        <div class="removablePropertyName">
-          <label for="{{'colname'+id}}">Name of new column</label>
-          <input type="text" id="{{'colname'+id}}" [(ngModel)]="columnSpec.colName" size="25">
+      <div fxLayout="column">
+        <div fxLayout="row">
+          <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1">
+            <clr-icon shape="times" size="22" (click)="removeColumn(id)"></clr-icon>
+          </button>
+          <mat-form-field style="width: 100%;">
+            <input matInput placeholder="Name of new column" id="{{'colname'+id}}" [(ngModel)]="columnSpec.colName">
+          </mat-form-field>
         </div>
-        <div class="removablePropertyFields">
-          <label for="{{'value'+id}}">Value</label>
-          <input type="text" id="{{'value'+id}}" [(ngModel)]="columnSpec.colValue" size="25">
-        </div>
+        <mat-form-field style="width: 100%; padding-left: 72px;">
+          <input matInput placeholder="Value" id="{{'value'+id}}" [(ngModel)]="columnSpec.colValue">
+        </mat-form-field>
       </div>
-      <br>
     </div>
-    <button class="btn btn-primary" (click)="addColumn()">Add more columns</button>
-    <div>
-      <br>
-      <label for="comment">Comment</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
-    </div>
+    <br>
+    <button class="btn btn-primary btn-sm" (click)="addColumn()">Add more columns</button>
+    <br>
+    <br>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Comment" [(ngModel)]="docstring">
+    </mat-form-field>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

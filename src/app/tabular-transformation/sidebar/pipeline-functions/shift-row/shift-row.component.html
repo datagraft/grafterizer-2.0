@@ -1,32 +1,34 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Shift row</h3>
   <div class="modal-body">
-    <div class="row">
-      <div>
-        <label for="indexfrom">Index from:</label>
-        <input type="number" id="indexfrom" [(ngModel)]="indexFrom" size="25">
+    <div fxLayout="column">
+      <form action="rowmode">
+        <div class="radio">
+          <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="position" id="mode_1">
+          <label for="mode_1">Shift to index</label>
+        </div>
+        <div class="radio">
+          <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="eods" id="mode_2">
+          <label for="mode_2">Shift to the end of dataset</label>
+        </div>
+      </form>
+      <br>
+      <div fxLayout="row" fxLayoutGap="60px">
+        <div fxFlex>
+          <mat-form-field style="width: 100%;">
+            <input matInput placeholder="Index from" [(ngModel)]="indexFrom">
+          </mat-form-field>
+        </div>
+        <div fxFlex id="indexto" *ngIf="shiftrowmode=='position'">
+          <mat-form-field style="width: 100%;">
+            <input matInput placeholder="Move to index" [(ngModel)]="indexTo">
+          </mat-form-field>
+        </div>
       </div>
-      <div id="indexto" *ngIf="shiftrowmode=='position'">
-        <label for="indexTo">Index to:</label>
-        <input type="number" id="position" [(ngModel)]="indexTo" size="25">
-        <br>
-      </div>
-    </div>
-    <br>
-    <form action="rowmode">
-      <div class="radio">
-        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="position" id="mode_1">
-        <label for="mode_1">Shift to index</label>
-      </div>
-      <div class="radio">
-        <input type="radio" [(ngModel)]="shiftrowmode" name="mode" value="eods" id="mode_2">
-        <label for="mode_2">Shift to the end of dataset</label>
-      </div>
-    </form>
-    <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" size="80">
+      <br>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
     </div>
   </div>
   <div class="modal-footer">

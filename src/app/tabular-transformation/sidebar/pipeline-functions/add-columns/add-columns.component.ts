@@ -24,15 +24,16 @@ export class AddColumnsComponent implements OnInit {
   private previewedDataSubscription: Subscription;
   private previewedDataColumns: any;
 
-  private colname: string = '';
+  private colname: string;
   private columnsArray: any = [];
-  private docstring: string = '';
+  private docstring: string;
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
 
     this.modalEnabled = false;
+    this.docstring = 'Add columns';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;

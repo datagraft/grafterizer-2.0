@@ -38,6 +38,7 @@ export class SortDatasetComponent implements OnInit {
   ngOnInit() {
 
     this.modalEnabled = false;
+    this.docstring = 'Sort column';
     this.visible = false;
     this.order = false;
 
@@ -141,9 +142,10 @@ export class SortDatasetComponent implements OnInit {
     });
     this.modalEnabled = false;
     // resets the fields of the modal
+    this.selectedColumn = null;
     this.sorttype = null;
     this.order = null;
-    this.docstring = null;
+    this.docstring = 'Sort column';
   }
 
   private cancel() {

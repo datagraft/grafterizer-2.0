@@ -1,36 +1,23 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Derive Column</h3>
   <div class="modal-body">
-    <form>
-      <section class="form-block">
-        <div class="form-group">
-          <label for="form-group-1">Name of new column</label>
-          <input type="text" id="form-group-1" [(ngModel)]="newColName" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-        <div class="form-group">
-          <label for="form-group-2" id="form-group-2-label">Select columns</label>
-          <tag-input id="tag" [(ngModel)]="colsToDeriveFrom" [ngModelOptions]="{standalone: true}" [identifyBy]="'id'" [displayBy]="'value'"
-            [placeholder]="'Select columns here'" [secondaryPlaceholder]="'Select columns here'" size="150" [onlyFromAutocomplete]="true"
-            [dragZone]="items" [ripple]="false" theme='minimal' (onFocus)="setVisibleDropDown()">
-            <tag-input-dropdown id="tag" [hidden]="!visible" [focusFirstElement]="true" [showDropdownIfEmpty]="true" [keepOpen]="false"
-              [appendToBody]="false" [limitItemsTo]="3" [autocompleteItems]="previewedDataColumns" [identifyBy]="'id'" [displayBy]="'value'">
-            </tag-input-dropdown>
-          </tag-input>
-        </div>
-        <div class="form-group">
-          <label for="form-group-3">Select derive function</label>
-          <div class="select">
-            <select id="form-group-3" name="form-group-dropdown" [(ngModel)]="selectedCustomFunction">
-              <option *ngFor="let customFunction of customFunctions" [ngValue]="customFunction">{{customFunction.name}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group" id="form-group-4">
-          <label for="form-group-4" id="comments-label">Comments</label>
-          <input type="text" id="form-group-4-input" [(ngModel)]="docstring" [ngModelOptions]="{standalone: true}" size="45">
-        </div>
-      </section>
-    </form>
+    <div fxLayout="column">
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Name of new column" [(ngModel)]="newColName">
+      </mat-form-field>
+      <br>
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select column" [(ngModel)]="colsToDeriveFrom"></ng-select>
+      <br>
+      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name" appendTo="body"
+        placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"></ng-select>
+      <br>
+      <div fxLayout="column">
+        <mat-form-field style="width: 100%;">
+          <input matInput placeholder="Comments" [(ngModel)]="docstring">
+        </mat-form-field>
+      </div>
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

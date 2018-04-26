@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { MatChipInputEvent } from '@angular/material';
+import { ENTER, COMMA } from '@angular/cdk/keycodes';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { Subscription } from 'rxjs/Subscription';
@@ -14,6 +16,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MakeDatasetComponent implements OnInit {
 
+  private visible: boolean = true;
+  private selectable: boolean = true;
+  private removable: boolean = true;
+  private addOnBlur: boolean = true;
+  private separatorKeysCodes = [ENTER, COMMA];
+
   private modalEnabled = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
@@ -27,12 +35,15 @@ export class MakeDatasetComponent implements OnInit {
   private useLazy = false;
   private moveFirstRowToHeader: boolean;
   private numberOfColumns: Number = undefined;
-  private docstring: String = 'Create headers for the data';
+  private docstring: String;
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
+
     this.modalEnabled = false;
+    this.docstring = 'Create headers';
+
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
     });
@@ -58,13 +69,31 @@ export class MakeDatasetComponent implements OnInit {
           });
         }
       }
-
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'MakeDatasetFunction') {
         this.modalEnabled = true;
       }
     });
+  }
 
+  add(event: MatChipInputEvent): void {
+    let input = event.input;
+    let value = event.value;
+    // Add header
+    if ((value || '').trim()) {
+      this.columnsArray.push({ display: value, value: value.trim() });
+    }
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  remove(header: any): void {
+    let index = this.columnsArray.indexOf(header);
+    if (index >= 0) {
+      this.columnsArray.splice(index, 1);
+    }
   }
 
   accept() {
@@ -155,7 +184,7 @@ export class MakeDatasetComponent implements OnInit {
     this.useLazy = false;
     this.moveFirstRowToHeader = false;
     this.numberOfColumns = undefined;
-    this.docstring = 'Create headers for the data';
+    this.docstring = 'Create headers';
   }
 
   cancel() {

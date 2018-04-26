@@ -37,6 +37,7 @@ export class MergeColumnsComponent implements OnInit {
 
     this.modalEnabled = false;
     this.visible = false;
+    this.docstring = 'Merge columns';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -132,8 +133,9 @@ export class MergeColumnsComponent implements OnInit {
     this.modalEnabled = false;
     // resets the fields of the modal
     this.newColName = null;
+    this.colsToMerge = null;
     this.separator = null;
-    this.docstring = null;
+    this.docstring = 'Merge columns';
   }
 
   private cancel() {
