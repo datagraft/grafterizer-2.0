@@ -168,7 +168,7 @@ export class AppComponent implements OnInit {
   }
 
   save() {
-    // Persist the Graph to DataGraft
+    // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     if (paramMap.has('transformationId') && paramMap.has('publisher')) {
       const publisher = paramMap.get('publisher');
@@ -212,6 +212,42 @@ export class AppComponent implements OnInit {
             console.log('Error updating transformation');
             console.log(error);
           });
+    }
+  }
+
+  fork() {
+    // Fork (copy) the transformation from DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+
+      return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
+        (result) => {
+          console.log('Transformation forked');
+        },
+        (error) => {
+          console.log('Error forking transformation');
+          console.log(error);
+        });
+    }
+  }
+
+  delete() {
+    // Delete the transformation in DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+
+      return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
+        (result) => {
+          console.log('Transformation deleted');
+        },
+        (error) => {
+          console.log('Error deleting transformation');
+          console.log(error);
+        });
     }
   }
 
