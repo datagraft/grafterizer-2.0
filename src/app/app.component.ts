@@ -25,6 +25,8 @@ export class AppComponent implements OnInit {
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
   private showConfirmNextStepDialog = false;
+  private showDownloadDialog = false;
+  private showConfirmDeleteDialog = false;
   private basic = true;
   private url: any = 'transformation/new/';
   private routingServiceSubscription: Subscription;
@@ -41,6 +43,7 @@ export class AppComponent implements OnInit {
   private globalErrors: Array<any>;
 
   private isEmbedded: boolean;
+  private downloadMode: string = 'csv';
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
@@ -54,11 +57,6 @@ export class AppComponent implements OnInit {
       this.url = url;
     });
   }
-
-  test() {
-    console.log('test OK')
-  }
-
 
   ngOnInit() {
     const self = this;
@@ -90,7 +88,6 @@ export class AppComponent implements OnInit {
       .subscribe((currentTransformationObj) => {
         this.transformationObjSource = currentTransformationObj;
       });
-
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -239,7 +236,7 @@ export class AppComponent implements OnInit {
     if (paramMap.has('transformationId') && paramMap.has('publisher')) {
       const publisher = paramMap.get('publisher');
       const existingTransformationID = paramMap.get('transformationId');
-
+      this.showConfirmDeleteDialog = false;
       return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
         (result) => {
           console.log('Transformation deleted');
@@ -251,8 +248,18 @@ export class AppComponent implements OnInit {
     }
   }
 
-  saveTriplesToFile(data, filename) {
-    var blob = new Blob([data], { type: 'application/n-triples' }),
+  download() {
+    if (this.downloadMode == 'csv') {
+      this.downloadCSV();
+    }
+    else if (this.downloadMode == 'n-triples') {
+      this.downloadTriples();
+    }
+    this.showDownloadDialog = false;
+  }
+
+  saveToFile(data, filename, MIMEtype) {
+    var blob = new Blob([data], { type: MIMEtype }),
       e = document.createEvent('MouseEvents'),
       a = document.createElement('a')
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
@@ -269,7 +276,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  download(rdfFormat: string = 'nt') {
+  downloadTriples(rdfFormat: string = 'nt') {
     this.save().then(
       () => {
         console.log('Data downloads');
@@ -279,10 +286,32 @@ export class AppComponent implements OnInit {
           const filestoreID = paramMap.get('filestoreId');
           this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
             (transformed) => {
-              this.saveTriplesToFile(transformed, 'triples.nt');
+              this.saveToFile(transformed, 'triples.nt', 'application/n-triples');
             },
             (error) => {
-              console.log('Error transforming file');
+              console.log('Error downloading file');
+              console.log(error);
+            }
+          );
+        }
+      }
+    );
+  }
+
+  downloadCSV() {
+    this.save().then(
+      () => {
+        console.log('Data downloads');
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'pipe-download').then(
+            (transformed) => {
+              this.saveToFile(transformed, 'data.csv', 'text/plain');
+            },
+            (error) => {
+              console.log('Error downloading file');
               console.log(error);
             }
           );
