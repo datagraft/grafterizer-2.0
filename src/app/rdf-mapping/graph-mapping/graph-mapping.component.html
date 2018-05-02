@@ -1,0 +1,16 @@
+<div style="margin-top: 16px">
+  <button mat-button (click)="addFirstNode()" [hidden]="graph.graphRoots.length!=0" aria-label="Add node" matTooltip="Add a root node to the graph"
+    matTooltipShowDelay="500">
+    <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add node
+  </button>
+
+  <div fxFlex fxLayout="column" fxLayoutAlign="start start">
+    <div fxLayout="row" fxLayoutAlign="center" *ngFor="let node of graph.graphRoots">
+      <constant-uri-node *ngIf="node.__type=='ConstantURI'" [node]="node" [parent]="graph"></constant-uri-node>
+      <column-uri-node *ngIf="node.__type=='ColumnURI'" [node]="node" [parent]="graph"></column-uri-node>
+      <constant-literal-node *ngIf="node.__type=='ConstantLiteral'" [node]="node" [parent]="graph"></constant-literal-node>
+      <column-literal-node *ngIf="node.__type=='ColumnLiteral'" [node]="node" [parent]="graph"></column-literal-node>
+    </div>
+  </div>
+  <div rdfNodeMappingDialogAnchor></div>
+</div>

@@ -1,7 +1,12 @@
-import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { SelectItem } from 'primeng/primeng';
-import { ComponentCommunicationService } from '../../component-communication.service';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction,
+  KeyFunctionPair, CustomFunctionDeclaration, AddColumnsFunction
+} from '../../../../assets/transformationdatamodel.js';
+import { TransformationService } from 'app/transformation.service';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 
 @Component({
   moduleId: module.id,
@@ -10,51 +15,96 @@ import { ComponentCommunicationService } from '../../component-communication.ser
   styleUrls: ['./selectbox.component.css'],
   providers: []
 })
-export class SelectboxComponent implements OnInit, OnDestroy {
 
-  private transformations: SelectItem[];
-  private function: any;
-  private selected: String;
-  private modalEnabled: boolean = false;
+export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
-  private message: any;
-  private subscription: Subscription;
-
+  @Input() suggestions;
+  @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  constructor(private componentCommunicationService: ComponentCommunicationService) {
-    this.subscription = this.componentCommunicationService.getMessage().subscribe(message => {
-      this.function = message;
-      this.selected = this.function.__type
-      this.modalEnabled = true;
-      console.log(message);
-    });
+  private transformations: SelectItem[];
+  private selected: any;
+  private modalEnabled = false;
+  private message: any;
+
+  private transformationSubscription: Subscription;
+  private transformationObj: any;
+
+  private selectedFunctionSubscription: Subscription;
+  private selectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any;
+
+  constructor(private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
     this.transformations = [];
-    this.transformations.push({ label: 'Custom function', value: 'CustomFunction' });
-    this.transformations.push({ label: 'Utility function', value: 'UtilityFunction' });
-    this.transformations.push({ label: 'Add row', value: 'AddRowFunction' });
-    this.transformations.push({ label: 'Add columns', value: 'AddColumnsFunction' });
-    this.transformations.push({ label: 'Deduplicate', value: 'RemoveDuplicatesFunction' });
-    this.transformations.push({ label: 'Derive column', value: 'DeriveColumnFunction' });
-    this.transformations.push({ label: 'Filter rows', value: 'GrepFunction' });
-    this.transformations.push({ label: 'Group and aggregate', value: 'GroupRowsFunction' });
-    this.transformations.push({ label: 'Make dataset', value: 'MakeDatasetFunction' });
-    this.transformations.push({ label: 'Map columns', value: 'MapcFunction' });
-    this.transformations.push({ label: 'Merge columns', value: 'MergeColumnsFunction' });
-    this.transformations.push({ label: 'Rename columns', value: 'RenameColumnsFunction' });
-    this.transformations.push({ label: 'Reshape dataset', value: 'MeltFunction' });
-    this.transformations.push({ label: 'Shift column', value: 'ShiftColumnFunction' });
-    this.transformations.push({ label: 'Shift row', value: 'ShiftRowFunction' });
-    this.transformations.push({ label: 'Sort dataset', value: 'SortDatasetFunction' });
-    this.transformations.push({ label: 'Split columns', value: 'SplitFunction' });
-    this.transformations.push({ label: 'Take columns', value: 'ColumnsFunction' });
-    this.transformations.push({ label: 'Take rows', value: 'DropRowsFunction' });
+    this.selected = { id: null, defaultParams: null };
   }
 
-  ngOnInit() { }
+  ngOnChanges() {
+    if (this.suggestions) {
+      this.transformations = this.suggestions;
+    }
+  }
+
+  ngOnInit() {
+    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+      this.transformationObj = transformation;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((pipelineEvent) => {
+      this.pipelineEvent = pipelineEvent;
+
+      // in case we finished editing a step
+      if (this.pipelineEvent.commitEdit) {
+        this.transformationSvc.changePreviewedTransformationObj(
+          this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
+        );
+        // reset isPreviewed for other functions
+        this.transformationObj.pipelines[0].functions.forEach((step, ind) => {
+          if (step !== this.selectedFunction.changedFunction) {
+            step.isPreviewed = false;
+          }
+        });
+      }
+
+      // in case we finished creating a step
+      if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
+        // add new step to the transformation object
+        this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
+
+        // notify of change to transformation object
+        this.transformationSvc.changeTransformationObj(this.transformationObj);
+
+        // change previewed transformation
+        this.transformationSvc.changePreviewedTransformationObj(
+          this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
+        );
+
+        // reset isPreviewed for other functions
+        this.transformationObj.pipelines[0].functions.forEach((step, ind) => {
+          if (step !== this.selectedFunction.changedFunction) {
+            step.isPreviewed = false;
+          }
+        });
+      }
+
+      // in case we cancel adding a new step/ editing an existing step
+      if (this.pipelineEvent.cancel) {
+        this.selected = { id: null, defaultParams: null };
+      }
+
+    });
+
+    this.selectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selectedFunction) => {
+      this.selectedFunction = selectedFunction;
+    });
+  }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
+    this.selectedFunctionSubscription.unsubscribe();
+    this.transformationSubscription.unsubscribe();
   }
 
   emitFunction(value: any) {
@@ -62,7 +112,20 @@ export class SelectboxComponent implements OnInit, OnDestroy {
   }
 
   onChange($event) {
-    this.modalEnabled = true;
+    this.pipelineEventsSvc.changePipelineEvent({
+      startEdit: false,
+      commitEdit: false,
+      preview: false,
+      delete: false,
+      cancel: false,
+      createNew: true,
+      newStepType: this.selected.id // TODO NEED TO CHANGE THIS
+    });
+  }
+
+  openCustomFunctionModal() {
+    this.selected.id = 'CustomFunctionDeclaration';
+    this.onChange(null);
   }
 
 }

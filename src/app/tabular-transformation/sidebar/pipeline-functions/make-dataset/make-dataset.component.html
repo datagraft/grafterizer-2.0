@@ -1,34 +1,40 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Make dataset</h3>
   <div class="modal-body">
-    <form action="">
-      <div class="radio">
-        <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="colnames" id="mode_1">
-        <label for="mode_1">Specify column names</label>
-      </div>
-      <div class="radio">
-        <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="firstrow" id="mode_2">
-        <label for="mode_2">Use the first row as header</label>
-      </div>
-      <div class="radio">
-        <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="ncolumns" id="mode_3">
-        <label for="mode_3">Specify a number of columns to fetch</label>
-      </div>
-    </form>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="colnames" id="mode_1">
+      <label for="mode_1">Specify column names</label>
+    </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="firstrow" id="mode_2">
+      <label for="mode_2">Use the first row as header</label>
+    </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="makedatasetmode" name="mode" value="ncolumns" id="mode_3">
+      <label for="mode_3">Specify a number of columns to fetch</label>
+    </div>
     <br>
     <div *ngIf="makedatasetmode=='colnames'">
-      <label for="colnames">Column names:</label>
-      <rl-tag-input [(ngModel)]="columnsArray" placeholder="Column names" id="colnames"></rl-tag-input>
+      <mat-form-field class="chip-list">
+        <mat-chip-list #chipList>
+          <mat-chip *ngFor="let header of columnsArray" [selectable]="selectable" [removable]="removable" (remove)="remove(header)">
+            {{header.display}}
+            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+          </mat-chip>
+          <input placeholder="Add new column name(s)" [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            [matChipInputAddOnBlur]="addOnBlur" (matChipInputTokenEnd)="add($event)">
+        </mat-chip-list>
+      </mat-form-field>
     </div>
     <div *ngIf="makedatasetmode=='ncolumns'">
-      <label for="colnancolumnsmes">Number of columns:</label>
-      <input type="number" id="ncolumns" [(ngModel)]="numberOfColumns" placeholder="Number of columns" size="25">
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Number of columns to fetch" [(ngModel)]="numberOfColumns">
+      </mat-form-field>
     </div>
     <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Comment" [(ngModel)]="docstring">
+    </mat-form-field>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

@@ -1,3 +1,7 @@
+.progressbar {
+  padding-bottom: 5px;
+}
+
 .chart {
   position: relative;
   height: 350px;
@@ -24,45 +28,39 @@ md-grid-tile {
   margin-bottom: -30px;
 }
 
-.barChart {
-  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
-  text-align: center;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 0.8rem;
+.box {
+  display: flex;
+  align-items: center;
+}
+
+#barChart {
+  font-size: 0.6rem;
   line-height: 2.6rem;
   letter-spacing: 0.01rem;
   color: #212121;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  padding-top: 50px;
-  padding-left: 80px;
+  padding-left: 120px;  
+  padding-top: 60px;    
 }
 
-.advancedPieChart {
-  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
-  text-align: center;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 50%;
-  line-height: 2.6rem;
+#advancedPieChart {
+  line-height: 1.4rem;
   letter-spacing: 0.01rem;
-  color: #212121;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  margin-top: -60px;
-  margin-left: -280px;
+  color: #212121;  
+  margin-top: -30px;  
+  padding-left: 50px;    
 }
 
-#boxplot {
-  width: 350px;
-  height: 370px;
-  padding-left: 170px;
+#plotly-boxplot {
+  padding-left: 90px;
+  margin-top: -20px;    
 }
 
-.datatable {
+#datatable {
+  line-height: 0.6rem;
+  letter-spacing: 0.01rem;
+  font-size: 0.6rem;
+  color: #212121;  
   width: 250px;
   height: 300px;
-  padding-top: 20px;
-  margin-left: -210px;
+  margin-left: -230px;
 }

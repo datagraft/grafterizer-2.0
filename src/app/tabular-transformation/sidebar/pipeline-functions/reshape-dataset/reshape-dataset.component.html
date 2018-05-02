@@ -14,8 +14,10 @@
     <br>
     <div *ngIf="reshapedatasetmode=='melt'">
       <label for="cols">Column names:</label>
+<!--
       <rl-tag-input [(ngModel)]="columnsArray" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
         placeholder="Column names" id="cols"></rl-tag-input>
+-->
     </div>
     <div *ngIf="reshapedatasetmode=='cast'">
       <label for="var">Variable column:</label>

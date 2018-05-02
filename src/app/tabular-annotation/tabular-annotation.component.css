@@ -1,0 +1,64 @@
+.vertical-border tr td + td {
+  border-left:1px solid #eee;
+}
+
+>>> .handsontable th {
+  overflow: visible !important;
+}
+
+>>> .header-ann-info {
+  display: flex;
+}
+
+>>> .ann-info-label {
+  position: absolute;
+  margin-top: 0 !important;
+}
+
+>>> .ann-info-values {
+  display: grid;
+  padding-left: 5em;
+  margin-bottom: 0.2em !important;
+  text-align: left;
+}
+
+>>> .ann-info-types {
+  color: #48960C !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
+>>> .ann-info-prop {
+  color: #5264AE !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
+>>> .ann-info-source {
+  color: #737373 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
+.options {
+  position: absolute;
+  top:60px;left:0;right:0;height:50px;
+}
+
+.hot-wrapper {
+  position: absolute;
+  overflow: hidden;
+  top: 110px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.spinner {
+  margin-top: 10%;
+}
+
+.hot-hidden {
+  visibility: hidden
+}
+

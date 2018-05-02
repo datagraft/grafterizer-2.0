@@ -1,42 +1,23 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Derive Column</h3>
   <div class="modal-body">
-
-    <div>
-      <label for="comment">Name of new column:</label>
-      <input type="text" id="name" [(ngModel)]="newColName" placeholder="New column name" size="125">
-    </div>
-
-    <br>
-    <label for="colnames">Column names:</label>
-    <rl-tag-input [(ngModel)]="colsToDeriveFrom" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
-      placeholder="Column names" id="colnames"></rl-tag-input>
-    <label for="df">Functions to derive with:</label>
-    <div id="df" *ngFor="let deriveFunction of functionsToDeriveWith; index as idx;">
-      <div class="row">
-        <button class="btn btn-link btn-icon-link removablePropertyButton"> 
-        <clr-icon  shape="remove" size="22"  (click)="removeFunction(idx)"></clr-icon> 
- 
-    </button>
-        <div class="row">
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="availableDeriveFunctions[idx]" [datasource]="dataService" [openOnFocus]="true"
-            [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false" (selected)="onFunctionSelected($event, idx)"></ng2-completer>
-
-          <div *ngFor="let param of reduceFunctionParams(idx); index as i;">
-            <label for="{{'param'+i}}">{{param}}</label>
-            <input type="text" id="{{'param'+i}}" [(ngModel)]="functionsToDeriveWith[idx].functParams[i]" size="10">
-
-          </div>
-        </div>
+    <div fxLayout="column">
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Name of new column" [(ngModel)]="newColName">
+      </mat-form-field>
+      <br>
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
+        placeholder="Select column" [(ngModel)]="colsToDeriveFrom"></ng-select>
+      <br>
+      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name" appendTo="body"
+        placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"></ng-select>
+      <br>
+      <div fxLayout="column">
+        <mat-form-field style="width: 100%;">
+          <input matInput placeholder="Comments" [(ngModel)]="docstring">
+        </mat-form-field>
       </div>
     </div>
-    <button class="btn btn-primary" (click)="addDeriveFunction()">Compose with</button>
-    <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
-
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

@@ -1,11 +1,9 @@
-import { APP_INITIALIZER } from '@angular/core';
+import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
 import { AppConfig } from './app.config';
 import { HttpModule } from '@angular/http';
-
-import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule, Routes } from '@angular/router';
 import { ClarityModule } from 'clarity-angular';
 import { SuiModule } from 'ng2-semantic-ui';
 
@@ -17,9 +15,19 @@ import { TabularTransformationModule } from './tabular-transformation/tabular-tr
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { DataExplorationComponent } from './data-exploration/data-exploration.component';
-import { AngularSplitModule } from 'angular-split';
 
 import { TransformationService } from 'app/transformation.service';
+import { AnnotationService } from './tabular-annotation/annotation.service';
+import { RoutingService } from './routing.service';
+
+import { GlobalErrorHandler } from 'app/global-error-handler';
+import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
+import { AbstatService } from './tabular-annotation/abstat.service';
+
+import { MatButtonModule } from '@angular/material/button';
+import { DataGraftMessageService } from 'app/data-graft-message.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 
 export function initConfig(config: AppConfig) {
   return () => config.load();
@@ -41,17 +49,29 @@ export function initConfig(config: AppConfig) {
     FormsModule,
     SuiModule,
     HttpModule,
-    AngularSplitModule
+    HttpClientModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     AppConfig,
+    GlobalErrorReportingService,
     TransformationService,
+    AnnotationService,
+    AbstatService,
+    RoutingService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,
       deps: [AppConfig],
       multi: true
-    }
+    },
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+      deps: [GlobalErrorReportingService]
+    },
+    DataGraftMessageService
   ],
   bootstrap: [AppComponent]
 })

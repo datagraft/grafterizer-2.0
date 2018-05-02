@@ -1,6 +1,12 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
+import {
+  AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
+  MapcFunction, KeyFunctionPair, CustomFunctionDeclaration
+} from '../../../assets/transformationdatamodel.js';
+import { timeout } from 'q';
+import { TransformationService } from 'app/transformation.service';
 
 declare var Handsontable: any;
 
@@ -10,79 +16,124 @@ declare var Handsontable: any;
   styleUrls: ['./handsontable.component.css']
 })
 
-export class HandsontableComponent implements OnInit {
+export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() selectionChanged: EventEmitter<any> = new EventEmitter<any>();
 
   // handsontable instance
-  private hot: any;
+  public hot: any;
+
   private data: any;
   private container: any;
   private settings: any;
-  public selction: any;
-  public showLoading: boolean;
+  private showLoading: boolean;
 
-  constructor() {
-    this.showLoading = true;
+  public selectedFunction: any;
+  public selectedDefaultParams: any;
+
+  private dataSubscription: Subscription;
+  private previewedTransformationSubscription: Subscription;
+
+  @Input() suggestions;
+  @Output() emitter = new EventEmitter();
+
+  constructor(private transformationSvc: TransformationService, private cd: ChangeDetectorRef) {
     this.data = [];
-    for (let i = 0; i <= 12; i++) {
-      this.data.push(['-', '-', '-', '-', '-']);
-    }
   }
 
   ngOnInit() {
     this.container = document.getElementById('handsontable');
     this.settings = {
-      data: this.data,
+      data: [],
       rowHeaders: true,
-      colHeaders: [],
-      columnSorting: false,
-      contextMenu: {
-        callback: (key, options) => {
-          if (key === 'row_above' || 'row_below' || 'remove_col'
-            || 'remove_row' || 'col_left' || 'col_right' || 'undo' || 'redo' || 'zero') {
-            console.log(key);
-
-          };
-          if (key === 'zero') {
-            console.log(key);
-          };
-        },
-        items: {
-          row_above: {},
-          row_below: {},
-          remove_col: {},
-          remove_row: {},
-          col_left: {},
-          col_right: {},
-          zero: { name: 'Set empty cells to median' },
-          undo: {},
-          redo: {}
-        },
-      },
-      stretchH: 'all',
-      afterSelection: this.selectionChangeHandler.bind(this) /*(r, c, r2, c2) => {
-        console.log(r,c,r2,c2);
-        const src = this.hot.getSourceData(r,c,r2,c2);
-        console.log(src);
-        if(r === r2){
-          // selected row
-        } else {
-          if (c === c2) {
-            // selected column
-          }
-        }
-        console.log('OK');
-      }*/,
+      autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      manualRowResize: true
-    }
+      height: 645,
+      columnSorting: false,
+      viewportColumnRenderingOffset: 30,
+      viewportRowRenderingOffset: 'auto',
+      wordWrap: true,
+      stretchH: 'all',
+      className: 'htCenter htMiddle',
+      observeDOMVisibility: true,
+      observeChanges: true,
+      preventOverflow: false,
+      afterChange: () => {
+        setTimeout(() => {
+          this.hot.render();
+        }, 10);
+      },
+      afterSelection: (r, c, r2, c2) => {
+        // console.log(r, c, r2, c2);
+        const src = this.hot.getSourceData(r, c, r2, c2);
+        this.selectionChanged.emit({
+          row: r,
+          col: c,
+          row2: r2,
+          col2: c2,
+          totalRows: this.hot.countRows(),
+          totalCols: this.hot.countCols()
+        });
+        this.hot.render();
+      },
+    };
+
     this.hot = new Handsontable(this.container, this.settings);
-    this.hot.render();
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.showLoading = true;
+        console.log('previewed');
+      });
+
+    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
+      if (typeof message[":column-names"] !== 'undefined' && message[":column-names"].length > 0) {
+        console.log('Data Changed');
+        this.displayJsEdnData(message);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.dataSubscription.unsubscribe();
+  }
+
+  emitFunction(value: any) {
+    this.emitter.emit(value);
+  }
+
+  ngOnChanges() {
+    if (this.hot) {
+      const enabledMenuItems = [];
+      // for HoT submenus keys
+      const keySuggestionMap = {
+        'newcol:1': 'AddColumnsFunction',
+        'newcol:2': 'DeriveColumnFunction',
+        'newrow:1': 'add-row-below',
+        'newrow:2': 'add-row-above',
+        'newrow:3': 'AddRowFunction',
+        'deduplicate': 'RemoveDuplicatesFunction',
+        'filter-rows': 'GrepFunction',
+        'group-dataset': 'GroupRowsFunction',
+        'make-dataset-header': 'make-dataset-header',
+        'mapc': 'MapcFunction',
+        'mapc:1': 'map-columns-uc',
+        'mapc:2': 'MapcFunction',
+        'merge-columns': 'MergeColumnsFunction',
+        'rename-columns': 'RenameColumnsFunction',
+        'reshape': 'MeltFunction',
+        'sort': 'SortDatasetFunction',
+        'split-columns': 'SplitFunction',
+        'take-rows-delete': 'take-rows-delete',
+        'take-columns-delete': 'take-columns-delete'
+
+      };
+      for (const suggestion of this.suggestions) {
+        enabledMenuItems.push(suggestion.label);
+      }
+    }
   }
 
   private selectionChangeHandler(row: number, column: number, row2: number, col2: number) {
-
     this.selectionChanged.emit({
       row: row,
       col: column,
@@ -94,8 +145,6 @@ export class HandsontableComponent implements OnInit {
   }
 
   public displayJsEdnData(data: JSON) {
-    this.showLoading = true;
-    console.log(data[':rows']);
     if (data[':column-names'] && data[':rows']) {
       const columnNames = data[':column-names'];
       const rowData = data[':rows'];
@@ -109,17 +158,19 @@ export class HandsontableComponent implements OnInit {
           data: colname
         });
       });
-      this.hot.updateSettings({
-        colHeaders: colNamesClean,
-        columns: columnMappings,
-        data: data[':rows']
-      });
+
+      if (colNamesClean && columnMappings) {
+        this.hot.updateSettings({
+          colHeaders: colNamesClean,
+          columns: columnMappings,
+          data: data[':rows']
+        });
+      }
+      console.log('removing loading bar..');
       this.showLoading = false;
-      //this.hot.render();
     } else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');
     }
-
   }
 }

@@ -1,6 +1,10 @@
-import { Component, Input, OnChanges, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
-import { ComponentCommunicationService } from '../../component-communication.service';
+import { PipelineEventsService } from '../../pipeline-events.service';
+import { Subscription } from 'rxjs/Subscription';
+import * as transformationDataModel from 'assets/transformationdatamodel.js';
+import { MatVerticalStepper } from '@angular/material/stepper';
+
 
 @Component({
   moduleId: module.id,
@@ -10,120 +14,211 @@ import { ComponentCommunicationService } from '../../component-communication.ser
   providers: []
 })
 
-export class PipelineComponent implements OnChanges, OnInit {
+export class PipelineComponent implements OnInit, OnDestroy {
 
-  @Input() private function: any;
-  @Output() private emitter = new EventEmitter();
-  private steps: any = [];
-  private addFunctionAfter: boolean;
-  private edit: boolean;
-  private lastFunctionIndex: number;
-  private currentFunctionIndex: number;
-  private position: string;
-  private tooltip: boolean;
-  private emitterObject: any;
+  @ViewChild('pipelineElement') pipelineElement: MatVerticalStepper;
 
-  constructor(private transformationService: TransformationService, private componentCommunicationService: ComponentCommunicationService) {
-    this.edit = false;
-    this.addFunctionAfter = false;
-    this.position = 'bottom-middle';
-    this.tooltip = true;
-    this.emitterObject = { edit: false, function: {}, preview: false };
-  }
+  private transformationObj: any;
+  private steps: Array<any>;
+  private showPipeline: boolean;
 
-  ngOnInit() { }
+  // contains the current pipeline event (edit, delete, preview)
+  private pipelineEvent: any;
 
-  sendFunction(event) {
-    this.edit = true;
-    this.addFunctionAfter = true;
-    this.currentFunctionIndex = event.path[0].id;
-    this.componentCommunicationService.sendMessage(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
-  }
+  // we keep the info on which function was selected previously and which is currently selected
+  private currentlySelectedFunction: any;
 
-  generateLabels() {
+  // we keep subscription objects so we can unsubscribe after destroying the component
+  private transformationSubscription: Subscription;
+  private pipelineEventsSubscription: Subscription;
+  private currentlySelectedFunctionSubscription: Subscription;
+
+  private previewedTransformationObj: any;
+
+  private deleteFunctionEvent: any;
+  private deleteConfirmationModal = false;
+
+  constructor(private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
     this.steps = [];
-    this.lastFunctionIndex = 0;
-    let functions = this.transformationService.transformationObj.pipelines[0].functions;
-    if (this.emitterObject.preview == true) {
-      functions.splice(this.currentFunctionIndex);
-    }
-    for (let f of functions) {
-      let label = f.__type.slice(0, -8);
-      this.steps.push({ 'type': label, 'id': this.lastFunctionIndex });
-      this.lastFunctionIndex += 1;
-    }
-    return this.steps;
+    this.showPipeline = true; // TODO: not sure why we need this
   }
 
-  viewPartialPipeline() {
-    this.emitterObject.preview = true;
-    this.emitterObject.function = this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex];
-    this.emitter.emit(this.emitterObject);
+  private getIndexOfPreviewedFunction(): number {
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (this.steps[i].isPreviewed) {
+        return i;
+      }
+    }
+    return -1;
   }
 
-  functionAdd() {
-    if (this.edit == true) {
-      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex], this.function);
-      this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
-      this.emitterObject.edit = true;
-      this.emitter.emit(this.emitterObject);
-    }
-    else if (this.edit == false && this.addFunctionAfter == true) {
-      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex], this.function);
-    } else {
-      this.transformationService.transformationObj.pipelines[0].addAfter(this.transformationService.transformationObj.pipelines[0].functions[this.lastFunctionIndex], this.function);
-    }
-    this.generateLabels();
-    this.addFunctionAfter = false;
-    console.log('add');
+  ngOnInit() {
+    this.transformationSubscription = this.transformationService.currentTransformationObj.subscribe((transformation) => {
+      if (transformation.pipelines.length) {
+        // ;-(
+        // TODO - not sure how to avoid having both the transformation and the steps
+        this.transformationObj = transformation;
+        this.steps = transformation.pipelines[0].functions;
+      }
+    });
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+    });
+
   }
 
-  functionRemove() {
-    this.transformationService.transformationObj.pipelines[0].remove(this.transformationService.transformationObj.pipelines[0].functions[this.currentFunctionIndex]);
-    this.generateLabels();
-    console.log('remove');
+  ngOnDestroy() {
+    this.transformationSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
   }
 
-  getModes(mode) {
-    if (mode == 'add') {
-      this.addFunctionAfter = true;
-      this.tooltip = false;
-      this.functionAdd();
+  selectFunction(event) {
+    console.log('selection changed');
+    const index = event.selectedIndex;
+
+    // establish the function being changed
+    const currentFunctionIndex = parseInt(index, 10);
+    if (currentFunctionIndex === undefined) {
+      console.log('ERROR: Something bad and unexpected has happened!');
+      return;
     }
-    else if (mode == 'remove') {
-      this.functionRemove();
-    }
-    else if (mode == 'preview') {
-      this.viewPartialPipeline();
+    this.pipelineEventsSvc.changeSelectedFunction({
+      currentFunction: this.steps[currentFunctionIndex],
+      changedFunction: {}
+    });
+  }
+
+  verboseLabels(label) {
+    switch (label) {
+      case 'ColumnsFunction':
+        return 'Columns deleted'
+      case 'MakeDatasetFunction':
+        return 'Headers created'
+      case 'UtilityFunction':
+        return 'Utility'
+      case 'DropRowsFunction':
+        return 'Rows deleted'
+      case 'MapcFunction':
+        return 'Columns mapped'
+      case 'MeltFunction':
+        return 'Dataset reshaped'
+      case 'DeriveColumnFunction':
+        return 'Column derived'
+      case 'AddColumnsFunction':
+        return 'Column added'
+      case 'AddRowFunction':
+        return 'Row(s) added'
+      case 'RenameColumnsFunction':
+        return 'Header title(s) changed'
+      case 'GrepFunction':
+        return 'Row(s) filtered'
+      case 'ShiftColumnFunction':
+        return 'Column shifted'
+      case 'ShiftRowFunction':
+        return 'Row shifted'
+      case 'SplitFunction':
+        return 'Column splitted'
+      case 'MergeColumnsFunction':
+        return 'Columns merged'
+      case 'SortDatasetFunction':
+        return 'Columns sorted'
+      default:
+        return label;
     }
   }
 
-  getButtonEvent(event) {
-    let index;
-    let mode;
-    console.log(event);
-    if (event.path[0].id != '') {
-      index = event.path[0].id;
-      mode = event.path[0].value;
-      this.currentFunctionIndex = index;
-      this.getModes(mode);
+  triggerPipelineEvent(event) {
+    const eventType = event.currentTarget.value;
+    const index = parseInt(event.currentTarget.id, 10);
+
+    if (index === undefined) {
+      console.log('Error: something bad happened!');
+      return;
     }
-    else {
-      index = event.path[1].id;
-      mode = event.path[1].value;
-      this.currentFunctionIndex = index;
-      this.getModes(mode);
+
+    const currentFunction = this.steps[index];
+
+    // process the event
+    switch (eventType) {
+      case 'preview':
+        currentFunction.isPreviewed = !currentFunction.isPreviewed;
+        // toggle preview and reset all other events
+        this.pipelineEvent.preview = currentFunction.isPreviewed;
+        this.pipelineEvent.startEdit = false;
+        this.pipelineEvent.commitEdit = false;
+        this.pipelineEvent.delete = false;
+
+        // change the previewed transformation if we toggled preview on
+        if (this.pipelineEvent.preview === true) {
+          this.transformationService.changePreviewedTransformationObj(
+            this.transformationObj.getPartialTransformation(currentFunction)
+          );
+          // reset isPreviewed for other functions
+          this.steps.forEach((step, ind) => {
+            if (step !== currentFunction) {
+              step.isPreviewed = false;
+            }
+          });
+        } else {
+          // reset preview if we clicked preview of the already previewed element
+          this.transformationService.changePreviewedTransformationObj(this.transformationObj);
+        }
+
+        this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
+        break;
+      case 'edit':
+        // edit event triggered; keep preview until this step
+        this.pipelineEvent.startEdit = true;
+        this.pipelineEvent.commitEdit = false;
+        this.pipelineEvent.delete = false;
+        //        console.log(this.pipelineElement.selectedIndex);
+        //        this.pipelineElement.selectedIndex++;
+        this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
+        break;
+      case 'remove':
+        // remove event triggered; all other events get reset
+        this.pipelineEvent.delete = true;
+        this.pipelineEvent.preview = false;
+        this.pipelineEvent.startEdit = false;
+        this.pipelineEvent.commitEdit = false;
+
+        this.transformationObj.pipelines[0].remove(currentFunction);
+        this.transformationService.changePreviewedTransformationObj(this.transformationObj);
+        this.transformationService.changeTransformationObj(this.transformationObj);
+        this.pipelineElement.selectedIndex = this.transformationObj.pipelines[0].functions.length - 1;
+        this.pipelineElement._stateChanged();
+        this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
+        break;
     }
   }
 
-  displayFunction(event) {
-    let index = event.path[0].id
-    this.currentFunctionIndex = index;
+  openDeleteConfirmationModal(event) {
+    const eventType = event.currentTarget.value;
+    const index = parseInt(event.currentTarget.id, 10);
+    // copy the relevant info from the event for later use if user confirms dialog
+    this.deleteFunctionEvent = {
+      currentTarget: {
+        value: event.currentTarget.value,
+        id: event.currentTarget.id
+      }
+    };
+    this.deleteConfirmationModal = true;
   }
 
-  ngOnChanges(changes: any) {
-    if (this.function) {
-      this.functionAdd();
-    }
+  confirmDelete() {
+    this.triggerPipelineEvent(this.deleteFunctionEvent);
+    console.log(this.deleteConfirmationModal);
   }
+
+  cancelDelete() {
+    this.deleteConfirmationModal = false;
+    console.log(this.deleteConfirmationModal);
+  }
+
 }

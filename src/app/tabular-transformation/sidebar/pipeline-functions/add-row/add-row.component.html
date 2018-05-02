@@ -1,17 +1,14 @@
 <clr-modal [(clrModalOpen)]="modalEnabled">
   <h3 class="modal-title">Add row</h3>
   <div class="modal-body">
-    <div class="row " *ngFor="let colname of colnames; let idx = index">
-
+    <div class="row " *ngFor="let column of columns; let idx = index">
       <div class="col-xs-3">
-        <label> {{colname}}:</label>
+        <label> {{column}}:</label>
       </div>
       <div class="col-xs-9">
-        <input type="text" id="{{'colname'+idx}}" [(ngModel)]="values[idx]" size="25" value=" ">
+        <input type="text" id="{{'column'+idx}}" [(ngModel)]="values[idx]" size="25" value=" ">
       </div>
-
     </div>
-
     <br>
     <div class="row ">
       <div class="col-xs-3">
@@ -21,16 +18,12 @@
         <input type="text" min="0" [(ngModel)]="position" placeholder="Position for inserting" size="25">
       </div>
     </div>
-
     <br>
-
     <div>
       <label for="comment">Comment:</label>
       <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
     </div>
-
   </div>
-
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>

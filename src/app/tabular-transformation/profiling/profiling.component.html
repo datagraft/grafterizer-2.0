@@ -1,49 +1,42 @@
-<md-grid-list cols="4" rowHeight="15:1">
-  <md-grid-tile [colspan]="tileSpanMissingValues" [style.background]="tileColorMissingValues">
+<mat-progress-bar class="progressbar" mode="indeterminate" *ngIf="progressbar"></mat-progress-bar>
+<mat-grid-list cols="4" rowHeight="15:1">
+  <mat-grid-tile [colspan]="tileSpanMissingValues" [style.background]="tileColorMissingValues">
     <div class='missingValues'>
       Missing values
     </div>
-  </md-grid-tile>
-  <md-grid-tile [colspan]="tileSpanDataDistribution" [style.background]="tileColorDataDistribution">
+  </mat-grid-tile>
+  <mat-grid-tile [colspan]="tileSpanDataDistribution" [style.background]="tileColorDataDistribution">
     <div class='dataDistribution'>
       Data distribution
     </div>
-  </md-grid-tile>
-</md-grid-list>
+  </mat-grid-tile>
+</mat-grid-list>
 
-<div fxLayout='column' class="container">
+<div class="box">
 
-  <div fxFlex="100%" [fxLayout]="direction" class="innerContainer">
+  <div id="advancedPieChart">
+    <ngx-charts-advanced-pie-chart [view]="dimensionsAdvancedPieChart" [scheme]="colorSchemeAdvancedPieChart" [results]="dataAdvancedPieChart"
+      [gradient]="gradient" (select)="advancedPieChartClicked($event)">
+    </ngx-charts-advanced-pie-chart>
+  </div>
 
-    <div class="advancedPieChart">
-      <ngx-charts-advanced-pie-chart [view]="dimensionsAdvancedPieChart" [scheme]="colorSchemeAdvancedPieChart" [results]="dataAdvancedPieChart"
-        [gradient]="gradient" (select)="advancedPieChartClicked($event)">
-      </ngx-charts-advanced-pie-chart>
-    </div>
+  <table ngl-datatable id="datatable" [data]="dataStatisticsTable" [striped]="datatableStriped" [bordered]="datatableBordered"
+    style="background-color:rgb(250, 250, 250); border: 1px solid #fafafa; width: 220px;" trackByKey="rank" class="slds-max-medium-table--stacked-horizontal">
+    <ngl-datatable-column heading="" key="stat"></ngl-datatable-column>
+    <ngl-datatable-column heading="" key="value" cellClass="slds-text-align--center">
+      <ng-template nglDatatableCell let-row="row">
+        <b>{{row.value}}</b>
+      </ng-template>
+    </ngl-datatable-column>
+  </table>
 
-    <div fxFlex="20%" class="datatable">
-      <table ngl-datatable [data]="dataStatisticsTable" [striped]="datatableStriped" [bordered]="datatableBordered" style="background-color:rgb(250, 250, 250); border: 1px solid #fafafa; width: 220px;"
-        trackByKey="rank" class="slds-max-medium-table--stacked-horizontal">
-        <ngl-datatable-column heading="" key="stat"></ngl-datatable-column>
-        <ngl-datatable-column heading="" key="value" cellClass="slds-text-align--center">
-          <template nglDatatableCell let-row="row">
-            <b>{{row.value}}</b>
-          </template>
-        </ngl-datatable-column>
-      </table>
-    </div>
+  <ngx-charts-bar-vertical id="barChart" [view]="dimensionsBarChart" [scheme]="colorSchemeBarChart" [results]="dataBarChart"
+    [legend]="showLegend" [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
+    [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" [gradient]="gradient" (select)="barChartClicked($event)">
+  </ngx-charts-bar-vertical>
 
-    <div fxFlex="30%" class="barChart">
-      <ngx-charts-bar-vertical [view]="dimensionsBarChart" [scheme]="colorSchemeBarChart" [results]="dataBarChart" [legend]="showLegend"
-        [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel"
-        [yAxisLabel]="yAxisLabel" [gradient]="gradient" (select)="barChartClicked($event)">
-      </ngx-charts-bar-vertical>
-    </div>
-
-    <div fxFlex="20%" class="boxplot">
-      <div id="boxplot"></div>
-    </div>
-
+  <div id="plotly-boxplot">
+    <div id="boxplot"></div>
   </div>
 
 </div>

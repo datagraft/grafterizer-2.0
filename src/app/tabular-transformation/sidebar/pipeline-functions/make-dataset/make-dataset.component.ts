@@ -1,6 +1,11 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { MatChipInputEvent } from '@angular/material';
+import { ENTER, COMMA } from '@angular/cdk/keycodes';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { Subscription } from 'rxjs/Subscription';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'make-dataset',
@@ -8,68 +13,182 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./make-dataset.component.css'],
   providers: []
 })
+
 export class MakeDatasetComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() private function: any;
-  @Output() emitter = new EventEmitter();
-  private makedatasetmode: String = '';
-  private columnsArray: any = [];
-  private useLazy: boolean;
-  private moveFirstRowToHeader: boolean;
-  private numberOfColumns: Number = 0;
-  private docstring: String = '';
+  private visible: boolean = true;
+  private selectable: boolean = true;
+  private removable: boolean = true;
+  private addOnBlur: boolean = true;
+  private separatorKeysCodes = [ENTER, COMMA];
 
-  constructor() {
-    if (!this.function) {
-      this.function = new transformationDataModel.MakeDatasetFunction(
-        [], null, undefined, null, null);
+  private modalEnabled = false;
+
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private makedatasetmode: String = 'colnames';
+  private columnsArray: Array<any> = [];
+  private useLazy = false;
+  private moveFirstRowToHeader: boolean;
+  private numberOfColumns: Number = undefined;
+  private docstring: String;
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
+
+  ngOnInit() {
+
+    this.modalEnabled = false;
+    this.docstring = 'Create headers';
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MakeDatasetFunction') {
+        this.modalEnabled = true;
+        this.useLazy = this.currentlySelectedFunction.useLazy;
+        this.docstring = this.currentlySelectedFunction.docstring;
+        // determine the mode
+        if (this.currentlySelectedFunction.moveFirstRowToHeader) {
+          this.makedatasetmode = 'firstrow';
+        } else if (this.currentlySelectedFunction.numberOfColumns !== undefined) {
+          this.numberOfColumns = this.currentlySelectedFunction.numberOfColumns;
+          this.makedatasetmode = 'ncolumns';
+        } else {
+          this.makedatasetmode = 'colnames';
+          this.columnsArray = this.currentlySelectedFunction.columnsArray.map((o) => {
+            return { display: o.value, value: o.value }
+          });
+        }
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'MakeDatasetFunction') {
+        this.modalEnabled = true;
+      }
+    });
+  }
+
+  add(event: MatChipInputEvent): void {
+    let input = event.input;
+    let value = event.value;
+    // Add header
+    if ((value || '').trim()) {
+      this.columnsArray.push({ display: value, value: value.trim() });
     }
-    else {
-      this.columnsArray = this.function.columnsArray;
-      this.useLazy = this.function.useLazy;
-      this.numberOfColumns = this.function.numberOfColumns;
-      this.moveFirstRowToHeader = this.function.moveFirstRowToHeader;
-      this.docstring = this.function.docstring;
+    // Reset the input value
+    if (input) {
+      input.value = '';
     }
   }
 
-  ngOnInit() { }
+  remove(header: any): void {
+    let index = this.columnsArray.indexOf(header);
+    if (index >= 0) {
+      this.columnsArray.splice(index, 1);
+    }
+  }
 
   accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.createMakeDatasetFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
+    } else if (this.pipelineEvent.createNew) {
+      // create empty object
+      const newFunction = new transformationDataModel.MakeDatasetFunction(null, null, null, null, null);
+
+      // apply user choices to the empty object
+      this.createMakeDatasetFunction(newFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
+  }
+
+  // Creates a make-dataset function in instanceObj (must be of type transformationDataModel.MakeDatasetFunction)
+  // based on the selected options in the modal
+  private createMakeDatasetFunction(instanceObj): any {
     switch (this.makedatasetmode) {
       case 'colnames': {
-        this.function.columnsArray = this.columnsArray;
-        this.function.useLazy = true;
-        this.function.numberOfColumns;
-        this.function.moveFirstRowToHeader = false;
-        this.function.docstring = this.docstring;
+        instanceObj.columnsArray = [];
+        let index = 0;
+        for (const col of this.columnsArray) {
+          instanceObj.columnsArray.push({ id: index, value: col.value });
+          index++;
+        }
+        instanceObj.useLazy = false;
+        instanceObj.numberOfColumns = undefined;
+        instanceObj.moveFirstRowToHeader = false;
+        instanceObj.docstring = this.docstring;
         break;
       }
       case 'ncolumns': {
-        this.function.columnsArray = this.columnsArray;
-        this.function.useLazy = true;
-        this.function.numberOfColumns;
-        this.function.moveFirstRowToHeader = false;
-        this.function.docstring = this.docstring;
+        instanceObj.columnsArray = this.columnsArray;
+        instanceObj.useLazy = true;
+        instanceObj.numberOfColumns = this.numberOfColumns;
+        instanceObj.moveFirstRowToHeader = false;
+        instanceObj.docstring = this.docstring;
         break;
       }
       case 'firstrow': {
-        this.function.columnsArray = this.columnsArray;
-        this.function.useLazy = false;
-        this.function.numberOfColumns;
-        this.function.moveFirstRowToHeader = true;
-        this.function.docstring = this.docstring;
+        instanceObj.columnsArray = [];
+        instanceObj.useLazy = false;
+        instanceObj.numberOfColumns = this.numberOfColumns;
+        instanceObj.moveFirstRowToHeader = true;
+        instanceObj.docstring = this.docstring;
         break;
       }
     }
-    this.emitter.emit(this.function);
-    console.log(this.columnsArray);
+    instanceObj.isPreviewed = true;
+  }
+
+  private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
     this.modalEnabled = false;
+    // resets the fields of the modal        
+    this.makedatasetmode = 'colnames';
+    this.columnsArray = [];
+    this.useLazy = false;
+    this.moveFirstRowToHeader = false;
+    this.numberOfColumns = undefined;
+    this.docstring = 'Create headers';
   }
 
   cancel() {
-    this.modalEnabled = false;
+    this.resetModal();
   }
 
 }

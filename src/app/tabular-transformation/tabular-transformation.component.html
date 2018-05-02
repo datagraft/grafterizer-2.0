@@ -1,14 +1,67 @@
 <split direction="horizontal">
   <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
-    <selectbox fxflex class="sin-suggested-transformations" (emitter)="emitFunction($event)"></selectbox>
-    <pipeline fxflex class="sin-pipeline" [function]="function" (emitter)="editFunction($event)"></pipeline>
+    <mat-tab-group>
+      <mat-tab label="Pipeline" id="pipeline-tab">
+        <br>
+        <selectbox fxflex class="sin-suggested-transformations" id="selectbox" [suggestions]="recommendations" [headers]="loadedDataHeaders"></selectbox>
+      </mat-tab>
+      <mat-tab label="Metadata" id="metadata-tab">
+        <br>
+        <div id="container">
+          <mat-grid-list cols="1" rowHeight="4:1">
+            <mat-grid-tile>
+              <div id="input-field">
+                <mat-form-field class="input">
+                  <input matInput placeholder="Title" [(ngModel)]="title">
+                </mat-form-field>
+              </div>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <div id="input-field">
+                <mat-form-field class="input">
+                  <input matInput placeholder="Description" [(ngModel)]="description">
+                </mat-form-field>
+              </div>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <div id="input-field">
+                <mat-form-field class="input">
+                  <input matInput placeholder="Keywords" [(ngModel)]="keywords">
+                </mat-form-field>
+              </div>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <div id="toggle">
+                <mat-slide-toggle [color]="color" [(ngModel)]="isPublic">Expose as public</mat-slide-toggle>
+              </div>
+            </mat-grid-tile>
+          </mat-grid-list>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+    <pipeline fxflex class="sin-pipeline"></pipeline>
   </split-area>
   <split-area [size]="85">
     <split direction="vertical">
-      <split-area [size]="60">
-        <app-handsontable (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
+      <split-area [size]="65">
+        <div class="alert alert-danger sin-error-pipeline" *ngIf="previewError">
+          <div class="alert-items">
+            <div class="alert-item static">
+              <div class="alert-icon-wrapper">
+                <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+              </div>
+              <span class="alert-text">
+                {{previewError._body ? 'Error while computing transformation. Error message:' : previewError.toString()}}
+                <br/> {{previewError._body ? previewError._body : '' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="handsontable">
+          <app-handsontable *ngIf="!previewError" [suggestions]="recommendations" (selectionChanged)="tableSelectionChanged($event)"></app-handsontable>
+        </div>
       </split-area>
-      <split-area [size]="40">
+      <split-area [size]="35">
         <profiling></profiling>
       </split-area>
     </split>

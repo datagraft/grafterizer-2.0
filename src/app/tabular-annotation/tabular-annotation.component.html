@@ -1,113 +1,32 @@
-<table class="table">
-  <thead>
-    <tr>
-      <th *ngFor="let h of headers">
-        {{h}}
-      </th>
-    </tr>
-    <tr *ngIf="!tabularMode">
-      <td *ngFor="let h of headers; let Id = index">
-
-        <template #rolesTip>
-          <div class="slds-text-title--caps">The roles of this column are detected based on the relationships.
-          </div>
-        </template>
-
-        <div id="annotation-component" class="slds-panel slds-grid slds-grid_vertical slds-nowrap">
-          <div class="slds-panel__section">
-            <h3 class="slds-text-heading_small slds-m-bottom_medium" style="margin-top: 0">Column Information</h3>
-
-            <ngl-icon *ngIf="annotated" icon="check" class="pull-right" type="default" alt="Valid annotation"></ngl-icon>
-            <ngl-icon *ngIf="!annotated" icon="warning" class="pull-right" type="warning" alt="Not valid annotation"></ngl-icon>
-
-            <ul>
-              <li class="slds-form-element slds-hint-parent slds-border_bottom">
-                <span class="slds-form-element__label">Column ID</span>
-                <div class="slds-form-element__control">
-                  <span class="slds-form-element__static">{{annotationService.colNames[colId]}}</span>
-                </div>
-              </li>
-              <!--<ngl-icon icon="check" category="utility" class="slds-icon_container&#45;&#45;circle"></ngl-icon>-->
-              <!--<ngl-icon icon="close" category="action" class="slds-icon_container&#45;&#45;circle"></ngl-icon>-->
-              <!--<ngl-icon icon="web_link" category="action" class="slds-icon_container&#45;&#45;circle"></ngl-icon>-->
-
-
-              <li class="slds-form-element slds-hint-parent slds-border_bottom">
-                <ngl-form-element [error]="!validateURL(annotation.columnType) ? urlError :
-        (hasColumnTypeError ? columnTypeError : null)">
-                  <span class="slds-form-element__label">Column Type</span>
-                  <div class="slds-form-element__control">
-                    <input nglFormControl ngui-auto-complete [(ngModel)]="annotation.columnType" [source]="typeSuggestions" type="text" attr.data-value="{{ colId }}.ColumnType"
-                      placeholder="Insert column type" (keyup)="invalidateAnnotation()" (blur)="hasUrlError = (validateURL(annotation.columnType))"
-                      min-chars="2">
-                  </div>
-                </ngl-form-element>
-              </li>
-              <li class="slds-form-element slds-hint-parent slds-border_bottom">
-                <span class="slds-form-element__label">Column values type</span>
-                <div class="slds-form-element__control">
-                  <fieldset ngl-form-group-alt [required]="required" [error]="hasSubjectError ? subjectError : (hasUrlLiteralError ? urlLiteralError : null)"
-                    class="slds-form-element__static">
-                    <template nglFormLabel></template>
-                    <ngl-form-group-element *ngFor="let columnDataType of ['URL', 'Literal']">
-                      <template nglFormLabel>{{columnDataType}}</template>
-                      <input nglFormControl type="radio" name="{{ colId }}.columnDataType" value="URL" (click)="dataTypeSelect(columnDataType)">
-                    </ngl-form-group-element>
-                  </fieldset>
-                </div>
-              </li>
-              <li class="slds-form-element slds-hint-parent slds-border_bottom">
-                <span class="slds-form-element__label">Column roles
-                  <a [nglPopover]="rolesTip" [nglPopoverPlacement]="placement" [nglOpen]="open" (mouseenter)="open = true" (mouseleave)="open = false">
-                    <ngl-icon icon="question" size="x-small" type="default"></ngl-icon>
-                  </a>
-                </span>
-                <div class="slds-form-element__control">
-                  <ngl-badge [type]="subjectMarker" class="slds-form-element__static slds-m-horizontal--large">SUB
-                  </ngl-badge>
-                  <ngl-badge [type]="objectMarker" class="slds-form-element__static slds-m-horizontal--large">OBJ
-                  </ngl-badge>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div class="slds-panel__section">
-            <h3 class="slds-text-heading_small slds-m-bottom_medium" style="margin-top: 0">Relationships</h3>
-            <ul>
-              <li class="slds-form-element slds-hint-parent slds-border_bottom">
-                <ngl-form-element [error]="!(subjectValidate(annotation.source)) ? sourceError :
-                                 (hasSourcePropertyError ? sourcePropertyError : null)" class="slds-m-top--small">
-                  <input nglFormControl auto-complete [(ngModel)]="annotation.source" [source]="listOfSubjects" (change)="getSubjects()" type="text"
-                    attr.data-value="{{ colId }}.Source" placeholder="Choose a source column" value="{{ annotation.source }}"
-                    [required]="required" (change)="invalidateAnnotation()">
-                </ngl-form-element>
-                <ngl-form-element [error]="!(validateURL(annotation.property)) ? returnUrlError() :
-                                 (hasPropertySourceError ? sourcePropertyError : null)">
-                  <input nglFormControl ngui-auto-complete [(ngModel)]="annotation.property" [source]="propertySuggestions" type="text" attr.data-value="{{ colId }}.Property"
-                    placeholder="Insert relationship property" (change)="invalidateAnnotation()" (blur)="hasUrlError = (validateURL(annotation.property))"
-                    min-chars="2">
-                </ngl-form-element>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <button type="button" nglButton="neutral" [disabled]="annotated" (click)="saveChangesSmall(colId)"> Annotate</button>
-        <button type="button" nglButton="neutral" [routerLink]="['/detail']" (click)="goToDetailMode()">Detail page</button>
-
-      </td>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let rows of data">
-      <td *ngFor="let row of rows">
-        {{row}}
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- <nav>
-  <a routerLink="/tabular-annotation/detail" routerLinkActive="active">Tabular Annotation Detail</a>
-</nav>
-
-<router-outlet></router-outlet> -->
+<div style="text-align: center" [hidden]="!dataLoading">
+  <span class="spinner spinner-lg">
+    Loading...
+  </span>
+</div>
+<div class="options" [hidden]="dataLoading">
+  <div class="btn-group pull-right" style="padding: .5em">
+    <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
+      <clr-icon class="is-solid" shape="share"></clr-icon> Update RDF Mappings
+    </button>
+    <clr-dropdown *ngIf="false">
+      <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
+        <clr-icon shape="download"></clr-icon>
+        Create RDF triples
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+        <label class="dropdown-header">Formats</label>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>
+        <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
+      <clr-icon class="is-solid" shape="cog"></clr-icon>
+      Settings
+    </button>
+  </div>
+</div>
+<div class="hot-wrapper" [ngClass]="{'hot-hidden': dataLoading}">
+  <div id="handsontable"></div>
+</div>

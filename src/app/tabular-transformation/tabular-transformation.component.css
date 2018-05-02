@@ -1,10 +1,21 @@
 .sidenav {
-  padding: 10px;
+  padding: 0px;
 }
 
-.sin-suggested-transformations {
-  padding-top: 15px;
+#input-field{
+  padding-top: 20px;
+  padding-bottom: 20px;  
 }
+
+#toggle{
+  padding-top: 30px;
+}
+
+#container{
+  height:360px;
+  margin-bottom: 9px;
+}
+
 .sin-pipeline {
   padding-top: 20px;
   width: 200px;
@@ -16,4 +27,13 @@
 
 .sin-flex {
   display: flex;
+}
+
+.handsontable {
+  padding-top: 5px;
+  padding-left: 5px;
+}
+
+.sin-error-pipeline {
+  margin: 10px;
 }

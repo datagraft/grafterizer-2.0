@@ -1,0 +1,43 @@
+<div fxflex fxLayout="row" fxLayoutAlign="start start">
+  <div fxLayout="column" fxLayoutAlign="start start" (mouseenter)="showNodeActions()" (mouseleave)="hideNodeActions()">
+    <button fxflex mat-raised-button (click)="editNode()" aria-haspopup="true" class="sin-rdf-mapping-node-button" matTooltip="{{'(Constant literal) ' + getNodeLiteralValue() }}"
+      matTooltipPosition="below" matTooltipShowDelay="500">
+      <div fxflex fxLayout="row" fxLayoutAlign="space-between center">
+        <div fxflex *ngIf="node.nodeCondition.length === 0">
+          <i class="fa fa-font"></i>
+        </div>
+        <div fxflex *ngIf="node.nodeCondition.length > 0">
+          <i class="fa fa-filter"></i>
+          <i class="fa fa-font"></i>
+        </div>
+        <div class="rdf-mapping-node-text">
+          <div class="sin-rdf-mapping-node-text sin-rdf-node-literal-text">
+            {{ getNodeLiteralValue() }}
+          </div>
+        </div>
+      </div>
+    </button>
+    <div *ngIf="parent.__type === 'Graph'" class="sin-rdf-node-actions" [style.visibility]="showActions ? 'visible' : 'hidden'">
+      <div fxflex fxLayoutAlign="start center">
+        <button mat-icon-button (click)="addSiblingNode()">
+          <mat-icon aria-label="Add a sibling node" class="sin-node-action">add_circle</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeNode()">
+          <mat-icon aria-label="Remove current node" class="sin-node-action">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div rdfNodeMappingDialogAnchor></div>
+<div propertyNodeDialogAnchor></div>
+<clr-modal [(clrModalOpen)]="nodeRemoveModal" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to remove this node?</h3>
+  <div class="modal-body">
+    Once you delete a node, you cannot get it back.
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelDelete()">Cancel</button>
+    <button type="button" class="btn btn-warning" (click)="confirmDelete()">Delete</button>
+  </div>
+</clr-modal>

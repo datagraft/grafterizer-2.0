@@ -1,4 +1,11 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "line-counter.excludes": [
+        "**/.vscode/**",
+        "**/e2e/**",
+        "**/node_modules/**",
+        "**/semantic/**",
+        "**/package-lock.json/**"
+    ],
 }

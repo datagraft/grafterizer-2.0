@@ -6,73 +6,73 @@ import * as transformationDataModel from './transformationdatamodel.js';
  ****************************************************************************/
 
 var grafterSupportedRDFPrefixes = [{
-    name: 'dcat',
-    text: ''
-  },
-  {
-    name: 'dcterms',
-    text: ''
-  },
-  {
-    name: 'foaf',
-    text: ''
-  },
-  {
-    name: 'org',
-    text: ''
-  },
-  {
-    name: 'os',
-    text: ''
-  },
-  {
-    name: 'ps',
-    text: ''
-  },
-  {
-    name: 'owl',
-    text: ''
-  },
-  {
-    name: 'pmd',
-    text: ''
-  },
-  {
-    name: 'qb',
-    text: ''
-  },
-  {
-    name: 'rdf',
-    text: ''
-  },
-  {
-    name: 'sdmx-attribute',
-    text: ''
-  },
-  {
-    name: 'sdmx-measure',
-    text: ''
-  },
-  {
-    name: 'sdmx-concept',
-    text: ''
-  },
-  {
-    name: 'skos',
-    text: ''
-  },
-  {
-    name: 'vcard',
-    text: ''
-  },
-  {
-    name: 'void',
-    text: ''
-  },
-  {
-    name: 'xsd',
-    text: ''
-  }
+  name: 'dcat',
+  text: ''
+},
+{
+  name: 'dcterms',
+  text: ''
+},
+{
+  name: 'foaf',
+  text: ''
+},
+{
+  name: 'org',
+  text: ''
+},
+{
+  name: 'os',
+  text: ''
+},
+{
+  name: 'ps',
+  text: ''
+},
+{
+  name: 'owl',
+  text: ''
+},
+{
+  name: 'pmd',
+  text: ''
+},
+{
+  name: 'qb',
+  text: ''
+},
+{
+  name: 'rdf',
+  text: ''
+},
+{
+  name: 'sdmx-attribute',
+  text: ''
+},
+{
+  name: 'sdmx-measure',
+  text: ''
+},
+{
+  name: 'sdmx-concept',
+  text: ''
+},
+{
+  name: 'skos',
+  text: ''
+},
+{
+  name: 'vcard',
+  text: ''
+},
+{
+  name: 'void',
+  text: ''
+},
+{
+  name: 'xsd',
+  text: ''
+}
 ];
 
 function isSupportedPrefix(prefixName) {
@@ -248,7 +248,7 @@ function parseConditions(condArray) {
     switch (cond.operator.id) {
       case 0:
 
-        parsedCond = new jsedn.List([jsedn.sym('not-empty?'), jsedn.sym(cond.column.value)]);
+        parsedCond = new jsedn.List([jsedn.sym('not-empty?'), jsedn.sym(typeof cond.column === 'object' ? cond.column.value : cond.column)]);
 
         break;
       case 1:
@@ -266,11 +266,11 @@ function parseConditions(condArray) {
       case 5:
         regexParsed = '#\"(?i).*' + cond.operand + '.*\"';
         parsedCond = new jsedn.List([jsedn.sym('not'),
-          new jsedn.List([jsedn.sym('nil?'),
-            new jsedn.List([jsedn.sym('re-find'),
-              new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym(cond.column.value)
-            ])
-          ])
+        new jsedn.List([jsedn.sym('nil?'),
+        new jsedn.List([jsedn.sym('re-find'),
+        new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym(typeof cond.column === 'object' ? cond.column.value : cond.column)
+        ])
+        ])
         ]);
         break;
       default:
@@ -289,9 +289,9 @@ function parseConditions(condArray) {
       parsedConditions.push(parsedCond);
     } else {
       if (isNaN(cond.operand)) {
-        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), cond.operand]));
+        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(typeof cond.column === 'object' ? cond.column.value : cond.column), cond.operand]));
       } else {
-        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), Number(cond.operand)]));
+        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(typeof cond.column === 'object' ? cond.column.value : cond.column), Number(cond.operand)]));
       }
     }
   }
@@ -344,43 +344,29 @@ export function constructRDFGraphFunction(transformation) {
 
   var currentGraphJsEdn = null;
   var currentRootJsEdn = null;
+  var currentGraphJsEdn = null;
+  // var currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), 'TODO not used']);
   for (i = 0; i < transformation.graphs.length; ++i) {
     currentGraph = transformation.graphs[i];
-
-    currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
-
+    if (i === 0) {
+      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
+    }
     // construct a vector for each of the roots and add it to the graph jsedn
     for (j = 0; j < currentGraph.graphRoots.length; ++j) {
-
       currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph);
-
-
-
       if (currentRootJsEdn) {
         if (currentRootJsEdn.constructor === Array) {
-          for (var i = 0; i < currentRootJsEdn.length; ++i) {
-
-            currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn[i]));
-
+          for (var k = 0; k < currentRootJsEdn.length; ++k) {
+            currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn[k]));
           }
         } else {
           currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn));
-
         }
-
-
       }
-
-
-
-
     }
-
     graphFunction.val.push(currentGraphJsEdn);
   }
-
   var result = new jsedn.List([jsedn.sym('def'), jsedn.sym('make-graph'), graphFunction]);
-
   return result;
 }
 
@@ -395,7 +381,7 @@ function constructNodeVectorEdn(node, containingGraph) {
   }
   node = transformationDataModel.getGraphElement(node);
 
-  if (node instanceof transformationDataModel.Property /*&& (node.propertyCondition === undefined || node.propertyCondition === '')*/ ) {
+  if (node instanceof transformationDataModel.Property /*&& (node.propertyCondition === undefined || node.propertyCondition === '')*/) {
 
     if (node.subElements.length === 0) {
       //        alertInterface('Error found in RDF mapping for the sub-elements node ' + node.propertyName + '!');
@@ -417,23 +403,26 @@ function constructNodeVectorEdn(node, containingGraph) {
   }
 
   if (node instanceof transformationDataModel.ColumnLiteral) {
-
-    if (node.literalValue.value.trim() === '') {
-      alertInterface('Empty column literal mapping found!');
+    if (typeof node.literalValue === 'object') {
+      if (node.literalValue.value.trim() === '') {
+        alertInterface('Empty column literal mapping found!');
+      }
+    } else if (typeof node.literalValue === 'string') {
+      if (node.literalValue.trim() === '') {
+        alertInterface('Empty column literal mapping found!');
+      }
     }
 
     // return the value as symbol
     var value;
     if (node.datatype.name === 'unspecified') {
-
-      value = new jsedn.sym(node.literalValue.value);
-
+      value = new jsedn.sym(typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue);
     } else {
 
       switch (node.datatype.name) {
         case 'string':
 
-          var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(node.literalValue.value), "string"];
+          var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue), "string"];
           if (node.onEmpty) {
             convertLiteralValues.push(jsedn.kw(":on-empty"));
             convertLiteralValues.push(node.onEmpty);
@@ -449,13 +438,13 @@ function constructNodeVectorEdn(node, containingGraph) {
             alertInterface('Unspecified URI for custom data type!');
           } else {
             value = new jsedn.List([jsedn.sym("s"),
-              jsedn.sym(node.literalValue.value),
-              new jsedn.List([jsedn.sym("org.openrdf.model.impl.URIImpl."), node.datatypeURI])
+            jsedn.sym(typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue),
+            new jsedn.List([jsedn.sym("org.openrdf.model.impl.URIImpl."), node.datatypeURI])
             ]);
           }
           break;
         default:
-          var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(node.literalValue.value), node.datatype.name];
+          var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(typeof node.literalValue === 'object' ? node.literalValue.value : node.literalValue), node.datatype.name];
 
           if (node.onEmpty) {
             convertLiteralValues.push(jsedn.kw(":on-empty"));
@@ -535,21 +524,21 @@ function constructNodeVectorEdn(node, containingGraph) {
               }
 
             } else
-            if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
+              if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
 
-              var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
-              parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
+                var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
+                parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-              //                    console.log(parsedConditions.length);
-              if (parsedConditions.length === 1) {
-                allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                //                    console.log(parsedConditions.length);
+                if (parsedConditions.length === 1) {
+                  allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                } else {
+                  allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                }
               } else {
-                allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                //allSubElementsVector.val.push(subElementEdn);
+                nonCondSubElementsVector.val.push(subElementEdn);
               }
-            } else {
-              //allSubElementsVector.val.push(subElementEdn);
-              nonCondSubElementsVector.val.push(subElementEdn);
-            }
           }
         }
       }
@@ -606,21 +595,21 @@ function constructNodeVectorEdn(node, containingGraph) {
               }
 
             } else
-            if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
+              if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
 
-              var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
-              parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
+                var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
+                parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-              //                    console.log(parsedConditions.length);
-              if (parsedConditions.length === 1) {
-                allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                //                    console.log(parsedConditions.length);
+                if (parsedConditions.length === 1) {
+                  allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                } else {
+                  allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                }
               } else {
-                allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                //allSubElementsVector.val.push(subElementEdn);
+                nonCondSubElementsVector.val.push(subElementEdn);
               }
-            } else {
-              //allSubElementsVector.val.push(subElementEdn);
-              nonCondSubElementsVector.val.push(subElementEdn);
-            }
           }
         }
       }
@@ -720,7 +709,7 @@ function constructColumnURINodeJsEdn(colURINode, containingGraph) {
   // graph URI as prefix, add nothing
   var nodePrefix = colURINode.prefix.hasOwnProperty('id') ? colURINode.prefix.value : colURINode.prefix;
 
-  var nodeValue = colURINode.column.value;
+  var nodeValue = typeof colURINode.column === 'object' ? colURINode.column.value : colURINode.column;
   if (nodePrefix === null || nodePrefix === undefined) {
     // base graph URI
     // ((prefixer "graphURI") nodeValue)
@@ -890,18 +879,19 @@ var namespaceMaps = [];
 
 //load a mapping between prefix and namespace from windows localStorage.
 //the storage is edited in propertydialog.js and mappingnodedefinitiondialog.js
-function loadNamespaceMapping(localVocabularies) {
+function loadNamespaceMapping(vocabularies) {
   //load user defined vocabulary
-  if (!localVocabularies) {
+  if (!vocabularies) {
     return;
   }
 
-  for (var i = localVocabularies.length - 1; i >= 0; i--) {
-    namespaceMap = {};
-
-    namespaceMap.prefix = localVocabularies[i].name;
-    namespaceMap.namespace = localVocabularies[i].namespace;
-    namespaceMaps.push(namespaceMap);
+  for (var i = vocabularies.length - 1; i >= 0; i--) {
+    if (!vocabularies[i].fromServer && !isSupportedPrefix(vocabularies[i].name)) {
+      namespaceMap = {};
+      namespaceMap.prefix = vocabularies[i].name;
+      namespaceMap.namespace = vocabularies[i].namespace;
+      namespaceMaps.push(namespaceMap);
+    }
   }
 }
 
@@ -1029,7 +1019,6 @@ function generateGrafterCode(transformation) {
 
   var grafterCustomFunctions = constructUserFunctions();
   /* Graph Template */
-
   var graphTemplate = constructRDFGraphFunction(transformation);
 
   /* Pipeline Function */

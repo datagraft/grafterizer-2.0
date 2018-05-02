@@ -2,17 +2,28 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ClarityModule } from 'clarity-angular';
 import { ListboxModule } from 'primeng/primeng';
-import { RlTagInputModule } from 'angular2-tag-input';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
-import { CodemirrorModule } from 'ng2-codemirror';
-import { MaterialModule } from '@angular/material';
+import { CodemirrorModule } from '@nomadreservations/ngx-codemirror';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatChipsModule } from '@angular/material/chips';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { TabularTransformationComponent } from './tabular-transformation.component';
+import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { ProfilingComponent } from './profiling/profiling.component';
 import { HandsontableComponent } from './handsontable/handsontable.component';
 import { BoxplotComponent } from './profiling/boxplot/boxplot.component';
@@ -41,17 +52,15 @@ import { MapColumnsComponent } from './sidebar/pipeline-functions/map-columns/ma
 import { GroupDatasetComponent } from './sidebar/pipeline-functions/group-dataset/group-dataset.component';
 import { FilterRowsComponent } from './sidebar/pipeline-functions/filter-rows/filter-rows.component';
 import { UtilityFunctionComponent } from './sidebar/pipeline-functions/utility-function/utility-function.component';
-
-import { ComponentCommunicationService } from './component-communication.service';
-
 import { CustomFunctionModalComponent } from './sidebar/pipeline-functions/custom-function-modal/custom-function-modal.component';
 
-import { TabularTransformationRoutingModule } from './tabular-transformation-routing.module';
+import { PipelineEventsService } from './pipeline-events.service';
+
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { PipelineComponent } from './sidebar/pipeline/pipeline.component';
 import { AngularSplitModule } from 'angular-split';
+import { TagInputModule } from 'ngx-chips';
 
 @NgModule({
   imports: [
@@ -59,19 +68,30 @@ import { AngularSplitModule } from 'angular-split';
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
-    TabularTransformationRoutingModule,
+    ReactiveFormsModule,
     NglModule.forRoot(),
     FlexLayoutModule,
     ClarityModule,
     NgxChartsModule,
     NgxDatatableModule,
     ListboxModule,
-    RlTagInputModule,
+    TagInputModule,
     SuiModule,
     Ng2CompleterModule,
     CodemirrorModule,
     AngularSplitModule,
-    MaterialModule
+    MatGridListModule,
+    MatStepperModule,
+    MatButtonModule,
+    MatIconModule,
+    MatExpansionModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatTabsModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    MatChipsModule,
+    NgSelectModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -105,7 +125,7 @@ import { AngularSplitModule } from 'angular-split';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [ComponentCommunicationService]
+  ], providers: [PipelineEventsService]
 })
 
 export class TabularTransformationModule { }

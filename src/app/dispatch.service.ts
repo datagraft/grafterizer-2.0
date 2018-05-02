@@ -60,9 +60,9 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then(
-      (result) => this.mapSparqlEndpoints(result),
-      (error) => this.errorHandler(error)
-    );
+        (result) => this.mapSparqlEndpoints(result),
+        (error) => this.errorHandler(error)
+      );
   }
 
   private mapSparqlEndpoints(result: JSON): Array<SparqlEndpoint> {
@@ -70,7 +70,6 @@ export class DispatchService {
     result['dcat:record'].forEach((record) => {
       sparqlEndpoints.push(this.mapSparqlEndpoint(record));
     });
-    console.log(result);
     return sparqlEndpoints;
   }
 
@@ -88,7 +87,7 @@ export class DispatchService {
 
   public uploadFile(file: File): Promise<any> {
     const url = `${this.dispatchPath}/myassets/filestores`;
-    const options = new RequestOptions({ withCredentials: true});
+    const options = new RequestOptions({ withCredentials: true });
 
     const formData: FormData = new FormData();
     formData.append('filestore[name]', 'previewed_dataset_' + file.name);
@@ -98,8 +97,8 @@ export class DispatchService {
       .map(res => res.json())
       .toPromise()
       .then(
-      (result: JSON) => result,
-      (error) => this.errorHandler(error));
+        (result: JSON) => result,
+        (error) => this.errorHandler(error));
   }
 
   // Get all filestores from DataGraft
@@ -111,9 +110,9 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then(
-      (result) => this.mapFilestores(result),
-      (error) => this.errorHandler(error)
-    );
+        (result) => this.mapFilestores(result),
+        (error) => this.errorHandler(error)
+      );
   }
 
   /* Helper method. Maps the response from DataGraft to the Filestore interface (through the Dispatch Service).
@@ -210,7 +209,7 @@ export class DispatchService {
   }
   // Update transformation on DataGraft
   public updateTransformation(id: string, publisher: string, name: string, isPublic: boolean, description: string,
-                               keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
+    keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
     const url = this.computeTransformationURL(publisher, id);
     const requestPayload = {
       'name': name,
@@ -223,21 +222,21 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then(
-      (result) => {
-        // ...then, update metadata and configuration - there may be a new ID for the transformation
-        const newId = result['id'];
-        const newPublisher = result['foaf:publisher'];
-        return Promise.all([
-          this.postMetadata(newId, publisher, description, keywords),
-          this.postConfiguration(newId, publisher, configuration)
-        ]).then(
-          () => {
-            return Promise.resolve({id: newId, publisher: newPublisher});
-          },
-          (error) => this.errorHandler(error))
-      },
-      (error) => this.errorHandler(error)
-    );
+        (result) => {
+          // ...then, update metadata and configuration - there may be a new ID for the transformation
+          const newId = result['id'];
+          const newPublisher = result['foaf:publisher'];
+          return Promise.all([
+            this.postMetadata(newId, publisher, description, keywords),
+            this.postConfiguration(newId, publisher, configuration)
+          ]).then(
+            () => {
+              return Promise.resolve({ id: newId, publisher: newPublisher });
+            },
+            (error) => this.errorHandler(error))
+        },
+        (error) => this.errorHandler(error)
+      );
 
   }
 
@@ -248,32 +247,32 @@ export class DispatchService {
       .delete(url, options)
       .map((response: Response) => response)
       .toPromise()
-      .then((response) => Promise.resolve({id: id, publisher: publisher}),
-            (error) => this.errorHandler(error));
+      .then((response) => Promise.resolve({ id: id, publisher: publisher }),
+        (error) => this.errorHandler(error));
   }
 
   // creates Transformation asset in DataGraft, then submits the metadata and configuration
   public newTransformation(name: string, isPublic: boolean, description: string,
-                            keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
+    keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {
     // According to the API, first we create the transformation asset...
     return this.submitTransformation(name, isPublic)
       .then(
-      (response: Response) => {
-        // ...then, after we get the ID and publisher ID from the response, we add the metadata and configuration
-        const id = response['id'];
-        const publisher = response['foaf:publisher'];
-        return Promise.all([
-          this.postMetadata(id, publisher, description, keywords),
-          this.postConfiguration(id, publisher, configuration)
-        ]).then(
-          () => {
-            // both metadata and configuration requests pass - we resolve the promise by returning the values
-            return Promise.resolve({id: id, publisher: publisher})
-          },
-          (error) =>  this.errorHandler(error)
-        )
-      }, (error) => this.errorHandler(error)
-    );
+        (response: Response) => {
+          // ...then, after we get the ID and publisher ID from the response, we add the metadata and configuration
+          const id = response['id'];
+          const publisher = response['foaf:publisher'];
+          return Promise.all([
+            this.postMetadata(id, publisher, description, keywords),
+            this.postConfiguration(id, publisher, configuration)
+          ]).then(
+            () => {
+              // both metadata and configuration requests pass - we resolve the promise by returning the values
+              return Promise.resolve({ id: id, publisher: publisher })
+            },
+            (error) => this.errorHandler(error)
+          )
+        }, (error) => this.errorHandler(error)
+      );
   }
 
   // Helper method. Creates Transformation asset in DataGraft and returns a promise
@@ -289,10 +288,6 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise();
   }
-
-  //  public updateTransformation(): Promise<any> {
-  //
-  //  }
 
   // Helper method. Submits Transformation metadata (description and keywords).
   private postMetadata(id: string, publisher: string, description: string, keywords: Array<string>): Promise<any> {
@@ -339,7 +334,7 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then((response) => this.mapTransformation(response),
-            (error) => this.errorHandler(error));
+        (error) => this.errorHandler(error));
   }
 
   // Helper method. Computes the transformation URL
@@ -361,7 +356,7 @@ export class DispatchService {
       .map((response: Response) => response.json())
       .toPromise()
       .then((result) => this.mapTransformations(result),
-            (error) => this.errorHandler(error));
+        (error) => this.errorHandler(error));
   }
 
   /* Helper method. Maps the result of the transformations request from DataGraft (through the Dispatch Service).
@@ -437,6 +432,22 @@ export class DispatchService {
     }
   }
 
+
+  public fillDataGraftWizard(fileName: string, transformationId: string, wizardId: string, transformationType: string): Promise<any> {
+    const url = `${this.dispatchPath}/fillWizard`;
+    const requestPayload = {
+      distribution: fileName,
+      transformation: transformationId,
+      wizardId: wizardId,
+      type: transformationType
+    };
+    const options = new RequestOptions({ withCredentials: true });
+    return this.http
+      .post(url, requestPayload, options)
+      .map((response: Response) => response.json())
+      .toPromise();
+  }
+
   // Handles errors thrown from requests from resources to the Dispatch Service
   private errorHandler(error: any) {
     let message = '';
@@ -469,5 +480,6 @@ export class DispatchService {
         );*/
 
   }
+
 
 }

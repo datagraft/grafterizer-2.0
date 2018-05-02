@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { CompleterService, CompleterData } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-
+import { Subscription } from 'rxjs/Subscription';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'add-columns',
@@ -12,58 +13,124 @@ import * as transformationDataModel from '../../../../../assets/transformationda
 
 export class AddColumnsComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() private function: any;
-  @Output() emitter = new EventEmitter();
-  private addcolumnsmode: String[] = [];
-  private columnsArray: any[];
-  private docstring: String;
+  private modalEnabled: boolean;
 
-  constructor(private completerService: CompleterService) {
-    //TODO: remove when passing transformation is implemented
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
 
-    if (!this.function) {
-      this.columnsArray = [new transformationDataModel.NewColumnSpec(null, null, null, null)];
-      this.function = new transformationDataModel.AddColumnsFunction(this.columnsArray, this.docstring);
-      this.addcolumnsmode = ['text'];
-    }
-    else {
-      this.columnsArray = this.function.columnsArray;
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any;
 
-      for (let colVal of this.function.columnsArray) {
-        if (colVal.colValue) { this.addcolumnsmode.push('text'); }
-        else { this.addcolumnsmode.push('expr'); }
-      }
-      this.docstring = this.function.docstring;
+  private previewedDataSubscription: Subscription;
+  private previewedDataColumns: any;
 
-    }
-  }
+  private colname: string;
+  private columnsArray: any = [];
+  private docstring: string;
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-    this.modalEnabled = false;
 
+    this.modalEnabled = false;
+    this.docstring = 'Add columns';
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit      
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'AddColumnsFunction') {
+        this.modalEnabled = true;
+        this.columnsArray = this.currentlySelectedFunction.columnsArray;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'AddColumnsFunction') {
+        this.modalEnabled = true;
+        var newColSpec = new transformationDataModel.NewColumnSpec(null, null, null, null);
+        this.columnsArray.push(newColSpec);
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
+        }
+      });
   }
 
-  addColumn() {
-    var newColSpec = new transformationDataModel.NewColumnSpec("", "", "", "");
+  private addColumn() {
+    var newColSpec = new transformationDataModel.NewColumnSpec(null, null, null, null);
     this.columnsArray.push(newColSpec);
   }
-  removeColumn(idx: number) {
-    this.columnsArray.splice(idx, 1);
-    this.addcolumnsmode.splice(idx, 1);
+
+  private removeColumn(id: number) {
+    this.columnsArray.splice(id, 1);
   }
 
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.createAddColumnsFunction(this.currentlySelectedFunction);
 
-  accept() {
-    this.function.columnsArray = this.columnsArray;
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.modalEnabled = false;
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
+    }
+    else if (this.pipelineEvent.createNew) {
+      // create empty object
+      const newFunction = new transformationDataModel.AddColumnsFunction(this.columnsArray, this.docstring);
+
+      // apply user choices to the empty object
+      this.createAddColumnsFunction(newFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
   }
 
+  private createAddColumnsFunction(instanceObj): any {
+    instanceObj.columnsArray = this.columnsArray;
+    instanceObj.docstring = this.docstring;
+    instanceObj.isPreviewed = true;
+  }
 
-  cancel() {
+  private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
     this.modalEnabled = false;
+    // resets the fields of the modal
+    this.columnsArray = [];
+    this.docstring = 'Add columns';
+  }
+
+  private cancel() {
+    this.resetModal();
   }
 
 }

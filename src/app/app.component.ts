@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import 'rxjs/Rx';
+import { Subscription } from 'rxjs/Subscription';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
+import { RoutingService } from './routing.service';
+import { GlobalErrorReportingService } from './global-error-reporting.service';
+import { PipelineEventsService } from './tabular-transformation/pipeline-events.service';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -13,174 +18,365 @@ import * as data from '../assets/data.json';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [DispatchService, TransformationService, DataGraftMessageService]
+  providers: [DispatchService, DataGraftMessageService]
 })
-export class AppComponent {
-
+export class AppComponent implements OnInit {
+  private loadingNextStepMessage: string;
+  private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
+  private fillingWizard = false;
+  private showConfirmNextStepDialog = false;
+  private showDownloadDialog = false;
+  private showConfirmDeleteDialog = false;
   private basic = true;
+  private url: any = 'transformation/new/';
+  private routingServiceSubscription: Subscription;
+  private initRouteSubscription: Subscription;
+  private updateDataRouteSubscription: Subscription;
 
-  constructor(public router: Router, private config: AppConfig, public dispatch: DispatchService, public transformationSvc: TransformationService, public messageSvc: DataGraftMessageService) {
-    console.log(config.getConfig('jarfter-path'));
-    console.log(config.getConfig('dispatch-path'));
-    console.log(config.getConfig('graftwerk-cache-path'));
+  private previewedTransformationSubscription: Subscription;
+  private previewedTransformationObj: any;
+
+  private transformationObjSourceSubscription: Subscription;
+  private transformationObjSource: any;
+
+  private globalErrorSubscription: Subscription;
+  private globalErrors: Array<any>;
+
+  private isEmbedded: boolean;
+  private downloadMode: string = 'csv';
+
+  constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
+    public dispatch: DispatchService, private transformationSvc: TransformationService,
+    public messageSvc: DataGraftMessageService, private routingService: RoutingService,
+    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
+
+    console.log("this.messageSvc.isEmbeddedMode()");
+    console.log(this.messageSvc.isEmbeddedMode());
+    this.isEmbedded = this.messageSvc.isEmbeddedMode();
+    this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
+      this.url = url;
+    });
   }
 
-  getAllTransformations() {
-    let publisher = 'nvnikolov';
-    let existingTransformationID = 'patients-data';
-    this.dispatch.getAllTransformations('', true).then(result => console.log(result), error => console.log(error));
-    this.dispatch.getTransformation(publisher, existingTransformationID).then(result => console.log(result), error => console.log(error));
-
-    let someClojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(data));
-    let newTransformationName = 'test-save-transformation';
-    let isPublic = false;
-    let newTransformationDescription = 'testing if new transformation request works';
-    let newTransformationKeywords = ['one', 'two', 'three'];
-    let newTransformationConfiguration = {
-      type: 'pipe',
-      command: 'my-pipe',
-      code: someClojure,
-      json: JSON.stringify(data)
-    }
-    var newTransformationID = '';
-    this.dispatch.newTransformation(newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration)
-      .then(
-      (result) => {
-        console.log('Created Transformation Success!');
-        console.log(result);
-        newTransformationID = result.id;
-        return this.dispatch.updateTransformation(newTransformationID, publisher, newTransformationName + '-new', !isPublic, newTransformationDescription + ' new', newTransformationKeywords.concat('four'), newTransformationConfiguration).then(
-          (result) => {
-            console.log("Successfully Updated Transformation!");
-            console.log(result);
-            let updatedTransformationID = result.id;
-            return this.dispatch.getTransformationJson(updatedTransformationID, publisher).then(
-              (result) => {
-                console.log("Successfully Got Transformation JSON!");
-                console.log(result);
-                return this.dispatch.forkTransformation(updatedTransformationID, publisher)
-                  .then(
-                  (result) => {
-                    console.log("Successfully Forked Transformation!");
-                    console.log(result);
-                    let forkedTransformationID = result['id'];
-                    return Promise.all([
-                      this.dispatch.deleteTransformation(updatedTransformationID, publisher),
-                      this.dispatch.deleteTransformation(forkedTransformationID, publisher)
-                    ]).then((result) => {
-                      console.log("Transformations Deleted!");
-                      console.log(result);
-                    }, (error) => {
-                      console.log("Could not Delete Transformations!");
-                      console.log(error);
-                    });
-                  },
-                  (error) => {
-                    console.log("Error Forking Transformation!");
-                    console.log(error)
-                  })
-              },
-              (error) => { }
-            )
-
-          },
-          (error) => {
-            console.log("Error updating transformation");
-            console.log(error);
-          })
-
-      },
-      (error) => { console.log('Woops!'); console.log(error); }
-      );
-
-    this.dispatch.getAllFilestores()
-      .then(
-      (result) => {
-        console.log("Successfully got the user's filestores!");
-        console.log(result);
-      },
-      (error) => {
-        console.log("Error getting the user's filestores!");
-        console.log(error);
+  ngOnInit() {
+    const self = this;
+    this.initRouteSubscription = this.router.events.subscribe(
+      (event) => {
+        if (event instanceof NavigationEnd) {
+          const paramMap = self.route.firstChild.snapshot.paramMap;
+          if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+            self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
+              .then(
+                (result) => {
+                  if (result !== 'Beginning OAuth Flow') {
+                    const transformationObj = transformationDataModel.Transformation.revive(result);
+                    self.transformationSvc.changeTransformationObj(transformationObj);
+                    if (paramMap.has('filestoreId')) {
+                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    }
+                  }
+                },
+                (error) => {
+                  console.log(error);
+                });
+          }
+          self.initRouteSubscription.unsubscribe();
+        }
       });
-    this.dispatch.getAllSparqlEndpoints()
-      .then(
-      (result) => {
-        console.log("Successfully got the user's SPARQL endpoints!");
-        console.log(result);
-      },
-      (error) => {
-        console.log("Error getting user's SPARQL endpoints!");
-        console.log(error);
-      })
+
+    this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
+      .subscribe((currentTransformationObj) => {
+        this.transformationObjSource = currentTransformationObj;
+      });
+
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        this.previewedTransformationObj = previewedTransformation;
+        // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
+        if (!this.route.firstChild) {
+          // We use this subscription to catch the moment when the navigation has ended
+          this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
+            // If the event for navigation end is emitted, the child components are initialised.
+            // We can proceed to updating the previewed data.
+            if (event instanceof NavigationEnd) {
+              this.pipelineEventsSvc.changePipelineEvent({
+                startEdit: false, // true when we click on the 'Edit' icon of a function
+                commitEdit: false, // true when we click 'OK' after editing a function
+                preview: false, // true when we are previewing a step in the pipeline
+                delete: false, // true when we are deleting a step in the pipeline
+                createNew: false, // true when we are adding a new step to the pipeline
+                newStepType: "", // type of the new step to be added to the pipeline
+                defaultParams: {}, // default parameters for a new step (could be given by recommender)
+                commitCreateNew: false // true when we click OK after creating a new function
+              });
+            }
+          });
+        } else {
+          // the sub-components are already initialised, so we can get the route parameters as normal
+          this.updatePreviewedData();
+        }
+      });
+
+    this.globalErrorSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
+      this.globalErrors = globalErrors;
+    });
+  }
+
+  updatePreviewedData() {
+    this.globalErrorRepSvc.changePreviewError(undefined);
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+
+    if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
+      this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 60000000)
+        .then((result) => {
+          this.transformationSvc.changeGraftwerkData(result);
+        }, (err) => {
+          this.globalErrorRepSvc.changePreviewError(err);
+          this.transformationSvc.changeGraftwerkData(
+            {
+              ':column-names': [],
+              ':rows': []
+            });
+        });
+    }
+  }
+
+  onClose(index) {
+    this.globalErrors.splice(index, 1);
+    this.globalErrorRepSvc.changeGlobalErrors(this.globalErrors);
   }
 
   fileChange(event) {
-    let fileList: FileList = event.target.files;
+    const fileList: FileList = event.target.files;
     if (fileList.length > 0) {
-      let file: File = fileList[0];
+      const file: File = fileList[0];
       this.dispatch.uploadFile(file)
         .then(
+          (result) => {
+            console.log('Successfully uploaded file!');
+            console.log(result);
+          },
+          (error) => {
+            console.log('Error uploading file!');
+            console.log(error);
+          });
+    }
+  }
+
+  save() {
+    // Persist the transformation to DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+      const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+      let newTransformationName = null;
+      let newTransformationDescription = null;
+      let newTransformationKeywords = null;
+      let isPublic = null;
+      this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+        newTransformationName = result.title;
+        newTransformationDescription = result.description;
+        newTransformationKeywords = result.keywords;
+        isPublic = result.isPublic;
+      }
+      );
+      let transformationType = 'graft';
+      let transformationCommand = 'my-graft';
+      if (this.transformationObjSource.graphs === 0) {
+        transformationType = 'pipe';
+        transformationCommand = 'my-pipe';
+      }
+      const newTransformationConfiguration = {
+        type: transformationType,
+        command: transformationCommand,
+        code: clojureCode,
+        json: JSON.stringify(this.transformationObjSource)
+      };
+
+      return this.dispatch.updateTransformation(existingTransformationID,
+        publisher,
+        newTransformationName,
+        isPublic,
+        newTransformationDescription,
+        newTransformationKeywords,
+        newTransformationConfiguration).then(
+          (result) => {
+            console.log('Data uploaded');
+          },
+          (error) => {
+            console.log('Error updating transformation');
+            console.log(error);
+          });
+    }
+  }
+
+  fork() {
+    // Fork (copy) the transformation from DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+
+      return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
         (result) => {
-          console.log("Successfully uploaded file!");
-          console.log(result);
+          console.log('Transformation forked');
         },
         (error) => {
-          console.log("Error uploading file!");
+          console.log('Error forking transformation');
           console.log(error);
         });
     }
   }
 
-  transformData() {
-    const transformationID = 'patients-data';
-    const filestoreID = 'patients-csv';
-    const transformationType = 'pipe';
-
-    this.transformationSvc.transformFile(filestoreID, transformationID, 'pipe')
-      .then(
-      (result) => {
-        console.log("Successfully transformed (PIPELINE)!");
-        console.log(result);
-      },
-      (error) => console.log(error));
-
-    // Transform (pipe and graft) and store result in a DB
-    this.transformationSvc.transformFile(filestoreID, transformationID, 'graft', 'nt')
-      .then(
-      (result) => {
-        console.log("Successfully transformed (GRAFT)!");
-      },
-      (error) => console.log(error));
-
-    // preview transformation that is saved on DataGraft
-    let publisher = 'nvnikolov';
-    let existingTransformationID = 'patients-data';
-    this.dispatch.getTransformationJson(existingTransformationID, publisher)
-      .then(
-      (result) => {
-        console.log("Got transformation JSON");
-        const clojure = generateClojure.fromTransformation(transformationDataModel.Transformation.revive(result));
-        console.log("Generated Clojure!");
-        this.transformationSvc.previewTransformation(filestoreID, clojure)
-          .then(
-          (result) => {
-            console.log("Successfully previewed transformation!");
-            //            console.log(result);
-          },
-          (error) => console.log("Error previewing transformation!"));
-      },
-      error => console.log(error));
-
-    // get original data of a distribution
-    this.transformationSvc.getOriginalData(filestoreID)
-      .then(
-      (result) => {
-        console.log("Successfully obtained original filestore!");
-        console.log(result);
-      },
-      (error) => console.log("Error obtaining original file!"))
-
+  delete() {
+    // Delete the transformation in DataGraft
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
+      const publisher = paramMap.get('publisher');
+      const existingTransformationID = paramMap.get('transformationId');
+      this.showConfirmDeleteDialog = false;
+      return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
+        (result) => {
+          console.log('Transformation deleted');
+        },
+        (error) => {
+          console.log('Error deleting transformation');
+          console.log(error);
+        });
+    }
   }
 
+  download() {
+    if (this.downloadMode == 'csv') {
+      this.downloadCSV();
+    }
+    else if (this.downloadMode == 'n-triples') {
+      this.downloadTriples();
+    }
+    this.showDownloadDialog = false;
+  }
+
+  saveToFile(data, filename, MIMEtype) {
+    var blob = new Blob([data], { type: MIMEtype }),
+      e = document.createEvent('MouseEvents'),
+      a = document.createElement('a')
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+    }
+    else {
+      var e = document.createEvent('MouseEvents'),
+        a = document.createElement('a');
+      a.download = filename;
+      a.href = window.URL.createObjectURL(blob);
+      a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+      e.initEvent('click', true, false);
+      a.dispatchEvent(e);
+    }
+  }
+
+  downloadTriples(rdfFormat: string = 'nt') {
+    this.save().then(
+      () => {
+        console.log('Data downloads');
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
+            (transformed) => {
+              this.saveToFile(transformed, 'triples.nt', 'application/n-triples');
+            },
+            (error) => {
+              console.log('Error downloading file');
+              console.log(error);
+            }
+          );
+        }
+      }
+    );
+  }
+
+  downloadCSV() {
+    this.save().then(
+      () => {
+        console.log('Data downloads');
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'pipe-download').then(
+            (transformed) => {
+              this.saveToFile(transformed, 'data.csv', 'text/plain');
+            },
+            (error) => {
+              console.log('Error downloading file');
+              console.log(error);
+            }
+          );
+        }
+      }
+    );
+  }
+
+  /**
+   * Navigate to previous step of SPARQL endpoint creation wizard when embedded in DataGraft 
+   */
+  goBack() {
+    this.messageSvc.setLocation(this.messageSvc.getPathBack());
+  }
+
+
+  /**
+   * Navigate to last step of SPARQL endpoint creation wizard when embedded in DataGraft
+   */
+  goNextStep() {
+    // fill wizard
+    const paramMap = this.route.firstChild.snapshot.paramMap;
+    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+      const transformedFileName = paramMap.get('filestoreId');
+      const transformationId = paramMap.get('transformationId');
+      const wizardIdRegexMatch = transformedFileName.match(/^upwizards--(\d+)$/);
+      const transformationType = 'graft'; // TODO this is hard-coded and will only work for RDF transformation wizards
+      if (wizardIdRegexMatch) {
+        this.loadingNextStepMessage = 'Computing transformation. Please wait...';
+        this.fillingWizard = true;
+        this.dispatch.fillDataGraftWizard(transformedFileName, transformationId, wizardIdRegexMatch[1], transformationType)
+          .then((result) => {
+            this.loadingNextStepMessage = 'Success! You will now be redirected to the next step...';
+            // wait 5 seconds and close dialog?
+            const location = '/myassets/upwizards/fill_sparql_endpoint/' + wizardIdRegexMatch[1];
+            this.messageSvc.setLocation(location);
+          }, (error) => {
+            console.log(error);
+            this.fillingWizard = false;
+            this.loadingNextStepMessage = 'Error: Failed to compute the result of the transformation. Please try again.'
+          });
+      } else {
+        // Error parsing the wizard ID - something
+        throw ('Error! Unable to find wizard ID.');
+      }
+    } else {
+      // Missing transformation ID or filestore ID
+      throw ('Error! Unable to find transformation and/or file IDs.');
+    }
+
+    // on success fillingWizard = false; setLocation
+    // on error fillingWizard = false
+    // close dialog
+    // this.showConfirmNextStepDialog = false;
+    // set location to next step
+  }
+
+  cancelNextStep() {
+    this.showConfirmNextStepDialog = false;
+  }
+  /**
+   * Open confirmation dialog for contining the wizard when embedded in DataGraft
+   */
+  openNextStepConfirmation() {
+
+    this.showConfirmNextStepDialog = true;
+  }
 }

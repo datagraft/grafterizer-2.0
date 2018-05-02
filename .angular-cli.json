@@ -9,10 +9,10 @@
       "outDir": "dist",
       "assets": [
         "assets",
-      "favicon.ico",
-      "env.json",
-      "config.development.json",
-      "config.production.json"
+        "favicon.ico",
+        "env.json",
+        "config.development.json",
+        "config.production.json"
       ],
       "index": "index.html",
       "main": "main.ts",
@@ -23,16 +23,19 @@
       "prefix": "app",
       "styles": [
         "styles.css",
-      "../node_modules/semantic-ui/dist/semantic.min.css",
+        "../node_modules/codemirror/lib/codemirror.css",
+        "../node_modules/semantic-ui/dist/semantic.min.css",
         "../node_modules/datavoyager/lib-test/style.css",
         "../node_modules/clarity-icons/clarity-icons.min.css",
         "../node_modules/clarity-ui/clarity-ui.min.css",
         "app/clr-overrides.scss",
+        "app/tag-input-theme.scss",
         "app/codemirror-overrides.css",
         "../node_modules/font-awesome/css/font-awesome.min.css",
         "../node_modules/primeng/resources/primeng.min.css",
         "../node_modules/primeng/resources/themes/omega/theme.css",
-        "../node_modules/codemirror/theme/mdn-like.css"
+        "../node_modules/codemirror/theme/monokai.css",
+        "../src/assets/handsontable.full.css"
       ],
       "scripts": [
         "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
@@ -56,13 +59,16 @@
   },
   "lint": [
     {
-      "project": "src/tsconfig.app.json"
+      "project": "src/tsconfig.app.json",
+      "exclude": "**/node_modules/**"
     },
     {
-      "project": "src/tsconfig.spec.json"
+      "project": "src/tsconfig.spec.json",
+      "exclude": "**/node_modules/**"
     },
     {
-      "project": "e2e/tsconfig.e2e.json"
+      "project": "e2e/tsconfig.e2e.json",
+      "exclude": "**/node_modules/**"
     }
   ],
   "test": {
@@ -71,7 +77,7 @@
     }
   },
   "defaults": {
-    "styleExt": "scss",
+    "styleExt": "css",
     "component": {}
   }
 }

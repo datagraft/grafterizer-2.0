@@ -1,7 +1,24 @@
+.wrapper-labels {
+  margin-left: -45px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 .selectbox {
   margin-top: -10px;
+  padding-left: 10px;
+  background-color: #fafafa;
+}
+
+.ui-state-active {
+  background: black;
 }
 
 #label {
   padding-bottom: 10px;
+}
+
+#btn-custom-functions {
+  padding-top: 5px;
+  padding-left: 50px;
 }

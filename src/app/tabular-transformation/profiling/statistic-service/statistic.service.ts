@@ -48,7 +48,7 @@ export class StatisticService {
           }
         }
         resolve(columndata);
-        console.log(columndata);
+        // console.log(columndata);
       }
     );
 
@@ -63,6 +63,7 @@ export class StatisticService {
       let mean = datalib.mean(data);
       this.stdev = datalib.stdev(data);
       let quartiles = datalib.quartile(data);
+
 
       let histogram_data = [];
       let chartLabels01 = [];
@@ -89,7 +90,7 @@ export class StatisticService {
         let counter = 0;
         for (let key in distinctMap) {
           let obj = { name: "", value: 0, index: 0 };
-          obj.name = key;
+          obj.name = key ? key : 'null';
           obj.value = distinctMap[key];
           obj.index = counter;
           counter++;
@@ -100,25 +101,36 @@ export class StatisticService {
       else if (distinct > 13) {
         let histogram = datalib.histogram(data);
         for (let i = 0; i < histogram.length; i++) {
-          let obj = { name: "", value: 0, index: 0 };
+          let obj = { name: "null", value: 0, index: 0 };
           for (let key in histogram[i]) {
             if (key == 'count') {
               obj.value = histogram[i][key];
             }
             if (key == 'value') {
               if (i == 0) {
-                obj.name = histogram[i][key];
+                if (histogram[i][key] == null) {
+                  obj.name = "null";
+                } else {
+                  obj.name = histogram[i][key];
+                }
               }
               else {
-                let str = histogram[i - 1][key] + ' - ' + histogram[i][key];
-                obj.name = str;
+                if (histogram[i - 1][key] && histogram[i][key]) {
+                  let str = histogram[i - 1][key] + ' - ' + histogram[i][key];
+                  obj.name = str;
+                }
+
               }
-              chartLabels01.push(histogram[i][key]);
+              chartLabels01.push(histogram[i][key] ? histogram[i][key] : 'null');
             }
             obj.index = i;
           }
           histogram_data.push(obj);
+          if (i === 14) {
+            break; /// TODO FIXME!!! I am a dirty hack
+          }
         }
+
       }
 
       let validity_chartData = [];
@@ -166,7 +178,6 @@ export class StatisticService {
       profile.push(chartLabels01);
       profile.push(chartLabels02);
 
-      // console.log(profile);
       return Promise.resolve(profile);
     }
     promise

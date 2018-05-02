@@ -1,0 +1,36 @@
+<h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
+<div mat-dialog-content>
+  <p>Which summaries do you prefer?</p>
+  <div class="form-group">
+  <tag-input [(ngModel)]="summaries"
+             [onlyFromAutocomplete]="true"
+             [placeholder]="'+ Summary'"
+             [secondaryPlaceholder]="'Summary'">
+    <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
+                        [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
+  </tag-input>
+  </div>
+
+  <form #configForm="ngForm">
+
+    <div class="toggle-switch">
+      <input [(ngModel)]="advancedSettings" [ngModelOptions]="{standalone: true}" type="checkbox" id="advancedSettings">
+      <label for="advancedSettings">Advanced settings</label>
+    </div>
+
+    <div class="form-group" *ngIf="advancedSettings">
+      <label for="endpoint">ABSTAT endpoint: </label>
+      <div class="select">
+        <select id="endpoint"
+                name="endpoint"
+                [(ngModel)]="selectedEndpoint">
+          <option *ngFor="let endpoint of abstatEndpointsNames" [value]="endpoint">{{endpoint}}</option>
+        </select>
+      </div>
+    </div>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
+  <button mat-button class="btn btn-sm btn-link" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
+</div>

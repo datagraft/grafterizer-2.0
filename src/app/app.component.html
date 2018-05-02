@@ -1,32 +1,104 @@
 <div class="main-container">
 
   <header class="header-6">
-    <div class="branding">
+    <div class="branding" *ngIf="!isEmbedded">
       <a href="http://localhost:4200" class="nav-link">
-            <img src="http://localhost:4200/assets/logo.png" height="24" width="48">
-            <span class="title"><strong>Grafterizer 2.0</strong></span>
-        </a>
-    </div>
-    <div class="header-nav">
-      <a routerLink="/tabular-transformation/new" routerLinkActive="active" class="nav-link"><span class="nav-text">Tabular Transformation</span></a>
-      <a routerLink="/rdf-mapping" routerLinkActive="active" class="nav-link"><span class="nav-text">RDF Mapping</span></a>
-      <a routerLink="/tabular-annotation" routerLinkActive="active" class="nav-link"><span class="nav-text">Tabular Annotation</span></a>
-      <a routerLink="/data-exploration" routerLinkActive="active" class="nav-link"><span class="nav-text">Data Exploration</span></a>
-    </div>
-    <div class="header-actions">
-      <a href="..." class="nav-link nav-icon">
-        <clr-icon shape="cog"></clr-icon>
+        <img src="http://localhost:4200/assets/logo.png" height="24" width="48">
+        <span class="title">
+          <strong>Grafterizer 2.0</strong>
+        </span>
       </a>
     </div>
+    <div class="header-nav">
+      <a routerLink="/{{url}}tabular-transformation" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">Tabular Transformation</span>
+      </a>
+      <a routerLink="/{{url}}rdf-mapping" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">RDF Mapping</span>
+      </a>
+      <a routerLink="/{{url}}tabular-annotation" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">Tabular Annotation</span>
+      </a>
+      <!--       <a routerLink="/transformation/new/data-exploration" routerLinkActive="active" class="nav-link">
+      <span class="nav-text">Data Exploration</span>
+      </a> -->
+    </div>
+    <div class="header-actions">
+      <a href="javascript://" (click)="save()" title="Save" class="nav-link nav-icon">
+        <clr-icon shape="floppy"></clr-icon>
+      </a>
+      <a href="javascript://" (click)="fork()" title="Copy" class="nav-link nav-icon">
+        <clr-icon shape="copy"></clr-icon>
+      </a>
+      <a href="javascript://" (click)="showDownloadDialog = true" title="Download" class="nav-link nav-icon">
+        <clr-icon shape="download"></clr-icon>
+      </a>
+      <a href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon">
+        <clr-icon shape="trash"></clr-icon>
+      </a>
+      <button mat-raised-button *ngIf="isEmbedded" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
+      <button mat-raised-button *ngIf="isEmbedded" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next step</button>
+    </div>
   </header>
+  <clr-alerts>
+    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
+      <div class="alert-item">
+        <span class="alert-text">
+          Woops - something went wrong! If the problem persists, try reloading the application.
+          <br /> {{error.toString().substring(0,200) + " [...]"}}
+        </span>
+        <div class="alert-actions">
+          <button class="btn alert-action" (click)="onClose(i)">Close</button>
+        </div>
+      </div>
+    </clr-alert>
+  </clr-alerts>
   <div class="content-container">
-    <!--<button (click)="getAllTransformations()" class="btn btn-link">Regular</button><br/>
-    <button (click)="transformData()" class="btn btn-link">Transform</button><br/>
-    <input type="file" (change)="fileChange($event)" placeholder="Upload file" accept=".csv">-->
-
     <!-- Conditional CSS class attachment to the element -->
     <div [ngClass]="{'content-area-no-padding': router.url == '/tabular-transformation/new' || '/data-exploration'}">
       <router-outlet></router-outlet>
     </div>
   </div>
 </div>
+
+<clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to continue?</h3>
+  <div class="modal-body">
+    <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
+    </mat-progress-spinner> -->
+    <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
+    <br/>
+    <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
+  </div>
+</clr-modal>
+
+<clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Download</h3>
+  <div class="modal-body">
+    <div class="radio">
+      <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_1">
+      <label for="mode_1">CSV</label>
+    </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="downloadMode" value="n-triples" id="mode_2">
+      <label for="mode_2">N-Triples</label>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="download()">OK</button>
+  </div>
+</clr-modal>
+
+<clr-modal [(clrModalOpen)]="showConfirmDeleteDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
+  <br>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="delete()">Confirm</button>
+  </div>
+</clr-modal>
