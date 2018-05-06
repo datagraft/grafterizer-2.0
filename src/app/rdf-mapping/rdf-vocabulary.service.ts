@@ -101,7 +101,6 @@ export class RdfVocabularyService {
    * Saves the currently declared vocabularies in the transformation object
    */
   public saveVocabsToTransformation() {
-    debugger;
     let defaultVocabsArray = Array.from(this.defaultVocabularies.values());
     let transformationVocabsArray = Array.from(this.transformationVocabularies.values());
     let newRdfVocabsArray = [];

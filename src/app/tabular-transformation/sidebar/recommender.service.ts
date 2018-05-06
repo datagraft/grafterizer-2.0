@@ -17,18 +17,25 @@ export class RecommenderService {
   // 1: compulsory condition, 0 : don't care, -1: forbidden condition
   conditionMatrix = [
     //[string|multiple|column|row|hasLowercase|hasDuplicates|first]
-    [0, 0, 0, 1, 0, 0], //Insert row above
-    [0, 0, 0, 1, 0, 0], //Insert row below
-    [0, 0, 0, 0, 0, 0], //Filter
-    [0, 0, 1, -1, 0, 0], //Group and Aggregate
-    [0, 0, 1, -1, 0, 0], //Mapc
-    [1, 0, 1, -1, 1, 0], //uppercase
+    // [0, 0, 0, 1, 0, 0], //Insert row above
+    // [0, 0, 0, 1, 0, 0], //Insert row below
+    // [0, 0, 0, 0, 0, 0], //Filter
+    // [0, 0, 1, -1, 0, 0], //Group and Aggregate
+    // [0, 0, 1, -1, 0, 0], //Mapc
+    // [1, 0, 1, -1, 1, 0], //uppercase
     [0, 1, 1, -1, 0, 0],  //Merge columns
-    [0, 0, 1, -1, 0, 0],	//Rename columns
-    [0, 0, 0, 1, 0, 0],	//Delete row
-    [0, 0, 1, -1, 0, 0],	//Sort
-    [0, -1, 1, -1, 0, 0],	//Split columns
-    [0, -1, 1, -1, 0, 0],	//Delete column
+    [0, -1, 1, -1, 0, 0],	//Split columns 
+    [0, -1, 1, -1, 0, 0],	//Shift column     
+    [0, -1, 1, -1, 0, 0],  //Add columns    
+    // [0, 0, 1, -1, 0, 0],	//Rename columns
+    // [0, 0, 0, 1, 0, 0],	//Delete row
+    [0, 0, 1, -1, 0, 0],	//Derive columns
+    [0, 0, 0, 0, 0, 0],	//Make dataset
+    [0, 0, 1, -1, 0, 0],	//Sort dataset
+    [0, 0, -1, 1, 0, 0],	//Take rows
+    [0, 0, -1, 1, 0, 0],	//Shift row    
+    [0, 0, 1, -1, 0, 0],	//Take columns
+    // [0, -1, 1, -1, 0, 0],	//Delete column
   ];
 
   data = [];
@@ -133,6 +140,7 @@ export class RecommenderService {
       // { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: { colsToRename: headers } } },
       // { label: 'Delete row', value: { id: 'take-columns-delete', defaultParams: { take: false, indexFrom: rs - 1, indexTo: rs } } },
       { label: 'Split columns', value: { id: 'SplitFunction', defaultParams: { colToSplit: headers[0] } } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
       // { label: 'Delete column', value: { id: 'take-columns-delete', defaultParams: { take: false, colToDelete: headers[0] } } },
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -143,6 +151,7 @@ export class RecommenderService {
       // { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: { colsToSort: headers } } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
     ];
 
