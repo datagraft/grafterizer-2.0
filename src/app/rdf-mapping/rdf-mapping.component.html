@@ -8,15 +8,13 @@
     <mat-tab-group>
       <mat-tab label="Custom RDF mappings">
         <graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>
-
       </mat-tab>
       <mat-tab label="Tabular Annotation mappings">
         <graph-mapping *ngIf="transformationObj.graphs.length > 1" [graph]="transformationObj.graphs[1]"></graph-mapping>
       </mat-tab>
     </mat-tab-group>
-
   </split-area>
-  <split-area [size]="65" style="overflow:hidden;">
-    <div id="previewTable" style="height: 92vh"></div>
+  <split-area [size]="65">
+    <div [hidden]="transformationOnlyView" id="previewTable" style="height: 92vh"></div>
   </split-area>
 </split>

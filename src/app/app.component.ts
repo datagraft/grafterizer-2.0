@@ -44,14 +44,13 @@ export class AppComponent implements OnInit {
 
   private isEmbedded: boolean;
   private downloadMode: string = 'csv';
+  private transformationOnlyView: boolean;
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
-
-    console.log("this.messageSvc.isEmbeddedMode()");
-    console.log(this.messageSvc.isEmbeddedMode());
+    console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.url = url;
@@ -59,6 +58,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.transformationOnlyView = false;
+
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
@@ -74,6 +75,9 @@ export class AppComponent implements OnInit {
                     if (paramMap.has('filestoreId')) {
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     }
+                    else if (!paramMap.has('filestoreId')) {
+                      this.transformationOnlyView = true;
+                    };
                   }
                 },
                 (error) => {

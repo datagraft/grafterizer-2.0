@@ -1,7 +1,7 @@
 {
-  "jarfter-path": "http://192.168.1.42:55551",
-  "dispatch-path": "http://192.168.1.42:8082",
-  "graftwerk-cache-path": "http://192.168.1.42:8083",
+  "jarfter-path": "http://192.168.1.41:55551",
+  "dispatch-path": "http://192.168.1.41:8082",
+  "graftwerk-cache-path": "http://192.168.1.41:8083",
   "abstat-path": "http://abstat.disco.unimib.it",
   "abstat-path-ba": "http://193.204.59.21",
   "vocabulary-service-path": "https://grafterizer.datagraft.io/vocabularies/api/vocabulary"

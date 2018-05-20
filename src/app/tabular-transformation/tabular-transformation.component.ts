@@ -27,6 +27,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private recommendations: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
+  private transformationOnlyView: boolean;
 
   private metadata: any;
   private title: string;
@@ -70,13 +71,16 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   }
 
   ngOnInit() {
+
+    this.transformationOnlyView = false;
+
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
-        //        this.handsonTable.showLoading = true;
-        //        this.handsonTable.displayJsEdnData(this.graftwerkData);
-        this.profilingComponent.loadJSON(this.graftwerkData);
-        this.profilingComponent.refresh(this.handsontableSelection);
+        if (!this.profilingComponent == undefined) {
+          this.profilingComponent.loadJSON(this.graftwerkData);
+          this.profilingComponent.refresh(this.handsontableSelection);
+        }
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
       }
     });
@@ -90,6 +94,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     });
 
     const paramMap = this.route.snapshot.paramMap;
+    if (paramMap.has('filestoreId')) {
+      this.transformationOnlyView = true;
+    };
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
@@ -105,6 +112,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             console.log(error);
           });
     }
+
   }
 
   ngOnDestroy() {
