@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import 'rxjs/Rx';
+import { SelectItem } from 'primeng/primeng';
 import { Subscription } from 'rxjs/Subscription';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
@@ -24,11 +25,9 @@ export class AppComponent implements OnInit {
   private loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
-  private showConfirmNextStepDialog = false;
-  private showDownloadDialog = false;
-  private showConfirmDeleteDialog = false;
   private basic = true;
   private url: any = 'transformation/new/';
+
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
   private updateDataRouteSubscription: Subscription;
@@ -44,7 +43,21 @@ export class AppComponent implements OnInit {
 
   private isEmbedded: boolean;
   private downloadMode: string = 'csv';
-  private transformationOnlyView: boolean;
+
+  private distributionList: SelectItem[] = [];
+  private selected: any;
+
+  private showConfirmNextStepDialog: boolean = false;
+  private showDownloadDialog: boolean = false;
+  private showConfirmDeleteDialog: boolean = false;
+  private showLoadDistributionDialog: boolean = false;
+  private modalEnabled: boolean = false;
+  private showTabularAnnotationTab: boolean = false;
+  private showRdfMappingTab: boolean = false;
+  private showSaveButton: boolean = true;
+  private showForkButton: boolean = true;
+  private showDownloadButton: boolean = true;
+  private showDeleteButton: boolean = true;
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
@@ -58,8 +71,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.transformationOnlyView = false;
-
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
@@ -73,18 +84,34 @@ export class AppComponent implements OnInit {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.changeTransformationObj(transformationObj);
                     if (paramMap.has('filestoreId')) {
+                      this.showRdfMappingTab = true;
+                      this.showTabularAnnotationTab = true;
+                      this.showSaveButton = true;
+                      this.showForkButton = true;
+                      this.showDownloadButton = true;
+                      this.showDeleteButton = true;
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     }
                     else if (!paramMap.has('filestoreId')) {
-                      this.transformationOnlyView = true;
-                    };
+                      this.showRdfMappingTab = true;
+                      this.showSaveButton = false;
+                      this.showForkButton = false;
+                      this.showDownloadButton = false;
+                      this.showDeleteButton = false;
+                    }
                   }
                 },
                 (error) => {
                   console.log(error);
                 });
           }
-          self.initRouteSubscription.unsubscribe();
+          else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+            this.showLoadDistributionDialog = true;
+            this.showSaveButton = false;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+          }
         }
       });
 
@@ -124,6 +151,38 @@ export class AppComponent implements OnInit {
     this.globalErrorSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
       this.globalErrors = globalErrors;
     });
+  }
+
+  ngOnDestroy() {
+    this.initRouteSubscription.unsubscribe();
+  }
+
+  onChange($event) {
+    console.log(this.selected);
+  }
+
+  loadDistribution() {
+    this.dispatch.getAllFilestores().then((result) => {
+      result.forEach((obj) => {
+        this.distributionList.push({ label: obj.title, value: obj })
+      });
+      this.modalEnabled = true;
+      console.log(this.distributionList)
+    });
+  }
+
+  accept() {
+    this.save().then(() => {
+
+    });
+    this.modalEnabled = false;
+    this.showLoadDistributionDialog = false;
+  }
+
+  cancel() {
+    this.modalEnabled = false;
+    this.distributionList = [];
+    this.selected = undefined;
   }
 
   updatePreviewedData() {
@@ -171,34 +230,34 @@ export class AppComponent implements OnInit {
   save() {
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('publisher')) {
-      const publisher = paramMap.get('publisher');
-      const existingTransformationID = paramMap.get('transformationId');
-      const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
-      let newTransformationName = null;
-      let newTransformationDescription = null;
-      let newTransformationKeywords = null;
-      let isPublic = null;
-      this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
-        newTransformationName = result.title;
-        newTransformationDescription = result.description;
-        newTransformationKeywords = result.keywords;
-        isPublic = result.isPublic;
-      }
-      );
-      let transformationType = 'graft';
-      let transformationCommand = 'my-graft';
-      if (this.transformationObjSource.graphs === 0) {
-        transformationType = 'pipe';
-        transformationCommand = 'my-pipe';
-      }
-      const newTransformationConfiguration = {
-        type: transformationType,
-        command: transformationCommand,
-        code: clojureCode,
-        json: JSON.stringify(this.transformationObjSource)
-      };
+    const publisher = paramMap.get('publisher');
+    const existingTransformationID = paramMap.get('transformationId');
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+    let newTransformationName = null;
+    let newTransformationDescription = null;
+    let newTransformationKeywords = null;
+    let isPublic = null;
+    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+      newTransformationName = result.title;
+      newTransformationDescription = result.description;
+      newTransformationKeywords = result.keywords;
+      isPublic = result.isPublic;
+    }
+    );
+    let transformationType = 'graft';
+    let transformationCommand = 'my-graft';
+    if (this.transformationObjSource.graphs === 0) {
+      transformationType = 'pipe';
+      transformationCommand = 'my-pipe';
+    }
+    const newTransformationConfiguration = {
+      type: transformationType,
+      command: transformationCommand,
+      code: clojureCode,
+      json: JSON.stringify(this.transformationObjSource)
+    };
 
+    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       return this.dispatch.updateTransformation(existingTransformationID,
         publisher,
         newTransformationName,
@@ -211,6 +270,27 @@ export class AppComponent implements OnInit {
           },
           (error) => {
             console.log('Error updating transformation');
+            console.log(error);
+          });
+    }
+    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+      return this.dispatch.newTransformation(newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords,
+        newTransformationConfiguration).then(
+          (result) => {
+            console.log('New transformation created');
+            console.log(result);
+            if (this.selected == undefined) {
+              this.router.navigate([result.publisher, 'transformations', result.id]);
+            }
+            else {
+              this.router.navigate([result.publisher, 'transformations', result.id, this.selected.id, 'tabular-transformation']).then(() => {
+                this.distributionList = [];
+                this.selected = undefined;
+              });
+            }
+          },
+          (error) => {
+            console.log('Error creating new transformation');
             console.log(error);
           });
     }

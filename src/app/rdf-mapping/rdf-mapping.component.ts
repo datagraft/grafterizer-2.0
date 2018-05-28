@@ -24,7 +24,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private transformationOnlyView: boolean = true;
+  private hiddenTable: boolean = false;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -42,9 +42,6 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-
-    this.transformationOnlyView = true;
-
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
@@ -76,8 +73,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
     const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('filestoreId')) {
-      this.transformationOnlyView = false;
+    if (!paramMap.has('filestoreId')) {
+      this.hiddenTable = true;
     }
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj

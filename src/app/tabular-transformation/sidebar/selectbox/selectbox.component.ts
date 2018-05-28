@@ -50,6 +50,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit() {
+    this.transformationOnlyView = false;
     const paramMap = this.route.snapshot.paramMap;
     if (!paramMap.has('filestoreId')) {
       this.transformationOnlyView = true;
@@ -78,6 +79,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
       // in case we finished creating a step
       if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
         // add new step to the transformation object
+
         this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
 
         // notify of change to transformation object

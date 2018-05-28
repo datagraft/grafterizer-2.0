@@ -7,6 +7,8 @@ import { TabularAnnotationComponent } from './tabular-annotation/tabular-annotat
 import { RdfMappingComponent } from './rdf-mapping/rdf-mapping.component';
 
 const appRoutes: Routes = [
+  { path: 'transformations/new/tabular-transformation', component: TabularTransformationComponent },
+  { path: ':publisher/transformations/new/tabular-transformation', component: TabularTransformationComponent },
   { path: ':publisher/transformations/:transformationId/tabular-transformation', component: TabularTransformationComponent },
   { path: ':publisher/transformations/:transformationId/rdf-mapping', component: RdfMappingComponent },
   { path: ':publisher/transformations/:transformationId/:filestoreId/tabular-transformation', component: TabularTransformationComponent },

@@ -27,7 +27,12 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private recommendations: any;
   private handsontableSelection: any;
   private loadedDataHeaders: any
-  private transformationOnlyView: boolean;
+
+  private showSelectbox: boolean = false;
+  private showPipelineMetadataTabs: boolean = true;
+  private showHandsonTableProfiling: boolean = true;
+  private showHandsontable: boolean = true;
+  private showProfiling: boolean = true;
 
   private metadata: any;
   private title: string;
@@ -71,9 +76,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   }
 
   ngOnInit() {
-
-    this.transformationOnlyView = false;
-
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
@@ -94,15 +96,18 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     });
 
     const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('filestoreId')) {
-      this.transformationOnlyView = true;
-    };
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+      if (!paramMap.has('filestoreId')) {
+        this.showSelectbox = true;
+        this.showPipelineMetadataTabs = false;
+        this.showHandsonTableProfiling = false;
+      }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
             this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
+            console.log(result)
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
@@ -111,6 +116,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           (error) => {
             console.log(error);
           });
+    }
+    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+      this.showHandsonTableProfiling = false;
     }
 
   }

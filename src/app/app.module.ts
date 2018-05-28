@@ -6,6 +6,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from 'clarity-angular';
 import { SuiModule } from 'ng2-semantic-ui';
+import { ListboxModule } from 'primeng/primeng';
 
 import { AppRoutingModule } from './app-routing.module';
 import { RdfMappingModule } from './rdf-mapping/rdf-mapping.module';
@@ -48,6 +49,7 @@ export function initConfig(config: AppConfig) {
     AppRoutingModule,
     FormsModule,
     SuiModule,
+    ListboxModule,
     HttpModule,
     HttpClientModule,
     MatButtonModule,
