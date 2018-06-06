@@ -78,7 +78,7 @@ export class DataGraftMessageService {
         case 'upload-and-new':
           const file = new File([data.distribution], data.name, { type: data.type });
           this.dispatch.uploadFile(file)
-            .then(
+            .subscribe(
               (result) => {
                 // TODO what do we do when we receive the file?
               },

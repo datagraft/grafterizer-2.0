@@ -14,9 +14,10 @@ export class GlobalErrorHandler implements ErrorHandler {
 
   constructor(private injector: Injector, private globalErrorRepSvc: GlobalErrorReportingService) {
     this.globalErrorRepSvc = new GlobalErrorReportingService();
-    console.log(globalErrorRepSvc);
+    if (globalErrorRepSvc !== undefined) {
+      console.log(globalErrorRepSvc);
+    }
     this.globalErrorsSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
-      console.log('subscription triggered');
       this.globalErrors = globalErrors;
     });
   }

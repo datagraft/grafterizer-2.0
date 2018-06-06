@@ -171,10 +171,23 @@ export class AppComponent implements OnInit {
     });
   }
 
-  accept() {
-    this.save().then(() => {
+  onFileChange(event) {
+    let reader = new FileReader();
+    if (event.target.files && event.target.files.length > 0) {
+      let file = event.target.files[0];
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        this.dispatch.uploadFile(file).subscribe((result) => {
+          console.log(result);
+          this.save(result.id);
+          this.showLoadDistributionDialog = false;
+        });
+      };
+    }
+  }
 
-    });
+  accept() {
+    this.save();
     this.modalEnabled = false;
     this.showLoadDistributionDialog = false;
   }
@@ -215,7 +228,7 @@ export class AppComponent implements OnInit {
     if (fileList.length > 0) {
       const file: File = fileList[0];
       this.dispatch.uploadFile(file)
-        .then(
+        .subscribe(
           (result) => {
             console.log('Successfully uploaded file!');
             console.log(result);
@@ -227,7 +240,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  save() {
+  save(userUploadedFile?: any) {
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
@@ -279,7 +292,10 @@ export class AppComponent implements OnInit {
           (result) => {
             console.log('New transformation created');
             console.log(result);
-            if (this.selected == undefined) {
+            if (userUploadedFile) {
+              this.router.navigate([result.publisher, 'transformations', result.id, userUploadedFile, 'tabular-transformation']);
+            }
+            else if (this.selected == undefined) {
               this.router.navigate([result.publisher, 'transformations', result.id]);
             }
             else {

@@ -79,7 +79,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
-        if (!this.profilingComponent == undefined) {
+        if (this.profilingComponent !== undefined) {
           this.profilingComponent.loadJSON(this.graftwerkData);
           this.profilingComponent.refresh(this.handsontableSelection);
         }

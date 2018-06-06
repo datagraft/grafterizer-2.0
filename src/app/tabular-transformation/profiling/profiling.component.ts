@@ -141,7 +141,6 @@ export class ProfilingComponent implements OnInit {
     if (handsontableSelection) {
       this.statisticService.buildProfile(this.data, this.header, handsontableSelection);
       setTimeout(() => {
-        // console.log(this.statisticService.profile);
         this.dataBarChart = this.statisticService.profile[2];
         this.dataAdvancedPieChart = this.statisticService.profile[3];
         this.dataBoxplot = this.statisticService.profile[5];

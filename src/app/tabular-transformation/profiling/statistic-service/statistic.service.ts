@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-
 import * as datalib from 'datalib';
 
 @Injectable()
@@ -35,7 +34,6 @@ export class StatisticService {
   public buildProfile(data: any, header: any, handsontableSelection) {
     let columnIndex = handsontableSelection.col;
     let columnHeader = header[columnIndex];
-
     const promise = new Promise(
       (resolve, reject) => {
         const columndata = [];
@@ -48,11 +46,15 @@ export class StatisticService {
           }
         }
         resolve(columndata);
-        // console.log(columndata);
       }
     );
 
-    const profileSummary = (data) => {
+    const profileSummary = (columnData) => {
+      let data = columnData;
+      // if single cell is selected in handsontable --> data eaquals that cell only
+      if (handsontableSelection.row == handsontableSelection.row2) {
+        data = [columnData[handsontableSelection.row]];
+      }
       let profile = [];
       let countTotal = datalib.count(data);
       let distinct = datalib.count.distinct(data);
@@ -62,26 +64,40 @@ export class StatisticService {
       let max = datalib.max(data);
       let mean = datalib.mean(data);
       this.stdev = datalib.stdev(data);
-      let quartiles = datalib.quartile(data);
-
-
+      let quartiles;
+      let first_quartile;
+      let third_quartile;
       let histogram_data = [];
       let chartLabels01 = [];
+      let chartData_03 = [];
 
-      // outlier detection
-      let outliers = 0;
-      let first_quartile = quartiles[0];
-      let median = quartiles[1];
-      let third_quartile = quartiles[2];
-      let IQR_below = first_quartile - (1.5 * (third_quartile - first_quartile));
-      let IQR_above = third_quartile + (1.5 * (third_quartile - first_quartile));
+      // if column is selected in handsontable --> compute data distribution and quartiles      
+      if (handsontableSelection.row !== handsontableSelection.row2) {
+        // outlier detection
+        quartiles = datalib.quartile(data);
+        let outliers = 0;
+        first_quartile = quartiles[0];
+        let median = quartiles[1];
+        third_quartile = quartiles[2];
+        let IQR_below = first_quartile - (1.5 * (third_quartile - first_quartile));
+        let IQR_above = third_quartile + (1.5 * (third_quartile - first_quartile));
 
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] < IQR_below || data[i] > IQR_above && data[i] != null) {
-          this.outlierExample = data[i];
-          outliers++;
-          valid--;
+        for (let i = 0; i < data.length; i++) {
+          if (data[i] < IQR_below || data[i] > IQR_above && data[i] != null) {
+            this.outlierExample = data[i];
+            outliers++;
+            valid--;
+          }
         }
+        // data distribution, quartiles
+        let tempArray = [];
+        tempArray.push(quartiles[0]);
+        tempArray.push(quartiles[1]);
+        tempArray.push(quartiles[2]);
+        tempArray.push(this.stdev);
+        let obj2 = { data: [] };
+        obj2.data = tempArray;
+        chartData_03.push(obj2);
       }
 
       // histogram or distinct map
@@ -119,7 +135,6 @@ export class StatisticService {
                   let str = histogram[i - 1][key] + ' - ' + histogram[i][key];
                   obj.name = str;
                 }
-
               }
               chartLabels01.push(histogram[i][key] ? histogram[i][key] : 'null');
             }
@@ -130,16 +145,12 @@ export class StatisticService {
             break; /// TODO FIXME!!! I am a dirty hack
           }
         }
-
       }
 
       let validity_chartData = [];
       validity_chartData.push(valid);
       validity_chartData.push(missing);
-      // validity_chartData.push(outliers);
-
       let chartLabels02 = ['Valid', 'Missing'];
-
       let validity_data = [];
       for (let i = 0; i < 2; i++) {
         let obj1 = { name: "", value: 0, index: 0 };
@@ -149,26 +160,27 @@ export class StatisticService {
         validity_data.push(obj1);
       }
 
-      let tempArray = [];
-
-      tempArray.push(quartiles[0]);
-      tempArray.push(quartiles[1]);
-      tempArray.push(quartiles[2]);
-      tempArray.push(this.stdev);
-
-      let obj2 = { data: [] };
-      obj2.data = tempArray;
-      let chartData_03 = [];
-      chartData_03.push(obj2);
-
-      this.statData[0].value = countTotal;
-      this.statData[1].value = distinct;
-      this.statData[2].value = Math.round(first_quartile);
-      this.statData[3].value = Math.round(mean);
-      this.statData[4].value = Math.round(third_quartile);
-      this.statData[5].value = Math.round(this.stdev);
-      this.statData[6].value = Math.round(min);
-      this.statData[7].value = Math.round(max);
+      // if single cell is selected in handsontable --> information about data distribution is not available, i.e., 'NA'      
+      if (handsontableSelection.row == handsontableSelection.row2) {
+        this.statData[0].value = countTotal;
+        this.statData[1].value = distinct;
+        this.statData[2].value = 'NA';
+        this.statData[3].value = 'NA';
+        this.statData[4].value = 'NA';
+        this.statData[5].value = 'NA';
+        this.statData[6].value = 'NA';
+        this.statData[7].value = 'NA';
+      } else {
+        // if column is selected in handsontable --> information about data distribution is available              
+        this.statData[0].value = countTotal;
+        this.statData[1].value = distinct;
+        this.statData[2].value = Math.round(first_quartile);
+        this.statData[3].value = Math.round(mean);
+        this.statData[4].value = Math.round(third_quartile);
+        this.statData[5].value = Math.round(this.stdev);
+        this.statData[6].value = Math.round(min);
+        this.statData[7].value = Math.round(max);
+      }
 
       profile.push(countTotal);
       profile.push(distinct);
