@@ -1,12 +1,26 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { Router, ActivatedRoute, ParamMap, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class RoutingService {
+
     private subject = new Subject<any>();
+    private previousUrl: any = undefined;
+    private currentUrl: any = undefined;
+
+    constructor(private router: Router) {
+        this.currentUrl = this.router.routerState.snapshot.url;
+        router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                this.previousUrl = this.currentUrl;
+                this.currentUrl = event.url;
+                console.log(event.url);
+            };
+        });
+    }
 
     sendMessage(message: any) {
         this.subject.next(message);
@@ -28,6 +42,10 @@ export class RoutingService {
             str = str.concat('/');
         }
         this.sendMessage(str);
-        console.log(str);
     }
+
+    getPreviousUrl() {
+        return Promise.resolve(this.previousUrl);
+    }
+
 }

@@ -82,7 +82,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.showLoading = true;
-        console.log('previewed');
       });
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {

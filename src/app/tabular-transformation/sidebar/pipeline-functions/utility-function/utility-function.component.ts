@@ -46,8 +46,8 @@ export class UtilityFunctionComponent implements OnInit {
 
 
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
+
   onFunctionSelected(selected: CompleterItem) {
 
     // this.availableDeriveFunctions[idx] = selected.originalObject;

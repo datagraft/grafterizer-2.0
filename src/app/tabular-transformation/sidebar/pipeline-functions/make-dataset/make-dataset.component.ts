@@ -16,7 +16,6 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MakeDatasetComponent implements OnInit {
 
-  private visible: boolean = true;
   private selectable: boolean = true;
   private removable: boolean = true;
   private addOnBlur: boolean = true;
@@ -35,14 +34,11 @@ export class MakeDatasetComponent implements OnInit {
   private useLazy = false;
   private moveFirstRowToHeader: boolean;
   private numberOfColumns: Number = undefined;
-  private docstring: String;
+  private docstring: String = 'Create headers';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.docstring = 'Create headers';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;

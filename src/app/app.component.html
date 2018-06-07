@@ -1,8 +1,7 @@
 <div class="main-container">
-
   <header class="header-6">
     <div class="branding" *ngIf="!isEmbedded">
-      <a href="http://localhost:4200" class="nav-link">
+      <a href="http://localhost:4200/" class="nav-link">
         <img src="http://localhost:4200/assets/logo.png" height="24" width="48">
         <span class="title">
           <strong>Grafterizer 2.0</strong>
@@ -13,10 +12,10 @@
       <a routerLink="/{{url}}tabular-transformation" routerLinkActive="active" class="nav-link">
         <span class="nav-text">Tabular Transformation</span>
       </a>
-      <a routerLink="/{{url}}rdf-mapping" routerLinkActive="active" class="nav-link">
+      <a *ngIf="showRdfMappingTab" routerLink="/{{url}}rdf-mapping" routerLinkActive="active" class="nav-link">
         <span class="nav-text">RDF Mapping</span>
       </a>
-      <a routerLink="/{{url}}tabular-annotation" routerLinkActive="active" class="nav-link">
+      <a *ngIf="showTabularAnnotationTab" routerLink="/{{url}}tabular-annotation" routerLinkActive="active" class="nav-link">
         <span class="nav-text">Tabular Annotation</span>
       </a>
       <!--       <a routerLink="/transformation/new/data-exploration" routerLinkActive="active" class="nav-link">
@@ -24,16 +23,16 @@
       </a> -->
     </div>
     <div class="header-actions">
-      <a href="javascript://" (click)="save()" title="Save" class="nav-link nav-icon">
+      <a *ngIf="showSaveButton" href="javascript://" (click)="save()" title="Save" class="nav-link nav-icon">
         <clr-icon shape="floppy"></clr-icon>
       </a>
-      <a href="javascript://" (click)="fork()" title="Copy" class="nav-link nav-icon">
+      <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="nav-link nav-icon">
         <clr-icon shape="copy"></clr-icon>
       </a>
-      <a href="javascript://" (click)="showDownloadDialog = true" title="Download" class="nav-link nav-icon">
+      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download" class="nav-link nav-icon">
         <clr-icon shape="download"></clr-icon>
       </a>
-      <a href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon">
+      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon">
         <clr-icon shape="trash"></clr-icon>
       </a>
       <button mat-raised-button *ngIf="isEmbedded" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
@@ -54,51 +53,79 @@
     </clr-alert>
   </clr-alerts>
   <div class="content-container">
-    <!-- Conditional CSS class attachment to the element -->
-    <div [ngClass]="{'content-area-no-padding': router.url == '/tabular-transformation/new' || '/data-exploration'}">
-      <router-outlet></router-outlet>
+    <router-outlet></router-outlet>
+    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
+      <div class="spinner">
+        <span class="spinner spinner-lg" fxflex>
+          Loading...
+        </span>
+      </div>
+    </div>
+    <div *ngIf="showLoadDistributionDialog" id="load-distribution">
+      <h4>1 - Select an existing file from your DataGraft assets:</h4>
+      <br>
+      <button type="button" (click)="loadDistribution()">Load existing file</button>
+      <br>
+      <h4>OR</h4>
+      <h4>2 - Upload a file locally from your computer:</h4>
+      <br>
+      <input type="file" id="fileSelect" (change)="onFileChange($event)" #fileInput>
     </div>
   </div>
-</div>
 
-<clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
-  <h3 class="modal-title">Are you sure you want to continue?</h3>
-  <div class="modal-body">
-    <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
+  <clr-modal *ngIf="showLoadDistributionDialog" [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Load existing file</h3>
+    <div class="modal-body">
+      <div fxLayout='column' fxLayoutAlign="left">
+        <p-listbox [options]="distributionList" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
+          [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
+        </p-listbox>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+    </div>
+  </clr-modal>
+
+  <clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
+    <h3 class="modal-title">Are you sure you want to continue?</h3>
+    <div class="modal-body">
+      <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
     </mat-progress-spinner> -->
-    <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
-    <br/>
-    <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
-  </div>
-</clr-modal>
-
-<clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
-  <h3 class="modal-title">Download</h3>
-  <div class="modal-body">
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_1">
-      <label for="mode_1">CSV</label>
+      <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
+      <br/>
+      <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
     </div>
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="n-triples" id="mode_2">
-      <label for="mode_2">N-Triples</label>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="download()">OK</button>
-  </div>
-</clr-modal>
+  </clr-modal>
 
-<clr-modal [(clrModalOpen)]="showConfirmDeleteDialog" [clrModalClosable]="false">
-  <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
-  <br>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="delete()">Confirm</button>
-  </div>
-</clr-modal>
+  <clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
+    <h3 class="modal-title">Download</h3>
+    <div class="modal-body">
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_1">
+        <label for="mode_1">CSV</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="n-triples" id="mode_2">
+        <label for="mode_2">N-Triples</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="download()">OK</button>
+    </div>
+  </clr-modal>
+
+  <clr-modal [(clrModalOpen)]="showConfirmDeleteDialog" [clrModalClosable]="false">
+    <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
+    <br>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="delete()">Confirm</button>
+    </div>
+  </clr-modal>

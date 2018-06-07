@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+import { ActivatedRoute } from '@angular/router';
 import { SelectItem } from 'primeng/primeng';
 import {
   AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction, MapcFunction,
@@ -26,6 +27,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private selected: any;
   private modalEnabled = false;
   private message: any;
+  private transformationOnlyView: boolean;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -36,7 +38,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
+  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
@@ -48,6 +50,12 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit() {
+    this.transformationOnlyView = false;
+    const paramMap = this.route.snapshot.paramMap;
+    if (!paramMap.has('filestoreId')) {
+      this.transformationOnlyView = true;
+    };
+
     this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
@@ -70,6 +78,10 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
       // in case we finished creating a step
       if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
+        console.log(this.transformationObj)
+        console.log(this.selectedFunction.currentFunction)
+        console.log(this.selectedFunction.changedFunction)
+
         // add new step to the transformation object
         this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
 

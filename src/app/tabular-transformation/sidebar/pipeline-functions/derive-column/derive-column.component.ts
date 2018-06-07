@@ -13,8 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class DeriveColumnComponent implements OnInit {
 
-  private modalEnabled: boolean;
-  private visible: boolean;
+  private modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -27,7 +26,7 @@ export class DeriveColumnComponent implements OnInit {
 
   private newColName: string;
   private selectedCustomFunction: any;
-  private docstring: string;
+  private docstring: string = 'Derive column';
   private previewedDataColumns: string[] = [];
   private customFunctions: any[] = [];
   private colsToDeriveFrom: any[] = [];
@@ -35,10 +34,6 @@ export class DeriveColumnComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.visible = false;
-    this.docstring = 'Derive column';
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {

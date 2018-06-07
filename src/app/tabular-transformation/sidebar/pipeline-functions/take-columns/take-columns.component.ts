@@ -14,14 +14,13 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean;
-  private visible: boolean;
-  private takecolumnsmode;
+  private modalEnabled: boolean = false;
+  private takecolumnsmode = 'colnames';
 
   private columnsArray: any[] = [];
-  private indexFrom;
-  private indexTo;
-  private take;
+  private indexFrom = null;
+  private indexTo = null;
+  private take = true;
   private docstring: string;
 
   private currentlySelectedFunctionSubscription: Subscription;
@@ -36,13 +35,6 @@ export class TakeColumnsComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.visible = false;
-    this.indexFrom = null;
-    this.indexTo = null;
-    this.take = true;
-    this.takecolumnsmode = 'colnames';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -84,10 +76,6 @@ export class TakeColumnsComponent implements OnInit {
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
-  }
-
-  setVisibleDropDown() {
-    this.visible = true;
   }
 
   private accept() {

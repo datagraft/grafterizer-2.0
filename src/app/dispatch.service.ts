@@ -85,7 +85,7 @@ export class DispatchService {
     };
   }
 
-  public uploadFile(file: File): Promise<any> {
+  public uploadFile(file: File): Observable<any> {
     const url = `${this.dispatchPath}/myassets/filestores`;
     const options = new RequestOptions({ withCredentials: true });
 
@@ -95,10 +95,7 @@ export class DispatchService {
     formData.append('filestore[file]', file, file.name);
     return this.http.post(url, formData, options)
       .map(res => res.json())
-      .toPromise()
-      .then(
-        (result: JSON) => result,
-        (error) => this.errorHandler(error));
+      .catch((error: any) => Observable.throw(error.json().error || 'Server error'));
   }
 
   // Get all filestores from DataGraft

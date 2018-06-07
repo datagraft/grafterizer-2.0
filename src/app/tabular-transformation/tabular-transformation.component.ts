@@ -28,11 +28,17 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private handsontableSelection: any;
   private loadedDataHeaders: any
 
+  private showSelectbox: boolean = false;
+  private showPipelineMetadataTabs: boolean = true;
+  private showHandsonTableProfiling: boolean = true;
+  private showHandsontable: boolean = true;
+  private showProfiling: boolean = true;
+
   private metadata: any;
   private title: string;
   private description: string;
   private keywords: string[];
-  private isPublic: boolean;
+  private isPublic: boolean = false;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -73,10 +79,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
-        //        this.handsonTable.showLoading = true;
-        //        this.handsonTable.displayJsEdnData(this.graftwerkData);
-        this.profilingComponent.loadJSON(this.graftwerkData);
-        this.profilingComponent.refresh(this.handsontableSelection);
+        if (this.profilingComponent !== undefined) {
+          this.profilingComponent.loadJSON(this.graftwerkData);
+          this.profilingComponent.refresh(this.handsontableSelection);
+        }
         this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
       }
     });
@@ -91,11 +97,17 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
 
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+      if (!paramMap.has('filestoreId')) {
+        this.showSelectbox = true;
+        this.showPipelineMetadataTabs = false;
+        this.showHandsonTableProfiling = false;
+      }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
             this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
+            console.log(result)
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
@@ -105,6 +117,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             console.log(error);
           });
     }
+    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+      this.showHandsonTableProfiling = false;
+    }
+
   }
 
   ngOnDestroy() {

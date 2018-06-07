@@ -20,7 +20,7 @@ export class CustomFunctionModalComponent implements OnInit {
 
   @ViewChild('editor') editor: any;
 
-  private modalEnabled: any;
+  private modalEnabled: any = false;
   private functions: any[] = [];
   private customFunctionDeclarations: any[] = [];
   private configurationObject: any;
@@ -38,7 +38,6 @@ export class CustomFunctionModalComponent implements OnInit {
 
   ngOnInit() {
     this.configurationObject = { lineWrapping: true, lineNumbers: false, theme: "monokai", mode: 'clojure', autofocus: true, matchBrackets: true, indentWithTabs: true };
-    this.modalEnabled = false;
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
       this.pipelineEvent = currentEvent;
       if (currentEvent.newStepType === 'CustomFunctionDeclaration') {

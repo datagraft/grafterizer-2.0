@@ -4,7 +4,7 @@
   </p-listbox>
 </div>
 
-<div id="btn-custom-functions">
+<div id="btn-custom-functions" *ngIf="!transformationOnlyView">
   <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
 </div>
 

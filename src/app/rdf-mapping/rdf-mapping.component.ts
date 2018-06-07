@@ -24,6 +24,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
+  private hiddenTable: boolean = false;
+
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
@@ -37,7 +39,6 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   constructor(private routingService: RoutingService, private route: ActivatedRoute, private router: Router,
     private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
-    // load the vocabularies from the transformation object
   }
 
   ngOnInit() {
@@ -45,23 +46,9 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
+
     this.tableContainer = document.getElementById('previewTable');
 
-    // data: [],
-    // rowHeaders: true,
-    // colHeaders: [],
-    // autoColumnSize: true,
-    // manualColumnResize: true,
-    // columnSorting: false,
-    // viewportColumnRenderingOffset: 40,
-    // wordWrap: true,
-    // stretchH: 'all',
-    // className: 'htCenter htMiddle',
-    // observeDOMVisibility: true,
-    // preventOverflow: false,
-    // fillHandle: false,
-    // readOnly: true,
-    // observeChanges: true,
     this.settings = {
       data: [],
       rowHeaders: true,
@@ -85,12 +72,15 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     };
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
+    const paramMap = this.route.snapshot.paramMap;
+    if (!paramMap.has('filestoreId')) {
+      this.hiddenTable = true;
+    }
+
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
         this.dataLoading = true;
       });
-
-
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
       this.displayJsEdnData(graftwerkData);
