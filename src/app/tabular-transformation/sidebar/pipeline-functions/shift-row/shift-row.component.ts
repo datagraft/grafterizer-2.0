@@ -14,12 +14,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class ShiftRowComponent implements OnInit {
 
-  private modalEnabled: boolean;
+  private modalEnabled: boolean = false;
 
-  private indexFrom: string;
-  private indexTo: string;
-  private shiftrowmode: string;
-  private docstring: string;
+  private indexFrom: string = null;
+  private indexTo: string = null;
+  private shiftrowmode: string = 'eods';
+  private docstring: string = 'Shift (move) row';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -30,10 +30,6 @@ export class ShiftRowComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.shiftrowmode = 'eods';
-    this.docstring = 'Shift (move) row';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;

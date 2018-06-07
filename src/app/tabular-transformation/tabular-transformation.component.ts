@@ -38,7 +38,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private title: string;
   private description: string;
   private keywords: string[];
-  private isPublic: boolean;
+  private isPublic: boolean = false;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;

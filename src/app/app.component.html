@@ -1,5 +1,4 @@
 <div class="main-container">
-
   <header class="header-6">
     <div class="branding" *ngIf="!isEmbedded">
       <a href="http://localhost:4200/" class="nav-link">
@@ -55,6 +54,13 @@
   </clr-alerts>
   <div class="content-container">
     <router-outlet></router-outlet>
+    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
+      <div class="spinner">
+        <span class="spinner spinner-lg" fxflex>
+          Loading...
+        </span>
+      </div>
+    </div>
     <div *ngIf="showLoadDistributionDialog" id="load-distribution">
       <h4>1 - Select an existing file from your DataGraft assets:</h4>
       <br>

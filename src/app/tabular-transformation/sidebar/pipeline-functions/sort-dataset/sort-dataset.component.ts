@@ -14,8 +14,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class SortDatasetComponent implements OnInit {
 
-  private modalEnabled: boolean;
-  private visible: boolean;
+  private modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -27,20 +26,15 @@ export class SortDatasetComponent implements OnInit {
 
   private sortTypes: string[] = ["Alphabetical", "Numerical", "By length", "Date"];
   private selectedColumn: any;
-  private order: boolean;
+  private order: boolean = false;
   private sorttype: any;
   private colnamesSorttypesMap: any[] = [];
   private previewedDataColumns: any[] = [];
-  private docstring: string;
+  private docstring: string = 'Sort column';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.docstring = 'Sort column';
-    this.visible = false;
-    this.order = false;
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -82,10 +76,6 @@ export class SortDatasetComponent implements OnInit {
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
-  }
-
-  setVisibleDropDown() {
-    this.visible = true;
   }
 
   private accept() {

@@ -13,11 +13,11 @@ import { TransformationService } from 'app/transformation.service';
 
 export class SplitColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean;
+  private modalEnabled: boolean = false;
 
   private colName: any;
-  private separator: string;
-  private docstring: string;
+  private separator: string = null;
+  private docstring: string = 'Split column';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -31,10 +31,6 @@ export class SplitColumnsComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.separator = null;
-    this.docstring = null;
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;

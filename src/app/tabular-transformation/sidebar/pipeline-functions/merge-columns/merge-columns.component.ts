@@ -14,8 +14,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MergeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean;
-  private visible: boolean;
+  private modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -27,17 +26,13 @@ export class MergeColumnsComponent implements OnInit {
 
   private separator: string;
   private newColName: string;
-  private docstring: string;
+  private docstring: string = 'Merge columns';
   private previewedDataColumns: string[] = [];
   private colsToMerge: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.visible = false;
-    this.docstring = 'Merge columns';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -75,10 +70,6 @@ export class MergeColumnsComponent implements OnInit {
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
-  }
-
-  setVisibleDropDown() {
-    this.visible = true;
   }
 
   private accept() {

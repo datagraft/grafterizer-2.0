@@ -19,9 +19,6 @@
     padding-left: 400px;
   }
 
-/* Style for data-exploration. 
-Similar to content-area class but without paddings */
-
 .content-area-no-padding {
     -webkit-box-flex: 1;
     -ms-flex: 1 1 auto;
@@ -43,3 +40,8 @@ Similar to content-area class but without paddings */
     color: dimgrey;
     margin-right: 20px;
 }
+
+.spinner {
+    margin-top: 200px;
+    margin-left: 800px;    
+  }

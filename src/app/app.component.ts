@@ -58,6 +58,7 @@ export class AppComponent implements OnInit {
   private showForkButton: boolean = true;
   private showDownloadButton: boolean = true;
   private showDeleteButton: boolean = true;
+  private showLoading: boolean = false;
 
   constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
@@ -82,6 +83,8 @@ export class AppComponent implements OnInit {
                 (result) => {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
+                    console.log(result)
+                    console.log(transformationObj)
                     self.transformationSvc.changeTransformationObj(transformationObj);
                     if (paramMap.has('filestoreId')) {
                       this.showRdfMappingTab = true;
@@ -174,13 +177,15 @@ export class AppComponent implements OnInit {
   onFileChange(event) {
     let reader = new FileReader();
     if (event.target.files && event.target.files.length > 0) {
+      this.showLoading = true;
+      this.showLoadDistributionDialog = false;
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
         this.dispatch.uploadFile(file).subscribe((result) => {
           console.log(result);
           this.save(result.id);
-          this.showLoadDistributionDialog = false;
+          this.showLoading = false;
         });
       };
     }
@@ -188,6 +193,7 @@ export class AppComponent implements OnInit {
 
   accept() {
     this.save();
+    this.showLoading = true;
     this.modalEnabled = false;
     this.showLoadDistributionDialog = false;
   }
@@ -263,13 +269,16 @@ export class AppComponent implements OnInit {
       transformationType = 'pipe';
       transformationCommand = 'my-pipe';
     }
+    if (!this.transformationObjSource.pipelines[0]) {
+      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [], []);
+      console.log(this.transformationObjSource);
+    }
     const newTransformationConfiguration = {
       type: transformationType,
       command: transformationCommand,
       code: clojureCode,
       json: JSON.stringify(this.transformationObjSource)
     };
-
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       return this.dispatch.updateTransformation(existingTransformationID,
         publisher,
@@ -293,13 +302,14 @@ export class AppComponent implements OnInit {
             console.log('New transformation created');
             console.log(result);
             if (userUploadedFile) {
-              this.router.navigate([result.publisher, 'transformations', result.id, userUploadedFile, 'tabular-transformation']);
+              this.router.navigate([result.publisher, 'transformations', result.id, userUploadedFile, 'tabular-transformation']).then(() => this.showLoading = false);
             }
             else if (this.selected == undefined) {
-              this.router.navigate([result.publisher, 'transformations', result.id]);
+              this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
             }
             else {
               this.router.navigate([result.publisher, 'transformations', result.id, this.selected.id, 'tabular-transformation']).then(() => {
+                this.showLoading = false;
                 this.distributionList = [];
                 this.selected = undefined;
               });

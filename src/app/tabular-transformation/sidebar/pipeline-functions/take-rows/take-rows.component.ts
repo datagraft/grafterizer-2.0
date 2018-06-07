@@ -13,12 +13,11 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeRowsComponent implements OnInit {
 
-  private modalEnabled: boolean;
-  private visible: boolean;
+  private modalEnabled: boolean = false;
 
-  private indexFrom: string;
-  private indexTo: string;
-  private take: boolean;
+  private indexFrom: string = null;
+  private indexTo: string = null;
+  private take: boolean = true;
   private docstring: string;
 
   private currentlySelectedFunctionSubscription: Subscription;
@@ -30,12 +29,6 @@ export class TakeRowsComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.visible = false;
-    this.indexFrom = null;
-    this.indexTo = null;
-    this.take = true;
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -61,10 +54,6 @@ export class TakeRowsComponent implements OnInit {
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
-  }
-
-  setVisibleDropDown() {
-    this.visible = true;
   }
 
   private accept() {

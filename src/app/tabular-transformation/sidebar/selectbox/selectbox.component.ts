@@ -78,8 +78,11 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
       // in case we finished creating a step
       if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
-        // add new step to the transformation object
+        console.log(this.transformationObj)
+        console.log(this.selectedFunction.currentFunction)
+        console.log(this.selectedFunction.changedFunction)
 
+        // add new step to the transformation object
         this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
 
         // notify of change to transformation object

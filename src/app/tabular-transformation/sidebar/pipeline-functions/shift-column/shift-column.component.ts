@@ -14,12 +14,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class ShiftColumnComponent implements OnInit {
 
-  private modalEnabled: boolean;
+  private modalEnabled: boolean = false;
 
   private colFrom: any;
-  private indexTo: string;
-  private shiftcolmode: string;
-  private docstring: String;
+  private indexTo: string = null;
+  private shiftcolmode: string = 'eods';
+  private docstring: String = 'Shift (move) column';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -33,11 +33,6 @@ export class ShiftColumnComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-
-    this.modalEnabled = false;
-    this.indexTo = null;
-    this.shiftcolmode = 'eods';
-    this.docstring = 'Shift (move) column';
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
