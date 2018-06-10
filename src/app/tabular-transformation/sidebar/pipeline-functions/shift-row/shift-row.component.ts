@@ -61,7 +61,7 @@ export class ShiftRowComponent implements OnInit {
   private accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
-      this.editShiftColumnFunction(this.currentlySelectedFunction);
+      this.editShiftRowFunction(this.currentlySelectedFunction);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -95,7 +95,7 @@ export class ShiftRowComponent implements OnInit {
     this.resetModal();
   }
 
-  private editShiftColumnFunction(instanceObj): any {
+  private editShiftRowFunction(instanceObj): any {
     instanceObj.indexFrom = parseInt(this.indexFrom);
     instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.shiftrowmode = this.shiftrowmode;

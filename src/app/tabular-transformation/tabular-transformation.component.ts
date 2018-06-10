@@ -64,6 +64,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
       // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },

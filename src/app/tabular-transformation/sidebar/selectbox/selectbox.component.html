@@ -28,6 +28,8 @@
 
 <merge-columns class="sin-flex"></merge-columns>
 
+<map-columns class="sin-flex"></map-columns>
+
 <sort-dataset class="sin-flex"></sort-dataset>
 
 <!-- <reshape-dataset [modalEnabled]="selected.id=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
@@ -40,9 +42,6 @@
 
 <add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
   [columns]="headers"></add-row>
-
-<map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mapcFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></map-columns>
 
 <group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [defaultParams]="selected.defaultParams"></group-dataset>

@@ -296,7 +296,7 @@ export class AppComponent implements OnInit {
           });
     }
     else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-      return this.dispatch.newTransformation(newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords,
+      return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
             console.log('New transformation created');

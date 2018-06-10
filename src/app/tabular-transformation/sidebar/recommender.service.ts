@@ -21,7 +21,7 @@ export class RecommenderService {
     // [0, 0, 0, 1, 0, 0], //Insert row below
     // [0, 0, 0, 0, 0, 0], //Filter
     // [0, 0, 1, -1, 0, 0], //Group and Aggregate
-    // [0, 0, 1, -1, 0, 0], //Mapc
+    [0, 0, 1, -1, 0, 0], //Mapc
     // [1, 0, 1, -1, 1, 0], //uppercase
     [0, 1, 1, -1, 0, 0],  //Merge columns
     [0, -1, 1, -1, 0, 0],	//Split columns 
