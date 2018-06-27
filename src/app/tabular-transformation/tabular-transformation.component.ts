@@ -68,7 +68,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
