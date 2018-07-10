@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/Rx';
 import { SelectItem } from 'primeng/primeng';
 import { Subscription } from 'rxjs/Subscription';
@@ -13,7 +14,6 @@ import { PipelineEventsService } from './tabular-transformation/pipeline-events.
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
-import * as data from '../assets/data.json';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +27,7 @@ export class AppComponent implements OnInit {
   private fillingWizard = false;
   private basic = true;
   private url: any = 'transformation/new/';
+  private dispatchPath: any = null;
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
@@ -60,7 +61,7 @@ export class AppComponent implements OnInit {
   private showDeleteButton: boolean = true;
   private showLoading: boolean = false;
 
-  constructor(public router: Router, private route: ActivatedRoute, private config: AppConfig,
+  constructor(public router: Router, private http: Http, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
@@ -114,6 +115,18 @@ export class AppComponent implements OnInit {
             this.showForkButton = false;
             this.showDownloadButton = false;
             this.showDeleteButton = false;
+          }
+          else if (!paramMap.has('publisher')) {
+            this.showRdfMappingTab = false;
+            this.showTabularAnnotationTab = false;
+            this.showSaveButton = true;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+            this.dispatch.getAllTransformations('', false).then((result) => {
+              this.router.navigate([result[0].publisher, 'transformations', 'new', 'tabular-transformation']).then(() => this.showLoading = false);
+              console.log(result);
+            });
           }
         }
       });

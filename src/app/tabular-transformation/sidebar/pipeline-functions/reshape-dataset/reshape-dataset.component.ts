@@ -79,7 +79,6 @@ export class ReshapeDatasetComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }

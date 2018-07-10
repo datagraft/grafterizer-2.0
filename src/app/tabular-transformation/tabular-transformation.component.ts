@@ -121,6 +121,13 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
       this.showHandsonTableProfiling = false;
     }
+    else if (!paramMap.has('publisher')) {
+      this.showHandsonTableProfiling = false;
+      this.showHandsontable = false;
+      this.showSelectbox = false;
+      this.showProfiling = false;
+      this.showPipelineMetadataTabs = false;
+    }
 
   }
 

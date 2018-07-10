@@ -40,7 +40,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   constructor(private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
     this.steps = [];
-    this.showPipeline = true; // TODO: not sure why we need this
+    this.showPipeline = false; // TODO: not sure why we need this
   }
 
   private getIndexOfPreviewedFunction(): number {
