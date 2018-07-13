@@ -17,6 +17,7 @@ import * as generateClojure from 'assets/generateclojure.js';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
 import { Subscription } from 'rxjs/Subscription';
+import {EnrichmentComponent} from './enrichment/enrichment.component';
 
 declare var Handsontable: any;
 
@@ -93,10 +94,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.container, this.settings);
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
-        if (event.realTarget.nodeName === 'BUTTON' || (
-          event.realTarget.nodeName === 'CLR-ICON' && event.path[1] && event.path[1].nodeName === 'BUTTON')) {
+        if (event.realTarget.id.startsWith('annotation_')) {
           blockCalculations.cells = true;
           this.openDialogForSelectedColumn(coords.col);
+        } else if (event.realTarget.id.startsWith('enrich_')) {
+          blockCalculations.cells = true;
+          this.openEnrichmentDialog(coords.col);
         }
         return;
       },
@@ -166,12 +169,20 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
   }
 
+  openEnrichmentDialog(headerIdx): void {
+    const currentHeader = this.annotationService.headers[headerIdx];
+    const dialogRef = this.dialog.open(EnrichmentComponent, {
+      width: '750px',
+      data: { header: currentHeader }
+    });
+  }
+
   getTableHeader(col): string {
     const header = this.annotationService.headers[col];
     const annotation = this.annotationService.getAnnotation(header);
     const buttonIconShape = annotation ? 'pencil' : 'plus';
     let HTMLHeader = header +
-      '<button class="btn btn-sm btn-link btn-icon">' +
+      '<button class="btn btn-sm btn-link btn-icon" id="annotation_ ' + col + '">' +
       '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
       '</button>';
     if (annotation) {
@@ -192,6 +203,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         statusIcon +
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
+    }
+
+    // ENRICHMENT BUTTON
+    HTMLHeader += '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + col + '">' +
+      '<clr-icon shape="view-columns"></clr-icon>' +
+      '</button>';
+
+    if (annotation) {
       HTMLHeader += '<br>';
 
       // ANNOTATION DETAILS

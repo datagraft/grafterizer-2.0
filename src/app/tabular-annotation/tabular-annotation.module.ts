@@ -14,6 +14,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatDialogModule} from '@angular/material';
 import {ConfigComponent} from './config/config.component';
 import {TagInputModule} from 'ngx-chips';
+import { EnrichmentComponent } from './enrichment/enrichment.component';
 
 @NgModule({
   imports: [
@@ -28,12 +29,13 @@ import {TagInputModule} from 'ngx-chips';
     MatDialogModule,
     TagInputModule
   ],
-  entryComponents: [AnnotationFormComponent, ConfigComponent],
+  entryComponents: [AnnotationFormComponent, ConfigComponent, EnrichmentComponent],
   declarations: [
     TabularAnnotationComponent,
     TabularAnnotationDetailComponent,
     AnnotationFormComponent,
-    ConfigComponent
+    ConfigComponent,
+    EnrichmentComponent
   ]
 })
 
