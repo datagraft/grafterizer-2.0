@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
 import { Subscription } from 'rxjs/Subscription';
 import {EnrichmentComponent} from './enrichment/enrichment.component';
+import {EnrichmentService} from './enrichment.service';
 
 declare var Handsontable: any;
 
@@ -63,8 +64,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, private route: ActivatedRoute,
-    private routingService: RoutingService, public dialog: MatDialog) {
+    public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
+              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -123,6 +124,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
         this.annotationService.data = this.graftwerkData[':rows'];
+
+        this.enrichmentService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
+        this.enrichmentService.data = this.graftwerkData[':rows'];
+
         if (this.transformationObj['annotations']) {
           this.transformationObj['annotations'].forEach(annotationObj => {
             const annotation = new Annotation(annotationObj);
@@ -174,6 +179,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(EnrichmentComponent, {
       width: '750px',
       data: { header: currentHeader }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result);
     });
   }
 

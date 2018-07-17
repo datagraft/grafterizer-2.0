@@ -28,6 +28,7 @@ import { AbstatService } from './tabular-annotation/abstat.service';
 import { MatButtonModule } from '@angular/material/button';
 import { DataGraftMessageService } from 'app/data-graft-message.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {EnrichmentService} from './tabular-annotation/enrichment.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -61,6 +62,7 @@ export function initConfig(config: AppConfig) {
     TransformationService,
     AnnotationService,
     AbstatService,
+    EnrichmentService,
     RoutingService,
     {
       provide: APP_INITIALIZER,

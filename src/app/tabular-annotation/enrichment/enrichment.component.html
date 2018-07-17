@@ -1,3 +1,51 @@
-<p>
-  enrichment works!
-</p>
+<h1 mat-dialog-title>Column Reconciliations</h1>
+<div mat-dialog-content>
+
+  <form #configForm="ngForm">
+    <section class="form-block">
+      <div class="form-group">
+        <label class="required" for="reconciliation-service">Reconciliation service: </label>
+        <div class="select">
+          <select id="reconciliation-service"
+                  name="reconciliation-service"
+                  [(ngModel)]="selectedService">
+            <option *ngFor="let service of servicesNames" [value]="service">{{service}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="column-name">New column name</label>
+        <input type="text" id="column-name" placeholder="{{header}}_{{selectedService}}" size="45"
+               [(ngModel)]="newColumnName" name="newColumnName">
+      </div>
+    </section>
+  </form>
+
+  <div id="preview" *ngIf="showPreview">
+
+    <h3> Preview </h3>
+    <clr-datagrid>
+      <clr-dg-column>Original value</clr-dg-column>
+      <clr-dg-column>Reconciled entity</clr-dg-column>
+      <clr-dg-column>Reconciled entity name</clr-dg-column>
+      <clr-dg-column>Score</clr-dg-column>
+
+      <clr-dg-row *ngFor="let mapping of reconciledData">
+        <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
+        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell"><a href="{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].name}}</clr-dg-cell>
+        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].score}}</clr-dg-cell>
+      </clr-dg-row>
+      <ng-template #empty_cell></ng-template>
+      <clr-dg-footer>Reconciled {{validMappingsCount}} out of {{reconciledData.length}} unique values</clr-dg-footer>
+    </clr-datagrid>
+
+  </div>
+
+</div>
+<div mat-dialog-actions>
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
+</div>
