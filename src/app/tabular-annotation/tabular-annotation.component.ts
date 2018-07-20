@@ -1,24 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AnnotationService } from './annotation.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AnnotationService} from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import { TransformationService } from '../transformation.service';
-import { DispatchService } from '../dispatch.service';
-import { ActivatedRoute } from '@angular/router';
-import { RoutingService } from '../routing.service';
-import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
+import {TransformationService} from '../transformation.service';
+import {DispatchService} from '../dispatch.service';
+import {ActivatedRoute} from '@angular/router';
+import {RoutingService} from '../routing.service';
+import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
-import * as generateClojure from 'assets/generateclojure.js';
-import { MatDialog } from '@angular/material';
-import { ConfigComponent } from './config/config.component';
-import { Subscription } from 'rxjs/Subscription';
+import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
+import {MatDialog} from '@angular/material';
+import {ConfigComponent} from './config/config.component';
+import {Subscription} from 'rxjs/Subscription';
 import {EnrichmentComponent} from './enrichment/enrichment.component';
 import {EnrichmentService} from './enrichment.service';
+import {Mapping} from './reconciliation.model';
+import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
 
 declare var Handsontable: any;
 
@@ -29,7 +30,6 @@ declare var Handsontable: any;
 })
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
-  // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
   private graftwerkData: any;
 
@@ -65,7 +65,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
     public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
-              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog) {
+              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
+              private pipelineEventsSvc: PipelineEventsService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -182,10 +183,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
+      if (result) {
+        this.deriveColumnFromReconciliation(result['colName'], headerIdx, currentHeader, result['mapping']);
+      }
     });
   }
 
+  /**
+   * Return the HTML template as string for the given column
+   * @param col
+   * @returns {string}
+   */
   getTableHeader(col): string {
     const header = this.annotationService.headers[col];
     const annotation = this.annotationService.getAnnotation(header);
@@ -284,13 +292,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     if (this.transformationObj.graphs.length === 0) {
       this.transformationObj.graphs.push(new transformationDataModel.Graph('', []));
       this.transformationObj.graphs.push(graph);
-    }
-    // if rdf-tree-mapping graph exists --> push tabular-annotation graph
-    else if (this.transformationObj.graphs.length === 1) {
+    } else if (this.transformationObj.graphs.length === 1) { // if rdf-tree-mapping graph exists --> push tabular-annotation graph
       this.transformationObj.graphs.push(graph);
-    }
-    // if tabular-annotation graph exists --> replace/ update tabular-annotation graph
-    else if (this.transformationObj.graphs.length > 1) {
+    } else if (this.transformationObj.graphs.length > 1) { // if tabular-annotation graph exists --> replace/update tabular-annotation graph
       this.transformationObj.graphs[1] = graph;
     }
 
@@ -517,5 +521,61 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
 
     return prefix;
+  }
+
+  /**
+   * Create a new column using the existing deriveColumn function
+   * @param newColName
+   * @param colsToDeriveFromIdx
+   * @param colsToDeriveFrom
+   * @param {Mapping[]} mapping
+   */
+  deriveColumnFromReconciliation(newColName: string, colsToDeriveFromIdx: number, colsToDeriveFrom: string, mapping: Mapping[]) {
+
+    // Create a new custom function
+    const fName = `rec${colsToDeriveFromIdx}To${newColName}`;
+    const fMap = this.mappingToClojureMap(mapping);
+    const fDescription = '';
+    const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} (keyword (clojure.string/replace v #" " "_")) ""))`;
+    const reconcileFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
+    this.transformationObj.customFunctionDeclarations.push(reconcileFunction);
+
+    // Create the derive column step
+    const newFunction = new transformationDataModel.DeriveColumnFunction(newColName, [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
+      [new transformationDataModel.FunctionWithArgs(reconcileFunction, [])], '');
+
+    this.pipelineEventsSvc.changeSelectedFunction({
+      currentFunction: {},
+      changedFunction: newFunction
+    });
+
+    // Pipeline update
+    this.transformationObj.pipelines[0].addAfter({}, newFunction);
+
+    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
+
+    for (let i = 0; i < this.transformationObj.pipelines[0].functions.length - 1; ++i) {
+      this.transformationObj.pipelines[0].functions.isPreviewed = false;
+    }
+
+  }
+
+  /**
+   * Return the mapping as Clojure map -> {:key1 value1 :key2 value2 ... :keyN valueN}
+   * All whitespaces in key values are replaced with underscores
+   * @returns {string}
+   */
+
+  public mappingToClojureMap(mapping: Mapping[]): string {
+    let map = '{';
+    mapping.forEach(function (m) {
+      if (m.results.length > 0) {
+        map += `:${m.originalQuery.replace(/\s/g, '_')} "${m.results[0].id}" `;
+      }
+    });
+    map += '}';
+    console.log(map);
+    return map;
   }
 }

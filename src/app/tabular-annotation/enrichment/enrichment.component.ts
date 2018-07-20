@@ -37,7 +37,6 @@ export class EnrichmentComponent implements OnInit {
   }
 
   public reconcile() {
-
     this.enrichmentService.reconcileColumn(this.header, this.selectedService)
       .subscribe((data) => {
         this.reconciledData = data;
@@ -50,6 +49,7 @@ export class EnrichmentComponent implements OnInit {
     if (!this.newColumnName || this.newColumnName.trim().length === 0) {
       this.newColumnName = this.header + '_' + this.selectedService;
     }
+    this.newColumnName = this.newColumnName.replace(/\s/g, '_');
     this.dialogRef.close({'mapping': this.reconciledData, 'colName': this.newColumnName });
   }
 
