@@ -18,7 +18,7 @@ import {ConfigComponent} from './config/config.component';
 import {Subscription} from 'rxjs/Subscription';
 import {EnrichmentComponent} from './enrichment/enrichment.component';
 import {EnrichmentService} from './enrichment.service';
-import {Mapping} from './reconciliation.model';
+import {Mapping} from './enrichment.model';
 import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
 
 declare var Handsontable: any;
@@ -98,7 +98,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
         if (event.realTarget.id.startsWith('annotation_')) {
           blockCalculations.cells = true;
-          this.openDialogForSelectedColumn(coords.col);
+          this.openAnnotationDialog(coords.col);
         } else if (event.realTarget.id.startsWith('enrich_')) {
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
@@ -152,7 +152,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.previewedTransformationSubscription.unsubscribe();
   }
 
-  openDialogForSelectedColumn(headerIdx): void {
+  openAnnotationDialog(headerIdx): void {
     const currentHeader = this.annotationService.headers[headerIdx];
     const currentAnnotation = this.annotationService.getAnnotation(currentHeader);
 
@@ -184,7 +184,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.deriveColumnFromReconciliation(result['colName'], headerIdx, currentHeader, result['mapping']);
+        this.deriveColumnFromEnrichment(result['colName'], headerIdx, currentHeader, result['mapping']);
       }
     });
   }
@@ -530,19 +530,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param {Mapping[]} mapping
    */
-  deriveColumnFromReconciliation(newColName: string, colsToDeriveFromIdx: number, colsToDeriveFrom: string, mapping: Mapping[]) {
+  deriveColumnFromEnrichment(newColName: string, colsToDeriveFromIdx: number, colsToDeriveFrom: string, mapping: Mapping[]) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${newColName}`;
     const fMap = this.mappingToClojureMap(mapping);
     const fDescription = '';
     const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} (keyword (clojure.string/replace v #" " "_")) ""))`;
-    const reconcileFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
-    this.transformationObj.customFunctionDeclarations.push(reconcileFunction);
+    const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
+    this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
     // Create the derive column step
     const newFunction = new transformationDataModel.DeriveColumnFunction(newColName, [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
-      [new transformationDataModel.FunctionWithArgs(reconcileFunction, [])], '');
+      [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
     this.pipelineEventsSvc.changeSelectedFunction({
       currentFunction: {},

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import {Mapping} from './reconciliation.model';
+import {Mapping} from './enrichment.model';
 
 @Injectable()
 export class EnrichmentService {
@@ -10,14 +10,12 @@ export class EnrichmentService {
 
   public headers: string[];
   public data;
-  public subjects;
 
   private baseURL = 'http://localhost:8080/reconcile/geonames?queries=';
 
   constructor(private http: HttpClient) {
     this.headers = [];
     this.data = [];
-    this.subjects = new Map<string, string>();
   }
 
   reconcileColumn(header: string, serviceType: string): Observable<Mapping[]> {
