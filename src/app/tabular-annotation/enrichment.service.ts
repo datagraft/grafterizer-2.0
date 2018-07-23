@@ -10,12 +10,14 @@ export class EnrichmentService {
 
   public headers: string[];
   public data;
+  private reconciledColumns: {};
 
   private baseURL = 'http://localhost:8080/reconcile/geonames?queries=';
 
   constructor(private http: HttpClient) {
     this.headers = [];
     this.data = [];
+    this.reconciledColumns = {};
   }
 
   reconcileColumn(header: string, serviceType: string): Observable<Mapping[]> {
@@ -50,6 +52,24 @@ export class EnrichmentService {
     //
     //     return mappings;
     //   });
+  }
+
+  setReconciledColumn(header: string, pipelineFunction) {
+    this.reconciledColumns[header] = pipelineFunction;
+  }
+
+  isColumnReconciled(header: string): boolean {
+    return Object.keys(this.reconciledColumns).includes(header);
+  }
+
+  getReconciledColumns(): any[] {
+    const recCols = [];
+    Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
+    return recCols;
+  }
+
+  removeReconciledColumn(columnHeader: string) {
+    delete this.reconciledColumns[columnHeader];
   }
 
 }

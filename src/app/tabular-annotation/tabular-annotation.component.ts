@@ -114,6 +114,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
+
+        if (this.transformationObj['reconciledColumns']) {
+          this.transformationObj['reconciledColumns'].forEach(reconciledCol => {
+            // Check if the user has remove manually the reconciliation step from the pipeline
+            if (this.transformationObj.pipelines[0].functions
+              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.newColName).length > 0) {
+              this.enrichmentService.setReconciledColumn(reconciledCol.newColName, reconciledCol);
+            }
+          });
+        }
+
       });
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -136,6 +147,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           });
           this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
         }
+
         this.hot.updateSettings({
           columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
           colHeaders: (col) => this.getTableHeader(col)
@@ -184,7 +196,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.deriveColumnFromEnrichment(result['colName'], headerIdx, currentHeader, result['mapping']);
+        this.deriveColumnFromEnrichment(result['colName'], headerIdx, currentHeader, result['mapping'], result['reconciled']);
       }
     });
   }
@@ -529,8 +541,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFromIdx
    * @param colsToDeriveFrom
    * @param {Mapping[]} mapping
+   * @param reconciled
    */
-  deriveColumnFromEnrichment(newColName: string, colsToDeriveFromIdx: number, colsToDeriveFrom: string, mapping: Mapping[]) {
+  deriveColumnFromEnrichment(newColName: string, colsToDeriveFromIdx: number,
+                             colsToDeriveFrom: string, mapping: Mapping[], reconciled: boolean) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${newColName}`;
@@ -551,6 +565,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Pipeline update
     this.transformationObj.pipelines[0].addAfter({}, newFunction);
+
+    if (reconciled) {
+      this.enrichmentService.setReconciledColumn(newColName, newFunction);
+    }
+
+    this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
 
     this.transformationSvc.changeTransformationObj(this.transformationObj);
     this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));

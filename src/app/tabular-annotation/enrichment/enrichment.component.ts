@@ -20,6 +20,7 @@ export class EnrichmentComponent implements OnInit {
   public validMappingsCount: number;
 
   public showPreview: boolean;
+  public isColumnReconciled: boolean;
 
   constructor(public dialogRef: MatDialogRef<AnnotationFormComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
@@ -27,6 +28,7 @@ export class EnrichmentComponent implements OnInit {
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
+    this.isColumnReconciled = this.enrichmentService.isColumnReconciled(this.header);
     this.services = new Map<string, string>();
     this.services.set('LOCATION', 'location');
     this.services.set('CATEGORY', 'category');
@@ -42,6 +44,7 @@ export class EnrichmentComponent implements OnInit {
         this.reconciledData = data;
         this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
         this.showPreview = true;
+        this.isColumnReconciled = true;
       });
   }
 
@@ -50,7 +53,8 @@ export class EnrichmentComponent implements OnInit {
       this.newColumnName = this.header + '_' + this.selectedService;
     }
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
-    this.dialogRef.close({'mapping': this.reconciledData, 'colName': this.newColumnName });
+    this.dialogRef.close({'mapping': this.reconciledData,
+      'colName': this.newColumnName, 'reconciled': this.isColumnReconciled });
   }
 
 }

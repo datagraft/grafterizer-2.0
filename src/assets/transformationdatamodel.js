@@ -2016,18 +2016,23 @@ Transformation.revive = function (data) {
     pipelines.push(currPipeline);
   }
   var transformation = new Transformation(data.customFunctionDeclarations, data.prefixers, pipelines, data.graphs, data.rdfVocabs);
-  // Utility for ASIA
-  // TODO: remove this member function when ASIA will be fully compatible with the Graph model
-  if (data.annotations) {
+  // Utilities for ASIA
+  if (data.annotations) { // TODO: remove this member function when ASIA will be fully compatible with the Graph model
     transformation.setAnnotations(data.annotations);
+  }
+  if (data.reconciledColumns) {
+    transformation.setReconciledColumns(data.reconciledColumns);
   }
   return transformation;
 };
-// Utility for ASIA
+// Utilities for ASIA
 // TODO: remove this member function when ASIA will be fully compatible with the Graph model
 Transformation.prototype.setAnnotations = function (annotations) {
   this.annotations = annotations;
-}
+};
+Transformation.prototype.setReconciledColumns = function(reconciledColumns) {
+  this.reconciledColumns = reconciledColumns;
+};
 Transformation.prototype.addGraphAfter = function (graph, graphToAdd) {
 
   var index = this.graphs.indexOf(graph);
