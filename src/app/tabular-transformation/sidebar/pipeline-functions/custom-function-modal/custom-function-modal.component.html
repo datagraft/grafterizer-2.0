@@ -7,8 +7,8 @@
           <ng-template let-cf let-i="index" pTemplate="item">
             <div class="ui-helper-clearfix">
               <span>{{cf.label}}</span>
-              <button *ngIf="cf.value==selected" class="btn  btn-link btn-icon btn-sm" style="float:right">
-                <clr-icon shape="times" size="18" style="fill:white" (click)="removeFunction(i)"></clr-icon>
+              <button *ngIf="cf.value==selected" class="btn  btn-link btn-icon btn-sm" style="float:right" (click)="removeFunction(i)">
+                <clr-icon shape="times" size="18" style="fill:white"></clr-icon>
               </button>
             </div>
           </ng-template>
