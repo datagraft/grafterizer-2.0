@@ -547,7 +547,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
     const fMap = deriveMap.toClojureMap();
     const fDescription = '';
-    const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} (keyword (clojure.string/replace v #" " "_")) ""))`;
+    const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} v ""))`;
     const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
     this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 

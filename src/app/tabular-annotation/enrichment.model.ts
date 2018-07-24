@@ -53,6 +53,22 @@ export class Mapping {
   }
 }
 
+export class Extension {
+  public id: string;
+  public properties: Map<string, any[]>;
+
+  constructor(id: string, properties: string[]) {
+    this.id = id;
+    this.properties = new Map();
+    properties.forEach(prop => this.properties.set(prop, []));
+  }
+
+  public setResultsFromService(res) {
+    Object.keys(res).forEach(key => this.properties.set(key, res[key]));
+  }
+
+}
+
 export class DeriveMap {
   private deriveMap: Map<string, string>;
   public newColName: string;
@@ -66,22 +82,39 @@ export class DeriveMap {
     this.deriveMap = new Map();
     mapping.forEach(m => {
       if (m.results.length > 0) {
-        const key = m.originalQuery.replace(/\s/g, '_');
-        this.deriveMap.set(key, m.results[0].id); // TODO: iterate over results!
+        // const key = m.originalQuery.replace(/\s/g, '_');
+        this.deriveMap.set(m.originalQuery, m.results[0].id); // TODO: iterate over results!
+      }
+    });
+    return this;
+  }
+
+  buildFromExtension(selectedProperty: string, extensions: Extension[]) {
+    console.log(extensions);
+    console.log(selectedProperty);
+    this.deriveMap = new Map();
+    extensions.forEach(e => {
+      if (e.properties.get(selectedProperty).length > 0) {
+        const firstRes = e.properties.get(selectedProperty)[0];
+        if (firstRes['name']) {
+          this.deriveMap.set(e.id, firstRes['name']);
+        } else if (firstRes['str']) {
+          this.deriveMap.set(e.id, firstRes['str']);
+        }
       }
     });
     return this;
   }
 
   /**
-   * Return the mapping as Clojure map -> {:key1 value1 :key2 value2 ... :keyN valueN}
+   * Return the mapping as Clojure map -> {"key1" "value1" "key2" "value2" ... "keyN" "valueN"}
    * All whitespaces in key values are replaced with underscores
    * @returns {string}
    */
   toClojureMap(): string {
     let map = '{';
     this.deriveMap.forEach((value, key) => {
-      map += `:${key} "${value}" `;
+      map += `"${key}" "${value}" `;
     });
     map += '}';
     console.log(map);

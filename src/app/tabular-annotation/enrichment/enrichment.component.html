@@ -1,7 +1,20 @@
-<h1 mat-dialog-title>Column Reconciliations</h1>
+<h1 mat-dialog-title *ngIf="!isColumnReconciled">Column Reconciliation</h1>
+<h1 mat-dialog-title *ngIf="isColumnReconciled">Column Extension</h1>
 <div mat-dialog-content>
 
-  <form #configForm="ngForm">
+  <div class="form-group" *ngIf="isColumnReconciled">
+    <label class="required" for="reconciliation-service">Select properties: </label>
+    <tag-input [(ngModel)]="selectedProperties"
+               [onlyFromAutocomplete]="true"
+               [placeholder]="'+ Property'"
+               [secondaryPlaceholder]="'Property'"
+               *ngIf="isColumnReconciled">
+      <tag-input-dropdown [autocompleteObservable]='extensionProperties'
+                          [identifyBy]="'name'" [displayBy]="'name'"></tag-input-dropdown>
+    </tag-input>
+  </div>
+
+  <form #configForm="ngForm" *ngIf="!isColumnReconciled">
     <section class="form-block">
       <div class="form-group">
         <label class="required" for="reconciliation-service">Reconciliation service: </label>
@@ -25,7 +38,7 @@
   <div id="preview" *ngIf="showPreview">
 
     <h3> Preview </h3>
-    <clr-datagrid>
+    <clr-datagrid *ngIf="!isColumnReconciled">
       <clr-dg-column>Original value</clr-dg-column>
       <clr-dg-column>Reconciled entity</clr-dg-column>
       <clr-dg-column>Reconciled entity name</clr-dg-column>
@@ -41,11 +54,27 @@
       <clr-dg-footer>Reconciled {{validMappingsCount}} out of {{reconciledData.length}} unique values</clr-dg-footer>
     </clr-datagrid>
 
+    <clr-datagrid *ngIf="isColumnReconciled">
+      <clr-dg-column>{{header}}</clr-dg-column>
+      <clr-dg-column *ngFor="let prop of selectedProperties">{{prop.value}}</clr-dg-column>
+
+      <clr-dg-row *ngFor="let extension of extensionData">
+        <clr-dg-cell>{{extension.id}}</clr-dg-cell>
+        <clr-dg-cell *ngFor="let prop of selectedProperties">
+          <span *ngIf="extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['str']"> {{extension.properties.get(prop.value)[0]['str']}}</span>
+          <span *ngIf="extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['name']"> {{extension.properties.get(prop.value)[0]['name']}}</span>
+        </clr-dg-cell>
+
+      </clr-dg-row>
+      <ng-template #empty_cell></ng-template>
+    </clr-datagrid>
+
   </div>
 
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial *ngIf="!isColumnReconciled">Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="selectedProperties.length === 0" (click)="extend()" cdkFocusInitial *ngIf="isColumnReconciled">Extend</button>
   <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>
