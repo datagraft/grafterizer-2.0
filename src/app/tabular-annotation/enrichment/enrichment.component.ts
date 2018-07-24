@@ -2,6 +2,8 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {AnnotationFormComponent} from '../annotation-form/annotation-form.component';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
+import {Observable} from 'rxjs/Observable';
+import {DeriveMap} from '../enrichment.model';
 
 @Component({
   selector: 'app-enrichment',
@@ -18,7 +20,6 @@ export class EnrichmentComponent implements OnInit {
   public services: Map<string, string>;
   public newColumnName: string;
   public validMappingsCount: number;
-
   public showPreview: boolean;
   public isColumnReconciled: boolean;
 
@@ -34,7 +35,6 @@ export class EnrichmentComponent implements OnInit {
     this.services.set('CATEGORY', 'category');
     this.services.set('PRODUCT', 'product');
     this.servicesNames = Array.from(this.services.keys());
-
     this.showPreview = false;
   }
 
@@ -44,17 +44,20 @@ export class EnrichmentComponent implements OnInit {
         this.reconciledData = data;
         this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
         this.showPreview = true;
-        this.isColumnReconciled = true;
       });
   }
 
   public submit() {
-    if (!this.newColumnName || this.newColumnName.trim().length === 0) {
-      this.newColumnName = this.header + '_' + this.selectedService;
+    const deriveMaps = [];
+    if (!this.isColumnReconciled) { // reconciliation
+      if (!this.newColumnName || this.newColumnName.trim().length === 0) {
+        this.newColumnName = this.header + '_' + this.selectedService;
+      }
+      this.newColumnName = this.newColumnName.replace(/\s/g, '_');
+      deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
     }
-    this.newColumnName = this.newColumnName.replace(/\s/g, '_');
-    this.dialogRef.close({'mapping': this.reconciledData,
-      'colName': this.newColumnName, 'reconciled': this.isColumnReconciled });
+
+    this.dialogRef.close({'deriveMaps': deriveMaps });
   }
 
 }

@@ -52,3 +52,40 @@ export class Mapping {
     }
   }
 }
+
+export class DeriveMap {
+  private deriveMap: Map<string, string>;
+  public newColName: string;
+
+  constructor(newColName: string) {
+    this.deriveMap = new Map();
+    this.newColName = newColName;
+  }
+
+  buildFromMapping(mapping: Mapping[]) {
+    this.deriveMap = new Map();
+    mapping.forEach(m => {
+      if (m.results.length > 0) {
+        const key = m.originalQuery.replace(/\s/g, '_');
+        this.deriveMap.set(key, m.results[0].id); // TODO: iterate over results!
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Return the mapping as Clojure map -> {:key1 value1 :key2 value2 ... :keyN valueN}
+   * All whitespaces in key values are replaced with underscores
+   * @returns {string}
+   */
+  toClojureMap(): string {
+    let map = '{';
+    this.deriveMap.forEach((value, key) => {
+      map += `:${key} "${value}" `;
+    });
+    map += '}';
+    console.log(map);
+    return map;
+  }
+
+}

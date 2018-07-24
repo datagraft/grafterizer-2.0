@@ -18,7 +18,7 @@ import {ConfigComponent} from './config/config.component';
 import {Subscription} from 'rxjs/Subscription';
 import {EnrichmentComponent} from './enrichment/enrichment.component';
 import {EnrichmentService} from './enrichment.service';
-import {Mapping} from './enrichment.model';
+import {DeriveMap} from './enrichment.model';
 import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
 
 declare var Handsontable: any;
@@ -195,8 +195,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.deriveColumnFromEnrichment(result['colName'], headerIdx, currentHeader, result['mapping'], result['reconciled']);
+      if (result['deriveMaps']) {
+        result['deriveMaps'].forEach(deriveMap => this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap));
       }
     });
   }
@@ -537,25 +537,23 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Create a new column using the existing deriveColumn function
-   * @param newColName
    * @param colsToDeriveFromIdx
    * @param colsToDeriveFrom
-   * @param {Mapping[]} mapping
-   * @param reconciled
+   * @param deriveMap
    */
-  deriveColumnFromEnrichment(newColName: string, colsToDeriveFromIdx: number,
-                             colsToDeriveFrom: string, mapping: Mapping[], reconciled: boolean) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap) {
 
     // Create a new custom function
-    const fName = `rec${colsToDeriveFromIdx}To${newColName}`;
-    const fMap = this.mappingToClojureMap(mapping);
+    const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
+    const fMap = deriveMap.toClojureMap();
     const fDescription = '';
     const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} (keyword (clojure.string/replace v #" " "_")) ""))`;
     const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
     this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
     // Create the derive column step
-    const newFunction = new transformationDataModel.DeriveColumnFunction(newColName, [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
+    const newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
+      [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
       [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
     this.pipelineEventsSvc.changeSelectedFunction({
@@ -566,8 +564,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // Pipeline update
     this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
-    if (reconciled) {
-      this.enrichmentService.setReconciledColumn(newColName, newFunction);
+    // If the colsToDeriveFrom is not reconciled yet, this is a reconciliation step; otherwise,this is an extension
+    if (!this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
+      this.enrichmentService.setReconciledColumn(deriveMap.newColName, newFunction);
     }
 
     this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
@@ -581,21 +580,4 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   }
 
-  /**
-   * Return the mapping as Clojure map -> {:key1 value1 :key2 value2 ... :keyN valueN}
-   * All whitespaces in key values are replaced with underscores
-   * @returns {string}
-   */
-
-  public mappingToClojureMap(mapping: Mapping[]): string {
-    let map = '{';
-    mapping.forEach(function (m) {
-      if (m.results.length > 0) {
-        map += `:${m.originalQuery.replace(/\s/g, '_')} "${m.results[0].id}" `;
-      }
-    });
-    map += '}';
-    console.log(map);
-    return map;
-  }
 }
