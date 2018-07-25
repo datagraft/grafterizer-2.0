@@ -7,8 +7,6 @@ import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
 import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import * as generateClojure from 'assets/generateclojure.js';
 import { Subscription } from 'rxjs/Subscription';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 

@@ -27,7 +27,8 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private selected: any;
   private modalEnabled = false;
   private message: any;
-  private transformationOnlyView: boolean;
+  private transformationOnlyView: boolean = false;
+  private selectboxDisabled: boolean;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -46,15 +47,19 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges() {
     if (this.suggestions) {
       this.transformations = this.suggestions;
+      const paramMap = this.route.snapshot.paramMap;
+      if (!paramMap.has('filestoreId')) {
+        this.transformationOnlyView = true;
+      };
+      if (!paramMap.has('transformationId') && !paramMap.has('filestoreId')) {
+        this.selectboxDisabled = true;
+      } else {
+        this.selectboxDisabled = false;
+      }
     }
   }
 
   ngOnInit() {
-    this.transformationOnlyView = false;
-    const paramMap = this.route.snapshot.paramMap;
-    if (!paramMap.has('filestoreId')) {
-      this.transformationOnlyView = true;
-    };
 
     this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
       this.transformationObj = transformation;

@@ -24,7 +24,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private hiddenTable: boolean = false;
+  private transformationOnlyView: boolean = false;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -74,7 +74,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
 
     const paramMap = this.route.snapshot.paramMap;
     if (!paramMap.has('filestoreId')) {
-      this.hiddenTable = true;
+      this.transformationOnlyView = true;
     }
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
