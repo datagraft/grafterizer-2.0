@@ -3,7 +3,7 @@ import {AnnotationFormComponent} from '../annotation-form/annotation-form.compon
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs/Observable';
-import {DeriveMap} from '../enrichment.model';
+import {ConciliatorService, DeriveMap} from '../enrichment.model';
 
 @Component({
   selector: 'app-enrichment',
@@ -16,15 +16,16 @@ export class EnrichmentComponent implements OnInit {
   public data: any;
   public reconciledData: any;
   public extensionData: any;
-  public selectedService: any;
-  public servicesNames: string[];
-  public services: Map<string, string>;
+  public selectedGroup: any;
+  public selectedServices: any;
+  public services: ConciliatorService[];
   public newColumnName: string;
   public validMappingsCount: number;
 
   public showPreview: boolean;
   public isColumnReconciled: boolean;
   public selectedProperties: any[];
+  public reconcileButtonDisabled: boolean;
 
   constructor(public dialogRef: MatDialogRef<AnnotationFormComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
@@ -33,20 +34,29 @@ export class EnrichmentComponent implements OnInit {
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.isColumnReconciled = this.enrichmentService.isColumnReconciled(this.header);
-    this.services = new Map<string, string>();
-    this.services.set('LOCATION', 'location');
-    this.services.set('CATEGORY', 'category');
-    this.services.set('PRODUCT', 'product');
-    this.servicesNames = Array.from(this.services.keys());
+    this.services = [];
+    this.selectedServices = [];
+    this.enrichmentService.listServices().subscribe((data) => {
+      Object.keys(data).forEach((serviceCategory) => {
+        data[serviceCategory].forEach((service) => {
+          this.services.push(new ConciliatorService(service['id'], service['name'], serviceCategory));
+        });
+      });
+    });
     this.showPreview = false;
     this.selectedProperties = [];
+    this.reconcileButtonDisabled = true;
   }
 
   public reconcile() {
-    this.enrichmentService.reconcileColumn(this.header, this.selectedService).subscribe((data) => {
+    if (this.selectedServices.length === 0 && this.selectedGroup) {
+      this.selectedServices = this.servicesByGroup(this.selectedGroup).map(s => s.getId());
+    }
+    this.enrichmentService.reconcileColumn(this.header, this.selectedServices).subscribe((data) => {
         this.reconciledData = data;
         this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
         this.showPreview = true;
+        this.reconcileButtonDisabled = true;
       });
   }
 
@@ -62,7 +72,7 @@ export class EnrichmentComponent implements OnInit {
     const deriveMaps = [];
     if (!this.isColumnReconciled) { // reconciliation
       if (!this.newColumnName || this.newColumnName.trim().length === 0) {
-        this.newColumnName = this.header + '_' + this.selectedService;
+        this.newColumnName = this.header + '_' + this.selectedGroup;
       }
       this.newColumnName = this.newColumnName.replace(/\s/g, '_');
       deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
@@ -77,6 +87,23 @@ export class EnrichmentComponent implements OnInit {
 
   public extensionProperties = (): Observable<Response> => {
     return this.enrichmentService.propertiesAvailable();
+  }
+
+  servicesByGroup(group: string): ConciliatorService[] {
+    return this.services.filter(s => s.getGroup() === group );
+  }
+
+  servicesGroups(): string [] {
+    return Array.from(new Set(this.services.map(s => s.getGroup())));
+  }
+
+  changeServiceGroup() {
+    this.selectedServices = this.servicesByGroup(this.selectedGroup).map(s => s.getId());
+    this.reconcileButtonDisabled = false;
+  }
+
+  changeServices() {
+    this.reconcileButtonDisabled = false;
   }
 
 }

@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {Extension, Mapping} from './enrichment.model';
+import {AppConfig} from '../app.config';
 
 @Injectable()
 export class EnrichmentService {
@@ -14,14 +15,16 @@ export class EnrichmentService {
   private reconciledColumns: {};
 
   private baseURL = 'http://localhost:8080/reconcile/geonames?'; // TODO: change service URL and move it to config file
+  private asiaURL;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private config: AppConfig) {
     this.headers = [];
     this.data = [];
     this.reconciledColumns = {};
+    this.asiaURL = this.config.getConfig('asia-backend');
   }
 
-  reconcileColumn(header: string, serviceType: string): Observable<Mapping[]> {
+  reconcileColumn(header: string, services: string[]): Observable<Mapping[]> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
@@ -99,5 +102,12 @@ export class EnrichmentService {
 
   public propertiesAvailable = (): Observable<any> => {
     return Observable.of(['population', 'country', 'geocoordinates']);
+  }
+
+  public listServices = (): Observable<Response> => {
+    const url = this.asiaURL + '/services';
+    return this.http
+      .get(url)
+      .map(res => res['services']);
   }
 }

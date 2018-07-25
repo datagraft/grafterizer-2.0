@@ -122,3 +122,27 @@ export class DeriveMap {
   }
 
 }
+
+export class ConciliatorService {
+  private id: string;
+  private name: string;
+  private group: string;
+
+  constructor(id, name, group) {
+    this.id = id;
+    this.name = name;
+    this.group = group;
+  }
+
+  getId(): string {
+    return this.id;
+  }
+
+  getName(): string {
+    return this.name;
+  }
+
+  getGroup(): string {
+    return this.group;
+  }
+}

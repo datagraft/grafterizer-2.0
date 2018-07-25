@@ -3,7 +3,7 @@
 <div mat-dialog-content>
 
   <div class="form-group" *ngIf="isColumnReconciled">
-    <label class="required" for="reconciliation-service">Select properties: </label>
+    <label class="required">Select properties: </label>
     <tag-input [(ngModel)]="selectedProperties"
                [onlyFromAutocomplete]="true"
                [placeholder]="'+ Property'"
@@ -17,19 +17,33 @@
   <form #configForm="ngForm" *ngIf="!isColumnReconciled">
     <section class="form-block">
       <div class="form-group">
-        <label class="required" for="reconciliation-service">Reconciliation service: </label>
+        <label class="required" for="service-group">Service group: </label>
         <div class="select">
-          <select id="reconciliation-service"
-                  name="reconciliation-service"
-                  [(ngModel)]="selectedService">
-            <option *ngFor="let service of servicesNames" [value]="service">{{service}}</option>
+          <select id="service-group"
+                  name="service-group"
+                  [(ngModel)]="selectedGroup"
+                  (change)="changeServiceGroup()">
+            <option *ngFor="let group of servicesGroups()" [value]="group">{{group}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Services: </label>
+        <div class="select">
+          <select id="services"
+                  name="services"
+                  [(ngModel)]="selectedServices"
+                  multiple
+                  (change)="changeServices()">
+            <option *ngFor="let service of servicesByGroup(selectedGroup)" [value]="service.getId()">{{service.getName()}}</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
         <label for="column-name">New column name</label>
-        <input type="text" id="column-name" placeholder="{{header}}_{{selectedService}}" size="45"
+        <input type="text" id="column-name" placeholder="{{header}}_{{selectedGroup}}" size="45"
                [(ngModel)]="newColumnName" name="newColumnName">
       </div>
     </section>
@@ -66,7 +80,6 @@
         </clr-dg-cell>
 
       </clr-dg-row>
-      <ng-template #empty_cell></ng-template>
     </clr-datagrid>
 
   </div>
@@ -74,7 +87,7 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial *ngIf="!isColumnReconciled">Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="reconcileButtonDisabled" (click)="reconcile()" cdkFocusInitial *ngIf="!isColumnReconciled">Reconcile</button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="selectedProperties.length === 0" (click)="extend()" cdkFocusInitial *ngIf="isColumnReconciled">Extend</button>
   <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>
