@@ -5,5 +5,5 @@
   "abstat-path": "http://abstat.disco.unimib.it",
   "abstat-path-ba": "http://193.204.59.21",
   "vocabulary-service-path": "https://grafterizer.datagraft.io/vocabularies/api/vocabulary",
-  "asia-backend": "http://localhost:7000/"
+  "asia-backend": "http://localhost:7000"
 }

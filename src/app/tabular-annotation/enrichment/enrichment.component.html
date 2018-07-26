@@ -22,20 +22,18 @@
           <select id="service-group"
                   name="service-group"
                   [(ngModel)]="selectedGroup"
-                  (change)="changeServiceGroup()">
+                  (change)="selectedService = undefined">
             <option *ngFor="let group of servicesGroups()" [value]="group">{{group}}</option>
           </select>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Services: </label>
+      <div class="form-group" *ngIf="selectedGroup">
+        <label for="service">Services: </label>
         <div class="select">
-          <select id="services"
-                  name="services"
-                  [(ngModel)]="selectedServices"
-                  multiple
-                  (change)="changeServices()">
+          <select id="service"
+                  name="service"
+                  [(ngModel)]="selectedService">
             <option *ngFor="let service of servicesByGroup(selectedGroup)" [value]="service.getId()">{{service.getName()}}</option>
           </select>
         </div>
@@ -87,7 +85,7 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="reconcileButtonDisabled" (click)="reconcile()" cdkFocusInitial *ngIf="!isColumnReconciled">Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial *ngIf="!isColumnReconciled">Reconcile</button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="selectedProperties.length === 0" (click)="extend()" cdkFocusInitial *ngIf="isColumnReconciled">Extend</button>
   <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

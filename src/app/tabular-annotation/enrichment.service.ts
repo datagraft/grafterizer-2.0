@@ -24,7 +24,7 @@ export class EnrichmentService {
     this.asiaURL = this.config.getConfig('asia-backend');
   }
 
-  reconcileColumn(header: string, services: string[]): Observable<Mapping[]> {
+  reconcileColumn(header: string, service: string): Observable<Mapping[]> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
@@ -38,8 +38,8 @@ export class EnrichmentService {
       queries.push(m.getServiceQuery());
     });
 
-    const requestURL = this.baseURL + '{' + queries.join(',') + '}';
-    // console.log(requestURL);
+    const requestURL = `${this.asiaURL}/reconcile/master?queries={${queries.join(',')}}&conciliators=${service}`;
+    console.log(requestURL);
 
     // TODO: remove after solving CORS issue
     mappings.forEach((mapping: Mapping) => {

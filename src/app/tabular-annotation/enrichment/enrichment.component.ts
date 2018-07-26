@@ -17,7 +17,7 @@ export class EnrichmentComponent implements OnInit {
   public reconciledData: any;
   public extensionData: any;
   public selectedGroup: any;
-  public selectedServices: any;
+  public selectedService: any;
   public services: ConciliatorService[];
   public newColumnName: string;
   public validMappingsCount: number;
@@ -35,7 +35,6 @@ export class EnrichmentComponent implements OnInit {
     this.header = this.dialogInputData.header;
     this.isColumnReconciled = this.enrichmentService.isColumnReconciled(this.header);
     this.services = [];
-    this.selectedServices = [];
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
@@ -49,10 +48,7 @@ export class EnrichmentComponent implements OnInit {
   }
 
   public reconcile() {
-    if (this.selectedServices.length === 0 && this.selectedGroup) {
-      this.selectedServices = this.servicesByGroup(this.selectedGroup).map(s => s.getId());
-    }
-    this.enrichmentService.reconcileColumn(this.header, this.selectedServices).subscribe((data) => {
+    this.enrichmentService.reconcileColumn(this.header, this.selectedService).subscribe((data) => {
         this.reconciledData = data;
         this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
         this.showPreview = true;
@@ -95,15 +91,6 @@ export class EnrichmentComponent implements OnInit {
 
   servicesGroups(): string [] {
     return Array.from(new Set(this.services.map(s => s.getGroup())));
-  }
-
-  changeServiceGroup() {
-    this.selectedServices = this.servicesByGroup(this.selectedGroup).map(s => s.getId());
-    this.reconcileButtonDisabled = false;
-  }
-
-  changeServices() {
-    this.reconcileButtonDisabled = false;
   }
 
 }
