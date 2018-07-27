@@ -104,10 +104,9 @@ export class EnrichmentService {
     return Observable.of(['population', 'country', 'geocoordinates']);
   }
 
-  public listServices = (): Observable<Response> => {
+  public listServices = (): Observable<Object> => {
     const url = this.asiaURL + '/services';
     return this.http
-      .get(url)
-      .map(res => res['services']);
+      .get(url);
   }
 }

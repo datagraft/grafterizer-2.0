@@ -68,7 +68,7 @@ export class EnrichmentComponent implements OnInit {
     const deriveMaps = [];
     if (!this.isColumnReconciled) { // reconciliation
       if (!this.newColumnName || this.newColumnName.trim().length === 0) {
-        this.newColumnName = this.header + '_' + this.selectedGroup;
+        this.newColumnName = this.header + '_' + this.selectedService;
       }
       this.newColumnName = this.newColumnName.replace(/\s/g, '_');
       deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
