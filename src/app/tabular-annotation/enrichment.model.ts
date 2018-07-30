@@ -70,20 +70,20 @@ export class Extension {
 }
 
 export class DeriveMap {
-  private deriveMap: Map<string, string>;
+  private deriveMap: {};
   public newColName: string;
 
   constructor(newColName: string) {
-    this.deriveMap = new Map();
+    this.deriveMap = {};
     this.newColName = newColName;
   }
 
   buildFromMapping(mapping: Mapping[]) {
-    this.deriveMap = new Map();
+    this.deriveMap = {};
     mapping.forEach(m => {
       if (m.results.length > 0) {
         // const key = m.originalQuery.replace(/\s/g, '_');
-        this.deriveMap.set(m.originalQuery, m.results[0].id); // TODO: iterate over results!
+        this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
       }
     });
     return this;
@@ -92,14 +92,14 @@ export class DeriveMap {
   buildFromExtension(selectedProperty: string, extensions: Extension[]) {
     console.log(extensions);
     console.log(selectedProperty);
-    this.deriveMap = new Map();
+    this.deriveMap = {};
     extensions.forEach(e => {
       if (e.properties.get(selectedProperty).length > 0) {
         const firstRes = e.properties.get(selectedProperty)[0];
         if (firstRes['name']) {
-          this.deriveMap.set(e.id, firstRes['name']);
+          this.deriveMap[e.id] = firstRes['name'];
         } else if (firstRes['str']) {
-          this.deriveMap.set(e.id, firstRes['str']);
+          this.deriveMap[e.id] = firstRes['str'];
         }
       }
     });
@@ -113,8 +113,8 @@ export class DeriveMap {
    */
   toClojureMap(): string {
     let map = '{';
-    this.deriveMap.forEach((value, key) => {
-      map += `"${key}" "${value}" `;
+    Object.keys(this.deriveMap).forEach((key) => {
+      map += `"${key}" "${this.deriveMap[key]}" `;
     });
     map += '}';
     console.log(map);
@@ -144,5 +144,28 @@ export class ConciliatorService {
 
   getGroup(): string {
     return this.group;
+  }
+}
+
+export class ReconciledColumn {
+  private readonly _deriveMap: DeriveMap;
+  private readonly _conciliator: ConciliatorService;
+
+
+  constructor(deriveMap: DeriveMap, conciliator: ConciliatorService) {
+    this._deriveMap = deriveMap;
+    this._conciliator = conciliator;
+  }
+
+  get deriveMap(): DeriveMap {
+    return this._deriveMap;
+  }
+
+  get conciliator(): ConciliatorService {
+    return this._conciliator;
+  }
+
+  get header(): string {
+    return this._deriveMap.newColName;
   }
 }

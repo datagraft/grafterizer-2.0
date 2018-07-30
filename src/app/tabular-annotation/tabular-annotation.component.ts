@@ -18,7 +18,7 @@ import {ConfigComponent} from './config/config.component';
 import {Subscription} from 'rxjs/Subscription';
 import {EnrichmentComponent} from './enrichment/enrichment.component';
 import {EnrichmentService} from './enrichment.service';
-import {DeriveMap} from './enrichment.model';
+import {ConciliatorService, DeriveMap, ReconciledColumn} from './enrichment.model';
 import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
 
 declare var Handsontable: any;
@@ -115,14 +115,25 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
 
+        let updateTransformationObj = false;
+
         if (this.transformationObj['reconciledColumns']) {
-          this.transformationObj['reconciledColumns'].forEach(reconciledCol => {
-            // Check if the user has remove manually the reconciliation step from the pipeline
+          this.transformationObj['reconciledColumns'].forEach((recCol: any) => {
+            const reconciledCol = new ReconciledColumn(recCol._deriveMap, recCol._conciliator);
+
+            // Check if the user has removed manually the reconciliation step from the pipeline
             if (this.transformationObj.pipelines[0].functions
-              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.newColName).length > 0) {
-              this.enrichmentService.setReconciledColumn(reconciledCol.newColName, reconciledCol);
+              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.header).length > 0) {
+              this.enrichmentService.setReconciledColumn(reconciledCol);
+            } else {
+              updateTransformationObj = true;
             }
           });
+
+          if (updateTransformationObj) { // update the object only when modified
+            this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
+            this.transformationSvc.changeTransformationObj(this.transformationObj);
+          }
         }
 
       });
@@ -196,7 +207,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result['deriveMaps']) {
-        result['deriveMaps'].forEach(deriveMap => this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap));
+        result['deriveMaps'].forEach(deriveMap => {
+          this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
+        });
       }
     });
   }
@@ -540,8 +553,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFromIdx
    * @param colsToDeriveFrom
    * @param deriveMap
+   * @param conciliator
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
@@ -565,12 +579,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
     // If the colsToDeriveFrom is not reconciled yet, this is a reconciliation step; otherwise,this is an extension
-    if (!this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
-      this.enrichmentService.setReconciledColumn(deriveMap.newColName, newFunction);
+    if (conciliator) {
+      this.enrichmentService.setReconciledColumn(new ReconciledColumn(deriveMap, conciliator));
     }
 
     this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-
     this.transformationSvc.changeTransformationObj(this.transformationObj);
     this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
 

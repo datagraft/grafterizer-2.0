@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import {Extension, Mapping} from './enrichment.model';
+import {Extension, Mapping, ReconciledColumn} from './enrichment.model';
 import {AppConfig} from '../app.config';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class EnrichmentService {
   public data;
   private reconciledColumns: {};
 
-  private baseURL = 'http://localhost:8080/reconcile/geonames?'; // TODO: change service URL and move it to config file
+  // private baseURL = 'http://localhost:8080/reconcile/geonames?'; // TODO: change service URL and move it to config file
   private asiaURL;
 
   constructor(private http: HttpClient, private config: AppConfig) {
@@ -38,8 +38,11 @@ export class EnrichmentService {
       queries.push(m.getServiceQuery());
     });
 
-    const requestURL = `${this.asiaURL}/reconcile/master?queries={${queries.join(',')}}&conciliators=${service}`;
-    console.log(requestURL);
+    const requestURL = `${this.asiaURL}/reconcile`;
+
+    const params = new HttpParams()
+      .set('queries', `{${queries.join(',')}}`)
+      .set('conciliator', service);
 
     // TODO: remove after solving CORS issue
     mappings.forEach((mapping: Mapping) => {
@@ -47,7 +50,7 @@ export class EnrichmentService {
     });
     return Observable.of(mappings);
 
-    // return this.http.get(requestURL)
+    // return this.http.get(requestURL, {params: params})
     //   .map(res => {
     //
     //     mappings.forEach((mapping: Mapping) => {
@@ -72,7 +75,7 @@ export class EnrichmentService {
     properties.map(prop => ({id: prop}));
     const extendQuery = {ids: values, properties: properties};
 
-    const requestURL = this.baseURL + 'extend=' + extendQuery;
+    // const requestURL = this.baseURL + 'extend=' + extendQuery;
     // console.log(requestURL);
 
     // TODO: remove after solving CORS issue
@@ -82,15 +85,15 @@ export class EnrichmentService {
     return Observable.of(extensions);
   }
 
-  setReconciledColumn(header: string, pipelineFunction) {
-    this.reconciledColumns[header] = pipelineFunction;
+  setReconciledColumn(reconciledColumn: ReconciledColumn) {
+    this.reconciledColumns[reconciledColumn.header] = reconciledColumn;
   }
 
   isColumnReconciled(header: string): boolean {
     return Object.keys(this.reconciledColumns).includes(header);
   }
 
-  getReconciledColumns(): any[] {
+  getReconciledColumns(): ReconciledColumn[] {
     const recCols = [];
     Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
     return recCols;

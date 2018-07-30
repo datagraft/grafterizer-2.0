@@ -72,13 +72,15 @@ export class EnrichmentComponent implements OnInit {
       }
       this.newColumnName = this.newColumnName.replace(/\s/g, '_');
       deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
+      this.dialogRef.close({'deriveMaps': deriveMaps,
+        'conciliator': this.services.find(conciliator => conciliator.getId() === this.selectedService)});
     } else { // extension
       this.selectedProperties.forEach(prop => {
         deriveMaps.push(new DeriveMap(prop.value.replace(/\s/g, '_')).buildFromExtension(prop.value, this.extensionData));
       });
+      this.dialogRef.close({'deriveMaps': deriveMaps });
     }
 
-    this.dialogRef.close({'deriveMaps': deriveMaps });
   }
 
   public extensionProperties = (): Observable<Response> => {
