@@ -16,10 +16,11 @@ import {AnnotationFormComponent} from './annotation-form/annotation-form.compone
 import {MatDialog} from '@angular/material';
 import {ConfigComponent} from './config/config.component';
 import {Subscription} from 'rxjs/Subscription';
-import {EnrichmentComponent} from './enrichment/enrichment.component';
-import {EnrichmentService} from './enrichment.service';
-import {ConciliatorService, DeriveMap, ReconciledColumn} from './enrichment.model';
+import {EnrichmentService} from './enrichment/enrichment.service';
+import {ConciliatorService, DeriveMap, ReconciledColumn} from './enrichment/enrichment.model';
 import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
+import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
+import {ExtensionComponent} from './enrichment/extension/extension.component';
 
 declare var Handsontable: any;
 
@@ -200,10 +201,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   openEnrichmentDialog(headerIdx): void {
     const currentHeader = this.annotationService.headers[headerIdx];
-    const dialogRef = this.dialog.open(EnrichmentComponent, {
+    let dialogRef;
+    const dialogConfig = {
       width: '750px',
       data: { header: currentHeader }
-    });
+    };
+
+    if (this.enrichmentService.isColumnReconciled(currentHeader)) {
+      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig );
+    } else {
+      dialogRef = this.dialog.open(ReconciliationComponent, dialogConfig);
+    }
 
     dialogRef.afterClosed().subscribe(result => {
       if (result['deriveMaps']) {

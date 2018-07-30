@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EnrichmentComponent } from './enrichment.component';
+import { ExtensionComponent } from './extension.component';
 
-describe('EnrichmentComponent', () => {
-  let component: EnrichmentComponent;
-  let fixture: ComponentFixture<EnrichmentComponent>;
+describe('ExtensionComponent', () => {
+  let component: ExtensionComponent;
+  let fixture: ComponentFixture<ExtensionComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EnrichmentComponent ]
+      declarations: [ ExtensionComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EnrichmentComponent);
+    fixture = TestBed.createComponent(ExtensionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

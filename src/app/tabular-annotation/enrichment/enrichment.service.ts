@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {Extension, Mapping, ReconciledColumn} from './enrichment.model';
-import {AppConfig} from '../app.config';
+import {AppConfig} from '../../app.config';
 
 @Injectable()
 export class EnrichmentService {
