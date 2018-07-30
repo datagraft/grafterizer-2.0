@@ -12,7 +12,6 @@ import {DeriveMap} from '../enrichment.model';
 export class ExtensionComponent implements OnInit {
 
   public header: any;
-  public data: any;
   public extensionData: any;
 
   public showPreview: boolean;
