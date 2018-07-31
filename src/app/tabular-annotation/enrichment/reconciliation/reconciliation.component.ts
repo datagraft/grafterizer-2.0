@@ -14,8 +14,8 @@ export class ReconciliationComponent implements OnInit {
   public header: any;
   public reconciledData: any;
   public selectedGroup: any;
-  public selectedService: any;
-  public services: ConciliatorService[];
+  public selectedService: string;
+  public services: Map<string, ConciliatorService>;
   public newColumnName: string;
   public validMappingsCount: number;
   public guessedType: Type;
@@ -29,11 +29,12 @@ export class ReconciliationComponent implements OnInit {
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
-    this.services = [];
+    this.services = new Map();
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
-          this.services.push(new ConciliatorService(service['id'], service['name'], serviceCategory));
+          this.services.set(service['id'], new ConciliatorService(service['id'], service['name'], serviceCategory,
+            service['identifierSpace']));
         });
       });
     });
@@ -42,7 +43,7 @@ export class ReconciliationComponent implements OnInit {
   }
 
   public reconcile() {
-    this.enrichmentService.reconcileColumn(this.header, this.selectedService).subscribe((data) => {
+    this.enrichmentService.reconcileColumn(this.header, this.services.get(this.selectedService)).subscribe((data) => {
       this.reconciledData = data;
       this.guessedType = this.guessType();
       this.reconciledData.forEach((mapping: Mapping) => {
@@ -67,23 +68,24 @@ export class ReconciliationComponent implements OnInit {
     deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': this.services.find(conciliator => conciliator.getId() === this.selectedService)
+      'conciliator': this.services.get(this.selectedService),
+      'type': this.guessedType
     });
 
   }
 
   servicesByGroup(group: string): ConciliatorService[] {
-    return this.services.filter(s => s.getGroup() === group );
+    return Array.from(this.services.values()).filter(s => s.getGroup() === group );
   }
 
   servicesGroups(): string [] {
-    return Array.from(new Set(this.services.map(s => s.getGroup())));
+    return Array.from(new Set(Array.from(this.services.values()).map(s => s.getGroup())));
   }
 
   guessType(): Type {
     const cumulators = {};
     const counters = {};
-    const appearances ={};
+    const appearances = {};
     const types = {};
 
     let noResultsCounter = 0;
@@ -117,7 +119,7 @@ export class ReconciliationComponent implements OnInit {
       }
     });
 
-    const bestTypeId = Object.keys(scores).reduce(function(a, b){ return scores[a] > scores[b] ? a : b; });
+    const bestTypeId = Object.keys(scores).reduce(function(a, b) { return scores[a] > scores[b] ? a : b; });
     return types[bestTypeId];
 
   }

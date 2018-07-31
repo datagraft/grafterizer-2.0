@@ -127,11 +127,13 @@ export class ConciliatorService {
   private id: string;
   private name: string;
   private group: string;
+  private identifierSpace: string;
 
-  constructor(id, name, group) {
+  constructor(id, name, group, identifierSpace) {
     this.id = id;
     this.name = name;
     this.group = group;
+    this.identifierSpace = identifierSpace;
   }
 
   getId(): string {
@@ -144,6 +146,10 @@ export class ConciliatorService {
 
   getGroup(): string {
     return this.group;
+  }
+
+  getIdentifierSpace(): string {
+    return this.identifierSpace;
   }
 }
 

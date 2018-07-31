@@ -17,7 +17,7 @@ import {MatDialog} from '@angular/material';
 import {ConfigComponent} from './config/config.component';
 import {Subscription} from 'rxjs/Subscription';
 import {EnrichmentService} from './enrichment/enrichment.service';
-import {ConciliatorService, DeriveMap, ReconciledColumn} from './enrichment/enrichment.model';
+import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
 import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
 import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
 import {ExtensionComponent} from './enrichment/extension/extension.component';
@@ -216,7 +216,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result['deriveMaps']) {
         result['deriveMaps'].forEach(deriveMap => {
-          this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
+          this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], result['type']);
+          if (result['type']) {
+            this.hot.updateSettings({
+              colHeaders: (col) => this.getTableHeader(col)
+            });
+          }
         });
       }
     });
@@ -562,8 +567,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param deriveMap
    * @param conciliator
+   * @param type
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap,
+                             conciliator: ConciliatorService, type: Type) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
@@ -589,6 +596,18 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // If the colsToDeriveFrom is not reconciled yet, this is a reconciliation step; otherwise,this is an extension
     if (conciliator) {
       this.enrichmentService.setReconciledColumn(new ReconciledColumn(deriveMap, conciliator));
+    }
+
+    if (type) {
+      const annotation = new Annotation({
+        columnHeader: deriveMap.newColName,
+        columnValuesType: ColumnTypes.URI,
+        columnTypes: [type.id],
+        urifyNamespace: conciliator.getIdentifierSpace()
+      });
+
+      this.annotationService.setAnnotation(deriveMap.newColName, annotation);
+      this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
     }
 
     this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());

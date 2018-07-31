@@ -46,7 +46,7 @@
 
       <clr-dg-row *ngFor="let mapping of reconciledData">
         <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
-        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell"><a href="{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell"><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
         <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].name}}</clr-dg-cell>
         <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].score}}</clr-dg-cell>
       </clr-dg-row>
