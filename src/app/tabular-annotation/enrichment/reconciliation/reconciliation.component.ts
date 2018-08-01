@@ -120,9 +120,12 @@ export class ReconciliationComponent implements OnInit {
       }
     });
 
-    const bestTypeId = Object.keys(scores).reduce(function(a, b) { return scores[a] > scores[b] ? a : b; });
-    return types[bestTypeId];
+    if (Object.keys(scores).length > 0) {
+      const bestTypeId = Object.keys(scores).reduce(function(a, b) { return scores[a] > scores[b] ? a : b; });
+      return types[bestTypeId];
+    }
 
+    return null;
   }
 
 }
