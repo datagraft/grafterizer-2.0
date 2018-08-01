@@ -129,11 +129,11 @@ export class ConciliatorService {
   private group: string;
   private identifierSpace: string;
 
-  constructor(id, name, group, identifierSpace) {
-    this.id = id;
-    this.name = name;
-    this.group = group;
-    this.identifierSpace = identifierSpace;
+  constructor(obj: any) {
+    this.id = obj && obj.id || '';
+    this.name = obj && obj.name || '';
+    this.group = obj && obj.group || '';
+    this.identifierSpace = obj && obj.identifierSpace || '';
   }
 
   getId(): string {
@@ -154,8 +154,8 @@ export class ConciliatorService {
 }
 
 export class ReconciledColumn {
-  private readonly _deriveMap: DeriveMap;
-  private readonly _conciliator: ConciliatorService;
+  private _deriveMap: DeriveMap;
+  private _conciliator: ConciliatorService;
 
 
   constructor(deriveMap: DeriveMap, conciliator: ConciliatorService) {
@@ -163,15 +163,15 @@ export class ReconciledColumn {
     this._conciliator = conciliator;
   }
 
-  get deriveMap(): DeriveMap {
+  getDeriveMap(): DeriveMap {
     return this._deriveMap;
   }
 
-  get conciliator(): ConciliatorService {
+  getConciliator(): ConciliatorService {
     return this._conciliator;
   }
 
-  get header(): string {
+  getHeader(): string {
     return this._deriveMap.newColName;
   }
 }

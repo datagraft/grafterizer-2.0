@@ -9,8 +9,8 @@
           <select id="service-group"
                   name="service-group"
                   [(ngModel)]="selectedGroup"
-                  (change)="selectedService = undefined">
-            <option *ngFor="let group of servicesGroups()" [value]="group">{{group}}</option>
+                  (change)="updateServicesForSelectedGroup();">
+            <option *ngFor="let group of servicesGroups" [value]="group">{{group}}</option>
           </select>
         </div>
       </div>
@@ -21,7 +21,7 @@
           <select id="service"
                   name="service"
                   [(ngModel)]="selectedService">
-            <option *ngFor="let service of servicesByGroup(selectedGroup)" [value]="service.getId()">{{service.getName()}}</option>
+            <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}}</option>
           </select>
         </div>
       </div>

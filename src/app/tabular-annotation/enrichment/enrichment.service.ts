@@ -86,7 +86,7 @@ export class EnrichmentService {
   }
 
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
-    this.reconciledColumns[reconciledColumn.header] = reconciledColumn;
+    this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
   }
 
   isColumnReconciled(header: string): boolean {
@@ -97,6 +97,10 @@ export class EnrichmentService {
     const recCols = [];
     Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
     return recCols;
+  }
+
+  getReconciledColumn(header: string): ReconciledColumn {
+    return this.reconciledColumns[header];
   }
 
   removeReconciledColumn(columnHeader: string) {

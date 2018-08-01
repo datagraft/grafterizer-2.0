@@ -22,6 +22,8 @@ export class ReconciliationComponent implements OnInit {
 
   public showPreview: boolean;
   public reconcileButtonDisabled: boolean;
+  public servicesGroups: string[];
+  public servicesForSelectedGroup: ConciliatorService[];
 
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
@@ -30,12 +32,13 @@ export class ReconciliationComponent implements OnInit {
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.services = new Map();
+    this.servicesGroups = [];
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
-          this.services.set(service['id'], new ConciliatorService(service['id'], service['name'], serviceCategory,
-            service['identifierSpace']));
+          this.services.set(service['id'], new ConciliatorService({...service, ...{'group': serviceCategory}}));
         });
+        this.servicesGroups.push(serviceCategory);
       });
     });
     this.showPreview = false;
@@ -74,12 +77,10 @@ export class ReconciliationComponent implements OnInit {
 
   }
 
-  servicesByGroup(group: string): ConciliatorService[] {
-    return Array.from(this.services.values()).filter(s => s.getGroup() === group );
-  }
-
-  servicesGroups(): string [] {
-    return Array.from(new Set(Array.from(this.services.values()).map(s => s.getGroup())));
+  updateServicesForSelectedGroup(): void {
+    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup );
+    this.selectedService = undefined;
+    this.showPreview = false;
   }
 
   guessType(): Type {

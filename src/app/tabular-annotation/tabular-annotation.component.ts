@@ -124,7 +124,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
             // Check if the user has removed manually the reconciliation step from the pipeline
             if (this.transformationObj.pipelines[0].functions
-              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.header).length > 0) {
+              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.getHeader()).length > 0) {
               this.enrichmentService.setReconciledColumn(reconciledCol);
             } else {
               updateTransformationObj = true;
