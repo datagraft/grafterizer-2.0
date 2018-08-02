@@ -602,7 +602,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       const annotation = new Annotation({
         columnHeader: deriveMap.newColName,
         columnValuesType: ColumnTypes.URI,
-        columnTypes: [type.id],
+        columnTypes: [conciliator.getSchemaSpace() + type.id],
         urifyNamespace: conciliator.getIdentifierSpace()
       });
 

@@ -128,12 +128,14 @@ export class ConciliatorService {
   private name: string;
   private group: string;
   private identifierSpace: string;
+  private schemaSpace: string;
 
   constructor(obj: any) {
     this.id = obj && obj.id || '';
     this.name = obj && obj.name || '';
     this.group = obj && obj.group || '';
     this.identifierSpace = obj && obj.identifierSpace || '';
+    this.schemaSpace = obj && obj.schemaSpace || '';
   }
 
   getId(): string {
@@ -150,6 +152,10 @@ export class ConciliatorService {
 
   getIdentifierSpace(): string {
     return this.identifierSpace;
+  }
+
+  getSchemaSpace(): string {
+    return this.schemaSpace;
   }
 }
 

@@ -37,7 +37,7 @@
   <div id="preview" *ngIf="showPreview">
 
     <h3> Preview </h3>
-    <div *ngIf="guessedType != null">Inferred type: <a href="{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a></div>
+    <div *ngIf="guessedType != null">Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a></div>
     <clr-datagrid>
       <clr-dg-column>Original value</clr-dg-column>
       <clr-dg-column>Reconciled entity</clr-dg-column>
