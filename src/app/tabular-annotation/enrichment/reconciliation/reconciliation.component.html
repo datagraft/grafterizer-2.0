@@ -38,7 +38,7 @@
 
     <h3> Preview </h3>
     <div *ngIf="guessedType != null">Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a></div>
-    <clr-datagrid>
+    <clr-datagrid [clrDgLoading]="dataLoading">
       <clr-dg-column>Original value</clr-dg-column>
       <clr-dg-column>Reconciled entity</clr-dg-column>
       <clr-dg-column>Reconciled entity name</clr-dg-column>
@@ -58,6 +58,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>
