@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ConciliatorService, Extension, Mapping, ReconciledColumn} from './enrichment.model';
 import {AppConfig} from '../../app.config';
@@ -44,21 +44,33 @@ export class EnrichmentService {
       .set('queries', `{${queries.join(',')}}`)
       .set('conciliator', service.getId());
 
-    // TODO: remove after solving CORS issue
-    mappings.forEach((mapping: Mapping) => {
-      mapping.setResultsFromService(this.constResponse[mapping.queryId]['result']);
-    });
-    return Observable.of(mappings);
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
 
-    // return this.http.get(requestURL, {params: params})
-    //   .map(res => {
-    //
-    //     mappings.forEach((mapping: Mapping) => {
-    //       mapping.setResultsFromService(res[mapping.queryId]['result']);
-    //     });
-    //
-    //     return mappings;
-    //   });
+    const body = {
+      queries: `{${queries.join(',')}}`,
+      conciliator: service.getId()
+    };
+
+    // // TODO: remove after solving CORS issue
+    // mappings.forEach((mapping: Mapping) => {
+    //   mapping.setResultsFromService(this.constResponse[mapping.queryId]['result']);
+    // });
+    // return Observable.of(mappings);
+
+    return this.http.post(requestURL, body, httpOptions)
+      .map(res => {
+
+        mappings.forEach((mapping: Mapping) => {
+          mapping.setResultsFromService(res[mapping.queryId]['result']);
+        });
+
+        return mappings;
+      });
   }
 
   extendColumn(header: string, properties: string[]): Observable<Mapping[]> {
