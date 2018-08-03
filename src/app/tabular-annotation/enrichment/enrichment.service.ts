@@ -3,6 +3,7 @@ import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ConciliatorService, Extension, Mapping, ReconciledColumn} from './enrichment.model';
 import {AppConfig} from '../../app.config';
+import {forkJoin} from 'rxjs/observable/forkJoin';
 
 @Injectable()
 export class EnrichmentService {
@@ -14,7 +15,6 @@ export class EnrichmentService {
   public data;
   private reconciledColumns: {};
 
-  // private baseURL = 'http://localhost:8080/reconcile/geonames?'; // TODO: change service URL and move it to config file
   private asiaURL;
 
   constructor(private http: HttpClient, private config: AppConfig) {
@@ -30,31 +30,37 @@ export class EnrichmentService {
 
     values = values.filter(function(e) { return e === 0 || e; });  // remove empty strings
 
-    const mappings = [];
+    const mappings = new Map<string, Mapping>();
     const queries = [];
     values.forEach((value: string, index: number) => {
       const m = new Mapping(index, value);
-      mappings.push(m);
+      mappings.set(m.queryId, m);
       queries.push(m.getServiceQuery());
     });
 
     const requestURL = `${this.asiaURL}/reconcile`;
 
-    const params = new HttpParams()
-      .set('queries', `{${queries.join(',')}}`)
-      .set('conciliator', service.getId());
+    const chunks = [];
 
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type':  'application/x-www-form-urlencoded'
-      }),
-      params: params
-    };
+    while (queries.length) {
+      chunks.push(queries.splice(0, 10));
+    }
 
-    const body = {
-      queries: `{${queries.join(',')}}`,
-      conciliator: service.getId()
-    };
+    const requests = [];
+    chunks.forEach(chunk => {
+      const params = new HttpParams()
+        .set('queries', `{${chunk.join(',')}}`)
+        .set('conciliator', service.getId());
+
+      const httpOptions = {
+        headers: new HttpHeaders({
+          'Content-Type':  'application/x-www-form-urlencoded'
+        }),
+        params: params
+      };
+
+      requests.push(this.http.post(requestURL, null, httpOptions));
+    });
 
     // // TODO: remove after solving CORS issue
     // mappings.forEach((mapping: Mapping) => {
@@ -62,15 +68,14 @@ export class EnrichmentService {
     // });
     // return Observable.of(mappings);
 
-    return this.http.post(requestURL, body, httpOptions)
-      .map(res => {
-
-        mappings.forEach((mapping: Mapping) => {
-          mapping.setResultsFromService(res[mapping.queryId]['result']);
+    return forkJoin(requests).map((results: any) => {
+      results.forEach(res => {
+        Object.keys(res).forEach(queryId => {
+          mappings.get(queryId).setResultsFromService(res[queryId]['result']);
         });
-
-        return mappings;
       });
+      return Array.from(mappings.values());
+    });
   }
 
   extendColumn(header: string, properties: string[]): Observable<Mapping[]> {
