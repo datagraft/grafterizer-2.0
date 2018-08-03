@@ -121,9 +121,8 @@ export class ReconciliationComponent implements OnInit {
     const scores = {};
 
     Object.keys(appearances).forEach((property: string) => {
-      if (appearances[property].size === this.reconciledData.length - noResultsCounter) {
-        scores[property] = cumulators[property] / counters[property];
-      }
+      scores[property] = (cumulators[property] / counters[property]) *
+        (appearances[property].size / (this.reconciledData.length - noResultsCounter));
     });
 
     if (Object.keys(scores).length > 0) {
