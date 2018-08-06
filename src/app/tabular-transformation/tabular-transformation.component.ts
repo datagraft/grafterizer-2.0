@@ -174,6 +174,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const recommend = this.recommenderService.getRecommendationWithParams(
       newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
       newSelection.totalRows, newSelection.totalCols, data, headers);
+    console.log(newSelection);
+    console.log(data);
+    console.log(headers);
+
     this.recommendations = recommend;
   }
 
