@@ -104,6 +104,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         return 'Columns mapped'
       case 'MeltFunction':
         return 'Dataset reshaped'
+      case 'RemoveDuplicatesFunction':
+        return 'Duplicates removed'
       case 'DeriveColumnFunction':
         return 'Column derived'
       case 'AddColumnsFunction':

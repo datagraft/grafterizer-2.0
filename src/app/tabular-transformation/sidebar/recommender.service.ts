@@ -23,6 +23,7 @@ export class RecommenderService {
     // [0, 0, 1, -1, 0, 0], //Group and Aggregate
     [0, 0, 1, -1, 0, 0], //Mapc
     [0, 0, 1, -1, 0, 0], //Reshape dataset, melt/cast
+    [0, 0, 1, -1, 0, 0], //Deduplicate
     // [1, 0, 1, -1, 1, 0], //uppercase
     [0, 1, 1, -1, 0, 0],  //Merge columns
     [0, -1, 1, -1, 0, 0],	//Split columns 
@@ -145,7 +146,7 @@ export class RecommenderService {
       // { label: 'Delete column', value: { id: 'take-columns-delete', defaultParams: { take: false, colToDelete: headers[0] } } },
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
-      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },

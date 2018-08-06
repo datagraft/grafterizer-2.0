@@ -34,11 +34,10 @@
 
 <reshape-dataset class="sin-flex"></reshape-dataset>
 
+<deduplicate class="sin-flex"></deduplicate>
+
 <!-- <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
-
-<deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [columns]="headers"></deduplicate>
 
 <add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
   [columns]="headers"></add-row>
