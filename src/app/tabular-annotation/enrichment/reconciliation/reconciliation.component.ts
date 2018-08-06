@@ -21,7 +21,6 @@ export class ReconciliationComponent implements OnInit {
   public guessedType: Type;
 
   public showPreview: boolean;
-  public reconcileButtonDisabled: boolean;
   public dataLoading: boolean;
 
   public servicesGroups: string[];
@@ -44,7 +43,6 @@ export class ReconciliationComponent implements OnInit {
       });
     });
     this.showPreview = false;
-    this.reconcileButtonDisabled = true;
     this.dataLoading = false;
     this.reconciledData = [];
   }
@@ -61,7 +59,6 @@ export class ReconciliationComponent implements OnInit {
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
       });
       this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
-      this.reconcileButtonDisabled = true;
       this.dataLoading = false;
     });
   }
