@@ -1,9 +1,26 @@
 <h1 mat-dialog-title>Column Extension</h1>
 <div mat-dialog-content>
 
-  <div class="form-group">
+  <form #configForm="ngForm">
+    <section class="form-block">
+      <div class="form-group">
+        <label class="required" for="service">Extend from: </label>
+        <div class="select">
+          <select id="service"
+                  name="service"
+                  [(ngModel)]="selectedService"
+                  (change)="showPreview = false;">
+            <option *ngFor="let service of services" [value]="service.getId()">{{service.getName()}}</option>
+          </select>
+        </div>
+      </div>
+    </section>
+  </form>
+
+  <div class="form-group" *ngIf="selectedService === reconciledFromService.getId()">
     <label class="required">Select properties: </label>
     <tag-input [(ngModel)]="selectedProperties"
+               [disable]="dataLoading"
                [onlyFromAutocomplete]="true"
                [placeholder]="'+ Property'"
                [secondaryPlaceholder]="'Property'">
@@ -15,17 +32,21 @@
   <div id="preview" *ngIf="showPreview">
 
     <h3> Preview </h3>
-    <clr-datagrid>
+    <clr-datagrid [clrDgLoading]="dataLoading">
       <clr-dg-column>{{header}}</clr-dg-column>
       <clr-dg-column *ngFor="let prop of selectedProperties">{{prop.value}}</clr-dg-column>
 
       <clr-dg-row *ngFor="let extension of extensionData">
         <clr-dg-cell>{{extension.id}}</clr-dg-cell>
         <clr-dg-cell *ngFor="let prop of selectedProperties">
-          <span *ngIf="extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['str']"> {{extension.properties.get(prop.value)[0]['str']}}</span>
-          <span *ngIf="extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['name']"> {{extension.properties.get(prop.value)[0]['name']}}</span>
+          <span *ngIf="extension.properties.get(prop.value) && extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['str']">
+            {{extension.properties.get(prop.value)[0]['str']}}
+          </span>
+          <a *ngIf="extension.properties.get(prop.value) && extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['id']"
+             href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop.value)[0]['id']}}"
+             target="_blank">{{extension.properties.get(prop.value)[0]['name']}}
+          </a>
         </clr-dg-cell>
-
       </clr-dg-row>
     </clr-datagrid>
 
@@ -34,6 +55,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="selectedProperties.length === 0" (click)="extend()" cdkFocusInitial>Extend</button>
-  <button mat-button class="btn btn-sm btn-link" (click)="submit()" *ngIf="showPreview">Apply</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="selectedProperties.length === 0 || dataLoading" (click)="extend()" cdkFocusInitial>Extend</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

@@ -63,6 +63,10 @@ export class Extension {
     properties.forEach(prop => this.properties.set(prop, []));
   }
 
+  addProperties(properties: Map<string, any[]>) {
+    properties.forEach((value, key) => this.properties.set(key, value));
+  }
+
   public setResultsFromService(res) {
     Object.keys(res).forEach(key => this.properties.set(key, res[key]));
   }

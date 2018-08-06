@@ -78,7 +78,7 @@ export class EnrichmentService {
     });
   }
 
-  extendColumn(header: string, properties: string[]): Observable<Mapping[]> {
+  extendColumn(header: string, properties: string[]): Observable<Extension[]> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
@@ -89,17 +89,28 @@ export class EnrichmentService {
       extensions.push(new Extension(value, properties));
     });
 
-    properties.map(prop => ({id: prop}));
-    const extendQuery = {ids: values, properties: properties};
+    const queryProperties = properties.map(prop => ({'id': prop}));
+    const extendQuery = {ids: values, properties: queryProperties};
 
-    // const requestURL = this.baseURL + 'extend=' + extendQuery;
-    // console.log(requestURL);
+    const requestURL = this.asiaURL + '/extend';
 
-    // TODO: remove after solving CORS issue
-    extensions.forEach((extension: Extension) => {
-      extension.setResultsFromService(this.extResponse['rows'][extension.id]);
+    const params = new HttpParams()
+      .set('extend', JSON.stringify(extendQuery))
+      .set('conciliator', this.getReconciliationServiceOfColumn(header).getId());
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map(res => {
+      extensions.forEach((extension: Extension) => {
+        extension.setResultsFromService(res['rows'][extension.id]);
+      });
+      return extensions;
     });
-    return Observable.of(extensions);
   }
 
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
@@ -125,12 +136,16 @@ export class EnrichmentService {
   }
 
   public propertiesAvailable = (): Observable<any> => {
-    return Observable.of(['population', 'country', 'geocoordinates']);
+    return Observable.of(['parentADM1', 'parentADM2', 'parentADM3', 'parentADM4']);
   }
 
   public listServices = (): Observable<Object> => {
     const url = this.asiaURL + '/services';
     return this.http
       .get(url);
+  }
+
+  getReconciliationServiceOfColumn(header: string) {
+    return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
   }
 }
