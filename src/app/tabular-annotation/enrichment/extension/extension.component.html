@@ -25,8 +25,16 @@
                [placeholder]="'+ Property'"
                [secondaryPlaceholder]="'Property'">
       <tag-input-dropdown [autocompleteObservable]='extensionProperties'
-                          [identifyBy]="'name'" [displayBy]="'name'"></tag-input-dropdown>
                           [zIndex]="9999"
+                          [identifyBy]="'id'" [displayBy]="'id'" #input>
+        <ng-template let-item="item">
+          <span class="p5" style="display: block; margin-top: 0">
+            <b>{{item.id}}</b> <br/>
+            ({{item.name}})
+          </span>
+        </ng-template>
+
+      </tag-input-dropdown>
     </tag-input>
   </div>
 

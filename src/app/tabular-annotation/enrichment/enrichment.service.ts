@@ -8,8 +8,8 @@ import {forkJoin} from 'rxjs/observable/forkJoin';
 @Injectable()
 export class EnrichmentService {
 
-  private constResponse = {"q1":{"result":[]},"q2":{"result":[{"id":"9171308","name":"Victoria","type":[{"id":"http://www.geonames.org/ontology#S.HTL","name":"S.HTL"}],"score":1.0,"match":true},{"id":"6477265","name":"Victoria","type":[{"id":"http://www.geonames.org/ontology#S.HTL","name":"S.HTL"}],"score":1.0,"match":false},{"id":"10295254","name":"Victoria","type":[{"id":"http://www.geonames.org/ontology#S.THTR","name":"S.THTR"}],"score":1.0,"match":false},{"id":"10242712","name":"Victoria","type":[{"id":"http://www.geonames.org/ontology#S.HTL","name":"S.HTL"}],"score":1.0,"match":false},{"id":"6477349","name":"Victoria","type":[{"id":"http://www.geonames.org/ontology#S.HTL","name":"S.HTL"}],"score":1.0,"match":false},{"id":"6355286","name":"Gasteiz / Vitoria","type":[{"id":"http://www.geonames.org/ontology#A.ADM3","name":"A.ADM3"}],"score":0.9666666666666667,"match":false},{"id":"3104499","name":"Vitoria-Gasteiz","type":[{"id":"http://www.geonames.org/ontology#P.PPLA","name":"P.PPLA"}],"score":0.9666666666666667,"match":false},{"id":"6357260","name":"Victoria, La","type":[{"id":"http://www.geonames.org/ontology#A.ADM3","name":"A.ADM3"}],"score":0.9629629629629629,"match":false},{"id":"2515119","name":"La Victoria","type":[{"id":"http://www.geonames.org/ontology#P.PPL","name":"P.PPL"}],"score":0.9090909090909092,"match":false},{"id":"6525501","name":"Nh Victoria","type":[{"id":"http://www.geonames.org/ontology#S.HTL","name":"S.HTL"}],"score":0.9090909090909092,"match":false},{"id":"3104497","name":"Bitoriano","type":[{"id":"http://www.geonames.org/ontology#P.PPL","name":"P.PPL"}],"score":0.9074074074074073,"match":false}]},"q3":{"result":[{"id":"2177478","name":"Australian Capital Territory","type":[{"id":"http://www.geonames.org/ontology#A.ADM3","name":"A.ADM3"}],"score":1.0,"match":true}]},"q4":{"result":[]},"q5":{"result":[]},"q6":{"result":[]},"q7":{"result":[]},"q0":{"result":[]}};
-  private extResponse = {"rows": {"6355286": {"geocoordinates": [{"str": "(-9.5, 9.3)"}], "country": []}, "2177478": {"country": [{"name": "Australia", "id": "http://sws.geonames.org/2077456/"}], "geocoordinates": [{"str": "(-35.5, 149)"}]}}};
+  private constResponse = {'q1': {'result': []}, 'q2': {'result': [{'id': '9171308', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': true}, {'id': '6477265', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '10295254', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.THTR', 'name': 'S.THTR'}], 'score': 1.0, 'match': false}, {'id': '10242712', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '6477349', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '6355286', 'name': 'Gasteiz / Vitoria', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 0.9666666666666667, 'match': false}, {'id': '3104499', 'name': 'Vitoria-Gasteiz', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPLA', 'name': 'P.PPLA'}], 'score': 0.9666666666666667, 'match': false}, {'id': '6357260', 'name': 'Victoria, La', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 0.9629629629629629, 'match': false}, {'id': '2515119', 'name': 'La Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL'}], 'score': 0.9090909090909092, 'match': false}, {'id': '6525501', 'name': 'Nh Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 0.9090909090909092, 'match': false}, {'id': '3104497', 'name': 'Bitoriano', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL'}], 'score': 0.9074074074074073, 'match': false}]}, 'q3': {'result': [{'id': '2177478', 'name': 'Australian Capital Territory', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 1.0, 'match': true}]}, 'q4': {'result': []}, 'q5': {'result': []}, 'q6': {'result': []}, 'q7': {'result': []}, 'q0': {'result': []}};
+  private extResponse = {'rows': {'6355286': {'geocoordinates': [{'str': '(-9.5, 9.3)'}], 'country': []}, '2177478': {'country': [{'name': 'Australia', 'id': 'http://sws.geonames.org/2077456/'}], 'geocoordinates': [{'str': '(-35.5, 149)'}]}}};
 
   public headers: string[];
   public data;
@@ -136,7 +136,14 @@ export class EnrichmentService {
   }
 
   public propertiesAvailable = (): Observable<any> => {
-    return Observable.of(['parentADM1', 'parentADM2', 'parentADM3', 'parentADM4']);
+    const properties = [
+      {'id': 'parentADM1', 'name': 'level 1 administrative parent'},
+      {'id': 'parentADM2', 'name': 'level 2 administrative parent'},
+      {'id': 'parentADM3', 'name': 'level 3 administrative parent'},
+      {'id': 'parentADM4', 'name': 'level 4 administrative parent'}
+      ];
+    return Observable.of(properties);
+    // return Observable.of(['parentADM1', 'parentADM2', 'parentADM3', 'parentADM4']);
   }
 
   public listServices = (): Observable<Object> => {
