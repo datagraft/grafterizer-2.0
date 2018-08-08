@@ -22,7 +22,7 @@ export class Result {
     for (let i = 0; i < tempTypes.length; ++i) {
       this.types.push(new Type(tempTypes[i]));
     }
-    this.score = obj['score'];
+    this.score = parseFloat(obj['score'].toFixed(2));
     this.match = obj['match'];
   }
 }
