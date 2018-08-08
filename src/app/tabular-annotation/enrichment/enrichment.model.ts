@@ -98,10 +98,10 @@ export class DeriveMap {
     console.log(selectedProperty);
     this.deriveMap = {};
     extensions.forEach(e => {
-      if (e.properties.get(selectedProperty).length > 0) {
+      if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
         const firstRes = e.properties.get(selectedProperty)[0];
-        if (firstRes['name']) {
-          this.deriveMap[e.id] = firstRes['name'];
+        if (firstRes['id']) {
+          this.deriveMap[e.id] = firstRes['id'];
         } else if (firstRes['str']) {
           this.deriveMap[e.id] = firstRes['str'];
         }

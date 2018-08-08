@@ -18,6 +18,8 @@ export class ExtensionComponent implements OnInit {
 
   public showPreview: boolean;
   public selectedProperties: any[];
+  public alreadyExtendedProperties: string[];
+  public previewProperties: string[];
   public selectedService: string;
   public servicesGroups: string[];
 
@@ -36,6 +38,8 @@ export class ExtensionComponent implements OnInit {
     this.extensionData = [];
 
     this.selectedProperties = [];
+    this.alreadyExtendedProperties = [];
+    this.previewProperties = [];
     this.services = [];
     this.servicesGroups = [];
 
@@ -50,11 +54,10 @@ export class ExtensionComponent implements OnInit {
   public extend() {
     this.dataLoading = true;
     this.showPreview = true;
-    let alreadyExtended = [];
-    if (this.extensionData.length > 0) {
-      alreadyExtended = Array.from(this.extensionData[0].properties.keys());
-    }
-    const properties = this.selectedProperties.filter(prop => !alreadyExtended.includes(prop.value)).map(prop => prop.value);
+
+    const properties = this.selectedProperties
+      .filter(prop => !this.alreadyExtendedProperties.includes(prop.value))
+      .map(prop => prop.value);
     if (properties.length > 0) {
       this.enrichmentService.extendColumn(this.header, properties).subscribe((data) => {
         if (this.extensionData.length > 0) { // join data
@@ -64,6 +67,11 @@ export class ExtensionComponent implements OnInit {
         } else {
           this.extensionData = data; // overwrite
         }
+        const propSet = new Set([...this.alreadyExtendedProperties, ...properties]);
+        this.alreadyExtendedProperties = Array.from(propSet);
+        this.previewProperties = this.selectedProperties
+          .filter(prop => this.alreadyExtendedProperties.includes(prop.value))
+          .map(prop => prop.value);
         this.dataLoading = false;
       });
     } else {
@@ -73,9 +81,8 @@ export class ExtensionComponent implements OnInit {
 
   public submit() {
     const deriveMaps = [];
-
-    this.selectedProperties.forEach(prop => {
-      deriveMaps.push(new DeriveMap(prop.value.replace(/\s/g, '_')).buildFromExtension(prop.value, this.extensionData));
+    this.previewProperties.forEach((prop: string) => {
+      deriveMaps.push(new DeriveMap(prop.replace(/\s/g, '_')).buildFromExtension(prop, this.extensionData));
     });
     this.dialogRef.close({'deriveMaps': deriveMaps });
 
@@ -83,6 +90,16 @@ export class ExtensionComponent implements OnInit {
 
   public extensionProperties = (): Observable<Response> => {
     return this.enrichmentService.propertiesAvailable();
+  }
+
+  public removePropertyFromPreview(property: string) {
+    this.previewProperties = this.previewProperties.filter(prop => prop !== property);
+  }
+
+  public addPropertyToPreview(property: string) {
+    if (this.alreadyExtendedProperties.includes(property)) {
+      this.previewProperties.push(property);
+    }
   }
 
 }

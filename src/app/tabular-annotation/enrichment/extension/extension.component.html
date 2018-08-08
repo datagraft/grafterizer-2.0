@@ -23,7 +23,9 @@
                [disable]="dataLoading"
                [onlyFromAutocomplete]="true"
                [placeholder]="'+ Property'"
-               [secondaryPlaceholder]="'Property'">
+               [secondaryPlaceholder]="'Property'"
+               (onAdd)="addPropertyToPreview($event.value)"
+               (onRemove)="removePropertyFromPreview($event.value)">
       <tag-input-dropdown [autocompleteObservable]='extensionProperties'
                           [zIndex]="9999"
                           [identifyBy]="'id'" [displayBy]="'id'" #input>
@@ -43,17 +45,17 @@
     <h3> Preview </h3>
     <clr-datagrid [clrDgLoading]="dataLoading">
       <clr-dg-column>{{header}}</clr-dg-column>
-      <clr-dg-column *ngFor="let prop of selectedProperties">{{prop.value}}</clr-dg-column>
+      <clr-dg-column *ngFor="let prop of previewProperties">{{prop}}</clr-dg-column>
 
       <clr-dg-row *ngFor="let extension of extensionData">
         <clr-dg-cell>{{extension.id}}</clr-dg-cell>
-        <clr-dg-cell *ngFor="let prop of selectedProperties">
-          <span *ngIf="extension.properties.get(prop.value) && extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['str']">
+        <clr-dg-cell *ngFor="let prop of previewProperties">
+          <span *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['str']">
             {{extension.properties.get(prop.value)[0]['str']}}
           </span>
-          <a *ngIf="extension.properties.get(prop.value) && extension.properties.get(prop.value).length > 0 && extension.properties.get(prop.value)[0]['id']"
-             href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop.value)[0]['id']}}"
-             target="_blank">{{extension.properties.get(prop.value)[0]['name']}}
+          <a *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
+             href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
+             target="_blank">{{extension.properties.get(prop)[0]['name']}}
           </a>
         </clr-dg-cell>
       </clr-dg-row>
