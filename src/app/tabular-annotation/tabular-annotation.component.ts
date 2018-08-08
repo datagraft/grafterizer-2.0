@@ -161,7 +161,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         }
 
         this.hot.updateSettings({
-          columns: this.graftwerkData[':column-names'].map(h => ({ data: h })), // don't remove leading ':' here!
+          columns: this.getTableColumns(),
           colHeaders: (col) => this.getTableHeader(col)
         });
         this.hot.loadData(this.annotationService.data);
@@ -187,6 +187,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       this.hot.updateSettings({
+        columns: this.getTableColumns(),
         colHeaders: (col) => this.getTableHeader(col)
       });
       this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
@@ -222,9 +223,30 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         }
         if (result['type']) {
           this.hot.updateSettings({
+            columns: this.getTableColumns(),
             colHeaders: (col) => this.getTableHeader(col)
           });
         }
+      }
+    });
+  }
+
+  getTableColumns() {
+    return this.graftwerkData[':column-names'].map(h => {
+      const ann = this.annotationService.getAnnotation(h.substr(1));
+      if (ann && ann.columnValuesType === ColumnTypes.URI) {
+        return ({
+          data: h, // don't remove leading ':' from header here!
+          renderer: (instance, td, row, col, prop, value, cellProperties) => {
+            console.log(value);
+            const annotation = this.annotationService.getAnnotation(this.annotationService.headers[col]);
+            td.className = 'htCenter htMiddle';
+            td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
+            return td;
+          }
+        });
+      } else {
+        return {data: h}; // don't remove leading ':' from header here!
       }
     });
   }
