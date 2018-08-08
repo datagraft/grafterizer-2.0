@@ -214,15 +214,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     }
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result['deriveMaps']) {
-        result['deriveMaps'].forEach(deriveMap => {
-          this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], result['type']);
-          if (result['type']) {
-            this.hot.updateSettings({
-              colHeaders: (col) => this.getTableHeader(col)
-            });
-          }
-        });
+      if (result) {
+        if (result['deriveMaps']) {
+          result['deriveMaps'].forEach(deriveMap => {
+            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], result['type']);
+          });
+        }
+        if (result['type']) {
+          this.hot.updateSettings({
+            colHeaders: (col) => this.getTableHeader(col)
+          });
+        }
       }
     });
   }
