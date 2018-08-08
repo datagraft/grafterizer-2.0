@@ -82,11 +82,10 @@ export class DeriveMap {
     this.newColName = newColName;
   }
 
-  buildFromMapping(mapping: Mapping[]) {
+  buildFromMapping(mapping: Mapping[], threshold: number) {
     this.deriveMap = {};
     mapping.forEach(m => {
-      if (m.results.length > 0) {
-        // const key = m.originalQuery.replace(/\s/g, '_');
+      if (m.results.length > 0 && m.results[0].score >= threshold) {
         this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
       }
     });

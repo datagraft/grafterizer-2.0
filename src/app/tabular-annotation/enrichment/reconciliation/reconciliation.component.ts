@@ -26,6 +26,8 @@ export class ReconciliationComponent implements OnInit {
   public servicesGroups: string[];
   public servicesForSelectedGroup: ConciliatorService[];
 
+  public threshold: number;
+
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
               private enrichmentService: EnrichmentService) { }
@@ -45,6 +47,7 @@ export class ReconciliationComponent implements OnInit {
     this.showPreview = false;
     this.dataLoading = false;
     this.reconciledData = [];
+    this.threshold = 0.8;
   }
 
   public reconcile() {
@@ -71,7 +74,7 @@ export class ReconciliationComponent implements OnInit {
     }
 
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
-    deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData));
+    deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData, this.threshold));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.services.get(this.selectedService),
@@ -128,6 +131,20 @@ export class ReconciliationComponent implements OnInit {
     }
 
     return null;
+  }
+
+  updateThreshold() {
+    if (this.threshold != null) {
+      if (this.threshold < 0) {
+        this.threshold = 0;
+      }
+      if (this.threshold > 1) {
+        this.threshold = 1;
+      }
+    } else { // when the input is not a number
+      this.threshold = 0.8;
+    }
+    this.threshold = parseFloat(this.threshold.toFixed(2));
   }
 
 }

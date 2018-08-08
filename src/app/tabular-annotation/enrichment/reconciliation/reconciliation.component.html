@@ -35,9 +35,19 @@
   </form>
 
   <div id="preview" *ngIf="showPreview">
+    <div class="row">
+      <div class="col-md-9">
+        <h3> Preview </h3>
+        <ng-container *ngIf="guessedType != null">
+          Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a>
+        </ng-container>
+      </div>
+      <div class="col-md-3">
+        <label for="threshold">Threshold: </label>
+        <input type="number" size="5" id="threshold" step="0.01" max="1.0" min="0.0" style="width: 75px" [(ngModel)]="threshold" (change)="updateThreshold()">
+      </div>
+    </div>
 
-    <h3> Preview </h3>
-    <div *ngIf="guessedType != null">Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a></div>
     <clr-datagrid [clrDgLoading]="dataLoading">
       <clr-dg-column>Original value</clr-dg-column>
       <clr-dg-column>Reconciled entity</clr-dg-column>
@@ -45,12 +55,30 @@
       <clr-dg-column>Score</clr-dg-column>
 
       <clr-dg-row *ngFor="let mapping of reconciledData">
-        <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
-        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell"><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
-        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].name}}</clr-dg-cell>
-        <clr-dg-cell *ngIf="mapping.results.length > 0;else empty_cell">{{mapping.results[0].score}}</clr-dg-cell>
+        <ng-container *ngIf="mapping.results.length > 0">
+          <ng-container *ngIf="mapping.results[0].score >= threshold">
+            <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
+            <clr-dg-cell><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+            <clr-dg-cell>{{mapping.results[0].name}}</clr-dg-cell>
+            <clr-dg-cell>{{mapping.results[0].score}}</clr-dg-cell>
+          </ng-container>
+          <ng-container *ngIf="mapping.results[0].score < threshold">
+            <clr-dg-cell style="background-color: lightcoral">{{mapping.originalQuery}}</clr-dg-cell>
+            <clr-dg-cell style="background-color: lightcoral"><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+            <clr-dg-cell style="background-color: lightcoral">{{mapping.results[0].name}}</clr-dg-cell>
+            <clr-dg-cell style="background-color: lightcoral">{{mapping.results[0].score}}</clr-dg-cell>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="mapping.results.length === 0">
+          <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
+          <clr-dg-cell></clr-dg-cell>
+          <clr-dg-cell></clr-dg-cell>
+          <clr-dg-cell></clr-dg-cell>
+        </ng-container>
+
       </clr-dg-row>
-      <ng-template #empty_cell></ng-template>
+
       <clr-dg-footer>Reconciled {{validMappingsCount}} out of {{reconciledData.length}} unique values</clr-dg-footer>
     </clr-datagrid>
   </div>
@@ -59,5 +87,5 @@
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading" (click)="submit()" *ngIf="showPreview">Apply</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>
