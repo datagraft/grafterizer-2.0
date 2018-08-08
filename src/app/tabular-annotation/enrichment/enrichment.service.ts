@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import {ConciliatorService, Extension, Mapping, ReconciledColumn} from './enrichment.model';
+import {ConciliatorService, Extension, Mapping, Property, ReconciledColumn} from './enrichment.model';
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 
@@ -78,13 +78,13 @@ export class EnrichmentService {
     });
   }
 
-  extendColumn(header: string, properties: string[]): Observable<Extension[]> {
+  extendColumn(header: string, properties: string[]): Observable<{ext: Extension[], props: Property[]}> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
     values = values.filter(function(e) { return e === 0 || e; });  // remove empty strings
 
-    const extensions = [];
+    const extensions: Extension[] = [];
     values.forEach((value: string) => {
       extensions.push(new Extension(value, properties));
     });
@@ -109,7 +109,10 @@ export class EnrichmentService {
       extensions.forEach((extension: Extension) => {
         extension.setResultsFromService(res['rows'][extension.id]);
       });
-      return extensions;
+      const propDescriptions: Property[] = [];
+      res['meta'].forEach(p => propDescriptions.push(new Property(p)));
+
+      return {ext: extensions, props: propDescriptions};
     });
   }
 

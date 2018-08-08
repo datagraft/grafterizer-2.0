@@ -95,11 +95,12 @@ export class ReconciliationComponent implements OnInit {
     }
 
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
-    deriveMaps.push(new DeriveMap(this.newColumnName).buildFromMapping(this.reconciledData, this.threshold));
+    deriveMaps.push(
+      new DeriveMap(this.newColumnName)
+        .buildFromMapping(this.reconciledData, this.threshold,[this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': this.services.get(this.selectedService),
-      'type': this.guessedType
+      'conciliator': this.services.get(this.selectedService)
     });
 
   }

@@ -27,6 +27,18 @@ export class Result {
   }
 }
 
+export class Property {
+  public id: string;
+  public name: string;
+  public type: Type;
+
+  constructor(obj: Object) {
+    this.id = obj['id'];
+    this.name = obj['name'];
+    this.type = obj['type'];
+  }
+}
+
 export class Mapping {
   public queryId: string;
   public originalQuery: string;
@@ -76,14 +88,17 @@ export class Extension {
 export class DeriveMap {
   private deriveMap: {};
   public newColName: string;
+  public newColTypes: Type[];
 
   constructor(newColName: string) {
     this.deriveMap = {};
+    this.newColTypes = [];
     this.newColName = newColName;
   }
 
-  buildFromMapping(mapping: Mapping[], threshold: number) {
+  buildFromMapping(mapping: Mapping[], threshold: number, types: Type[]) {
     this.deriveMap = {};
+    this.newColTypes = types;
     mapping.forEach(m => {
       if (m.results.length > 0 && m.results[0].score >= threshold) {
         this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
@@ -92,10 +107,9 @@ export class DeriveMap {
     return this;
   }
 
-  buildFromExtension(selectedProperty: string, extensions: Extension[]) {
-    console.log(extensions);
-    console.log(selectedProperty);
+  buildFromExtension(selectedProperty: string, extensions: Extension[], types: Type[]) {
     this.deriveMap = {};
+    this.newColTypes = types;
     extensions.forEach(e => {
       if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
         const firstRes = e.properties.get(selectedProperty)[0];
@@ -120,7 +134,6 @@ export class DeriveMap {
       map += `"${key}" "${this.deriveMap[key]}" `;
     });
     map += '}';
-    console.log(map);
     return map;
   }
 

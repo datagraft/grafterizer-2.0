@@ -216,12 +216,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        let updateSettings = false;
         if (result['deriveMaps']) {
-          result['deriveMaps'].forEach(deriveMap => {
-            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], result['type']);
+          result['deriveMaps'].forEach((deriveMap: DeriveMap ) => {
+            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
+            if (deriveMap.newColTypes.length > 0) {
+              updateSettings = true;
+            }
           });
         }
-        if (result['type']) {
+        if (updateSettings) {
           this.hot.updateSettings({
             columns: this.getTableColumns(),
             colHeaders: (col) => this.getTableHeader(col)
@@ -238,7 +242,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         return ({
           data: h, // don't remove leading ':' from header here!
           renderer: (instance, td, row, col, prop, value, cellProperties) => {
-            console.log(value);
             const annotation = this.annotationService.getAnnotation(this.annotationService.headers[col]);
             td.className = 'htCenter htMiddle';
             td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
@@ -591,10 +594,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param deriveMap
    * @param conciliator
-   * @param type
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap,
-                             conciliator: ConciliatorService, type: Type) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
@@ -617,24 +618,32 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     // Pipeline update
     this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
-    // If the colsToDeriveFrom is not reconciled yet, this is a reconciliation step; otherwise,this is an extension
+    // Mark this column as reconciled if a conciliator is given
     if (conciliator) {
-      this.enrichmentService.setReconciledColumn(new ReconciledColumn(deriveMap, conciliator));
+      const reconciledColumn: ReconciledColumn = new ReconciledColumn(deriveMap, conciliator);
+      this.enrichmentService.setReconciledColumn(reconciledColumn);
+      this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
     }
 
-    if (type) {
+    // Annotate the derived column, if it contains instances (URIs)
+    if (deriveMap.newColTypes.length > 0) {
       const annotation = new Annotation({
         columnHeader: deriveMap.newColName,
         columnValuesType: ColumnTypes.URI,
-        columnTypes: [conciliator.getSchemaSpace() + type.id],
+        columnTypes: deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id),
         urifyNamespace: conciliator.getIdentifierSpace()
       });
+      // If the colsToDeriveFrom is reconciled, this is an extension step
+      if (this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
+        annotation.property = conciliator.getSchemaSpace() + deriveMap.newColName;
+        annotation.subject = colsToDeriveFrom;
+      }
 
       this.annotationService.setAnnotation(deriveMap.newColName, annotation);
       this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
+
     }
 
-    this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
     this.transformationSvc.changeTransformationObj(this.transformationObj);
     this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
 

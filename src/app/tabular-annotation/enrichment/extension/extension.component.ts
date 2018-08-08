@@ -2,7 +2,7 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs/Observable';
-import {ConciliatorService, DeriveMap, Extension} from '../enrichment.model';
+import {ConciliatorService, DeriveMap, Extension, Property} from '../enrichment.model';
 
 @Component({
   selector: 'app-extension',
@@ -13,6 +13,7 @@ export class ExtensionComponent implements OnInit {
 
   public header: any;
   public extensionData: any;
+  public propertyDescriptions: Map<string, Property>;
 
   public services: ConciliatorService[];
 
@@ -36,6 +37,7 @@ export class ExtensionComponent implements OnInit {
     this.showPreview = false;
     this.dataLoading = false;
     this.extensionData = [];
+    this.propertyDescriptions = new Map();
 
     this.selectedProperties = [];
     this.alreadyExtendedProperties = [];
@@ -61,17 +63,22 @@ export class ExtensionComponent implements OnInit {
     if (properties.length > 0) {
       this.enrichmentService.extendColumn(this.header, properties).subscribe((data) => {
         if (this.extensionData.length > 0) { // join data
-          data.forEach((ext: Extension) => {
+          data['ext'].forEach((ext: Extension) => {
             this.extensionData.find((extension: Extension) => extension.id === ext.id).addProperties(ext.properties);
           });
         } else {
-          this.extensionData = data; // overwrite
+          this.extensionData = data['ext']; // overwrite
         }
         const propSet = new Set([...this.alreadyExtendedProperties, ...properties]);
         this.alreadyExtendedProperties = Array.from(propSet);
         this.previewProperties = this.selectedProperties
           .filter(prop => this.alreadyExtendedProperties.includes(prop.value))
           .map(prop => prop.value);
+
+        data['props'].forEach((propDesc: Property) => {
+          this.propertyDescriptions.set(propDesc.id, propDesc);
+        });
+
         this.dataLoading = false;
       });
     } else {
@@ -81,10 +88,15 @@ export class ExtensionComponent implements OnInit {
 
   public submit() {
     const deriveMaps = [];
+    console.log(this.propertyDescriptions);
     this.previewProperties.forEach((prop: string) => {
-      deriveMaps.push(new DeriveMap(prop.replace(/\s/g, '_')).buildFromExtension(prop, this.extensionData));
+      deriveMaps.push(new DeriveMap(prop.replace(/\s/g, '_'))
+        .buildFromExtension(prop, this.extensionData, [this.propertyDescriptions.get(prop).type].filter(p => p != null)));
     });
-    this.dialogRef.close({'deriveMaps': deriveMaps });
+    this.dialogRef.close({
+      'deriveMaps': deriveMaps,
+      'conciliator': this.reconciledFromService
+    });
 
   }
 
