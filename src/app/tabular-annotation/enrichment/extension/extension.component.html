@@ -43,11 +43,11 @@
   <div id="preview" *ngIf="showPreview">
 
     <h3> Preview </h3>
-    <clr-datagrid [clrDgLoading]="dataLoading">
+    <clr-datagrid [clrDgLoading]="dataLoading" class="datagrid-compact">
       <clr-dg-column>{{header}}</clr-dg-column>
       <clr-dg-column *ngFor="let prop of previewProperties">{{prop}}</clr-dg-column>
 
-      <clr-dg-row *ngFor="let extension of extensionData">
+      <clr-dg-row *clrDgItems="let extension of extensionData">
         <clr-dg-cell>{{extension.id}}</clr-dg-cell>
         <clr-dg-cell *ngFor="let prop of previewProperties">
           <span *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['str']">
@@ -59,8 +59,13 @@
           </a>
         </clr-dg-cell>
       </clr-dg-row>
+      <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="10">
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{pagination.totalItems}} results
+        </clr-dg-pagination>
+      </clr-dg-footer>
     </clr-datagrid>
-
   </div>
 
 </div>

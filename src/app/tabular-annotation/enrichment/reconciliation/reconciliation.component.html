@@ -42,19 +42,35 @@
           Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a>
         </ng-container>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3" *ngIf="reconciledData.length > 0">
         <label for="threshold">Threshold: </label>
         <input type="number" size="5" id="threshold" step="0.01" max="1.0" min="0.0" style="width: 75px" [(ngModel)]="threshold" (change)="updateThreshold()">
+
+        <clr-tooltip>
+          <clr-icon clrTooltipTrigger shape="success-standard" class="is-success is-solid"></clr-icon>
+          <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+            <span>Reconciled {{validMappingsCount - skippedCount}} out of {{reconciledData.length}} unique values</span>
+          </clr-tooltip-content>
+        </clr-tooltip>
+        {{(validMappingsCount - skippedCount)/ reconciledData.length | number:'1.2-2'}} %
+
+        <clr-tooltip>
+          <clr-icon clrTooltipTrigger shape="error-standard" class="is-danger is-solid"></clr-icon>
+          <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+            <span>Number of entities with a score lower then {{threshold}}</span>
+          </clr-tooltip-content>
+        </clr-tooltip>
+        {{skippedCount}}
       </div>
     </div>
 
-    <clr-datagrid [clrDgLoading]="dataLoading">
+    <clr-datagrid [clrDgLoading]="dataLoading" class="datagrid-compact">
       <clr-dg-column>Original value</clr-dg-column>
       <clr-dg-column>Reconciled entity</clr-dg-column>
       <clr-dg-column>Reconciled entity name</clr-dg-column>
-      <clr-dg-column>Score</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="mappingComparator">Score</clr-dg-column>
 
-      <clr-dg-row *ngFor="let mapping of reconciledData">
+      <clr-dg-row *clrDgItems="let mapping of reconciledData">
         <ng-container *ngIf="mapping.results.length > 0">
           <ng-container *ngIf="mapping.results[0].score >= threshold">
             <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
@@ -78,8 +94,12 @@
         </ng-container>
 
       </clr-dg-row>
-
-      <clr-dg-footer>Reconciled {{validMappingsCount}} out of {{reconciledData.length}} unique values</clr-dg-footer>
+      <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="10">
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{pagination.totalItems}} results
+        </clr-dg-pagination>
+      </clr-dg-footer>
     </clr-datagrid>
   </div>
 
@@ -87,5 +107,5 @@
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0" (click)="submit()" *ngIf="showPreview">Apply</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

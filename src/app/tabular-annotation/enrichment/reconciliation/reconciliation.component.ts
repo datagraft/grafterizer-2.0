@@ -2,7 +2,24 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, DeriveMap, Mapping, Result, Type} from '../enrichment.model';
+import {Comparator} from 'clarity-angular';
 
+class MappingComparator implements Comparator<Mapping> {
+  compare(a: Mapping, b: Mapping) {
+    const aRes = a.results;
+    const bRes = b.results;
+
+    if (aRes.length === 0 && bRes.length === 0) { // no res vs no res
+      return 0;
+    } else if (aRes.length === 0) { // no res vs res
+      return -1;
+    } else if (bRes.length === 0) { // res vs no res
+      return 1;
+    } else { // res vs res
+      return aRes[0].score - bRes[0].score;
+    }
+  }
+}
 
 @Component({
   selector: 'app-reconciliation',
@@ -27,6 +44,9 @@ export class ReconciliationComponent implements OnInit {
   public servicesForSelectedGroup: ConciliatorService[];
 
   public threshold: number;
+  public skippedCount: number;
+
+  public mappingComparator = new MappingComparator();
 
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
@@ -48,6 +68,7 @@ export class ReconciliationComponent implements OnInit {
     this.dataLoading = false;
     this.reconciledData = [];
     this.threshold = 0.8;
+    this.skippedCount = 0;
   }
 
   public reconcile() {
@@ -145,6 +166,12 @@ export class ReconciliationComponent implements OnInit {
       this.threshold = 0.8;
     }
     this.threshold = parseFloat(this.threshold.toFixed(2));
+    this.skippedCount = 0;
+    this.reconciledData.forEach((mapping: Mapping) => {
+      if (mapping.results.length > 0 && mapping.results[0].score < this.threshold) {
+        this.skippedCount += 1;
+      }
+    });
   }
 
 }
