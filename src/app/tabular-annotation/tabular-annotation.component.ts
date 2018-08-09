@@ -363,31 +363,31 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.saveLoading = false;
   }
 
-  /**
-   * Retrieve the RDF triples
-   * @param {string} rdfFormat specifies the RDF syntax
-   */
-  retrieveRDF(rdfFormat: string = 'nt') {
-    this.retrieveRDFLoading = true;
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
-      const existingTransformationID = paramMap.get('transformationId');
-      const filestoreID = paramMap.get('filestoreId');
-      console.log(this.transformationObj);
-      this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
-        (transformed) => {
-          console.log(transformed);
-          this.retrieveRDFLoading = false;
-        },
-        (error) => {
-          console.log('Error transforming file');
-          console.log(error);
-          this.retrieveRDFLoading = false;
-        }
-      );
-    }
-    this.retrieveRDFLoading = false;
-  }
+  // /**
+  //  * Retrieve the RDF triples
+  //  * @param {string} rdfFormat specifies the RDF syntax
+  //  */
+  // retrieveRDF(rdfFormat: string = 'nt') {
+  //   this.retrieveRDFLoading = true;
+  //   const paramMap = this.route.snapshot.paramMap;
+  //   if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+  //     const existingTransformationID = paramMap.get('transformationId');
+  //     const filestoreID = paramMap.get('filestoreId');
+  //     console.log(this.transformationObj);
+  //     this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'graft', rdfFormat).then(
+  //       (transformed) => {
+  //         console.log(transformed);
+  //         this.retrieveRDFLoading = false;
+  //       },
+  //       (error) => {
+  //         console.log('Error transforming file');
+  //         console.log(error);
+  //         this.retrieveRDFLoading = false;
+  //       }
+  //     );
+  //   }
+  //   this.retrieveRDFLoading = false;
+  // }
 
   /**
    * Returns a set of annotations where each annotation has prefix and namespace set.
@@ -578,7 +578,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     }
     // TODO: create a new RDFVocabulary instance
     this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
-
     return prefix;
   }
 

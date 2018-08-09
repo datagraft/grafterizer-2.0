@@ -8,19 +8,19 @@
     <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
       <clr-icon class="is-solid" shape="share"></clr-icon> Update RDF Mappings
     </button>
-    <clr-dropdown *ngIf="false">
-      <button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>
-        <clr-icon shape="download"></clr-icon>
-        Create RDF triples
-        <clr-icon shape="caret down"></clr-icon>
-      </button>
-      <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-        <label class="dropdown-header">Formats</label>
-        <button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>
-        <button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>
-        <button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>
-      </clr-dropdown-menu>
-    </clr-dropdown>
+    <!--<clr-dropdown *ngIf="false">-->
+      <!--<button [clrLoading]="retrieveRDFLoading" type="button" class="btn btn-info-outline" [disabled]="rdfButtonDisabled" clrDropdownTrigger>-->
+        <!--<clr-icon shape="download"></clr-icon>-->
+        <!--Create RDF triples-->
+        <!--<clr-icon shape="caret down"></clr-icon>-->
+      <!--</button>-->
+      <!--<clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>-->
+        <!--<label class="dropdown-header">Formats</label>-->
+        <!--<button type="button" clrDropdownItem (click)="retrieveRDF('nt')">.nt</button>-->
+        <!--<button type="button" clrDropdownItem (click)="retrieveRDF('ttl')">.ttl</button>-->
+        <!--<button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>-->
+      <!--</clr-dropdown-menu>-->
+    <!--</clr-dropdown>-->
     <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()">
       <clr-icon class="is-solid" shape="cog"></clr-icon>
       Settings
