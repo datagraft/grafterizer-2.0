@@ -115,28 +115,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationSubscription =
       this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
-
-        let updateTransformationObj = false;
-
-        if (this.transformationObj['reconciledColumns']) {
-          this.transformationObj['reconciledColumns'].forEach((recCol: any) => {
-            const reconciledCol = new ReconciledColumn(recCol._deriveMap, recCol._conciliator);
-
-            // Check if the user has removed manually the reconciliation step from the pipeline
-            if (this.transformationObj.pipelines[0].functions
-              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.getHeader()).length > 0) {
-              this.enrichmentService.setReconciledColumn(reconciledCol);
-            } else {
-              updateTransformationObj = true;
-            }
-          });
-
-          if (updateTransformationObj) { // update the object only when modified
-            this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-            this.transformationSvc.changeTransformationObj(this.transformationObj);
-          }
-        }
-
       });
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -144,7 +122,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       });
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
       this.graftwerkData = graftwerkData;
-      if (this.graftwerkData[':column-names'] && this.graftwerkData[':column-names']) {
+      if (this.graftwerkData[':column-names'] && this.graftwerkData[':rows']) {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
         this.annotationService.data = this.graftwerkData[':rows'];
@@ -160,6 +138,23 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
         }
 
+        if (this.transformationObj['reconciledColumns']) {
+          this.transformationObj['reconciledColumns'].forEach((recColObj) => {
+            const reconciledCol = new ReconciledColumn(recColObj._deriveMap, recColObj._conciliator);
+
+            // Check if the user has removed manually the reconciliation step from the pipeline
+            if (this.transformationObj.pipelines[0].functions
+              .filter(f => f.name === 'derive-column' && f.newColName === reconciledCol.getHeader())
+              .length > 0) {
+              this.enrichmentService.setReconciledColumn(reconciledCol);
+            }
+          });
+        }
+
+        this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
+        this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
+        this.transformationSvc.changeTransformationObj(this.transformationObj);
+
         this.hot.updateSettings({
           columns: this.getTableColumns(),
           colHeaders: (col) => this.getTableHeader(col)
@@ -170,7 +165,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     this.previewedTransformationSubscription.unsubscribe();
