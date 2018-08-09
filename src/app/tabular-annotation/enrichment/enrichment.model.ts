@@ -82,7 +82,6 @@ export class Extension {
   public setResultsFromService(res) {
     Object.keys(res).forEach(key => this.properties.set(key, res[key]));
   }
-
 }
 
 export class DeriveMap {
@@ -195,5 +194,100 @@ export class ReconciledColumn {
 
   getHeader(): string {
     return this._deriveMap.newColName;
+  }
+}
+
+export class WeatherConfigurator {
+  private parameters: string[];
+  private aggregators: string[];
+  private offsets: number[];
+  private readDatesFromCol: string;
+  private date: string;
+
+  constructor(obj: any) {
+    this.parameters = obj && obj.parameters || [];
+    this.aggregators = obj && obj.aggregators || [];
+    this.offsets = obj && obj.offsets || [];
+    this.readDatesFromCol = obj && obj.readDatesFromCol || '';
+    this.date = obj && obj.date || '';
+  }
+
+
+  getParameters(): string[] {
+    return this.parameters;
+  }
+
+  getAggregators(): string[] {
+    return this.aggregators;
+  }
+
+  getOffsets(): number[] {
+    return this.offsets;
+  }
+
+  getReadDatesFromCol(): string {
+    return this.readDatesFromCol;
+  }
+
+  getDate(): string {
+    return this.date;
+  }
+}
+
+export class WeatherObservation {
+  private geonamesId: string;
+
+  private validTime: string;
+  private validityDateTime: string;
+  private weatherParameters: WeatherParameter[] = [];
+  private offset: number;
+
+  constructor(obj) {
+    this.geonamesId = obj && obj.geonamesId || '';
+    this.validTime = obj && obj.validTime || '';
+    this.validityDateTime = obj && obj.validityDateTime || '';
+    const tempParam = obj['weatherParameters'];
+    for (let i = 0; i < tempParam.length; ++i) {
+      this.weatherParameters.push(new WeatherParameter(tempParam[i]));
+    }
+    this.offset = obj && obj.offset || 0;
+  }
+
+  getGeonamesId(): string {
+    return this.geonamesId;
+  }
+
+  getValidTime(): string {
+    return this.validTime;
+  }
+
+  getValidityDateTime(): string {
+    return this.validityDateTime;
+  }
+
+  getWeatherParameters(): WeatherParameter[] {
+    return this.weatherParameters;
+  }
+
+  getOffset(): number {
+    return this.offset;
+  }
+}
+
+export class WeatherParameter {
+  private id: string;
+  private value: string;
+
+  constructor(obj) {
+    this.id = obj && obj.id || '';
+    this.value = obj && obj.value || '';
+  }
+
+  getId(): string {
+    return this.id;
+  }
+
+  getValue(): string {
+    return this.value;
   }
 }

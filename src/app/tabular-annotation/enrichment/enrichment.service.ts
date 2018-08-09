@@ -1,9 +1,18 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import {ConciliatorService, Extension, Mapping, Property, ReconciledColumn} from './enrichment.model';
+import {
+  ConciliatorService,
+  Extension,
+  Mapping,
+  Property,
+  ReconciledColumn,
+  WeatherConfigurator, WeatherObservation,
+  WeatherParameter
+} from './enrichment.model';
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
+import * as moment from 'moment';
 
 @Injectable()
 export class EnrichmentService {
@@ -113,6 +122,58 @@ export class EnrichmentService {
       res['meta'].forEach(p => propDescriptions.push(new Property(p)));
 
       return {ext: extensions, props: propDescriptions};
+    });
+  }
+
+  weatherData(header: string, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
+
+    let geoIds = this.data.map(row => row[':' + header]);
+    geoIds = Array.from(new Set(geoIds)).filter(function(e) { return e === 0 || e; });  // remove empty strings
+
+    let dates = [];
+    if (weatherConfig.getReadDatesFromCol()) {
+      dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
+      dates = Array.from(new Set(dates)).filter(function(e) { return e === 0 || e; });  // remove empty strings
+      dates = dates.map(date => moment(date).toISOString(true));
+      console.log(dates);
+    } else {
+      dates.push(moment(weatherConfig.getDate()).toISOString(true));
+    }
+
+    const requestURL = this.asiaURL + '/weather';
+
+    const params = new HttpParams()
+      .set('ids', geoIds.join(','))
+      .set('dates', dates.join(','))
+      .set('aggregators', weatherConfig.getAggregators().join(','))
+      .set('weatherParams', weatherConfig.getParameters().join(','))
+      .set('offsets', weatherConfig.getOffsets().join(','));
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+      const extensions: Map<string, Extension> = new Map();
+      results.forEach(obs => {
+        const weatherObs = new WeatherObservation(obs);
+        const properties: Map<string, any[]> = new Map();
+
+        let extension = extensions.get(weatherObs.getGeonamesId());
+        if (!extension) {
+          extension = new Extension(weatherObs.getGeonamesId(), []);
+        }
+        weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
+          const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getValidTime()}_+${weatherObs.getOffset()}`;
+          properties.set(newParamName, [{'str': `${weatherParam.getValue()}`}]);
+        });
+        extension.addProperties(properties);
+        extensions.set(weatherObs.getGeonamesId(), extension);
+      });
+      return Array.from(extensions.values());
     });
   }
 
