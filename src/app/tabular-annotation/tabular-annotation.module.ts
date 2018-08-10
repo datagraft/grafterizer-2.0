@@ -14,6 +14,8 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatDialogModule} from '@angular/material';
 import {ConfigComponent} from './config/config.component';
 import {TagInputModule} from 'ngx-chips';
+import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
+import { ExtensionComponent } from './enrichment/extension/extension.component';
 
 @NgModule({
   imports: [
@@ -28,12 +30,14 @@ import {TagInputModule} from 'ngx-chips';
     MatDialogModule,
     TagInputModule
   ],
-  entryComponents: [AnnotationFormComponent, ConfigComponent],
+  entryComponents: [AnnotationFormComponent, ConfigComponent, ExtensionComponent, ReconciliationComponent],
   declarations: [
     TabularAnnotationComponent,
     TabularAnnotationDetailComponent,
     AnnotationFormComponent,
-    ConfigComponent
+    ConfigComponent,
+    ReconciliationComponent,
+    ExtensionComponent
   ]
 })
 
