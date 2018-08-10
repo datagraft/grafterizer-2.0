@@ -62,3 +62,6 @@
   visibility: hidden
 }
 
+>>> .alerts {
+  z-index: 99;
+}
