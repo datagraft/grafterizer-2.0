@@ -3,5 +3,6 @@
   "dispatch-path": "/grafterizer-dispatch",
   "graftwerk-path": "/graftwerk-cache",
   "abstat-path": "http://abstat.disco.unimib.it",
-  "abstat-path-ba": "http://193.204.59.21"
+  "abstat-path-ba": "http://193.204.59.21",
+  "vocabulary-service-path": "https://grafterizer.datagraft.io/vocabularies/api/vocabulary"
 }

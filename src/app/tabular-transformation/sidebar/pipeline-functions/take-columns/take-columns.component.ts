@@ -21,7 +21,7 @@ export class TakeColumnsComponent implements OnInit {
   private indexFrom = null;
   private indexTo = null;
   private take = true;
-  private docstring: string;
+  private docstring: string = 'Take columns';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -81,7 +81,7 @@ export class TakeColumnsComponent implements OnInit {
   private accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
-      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+      this.editTakeColumnsFunction(this.currentlySelectedFunction);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -99,6 +99,7 @@ export class TakeColumnsComponent implements OnInit {
       // create object with user input
       const newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
         this.indexFrom, this.indexTo, this.take, this.docstring);
+      console.log(newFunction)
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -116,10 +117,10 @@ export class TakeColumnsComponent implements OnInit {
     this.resetModal();
   }
 
-  private editDeriveColumnsFunction(instanceObj): any {
+  private editTakeColumnsFunction(instanceObj): any {
     instanceObj.columnsArray = this.columnsArray;
-    instanceObj.indexFrom = this.indexFrom;
-    instanceObj.indexTo = this.indexTo;
+    instanceObj.indexFrom = parseInt(this.indexFrom);
+    instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.take = this.take;
     instanceObj.docstring = this.docstring;
   }
@@ -131,10 +132,11 @@ export class TakeColumnsComponent implements OnInit {
     });
     this.modalEnabled = false;
     // resets the fields of the modal
+    this.columnsArray = [];
     this.indexFrom = null;
     this.indexTo = null;
     this.take = true;
-    this.docstring = null;
+    this.docstring = 'Take columns';
   }
 
   private cancel() {

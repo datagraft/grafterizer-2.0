@@ -26,6 +26,8 @@ import { GlobalErrorReportingService } from 'app/global-error-reporting.service'
 import { AbstatService } from './tabular-annotation/abstat.service';
 
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DataGraftMessageService } from 'app/data-graft-message.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {EnrichmentService} from './tabular-annotation/enrichment/enrichment.service';
@@ -54,6 +56,8 @@ export function initConfig(config: AppConfig) {
     HttpModule,
     HttpClientModule,
     MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
     MatProgressSpinnerModule
   ],
   providers: [

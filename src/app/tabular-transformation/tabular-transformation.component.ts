@@ -7,8 +7,6 @@ import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
 import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import * as generateClojure from 'assets/generateclojure.js';
 import { Subscription } from 'rxjs/Subscription';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
@@ -64,10 +62,11 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
       // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
@@ -119,6 +118,13 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     }
     else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
       this.showHandsonTableProfiling = false;
+    }
+    else if (!paramMap.has('publisher')) {
+      this.showHandsonTableProfiling = false;
+      this.showHandsontable = false;
+      this.showSelectbox = false;
+      this.showProfiling = false;
+      this.showPipelineMetadataTabs = false;
     }
 
   }

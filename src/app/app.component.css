@@ -4,8 +4,10 @@
 
 #btn {
     padding: 10px;
-    padding-top: 20px;
-    padding-bottom: 50px;
+}
+
+button:focus {
+    outline: 0;
 }
 
 .title {
@@ -14,9 +16,13 @@
     size: 130%;
 }
 
-#load-distribution{
-    padding-top: 100px;  
-    padding-left: 400px;
+.load-distribution{
+    display: flex;
+    align-items: left;
+    justify-content: center;
+    position: absolute;
+    top: 90%;
+    right: 5%;
   }
 
 .content-area-no-padding {

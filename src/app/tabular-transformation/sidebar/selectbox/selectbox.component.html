@@ -1,6 +1,6 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <p-listbox [options]="transformations" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
-    [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
+  <p-listbox [options]="transformations" [(ngModel)]="selected" [disabled]="selectboxDisabled" (ngModelChange)="onChange($event)"
+    [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
   </p-listbox>
 </div>
 
@@ -28,9 +28,11 @@
 
 <merge-columns class="sin-flex"></merge-columns>
 
+<map-columns class="sin-flex"></map-columns>
+
 <sort-dataset class="sin-flex"></sort-dataset>
 
-<!-- <reshape-dataset [modalEnabled]="selected.id=='MeltFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"></reshape-dataset>
+<reshape-dataset class="sin-flex"></reshape-dataset>
 
 <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
@@ -41,11 +43,8 @@
 <add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
   [columns]="headers"></add-row>
 
-<map-columns [modalEnabled]="selected.id=='MapcFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="mapcFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></map-columns>
-
 <group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
   [defaultParams]="selected.defaultParams"></group-dataset>
 
 <filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows> -->
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows>

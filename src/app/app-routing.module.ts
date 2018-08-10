@@ -15,8 +15,8 @@ const appRoutes: Routes = [
   { path: ':publisher/transformations/:transformationId/:filestoreId/rdf-mapping', component: RdfMappingComponent },
   { path: ':publisher/transformations/:transformationId/:filestoreId/tabular-annotation', component: TabularAnnotationComponent },
   { path: ':publisher/transformations/:transformationId', redirectTo: ':publisher/transformations/:transformationId/tabular-transformation', pathMatch: 'full' },
-  { path: '', redirectTo: ':publisher/transformations/:transformationId', pathMatch: 'full' },
-  { path: '**', redirectTo: ':publisher/transformations/:transformationId', pathMatch: 'full' }
+  { path: 'transformations/new', redirectTo: 'transformations/new/tabular-transformation', pathMatch: 'full' },
+
 ];
 
 @NgModule({

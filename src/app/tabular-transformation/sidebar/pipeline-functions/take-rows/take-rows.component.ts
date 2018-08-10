@@ -18,7 +18,7 @@ export class TakeRowsComponent implements OnInit {
   private indexFrom: string = null;
   private indexTo: string = null;
   private take: boolean = true;
-  private docstring: string;
+  private docstring: string = 'Take or drop rows';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -59,7 +59,7 @@ export class TakeRowsComponent implements OnInit {
   private accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
-      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+      this.editTakeRowsFunction(this.currentlySelectedFunction);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -93,7 +93,7 @@ export class TakeRowsComponent implements OnInit {
     this.resetModal();
   }
 
-  private editDeriveColumnsFunction(instanceObj): any {
+  private editTakeRowsFunction(instanceObj): any {
     instanceObj.indexFrom = parseInt(this.indexFrom);
     instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.take = this.take;
@@ -110,7 +110,7 @@ export class TakeRowsComponent implements OnInit {
     this.indexFrom = null;
     this.indexTo = null;
     this.take = true;
-    this.docstring = null;
+    this.docstring = 'Take or drop rows';
   }
 
   private cancel() {

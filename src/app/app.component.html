@@ -61,15 +61,18 @@
         </span>
       </div>
     </div>
-    <div *ngIf="showLoadDistributionDialog" id="load-distribution">
-      <h4>1 - Select an existing file from your DataGraft assets:</h4>
-      <br>
-      <button type="button" (click)="loadDistribution()">Load existing file</button>
-      <br>
-      <h4>OR</h4>
-      <h4>2 - Upload a file locally from your computer:</h4>
-      <br>
-      <input type="file" id="fileSelect" (change)="onFileChange($event)" #fileInput>
+    <div *ngIf="showLoadDistributionDialog" class="load-distribution">
+      <div id="btn">
+        <button mat-fab (click)="loadDistribution()" matTooltip="Select an existing file from your DataGraft assets">
+          <mat-icon aria-label="Upload a file locally from your computer">cloud</mat-icon>
+        </button>
+      </div>
+      <div id="btn">
+        <button mat-fab (click)="fileInput.click()" matTooltip="Upload a file locally from your computer">
+          <mat-icon aria-label="Upload a file locally from your computer">folder_open</mat-icon>
+          <input hidden type="file" id="fileSelect" #fileInput (change)="onFileChange($event)" />
+        </button>
+      </div>
     </div>
   </div>
 
