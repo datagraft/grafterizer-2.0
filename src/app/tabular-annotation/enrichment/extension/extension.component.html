@@ -10,7 +10,7 @@
                   name="service"
                   [(ngModel)]="selectedService"
                   (change)="showPreview = false;">
-            <option *ngFor="let service of services" [value]="service.getId()">{{service.getName()}}</option>
+            <option *ngFor="let service of services" [value]="service.getId()">{{service.getName()}} Extension</option>
           </select>
         </div>
       </div>

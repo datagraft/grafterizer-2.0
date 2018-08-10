@@ -21,7 +21,7 @@
           <select id="service"
                   name="service"
                   [(ngModel)]="selectedService">
-            <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}}</option>
+            <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}} Reconciliation</option>
           </select>
         </div>
       </div>
@@ -52,7 +52,7 @@
             <span>Reconciled {{validMappingsCount - skippedCount}} out of {{reconciledData.length}} unique values</span>
           </clr-tooltip-content>
         </clr-tooltip>
-        {{(validMappingsCount - skippedCount)/ reconciledData.length | number:'1.2-2'}} %
+        {{(validMappingsCount - skippedCount)/ reconciledData.length * 100 | number:'1.2-2'}} %
 
         <clr-tooltip>
           <clr-icon clrTooltipTrigger shape="error-standard" class="is-danger is-solid"></clr-icon>

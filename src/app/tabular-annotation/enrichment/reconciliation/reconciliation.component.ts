@@ -107,7 +107,7 @@ export class ReconciliationComponent implements OnInit {
 
   updateServicesForSelectedGroup(): void {
     this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup );
-    this.selectedService = undefined;
+    this.selectedService = this.servicesForSelectedGroup[0].getId();
     this.showPreview = false;
   }
 
