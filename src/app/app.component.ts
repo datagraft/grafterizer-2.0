@@ -83,6 +83,8 @@ export class AppComponent implements OnInit {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.changeTransformationObj(transformationObj);
+                    console.log(transformationObj)
+
                     if (paramMap.has('filestoreId')) {
                       this.showRdfMappingTab = true;
                       this.showTabularAnnotationTab = true;
@@ -105,6 +107,7 @@ export class AppComponent implements OnInit {
                       });
                     }
                     else if (!paramMap.has('filestoreId')) {
+                      console.log(transformationObj)
                       this.showRdfMappingTab = true;
                       this.showTabularAnnotationTab = false;
                       this.showLoadDistributionDialog = true;

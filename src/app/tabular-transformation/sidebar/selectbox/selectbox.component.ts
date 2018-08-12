@@ -46,6 +46,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges() {
     if (this.suggestions) {
+      console.log(this.suggestions)
       this.transformations = this.suggestions;
       const paramMap = this.route.snapshot.paramMap;
       if (!paramMap.has('filestoreId')) {

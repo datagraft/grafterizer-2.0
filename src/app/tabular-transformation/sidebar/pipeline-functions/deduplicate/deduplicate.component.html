@@ -1,44 +1,29 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Remove duplicates</h3>
   <div class="modal-body">
-    <form action="">
-      <div class="radio">
-        <input type="radio" [(ngModel)]="mode" name="mode" value="full" id="mode_1">
-        <label for="mode_1">Remove full duplicates</label>
-      </div>
-      <!-- Hidden when there are less than 2 columns -->
-      <div class="radio" *ngIf="columns.length>1">
-        <input type="radio" [(ngModel)]="mode" name="mode" value="columns" id="mode_2">
-        <label for="mode_2">Remove duplicates on column (set of columns) and leave only the first value</label>
-      </div>
-
-    </form>
-    <!-- Hidden when there are less than 2 columns -->
-    <div *ngIf="mode=='columns' && columns.length>1">
-      <label for="cols">Column names:</label>
-      <!--<rl-tag-input [(ngModel)]="colnames" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true" placeholder="Column names"
-        id="cols"></rl-tag-input>-->
-
-      <!-- Alert if not a single column is chosen -->
-      <div *ngIf="colnames.length < 1 && showMessage" class="alert alert-danger">
-        <div class="alert-items">
-          <div class="alert-icon-wrapper">
-            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-          </div>
-          <span class="alert-text">
-                      Select a column
-                  </span>
+    <div fxLayout="column">
+      <form action="deduplicateMode">
+        <div class="radio">
+          <input type="radio" [(ngModel)]="deduplicateMode" name="mode" value="full" id="mode_1">
+          <label for="mode_1">Remove full duplicates</label>
         </div>
+        <div class="radio">
+          <input type="radio" [(ngModel)]="deduplicateMode" name="mode" value="colnames" id="mode_2">
+          <label for="mode_2">Remove duplicates in one or more column(s) and leave only the first value/ row</label>
+        </div>
+      </form>
+      <br>
+      <div id="reshapemode-column" *ngIf="deduplicateMode=='colnames'">
+        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
+          placeholder="Select column(s)" [(ngModel)]="colNames"></ng-select>
       </div>
-
-    </div>
-
-    <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
+      <br>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
     </div>
   </div>
+  <br>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>

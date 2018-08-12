@@ -34,11 +34,10 @@
 
 <reshape-dataset class="sin-flex"></reshape-dataset>
 
-<rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
+<deduplicate class="sin-flex"></deduplicate>
 
-<deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [columns]="headers"></deduplicate>
+<!-- <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
 
 <add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
   [columns]="headers"></add-row>
@@ -47,4 +46,4 @@
   [defaultParams]="selected.defaultParams"></group-dataset>
 
 <filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows>
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows> -->

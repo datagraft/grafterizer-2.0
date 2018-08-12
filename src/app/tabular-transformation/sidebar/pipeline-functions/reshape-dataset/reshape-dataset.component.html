@@ -13,12 +13,17 @@
         </div>
       </form>
       <br>
-      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
-        placeholder="Select column" [(ngModel)]="columnsArray"></ng-select>
+      <div id="reshapemode-melt" *ngIf="reshapedatasetmode=='melt'">
+        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
+          placeholder="Select column" [(ngModel)]="columnsArray"></ng-select>
+      </div>
       <div id="reshapemode-cast" *ngIf="reshapedatasetmode=='cast'">
-        <mat-form-field style="width: 100%;">
-          <input matInput placeholder="Move to index" [(ngModel)]="indexTo">
-        </mat-form-field>
+        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+          placeholder="Select variable column" [(ngModel)]="variable"></ng-select>
+        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+          placeholder="Select value column" [(ngModel)]="value"></ng-select>
+        <ng-select class="ng-select" [items]="aggrFunctionArray" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
+          placeholder="Select aggregation function" [(ngModel)]="aggrFunction"></ng-select>
       </div>
       <br>
       <mat-form-field style="width: 100%;">

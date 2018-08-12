@@ -63,7 +63,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
       { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
-      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
@@ -174,6 +174,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const recommend = this.recommenderService.getRecommendationWithParams(
       newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
       newSelection.totalRows, newSelection.totalCols, data, headers);
+    console.log(newSelection);
+    console.log(data);
+    console.log(headers);
+
     this.recommendations = recommend;
   }
 

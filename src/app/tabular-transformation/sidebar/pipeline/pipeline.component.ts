@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
 import { PipelineEventsService } from '../../pipeline-events.service';
 import { Subscription } from 'rxjs/Subscription';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
 
 
@@ -32,8 +31,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private pipelineEventsSubscription: Subscription;
   private currentlySelectedFunctionSubscription: Subscription;
-
-  private previewedTransformationObj: any;
 
   private deleteFunctionEvent: any;
   private deleteConfirmationModal = false;
@@ -79,7 +76,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
   }
 
   selectFunction(event) {
-    console.log('selection changed');
     const index = event.selectedIndex;
 
     // establish the function being changed
@@ -108,6 +104,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         return 'Columns mapped'
       case 'MeltFunction':
         return 'Dataset reshaped'
+      case 'RemoveDuplicatesFunction':
+        return 'Duplicates removed'
       case 'DeriveColumnFunction':
         return 'Column derived'
       case 'AddColumnsFunction':
@@ -213,12 +211,10 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.triggerPipelineEvent(this.deleteFunctionEvent);
-    console.log(this.deleteConfirmationModal);
   }
 
   cancelDelete() {
     this.deleteConfirmationModal = false;
-    console.log(this.deleteConfirmationModal);
   }
 
 }

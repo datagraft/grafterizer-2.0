@@ -13,26 +13,24 @@ import { TransformationService } from 'app/transformation.service';
 
 export class ReshapeDatasetComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
-
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
 
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
 
-  private previewedTransformationSubscription: Subscription;
   private previewedDataSubscription: Subscription;
 
-  private docstring: string = 'Reshape dataset';
+  private modalEnabled: boolean = false;
+  private reshapedatasetmode: string = 'melt';
   private previewedDataColumns: any = [];
   private columnsArray: any[] = [];
-  private aggrFunction: any[] = null;
+  private aggrFunctionArray: any[] = ['MIN', 'MAX', 'SUM', 'AVG', 'COUNT', 'COUNT-DISTINCT', 'MERGE'];
+  private aggrFunction: string = null;
   private variable: string = null;
   private value: string = null;
   private separator: string = null;
-
-  private reshapedatasetmode: string = 'melt';
+  private docstring: string = 'Reshape dataset with melt or cast function';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -47,19 +45,12 @@ export class ReshapeDatasetComponent implements OnInit {
       // In case we clicked edit
       if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MeltFunction') {
         this.modalEnabled = true;
+        this.reshapedatasetmode = this.currentlySelectedFunction.displayName;
         this.aggrFunction = this.currentlySelectedFunction.aggrFunction;
         this.columnsArray = this.currentlySelectedFunction.columnsArray;
         this.separator = this.currentlySelectedFunction.separator;
         this.value = this.currentlySelectedFunction.value;
         this.variable = this.currentlySelectedFunction.variable;
-
-        // this.selectedCustomFunction = this.currentlySelectedFunction.keyFunctionPairs
-        // ["0"].func;
-        // for (let funct of this.customFunctions) {
-        //   if (this.selectedCustomFunction.id === funct.id) {
-        //     this.customFunctions[funct.id] = this.selectedCustomFunction;
-        //   }
-        // }
         this.docstring = this.currentlySelectedFunction.docstring;
       }
       // In case we clicked to add a new data cleaning step
@@ -121,6 +112,7 @@ export class ReshapeDatasetComponent implements OnInit {
   }
 
   private editMeltFunction(instanceObj): any {
+    instanceObj.displayName = this.reshapedatasetmode;
     instanceObj.columnsArray = this.columnsArray;
     instanceObj.variable = this.variable;
     instanceObj.value = this.value;
@@ -136,7 +128,11 @@ export class ReshapeDatasetComponent implements OnInit {
     });
     this.modalEnabled = false;
     // resets the fields of the modal
-    this.docstring = 'Map column';
+    this.columnsArray = null;
+    this.aggrFunction = null;
+    this.variable = null;
+    this.value = null;
+    this.docstring = 'Reshape dataset with melt or cast function';
   }
 
   private cancel() {
