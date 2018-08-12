@@ -1,26 +1,26 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {AnnotationService} from './annotation.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AnnotationService } from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import {TransformationService} from '../transformation.service';
-import {DispatchService} from '../dispatch.service';
-import {ActivatedRoute} from '@angular/router';
-import {RoutingService} from '../routing.service';
-import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
+import { TransformationService } from '../transformation.service';
+import { DispatchService } from '../dispatch.service';
+import { ActivatedRoute } from '@angular/router';
+import { RoutingService } from '../routing.service';
+import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
-import {MatDialog} from '@angular/material';
-import {ConfigComponent} from './config/config.component';
-import {Subscription} from 'rxjs/Subscription';
-import {EnrichmentService} from './enrichment/enrichment.service';
-import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
-import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
-import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
-import {ExtensionComponent} from './enrichment/extension/extension.component';
+import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
+import { MatDialog } from '@angular/material';
+import { ConfigComponent } from './config/config.component';
+import { Subscription } from 'rxjs/Subscription';
+import { EnrichmentService } from './enrichment/enrichment.service';
+import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
+import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
+import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
+import { ExtensionComponent } from './enrichment/extension/extension.component';
 
 declare var Handsontable: any;
 
@@ -66,8 +66,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
     public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
-              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
-              private pipelineEventsSvc: PipelineEventsService) {
+    private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
+    private pipelineEventsSvc: PipelineEventsService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -97,10 +97,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.container, this.settings);
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
-        if (event.realTarget.id.startsWith('annotation_')) {
+        if (event.target.parentNode.id.startsWith('annotation_')) {
+          console.log('annotation');
           blockCalculations.cells = true;
           this.openAnnotationDialog(coords.col);
-        } else if (event.realTarget.id.startsWith('enrich_')) {
+        } else if (event.target.parentNode.id.startsWith('enrich_')) {
+          console.log('enrichment');
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
         }
@@ -203,7 +205,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     };
 
     if (this.enrichmentService.isColumnReconciled(currentHeader)) {
-      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig );
+      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
     } else {
       dialogRef = this.dialog.open(ReconciliationComponent, dialogConfig);
     }
@@ -212,7 +214,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       if (result) {
         let updateSettings = false;
         if (result['deriveMaps']) {
-          result['deriveMaps'].forEach((deriveMap: DeriveMap ) => {
+          result['deriveMaps'].forEach((deriveMap: DeriveMap) => {
             this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
             if (deriveMap.newColTypes.length > 0) {
               updateSettings = true;
@@ -243,7 +245,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           }
         });
       } else {
-        return {data: h}; // don't remove leading ':' from header here!
+        return { data: h }; // don't remove leading ':' from header here!
       }
     });
   }
