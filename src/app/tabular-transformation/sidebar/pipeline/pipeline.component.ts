@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
 import { PipelineEventsService } from '../../pipeline-events.service';
+import { DispatchService } from '../../../dispatch.service';
 import { Subscription } from 'rxjs/Subscription';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -20,7 +22,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   private transformationObj: any;
   private steps: Array<any>;
-  private showPipeline: boolean;
+  private disableButton: boolean = false;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -38,9 +40,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private deleteFunctionEvent: any;
   private deleteConfirmationModal = false;
 
-  constructor(private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
+  constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService) {
     this.steps = [];
-    this.showPipeline = false; // TODO: not sure why we need this
   }
 
   private getIndexOfPreviewedFunction(): number {
@@ -70,6 +71,14 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.pipelineEvent = currentEvent;
     });
 
+    this.route.url.subscribe(() => {
+      const paramMap = this.route.snapshot.paramMap;
+      this.dispatch.getAllTransformations('', false).then((result) => {
+        if (result[0].publisher != paramMap.get('publisher')) {
+          this.disableButton = true;
+        }
+      });
+    })
   }
 
   ngOnDestroy() {

@@ -73,7 +73,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     ];
     route.url.subscribe((result) => {
       this.routingService.concatURL(route);
-      console.log(result);
     });
   }
 
@@ -109,7 +108,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
             this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
-            console.log(result);
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { RoutingService } from '../routing.service';
 import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
+import { DataGraftMessageService } from '../data-graft-message.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
@@ -24,7 +25,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private transformationOnlyView: boolean = false;
+  private transformationReadOnlyView: boolean = false;
+  private state: any;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -37,7 +39,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   @ViewChild(RdfPrefixManagementDialogAnchorDirective) rdfPrefixManagementAnchor: RdfPrefixManagementDialogAnchorDirective;
 
   constructor(private routingService: RoutingService, private route: ActivatedRoute, private router: Router,
-    private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
+    private transformationSvc: TransformationService, vocabService: RdfVocabularyService, private messageSvc: DataGraftMessageService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
@@ -72,10 +74,16 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     };
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
-    const paramMap = this.route.snapshot.paramMap;
-    if (!paramMap.has('filestoreId')) {
-      this.transformationOnlyView = true;
-    }
+    this.route.url.subscribe(() => {
+      this.state = this.messageSvc.getCurrentDataGraftState();
+      const paramMap = this.route.snapshot.paramMap;
+      if (!paramMap.has('filestoreId')) {
+        this.transformationReadOnlyView = true;
+        if (this.state == 'transformations.transformation') {
+          this.transformationReadOnlyView = false;
+        }
+      }
+    })
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
