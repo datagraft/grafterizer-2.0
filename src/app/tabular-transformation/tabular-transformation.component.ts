@@ -71,7 +71,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
     ];
-    route.url.subscribe(() => this.routingService.concatURL(route));
+    route.url.subscribe((result) => {
+      this.routingService.concatURL(route);
+      console.log(result);
+    });
   }
 
   ngOnInit() {
@@ -106,7 +109,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
             this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
-            console.log(result)
+            console.log(result);
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;

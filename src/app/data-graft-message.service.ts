@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core';
 import { DispatchService } from './dispatch.service';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs';
+import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class DataGraftMessageService {
 
   // Path for the back button
   private pathBack: string;
-
   private channel: string;
   private connected: boolean;
+  private dataGraftMessage = new Subject<any>();
+  private currentDataGraftState: string;
 
 
   constructor(public dispatch: DispatchService, private router: Router) {
@@ -26,6 +30,18 @@ export class DataGraftMessageService {
     }, '*');
   }
 
+  public changeDataGraftMessage(message: any) {
+    this.dataGraftMessage.next(message);
+  }
+
+  public getDataGraftMessage(): Observable<any> {
+    return this.dataGraftMessage.asObservable();
+  }
+
+  public getCurrentDataGraftState(): string {
+    return this.currentDataGraftState;
+  }
+
   public getPathBack(): string {
     return this.pathBack;
   }
@@ -40,9 +56,8 @@ export class DataGraftMessageService {
 
 
   public receiveMessage(event) {
-
-
     const data = event.data;
+
     if (!data || !data.channel || data.channel !== this.channel) {
       return;
     }
@@ -58,15 +73,20 @@ export class DataGraftMessageService {
 
       switch (data.message) {
         case 'state.go':
-          console.log('STATE GOGOGO');
-          console.log(data.toParams);
+          // console.log('STATE GOGOGO');
+          // console.log(data.toParams);
+          // console.log(data.state);
+          this.changeDataGraftMessage(data);
+          this.currentDataGraftState = data.state;
           switch (data.state) {
-            case 'transformations.new.preview':
-              // this.router.navigate(['nvnikolov/transformations/eubg-sdati-uk/sample_uk_sdati_1000-csv/rdf-mapping']);
+            case 'transformations.readonly':
+              this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
-            case 'transformations.transformation.preview':
-              // const url = data.toParams.publisher + '/transformations/' + data.toParams.id + '/' + data.toParams.distributionId + '/tabular-transformation';
-              // this.router.navigate([url]);
+            case 'transformations.new':
+              this.router.navigate(['transformations', 'new', 'tabular-transformation']);
+              break;
+            case 'transformations.transformation':
+              this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
 
             default:

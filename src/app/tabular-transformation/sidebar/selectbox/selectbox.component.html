@@ -1,11 +1,13 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <p-listbox [options]="transformations" [(ngModel)]="selected" [disabled]="selectboxDisabled" (ngModelChange)="onChange($event)"
+  <p-listbox [options]="transformations" [(ngModel)]="selected" [disabled]="transformationReadOnlyView" (ngModelChange)="onChange($event)"
     [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
   </p-listbox>
-</div>
-
-<div id="btn-custom-functions" *ngIf="!transformationOnlyView">
-  <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
+  <div id="btn-custom-functions" *ngIf="transformationReadOnlyView">
+    <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()" disabled>Custom functions</button>
+  </div>
+  <div id="btn-custom-functions" *ngIf="!transformationReadOnlyView">
+    <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
+  </div>
 </div>
 
 <make-dataset class="sin-flex"></make-dataset>
@@ -34,7 +36,7 @@
 
 <reshape-dataset class="sin-flex"></reshape-dataset>
 
-<rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
+<!-- <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
   [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
 
 <deduplicate [modalEnabled]="selected.id=='RemoveDuplicatesFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
@@ -47,4 +49,4 @@
   [defaultParams]="selected.defaultParams"></group-dataset>
 
 <filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows>
+  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows> -->

@@ -71,87 +71,95 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+
     const self = this;
-    this.initRouteSubscription = this.router.events.subscribe(
-      (event) => {
-        if (event instanceof NavigationEnd) {
-          const paramMap = self.route.firstChild.snapshot.paramMap;
-          if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-            self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
-              .then(
-                (result) => {
-                  if (result !== 'Beginning OAuth Flow') {
-                    const transformationObj = transformationDataModel.Transformation.revive(result);
-                    self.transformationSvc.changeTransformationObj(transformationObj);
-                    if (paramMap.has('filestoreId')) {
-                      this.showRdfMappingTab = true;
-                      this.showTabularAnnotationTab = true;
-                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                      // check if current publisher id is the same as the logged in user
-                      // if not equal; disable editing of transformation
-                      this.dispatch.getAllTransformations('', false).then((result) => {
-                        if (result[0].publisher == paramMap.get('publisher')) {
-                          this.showSaveButton = true;
-                          this.showForkButton = true;
-                          this.showDownloadButton = true;
-                          this.showDeleteButton = true;
+
+    this.messageSvc.getDataGraftMessage().subscribe(result => {
+      if (result) {
+        console.log(result);
+        this.initRouteSubscription = this.router.events.subscribe(
+          (event) => {
+            if (event instanceof NavigationEnd) {
+              const paramMap = self.route.firstChild.snapshot.paramMap;
+              if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+                self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
+                  .then(
+                    (result) => {
+                      if (result !== 'Beginning OAuth Flow') {
+                        const transformationObj = transformationDataModel.Transformation.revive(result);
+                        self.transformationSvc.changeTransformationObj(transformationObj);
+                        if (paramMap.has('filestoreId')) {
+                          this.showRdfMappingTab = true;
+                          this.showTabularAnnotationTab = true;
+                          this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                          // check if current publisher id is the same as the logged in user
+                          // if not equal; disable editing of transformation
+                          this.dispatch.getAllTransformations('', false).then((result) => {
+                            if (result[0].publisher == paramMap.get('publisher')) {
+                              this.showSaveButton = true;
+                              this.showForkButton = true;
+                              this.showDownloadButton = true;
+                              this.showDeleteButton = true;
+                            }
+                            else {
+                              this.showSaveButton = false;
+                              this.showForkButton = true;
+                              this.showDownloadButton = false;
+                              this.showDeleteButton = false;
+                            }
+                          });
                         }
-                        else {
-                          this.showSaveButton = false;
-                          this.showForkButton = true;
-                          this.showDownloadButton = false;
-                          this.showDeleteButton = false;
+                        // datagraft message state: transformations.readonly
+                        else if (!paramMap.has('filestoreId')) {
+                          this.showRdfMappingTab = true;
+                          this.showTabularAnnotationTab = false;
+                          this.showLoadDistributionDialog = false;
+                          // check if current publisher id is the same as the logged in user
+                          // if not equal; disable editing of transformation
+                          this.dispatch.getAllTransformations('', false).then((result) => {
+                            if (result[0].publisher == paramMap.get('publisher')) {
+                              this.showSaveButton = false;
+                              this.showForkButton = false;
+                              this.showDownloadButton = false;
+                              this.showDeleteButton = false;
+                            }
+                            else {
+                              this.showSaveButton = false;
+                              this.showForkButton = false;
+                              this.showDownloadButton = false;
+                              this.showDeleteButton = false;
+                            }
+                          });
                         }
-                      });
-                    }
-                    else if (!paramMap.has('filestoreId')) {
-                      this.showRdfMappingTab = true;
-                      this.showTabularAnnotationTab = false;
-                      this.showLoadDistributionDialog = true;
-                      // check if current publisher id is the same as the logged in user
-                      // if not equal; disable editing of transformation
-                      this.dispatch.getAllTransformations('', false).then((result) => {
-                        if (result[0].publisher == paramMap.get('publisher')) {
-                          this.showSaveButton = true;
-                          this.showForkButton = true;
-                          this.showDownloadButton = false;
-                          this.showDeleteButton = true;
-                        }
-                        else {
-                          this.showSaveButton = false;
-                          this.showForkButton = true;
-                          this.showDownloadButton = false;
-                          this.showDeleteButton = false;
-                        }
-                      });
-                    }
-                  }
-                },
-                (error) => {
-                  console.log(error);
+                      }
+                    },
+                    (error) => {
+                      console.log(error);
+                    });
+              }
+              else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+                this.showLoadDistributionDialog = true;
+                this.showSaveButton = false;
+                this.showForkButton = false;
+                this.showDownloadButton = false;
+                this.showDeleteButton = false;
+              }
+              // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
+              else if (!paramMap.has('publisher')) {
+                this.showRdfMappingTab = false;
+                this.showTabularAnnotationTab = false;
+                this.showSaveButton = true;
+                this.showForkButton = false;
+                this.showDownloadButton = false;
+                this.showDeleteButton = false;
+                this.dispatch.getAllTransformations('', false).then((result) => {
+                  this.router.navigate([result[0].publisher, 'transformations', 'new', 'tabular-transformation']).then(() => this.showLoading = false);
                 });
-          }
-          else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-            this.showLoadDistributionDialog = true;
-            this.showSaveButton = false;
-            this.showForkButton = false;
-            this.showDownloadButton = false;
-            this.showDeleteButton = false;
-          }
-          // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
-          else if (!paramMap.has('publisher')) {
-            this.showRdfMappingTab = false;
-            this.showTabularAnnotationTab = false;
-            this.showSaveButton = true;
-            this.showForkButton = false;
-            this.showDownloadButton = false;
-            this.showDeleteButton = false;
-            this.dispatch.getAllTransformations('', false).then((result) => {
-              this.router.navigate([result[0].publisher, 'transformations', 'new', 'tabular-transformation']).then(() => this.showLoading = false);
-            });
-          }
-        }
-      });
+              }
+            }
+          });
+      }
+    });
 
     this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
       .subscribe((currentTransformationObj) => {

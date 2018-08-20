@@ -8,6 +8,7 @@ import {
 } from '../../../../assets/transformationdatamodel.js';
 import { TransformationService } from 'app/transformation.service';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 @Component({
   moduleId: module.id,
@@ -27,8 +28,8 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private selected: any;
   private modalEnabled = false;
   private message: any;
-  private transformationOnlyView: boolean = false;
-  private selectboxDisabled: boolean;
+  private transformationReadOnlyView: boolean = false;
+  private state: any;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -39,23 +40,22 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
+  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService, private messageSvc: DataGraftMessageService) {
     this.transformations = [];
     this.selected = { id: null, defaultParams: null };
   }
 
   ngOnChanges() {
+    this.state = this.messageSvc.getCurrentDataGraftState();
+    const paramMap = this.route.snapshot.paramMap;
+    if (!paramMap.has('filestoreId')) {
+      this.transformationReadOnlyView = true;
+      if (this.state == 'transformations.transformation') {
+        this.transformationReadOnlyView = false;
+      }
+    }
     if (this.suggestions) {
       this.transformations = this.suggestions;
-      const paramMap = this.route.snapshot.paramMap;
-      if (!paramMap.has('filestoreId')) {
-        this.transformationOnlyView = true;
-      };
-      if (!paramMap.has('transformationId') && !paramMap.has('filestoreId')) {
-        this.selectboxDisabled = true;
-      } else {
-        this.selectboxDisabled = false;
-      }
     }
   }
 
