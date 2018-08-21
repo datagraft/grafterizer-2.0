@@ -23,6 +23,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private transformationObj: any;
   private steps: Array<any>;
   private disableButton: boolean = false;
+  private currentFunctionIndex: number;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -92,13 +93,13 @@ export class PipelineComponent implements OnInit, OnDestroy {
     const index = event.selectedIndex;
 
     // establish the function being changed
-    const currentFunctionIndex = parseInt(index, 10);
-    if (currentFunctionIndex === undefined) {
+    this.currentFunctionIndex = parseInt(index, 10);
+    if (this.currentFunctionIndex === undefined) {
       console.log('ERROR: Something bad and unexpected has happened!');
       return;
     }
     this.pipelineEventsSvc.changeSelectedFunction({
-      currentFunction: this.steps[currentFunctionIndex],
+      currentFunction: this.steps[this.currentFunctionIndex],
       changedFunction: {}
     });
   }
@@ -182,6 +183,13 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
       case 'edit':
+        // if pipeline steps have not been clicked/ activated yet by user, set currentFunction to first function in pipeline
+        if (!this.currentFunctionIndex) {
+          this.pipelineEventsSvc.changeSelectedFunction({
+            currentFunction: this.steps[0],
+            changedFunction: {}
+          });
+        }
         // edit event triggered; keep preview until this step
         this.pipelineEvent.startEdit = true;
         this.pipelineEvent.commitEdit = false;

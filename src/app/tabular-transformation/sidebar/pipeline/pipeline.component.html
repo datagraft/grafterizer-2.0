@@ -12,19 +12,19 @@
         <ng-template matStepLabel>
           <div id="{{i}}">{{verboseLabels(step.__type)}}</div>
         </ng-template>
-        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="disableButton && triggerPipelineEvent($event)"
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="!disableButton && triggerPipelineEvent($event)"
           *ngIf="!step.isPreviewed" [ngClass]="{disabled : disableButton}">
           <mat-icon aria-label="visibility">visibility</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="disableButton && triggerPipelineEvent($event)"
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="preview" (click)="!disableButton && triggerPipelineEvent($event)"
           *ngIf="step.isPreviewed" [ngClass]="{disabled : disableButton}">
           <mat-icon aria-label="visibility">visibility_off</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="edit" (click)="disableButton && triggerPipelineEvent($event)"
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="edit" (click)="!disableButton && triggerPipelineEvent($event)"
           [ngClass]="{disabled : disableButton}">
           <mat-icon aria-label="mode_edit">mode_edit</mat-icon>
         </button>
-        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="remove" (click)="disableButton && openDeleteConfirmationModal($event)"
+        <button mat-mini-fab class="btn" color="accent" id="{{i}}" value="remove" (click)="!disableButton && openDeleteConfirmationModal($event)"
           [ngClass]="{disabled : disableButton}">
           <mat-icon aria-label="remove_circle_outline">delete</mat-icon>
         </button>
