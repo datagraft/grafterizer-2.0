@@ -37,3 +37,12 @@
 .sin-error-pipeline {
   margin: 10px;
 }
+
+.sin-pipeline-show-pipeline-only {
+    margin: 0;
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+  }

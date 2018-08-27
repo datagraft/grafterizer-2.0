@@ -31,6 +31,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private showHandsonTableProfiling: boolean = true;
   private showHandsontable: boolean = true;
   private showProfiling: boolean = true;
+  private showPipelineOnly: boolean = false;
 
   private metadata: any;
   private title: string;
@@ -99,9 +100,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       if (!paramMap.has('filestoreId')) {
-        this.showSelectbox = true;
-        this.showPipelineMetadataTabs = false;
         this.showHandsonTableProfiling = false;
+        this.showPipelineOnly = true;
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
@@ -121,11 +121,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       this.showHandsonTableProfiling = false;
     }
     else if (!paramMap.has('publisher')) {
-      this.showHandsonTableProfiling = false;
-      this.showHandsontable = false;
-      this.showSelectbox = false;
-      this.showProfiling = false;
-      this.showPipelineMetadataTabs = false;
+      this.showPipelineOnly = true;
     }
 
   }

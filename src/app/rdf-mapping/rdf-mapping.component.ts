@@ -77,7 +77,10 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.route.url.subscribe(() => {
       this.state = this.messageSvc.getCurrentDataGraftState();
       const paramMap = this.route.snapshot.paramMap;
-      if (!paramMap.has('filestoreId')) {
+      if (paramMap.has('filestoreId')) {
+        console.log('rdf')
+        this.transformationReadOnlyView = false;
+      } else if (!paramMap.has('filestoreId')) {
         this.transformationReadOnlyView = true;
         if (this.state == 'transformations.transformation') {
           this.transformationReadOnlyView = false;

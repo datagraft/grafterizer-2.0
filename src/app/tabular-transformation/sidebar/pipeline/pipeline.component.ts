@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs/Subscription';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 
 @Component({
@@ -22,8 +23,9 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   private transformationObj: any;
   private steps: Array<any>;
-  private disableButton: boolean = false;
+  private disableButton: boolean = true;
   private currentFunctionIndex: number;
+  private state: any;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -41,7 +43,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private deleteFunctionEvent: any;
   private deleteConfirmationModal = false;
 
-  constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService) {
+  constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService, private messageSvc: DataGraftMessageService) {
     this.steps = [];
   }
 
@@ -73,9 +75,10 @@ export class PipelineComponent implements OnInit, OnDestroy {
     });
 
     this.route.url.subscribe(() => {
+      this.state = this.messageSvc.getCurrentDataGraftState();
       const paramMap = this.route.snapshot.paramMap;
       this.dispatch.getAllTransformations('', false).then((result) => {
-        if (result[0].publisher != paramMap.get('publisher')) {
+        if (result[0].publisher != paramMap.get('publisher') || this.state == 'transformations.readonly') {
           this.disableButton = true;
         }
       });

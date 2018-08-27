@@ -1,10 +1,10 @@
-<split direction="horizontal">
+<split *ngIf="!showPipelineOnly" direction="horizontal">
   <split-area [size]="15" fxLayout='column' fxLayoutAlign="start center">
     <div *ngIf="showSelectbox" class="container">
       <br>
       <selectbox fxflex class="sin-suggested-transformations" id="selectbox" [suggestions]="recommendations" [headers]="loadedDataHeaders"></selectbox>
     </div>
-    <mat-tab-group *ngIf="showPipelineMetadataTabs">
+    <mat-tab-group>
       <mat-tab label="Pipeline" id="pipeline-tab">
         <br>
         <selectbox fxflex class="sin-suggested-transformations" id="selectbox" [suggestions]="recommendations" [headers]="loadedDataHeaders"></selectbox>
@@ -71,3 +71,7 @@
     </split>
   </split-area>
 </split>
+
+<div class="sin-pipeline-show-pipeline-only">
+  <pipeline *ngIf="showPipelineOnly"></pipeline>
+</div>

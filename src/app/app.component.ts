@@ -44,7 +44,7 @@ export class AppComponent implements OnInit {
   private downloadMode: string = 'csv';
 
   private distributionList: SelectItem[] = [];
-  private selected: any;
+  private selectedFile: any;
 
   private showConfirmNextStepDialog: boolean = false;
   private showDownloadDialog: boolean = false;
@@ -94,42 +94,48 @@ export class AppComponent implements OnInit {
                           this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                           // check if current publisher id is the same as the logged in user
                           // if not equal; disable editing of transformation
-                          this.dispatch.getAllTransformations('', false).then((result) => {
-                            if (result[0].publisher == paramMap.get('publisher')) {
-                              this.showSaveButton = true;
-                              this.showForkButton = true;
-                              this.showDownloadButton = true;
-                              this.showDeleteButton = true;
-                            }
-                            else {
-                              this.showSaveButton = false;
-                              this.showForkButton = true;
-                              this.showDownloadButton = false;
-                              this.showDeleteButton = false;
-                            }
-                          });
+                          // this.dispatch.getAllTransformations('', false).then((result) => {
+                          //   if (result[0].publisher == paramMap.get('publisher')) {
+                          //     this.showSaveButton = true;
+                          //     this.showForkButton = true;
+                          //     this.showDownloadButton = true;
+                          //     this.showDeleteButton = true;
+                          //   }
+                          //   else {
+                          //     this.showSaveButton = false;
+                          //     this.showForkButton = false;
+                          //     this.showDownloadButton = false;
+                          //     this.showDeleteButton = false;
+                          //   }
+                          // });
                         }
                         // datagraft message state: transformations.readonly
                         else if (!paramMap.has('filestoreId')) {
                           this.showRdfMappingTab = true;
                           this.showTabularAnnotationTab = false;
-                          this.showLoadDistributionDialog = false;
+                          // if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
+                          //   this.showLoadDistributionDialog = true;
+                          //   this.showSaveButton = true;
+                          //   this.showForkButton = true;
+                          //   this.showDownloadButton = true;
+                          //   this.showDeleteButton = true;
+                          // }
                           // check if current publisher id is the same as the logged in user
                           // if not equal; disable editing of transformation
-                          this.dispatch.getAllTransformations('', false).then((result) => {
-                            if (result[0].publisher == paramMap.get('publisher')) {
-                              this.showSaveButton = false;
-                              this.showForkButton = false;
-                              this.showDownloadButton = false;
-                              this.showDeleteButton = false;
-                            }
-                            else {
-                              this.showSaveButton = false;
-                              this.showForkButton = false;
-                              this.showDownloadButton = false;
-                              this.showDeleteButton = false;
-                            }
-                          });
+                          // this.dispatch.getAllTransformations('', false).then((result) => {
+                          //   if (result[0].publisher == paramMap.get('publisher')) {
+                          //     this.showSaveButton = true;
+                          //     this.showForkButton = true;
+                          //     this.showDownloadButton = true;
+                          //     this.showDeleteButton = true;
+                          //   }
+                          //   else {
+                          //     this.showSaveButton = false;
+                          //     this.showForkButton = false;
+                          //     this.showDownloadButton = false;
+                          //     this.showDeleteButton = false;
+                          //   }
+                          // });
                         }
                       }
                     },
@@ -204,7 +210,7 @@ export class AppComponent implements OnInit {
   }
 
   onChange($event) {
-    console.log(this.selected);
+    console.log(this.selectedFile);
   }
 
   loadDistribution() {
@@ -242,7 +248,7 @@ export class AppComponent implements OnInit {
   cancel() {
     this.modalEnabled = false;
     this.distributionList = [];
-    this.selected = undefined;
+    this.selectedFile = undefined;
   }
 
   updatePreviewedData() {
@@ -328,14 +334,13 @@ export class AppComponent implements OnInit {
         newTransformationConfiguration).then(
           (result) => {
             console.log('Data uploaded');
-            if (this.selected == undefined) {
+            if (this.selectedFile == 'undefined') {
               this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
             }
             else {
-              this.router.navigate([result.publisher, 'transformations', result.id, this.selected.id, 'tabular-transformation']).then(() => {
+              this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
                 this.showLoading = false;
                 this.distributionList = [];
-                this.selected = undefined;
               });
             }
           },
@@ -352,14 +357,14 @@ export class AppComponent implements OnInit {
             if (userUploadedFile) {
               this.router.navigate([result.publisher, 'transformations', result.id, userUploadedFile, 'tabular-transformation']).then(() => this.showLoading = false);
             }
-            else if (this.selected == undefined) {
+            else if (this.selectedFile == undefined) {
               this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
             }
             else {
-              this.router.navigate([result.publisher, 'transformations', result.id, this.selected.id, 'tabular-transformation']).then(() => {
+              this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
                 this.showLoading = false;
                 this.distributionList = [];
-                this.selected = undefined;
+                this.selectedFile = undefined;
               });
             }
           },
@@ -376,10 +381,13 @@ export class AppComponent implements OnInit {
     if (paramMap.has('transformationId') && paramMap.has('publisher')) {
       const publisher = paramMap.get('publisher');
       const existingTransformationID = paramMap.get('transformationId');
+      console.log(publisher);
+      console.log(existingTransformationID);
 
       return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
         (result) => {
           console.log('Transformation forked');
+          console.log(result);
           this.router.navigate([result["foaf:publisher"], 'transformations', result.id, 'tabular-transformation']).then(() => this.showLoading = false);
         },
         (error) => {
