@@ -80,6 +80,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.dispatch.getAllTransformations('', false).then((result) => {
         if (result[0].publisher != paramMap.get('publisher') || this.state == 'transformations.readonly') {
           this.disableButton = true;
+        } else if (this.state == 'transformations.transformation') {
+          this.disableButton = false;
         }
       });
     })

@@ -91,51 +91,22 @@ export class AppComponent implements OnInit {
                         if (paramMap.has('filestoreId')) {
                           this.showRdfMappingTab = true;
                           this.showTabularAnnotationTab = true;
+                          this.showSaveButton = true;
+                          this.showForkButton = true;
+                          this.showDownloadButton = true;
+                          this.showDeleteButton = true;
                           this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                          // check if current publisher id is the same as the logged in user
-                          // if not equal; disable editing of transformation
-                          // this.dispatch.getAllTransformations('', false).then((result) => {
-                          //   if (result[0].publisher == paramMap.get('publisher')) {
-                          //     this.showSaveButton = true;
-                          //     this.showForkButton = true;
-                          //     this.showDownloadButton = true;
-                          //     this.showDeleteButton = true;
-                          //   }
-                          //   else {
-                          //     this.showSaveButton = false;
-                          //     this.showForkButton = false;
-                          //     this.showDownloadButton = false;
-                          //     this.showDeleteButton = false;
-                          //   }
-                          // });
                         }
-                        // datagraft message state: transformations.readonly
                         else if (!paramMap.has('filestoreId')) {
                           this.showRdfMappingTab = true;
                           this.showTabularAnnotationTab = false;
-                          // if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
-                          //   this.showLoadDistributionDialog = true;
-                          //   this.showSaveButton = true;
-                          //   this.showForkButton = true;
-                          //   this.showDownloadButton = true;
-                          //   this.showDeleteButton = true;
-                          // }
-                          // check if current publisher id is the same as the logged in user
-                          // if not equal; disable editing of transformation
-                          // this.dispatch.getAllTransformations('', false).then((result) => {
-                          //   if (result[0].publisher == paramMap.get('publisher')) {
-                          //     this.showSaveButton = true;
-                          //     this.showForkButton = true;
-                          //     this.showDownloadButton = true;
-                          //     this.showDeleteButton = true;
-                          //   }
-                          //   else {
-                          //     this.showSaveButton = false;
-                          //     this.showForkButton = false;
-                          //     this.showDownloadButton = false;
-                          //     this.showDeleteButton = false;
-                          //   }
-                          // });
+                          if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
+                            this.showSaveButton = true;
+                            this.showForkButton = true;
+                            this.showDownloadButton = true;
+                            this.showDeleteButton = true;
+                            this.showLoadDistributionDialog = true;
+                          }
                         }
                       }
                     },

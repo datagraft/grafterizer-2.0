@@ -9,6 +9,7 @@ import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
+import { DataGraftMessageService } from '../data-graft-message.service';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -55,7 +56,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
-    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
+    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService, public messageSvc: DataGraftMessageService) {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -100,8 +101,13 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       if (!paramMap.has('filestoreId')) {
-        this.showHandsonTableProfiling = false;
-        this.showPipelineOnly = true;
+        if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
+          this.showPipelineOnly = true;
+          this.showHandsonTableProfiling = false;
+        } else if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
+          this.showPipelineOnly = false;
+          this.showHandsonTableProfiling = false;
+        }
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(

@@ -48,7 +48,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       rowHeaders: true,
       autoColumnSize: { useHeaders: true },
       manualColumnResize: true,
-      height: 645,
       columnSorting: false,
       viewportColumnRenderingOffset: 30,
       viewportRowRenderingOffset: 'auto',

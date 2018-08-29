@@ -41,7 +41,7 @@
     </div>
   </header>
   <clr-alerts>
-    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
+    <clr-alert class="alerts" [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
       <div class="alert-item">
         <span class="alert-text">
           Woops - something went wrong! If the problem persists, try reloading the application.

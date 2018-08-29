@@ -32,8 +32,8 @@ export class ProfilingComponent implements OnInit {
   private advancedPieChart_init: any[];
 
   // barChart and advancedPieChart  
-  private dimensionsAdvancedPieChart: any[] = [700, 400];
-  private dimensionsBarChart: any[] = [400, 300];
+  private dimensionsAdvancedPieChart: any[] = [700, 300];
+  private dimensionsBarChart: any[] = [300, 200];
 
   private tileSpanMissingValues = 1;
   private tileSpanDataDistribution = 3;
@@ -183,7 +183,7 @@ export class ProfilingComponent implements OnInit {
       paper_bgcolor: 'rgb(250,250,250)',
       plot_bgcolor: 'rgb(250,250,250)',
       width: 300,
-      height: 350,
+      height: 200,
       margin: {
         t: 30,
         b: 0

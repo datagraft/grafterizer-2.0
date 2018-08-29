@@ -2,11 +2,6 @@
   padding-bottom: 5px;
 }
 
-.chart {
-  position: relative;
-  height: 350px;
-}
-
 .missingValues {
   color: white;
   font-weight: bold;
@@ -15,22 +10,6 @@
 .dataDistribution {
   color: black;
   font-weight: bold;
-}
-
-md-grid-list {
-  position: relative;
-  z-index: +1;
-  width: 1600px;
-}
-
-md-grid-tile {
-  margin-left: 0px;
-  margin-bottom: -30px;
-}
-
-.box {
-  display: flex;
-  align-items: center;
 }
 
 #barChart {
@@ -43,24 +22,26 @@ md-grid-tile {
 }
 
 #advancedPieChart {
-  line-height: 1.4rem;
+  line-height: 1.8rem;
   letter-spacing: 0.01rem;
+  font-size: 0.4rem;
   color: #212121;  
-  margin-top: -30px;  
-  padding-left: 50px;    
+  margin-top: 0px;  
+  padding-left: 80px; 
+  margin-bottom: -30px; 
 }
 
 #plotly-boxplot {
-  padding-left: 90px;
-  margin-top: -20px;    
+  padding-left: 70px;
 }
 
 #datatable {
-  line-height: 0.6rem;
+  line-height: 0.2rem;
   letter-spacing: 0.01rem;
   font-size: 0.6rem;
   color: #212121;  
   width: 250px;
-  height: 300px;
-  margin-left: -230px;
+  height: 280px;
+  margin-left: -260px;
+  margin-top: 30px; 
 }
