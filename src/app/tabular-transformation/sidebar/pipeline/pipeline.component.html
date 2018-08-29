@@ -1,11 +1,4 @@
 <div class="wrapper">
-  <div *ngIf="showPipelineLabel" class="wrapper-labels">
-    <div>
-      <label for="label">
-        <strong>TRANSFORMATION STEPS</strong>
-      </label>
-    </div>
-  </div>
   <mat-vertical-stepper #pipelineElement class="stepper" (selectionChange)="selectFunction($event)">
     <div class="pipeline-steps" *ngFor="let step of steps; let i = index">
       <mat-step id="{{i}}" value="function-name" [stepControl]="AbstractControl" completed="true" previewed="false">

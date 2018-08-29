@@ -1,15 +1,9 @@
-#input-field{
-  padding-top: 20px;
-  padding-bottom: 20px;  
+#container {
+  padding-bottom: 27px;
 }
 
-#toggle{
-  padding-top: 30px;
-}
-
-#container{
-  height:360px;
-  margin-bottom: 9px;
+.content-container {
+  height: 90%;
 }
 
 .sin-pipeline {

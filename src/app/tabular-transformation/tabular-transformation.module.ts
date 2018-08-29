@@ -61,6 +61,15 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { AngularSplitModule } from 'angular-split';
 import { TagInputModule } from 'ngx-chips';
+import {
+  PerfectScrollbarModule, PerfectScrollbarConfigInterface,
+  PERFECT_SCROLLBAR_CONFIG
+} from 'ngx-perfect-scrollbar';
+
+const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
+  suppressScrollX: true
+};
+
 
 @NgModule({
   imports: [
@@ -91,7 +100,8 @@ import { TagInputModule } from 'ngx-chips';
     MatInputModule,
     MatSlideToggleModule,
     MatChipsModule,
-    NgSelectModule
+    NgSelectModule,
+    PerfectScrollbarModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -125,7 +135,13 @@ import { TagInputModule } from 'ngx-chips';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [PipelineEventsService]
+  ],
+  providers: [PipelineEventsService,
+    {
+      provide: PERFECT_SCROLLBAR_CONFIG,
+      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
+    }
+  ]
 })
 
 export class TabularTransformationModule { }
