@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
-  private url: any = 'transformation/new/';
+  private url: any = 'transformations/new/';
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
