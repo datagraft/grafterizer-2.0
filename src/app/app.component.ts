@@ -95,8 +95,8 @@ export class AppComponent implements OnInit {
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     }
                     else if (!paramMap.has('filestoreId')) {
+                      this.showTabularTransformationTab = true;
                       this.showRdfMappingTab = true;
-                      this.showTabularAnnotationTab = false;
                       if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
                         this.showSaveButton = true;
                         this.showForkButton = true;
@@ -111,13 +111,13 @@ export class AppComponent implements OnInit {
                   console.log(error);
                 });
           }
-          else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-            this.showLoadDistributionDialog = true;
-            this.showSaveButton = false;
-            this.showForkButton = false;
-            this.showDownloadButton = false;
-            this.showDeleteButton = false;
-          }
+          // else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+          //   this.showLoadDistributionDialog = true;
+          //   this.showSaveButton = false;
+          //   this.showForkButton = false;
+          //   this.showDownloadButton = false;
+          //   this.showDeleteButton = false;
+          // }
           // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
           else if (!paramMap.has('publisher')) {
             this.showLoading = true;

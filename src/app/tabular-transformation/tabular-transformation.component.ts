@@ -106,10 +106,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       if (!paramMap.has('filestoreId')) {
         this.showPipelineOnly = false;
         this.showHandsonTableProfiling = false;
-        // if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
-        //   this.showPipelineOnly = true;
-        //   this.showHandsonTableProfiling = false;
-        // }
+        if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
+          this.showPipelineOnly = true;
+          this.showHandsonTableProfiling = false;
+        }
         // else if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftState() == 'transformations.new') {
         //   this.showPipelineOnly = false;
         //   this.showHandsonTableProfiling = false;

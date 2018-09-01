@@ -18,7 +18,7 @@
 .sin-pipeline-show-pipeline-only {
     margin: 0;
     position: absolute;
-    top: 70%;
+    top: 40%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
