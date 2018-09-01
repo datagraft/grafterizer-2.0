@@ -99,15 +99,21 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     });
 
     const paramMap = this.route.snapshot.paramMap;
+    console.log('paramMap tab transformation component: ');
+    console.log(paramMap);
+    console.log(this.messageSvc.getCurrentDataGraftState());
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       if (!paramMap.has('filestoreId')) {
-        if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
-          this.showPipelineOnly = true;
-          this.showHandsonTableProfiling = false;
-        } else if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
-          this.showPipelineOnly = false;
-          this.showHandsonTableProfiling = false;
-        }
+        this.showPipelineOnly = false;
+        this.showHandsonTableProfiling = false;
+        // if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
+        //   this.showPipelineOnly = true;
+        //   this.showHandsonTableProfiling = false;
+        // }
+        // else if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftState() == 'transformations.new') {
+        //   this.showPipelineOnly = false;
+        //   this.showHandsonTableProfiling = false;
+        // }
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(

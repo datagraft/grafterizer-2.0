@@ -77,13 +77,15 @@ export class PipelineComponent implements OnInit, OnDestroy {
     this.route.url.subscribe(() => {
       this.state = this.messageSvc.getCurrentDataGraftState();
       const paramMap = this.route.snapshot.paramMap;
-      this.dispatch.getAllTransformations('', false).then((result) => {
-        if (result[0].publisher != paramMap.get('publisher') || this.state == 'transformations.readonly') {
-          this.disableButton = true;
-        } else if (this.state == 'transformations.transformation') {
-          this.disableButton = false;
-        }
-      });
+      if (paramMap.has('publisher')) {
+        this.dispatch.getAllTransformations('', false).then((result) => {
+          if (result[0].publisher != paramMap.get('publisher') || this.state == 'transformations.readonly') {
+            this.disableButton = true;
+          } else if (this.state == 'transformations.transformation' || this.state == 'transformations.new') {
+            this.disableButton = false;
+          }
+        });
+      }
     })
   }
 
@@ -94,7 +96,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
   }
 
   selectFunction(event) {
-    console.log('selection changed');
     const index = event.selectedIndex;
 
     // establish the function being changed

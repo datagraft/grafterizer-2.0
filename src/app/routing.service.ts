@@ -17,7 +17,6 @@ export class RoutingService {
             if (event instanceof NavigationEnd) {
                 this.previousUrl = this.currentUrl;
                 this.currentUrl = event.url;
-                console.log(event.url);
             };
         });
     }

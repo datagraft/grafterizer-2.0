@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { DispatchService } from './dispatch.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs';
 import { Subject } from 'rxjs/Subject';
+import { RoutingService } from './routing.service';
 
 @Injectable()
 export class DataGraftMessageService {
@@ -14,11 +14,12 @@ export class DataGraftMessageService {
   private connected: boolean;
   private dataGraftMessage = new Subject<any>();
   private currentDataGraftState: string;
+  private grafterizerUrl: string;
 
-
-  constructor(public dispatch: DispatchService, private router: Router) {
+  constructor(public dispatch: DispatchService, private router: Router, private routingService: RoutingService) {
     this.channel = 'datagraft-post-message'
     this.connected = false;
+    this.routingService.getMessage().subscribe((url) => this.grafterizerUrl = url);
     this.init();
   }
 
@@ -54,7 +55,6 @@ export class DataGraftMessageService {
     return !(window === window.top);
   }
 
-
   public receiveMessage(event) {
     const data = event.data;
 
@@ -73,27 +73,28 @@ export class DataGraftMessageService {
 
       switch (data.message) {
         case 'state.go':
-          // console.log('STATE GOGOGO');
-          // console.log(data.toParams);
-          // console.log(data.state);
+          console.log('state.go');
           this.changeDataGraftMessage(data);
           this.currentDataGraftState = data.state;
           switch (data.state) {
             case 'transformations.readonly':
+              console.log('transformations.readonly');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
             case 'transformations.new':
-              this.router.navigate(['transformations', 'new', 'tabular-transformation']);
+              console.log('transformations.new');
+              if (this.grafterizerUrl == undefined) {
+                console.log('re-routing-from-datagraft-message-service');
+                this.router.navigate(['transformations', 'new', 'tabular-transformation']);
+              }
               break;
             case 'transformations.transformation':
+              console.log('transformations.transformation');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
-
             default:
               break;
           }
-          // TODO change the state of the application here!
-          // $state.go(data.state, data.toParams);
           break;
         case 'upload-and-new':
           const file = new File([data.distribution], data.name, { type: data.type });

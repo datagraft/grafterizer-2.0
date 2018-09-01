@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
-  private url: any = 'transformations/new/';
+  private grafterizerUrl: any = 'url';
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
@@ -51,8 +51,9 @@ export class AppComponent implements OnInit {
   private showConfirmDeleteDialog: boolean = false;
   private showLoadDistributionDialog: boolean = false;
   private modalEnabled: boolean = false;
-  private showTabularAnnotationTab: boolean = false;
+  private showTabularTransformationTab: boolean = false;
   private showRdfMappingTab: boolean = false;
+  private showTabularAnnotationTab: boolean = false;
   private showSaveButton: boolean = false;
   private showForkButton: boolean = false;
   private showDownloadButton: boolean = false;
@@ -66,77 +67,74 @@ export class AppComponent implements OnInit {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
-      this.url = url;
+      this.grafterizerUrl = url;
     });
   }
 
   ngOnInit() {
 
     const self = this;
-
-    this.messageSvc.getDataGraftMessage().subscribe(result => {
-      if (result) {
-        console.log(result);
-        this.initRouteSubscription = this.router.events.subscribe(
-          (event) => {
-            if (event instanceof NavigationEnd) {
-              const paramMap = self.route.firstChild.snapshot.paramMap;
-              if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-                self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
-                  .then(
-                    (result) => {
-                      if (result !== 'Beginning OAuth Flow') {
-                        const transformationObj = transformationDataModel.Transformation.revive(result);
-                        self.transformationSvc.changeTransformationObj(transformationObj);
-                        if (paramMap.has('filestoreId')) {
-                          this.showRdfMappingTab = true;
-                          this.showTabularAnnotationTab = true;
-                          this.showSaveButton = true;
-                          this.showForkButton = true;
-                          this.showDownloadButton = true;
-                          this.showDeleteButton = true;
-                          this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                        }
-                        else if (!paramMap.has('filestoreId')) {
-                          this.showRdfMappingTab = true;
-                          this.showTabularAnnotationTab = false;
-                          if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
-                            this.showSaveButton = true;
-                            this.showForkButton = true;
-                            this.showDownloadButton = true;
-                            this.showDeleteButton = true;
-                            this.showLoadDistributionDialog = true;
-                          }
-                        }
+    this.initRouteSubscription = this.router.events.subscribe(
+      (event) => {
+        if (event instanceof NavigationEnd && self.route.firstChild != null) {
+          const paramMap = self.route.firstChild.snapshot.paramMap;
+          if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+            self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
+              .then(
+                (result) => {
+                  if (result !== 'Beginning OAuth Flow') {
+                    const transformationObj = transformationDataModel.Transformation.revive(result);
+                    self.transformationSvc.changeTransformationObj(transformationObj);
+                    if (paramMap.has('filestoreId')) {
+                      this.showRdfMappingTab = true;
+                      this.showTabularAnnotationTab = true;
+                      this.showSaveButton = true;
+                      this.showForkButton = true;
+                      this.showDownloadButton = true;
+                      this.showDeleteButton = true;
+                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    }
+                    else if (!paramMap.has('filestoreId')) {
+                      this.showRdfMappingTab = true;
+                      this.showTabularAnnotationTab = false;
+                      if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
+                        this.showSaveButton = true;
+                        this.showForkButton = true;
+                        this.showDownloadButton = true;
+                        this.showDeleteButton = true;
+                        this.showLoadDistributionDialog = true;
                       }
-                    },
-                    (error) => {
-                      console.log(error);
-                    });
-              }
-              else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-                this.showLoadDistributionDialog = true;
-                this.showSaveButton = false;
-                this.showForkButton = false;
-                this.showDownloadButton = false;
-                this.showDeleteButton = false;
-              }
-              // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
-              else if (!paramMap.has('publisher')) {
-                this.showRdfMappingTab = false;
-                this.showTabularAnnotationTab = false;
-                this.showSaveButton = true;
-                this.showForkButton = false;
-                this.showDownloadButton = false;
-                this.showDeleteButton = false;
-                this.dispatch.getAllTransformations('', false).then((result) => {
-                  this.router.navigate([result[0].publisher, 'transformations', 'new', 'tabular-transformation']).then(() => this.showLoading = false);
+                    }
+                  }
+                },
+                (error) => {
+                  console.log(error);
                 });
+          }
+          else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
+            this.showLoadDistributionDialog = true;
+            this.showSaveButton = false;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+          }
+          // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
+          else if (!paramMap.has('publisher')) {
+            this.showLoading = true;
+            this.dispatch.getAllTransformations('', false).then((result) => {
+              console.log(result);
+              if (result !== 'Beginning OAuth Flow') {
+                if (result[0].publisher) {
+                  this.createNewTransformation(result[0].publisher);
+                }
               }
-            }
-          });
-      }
-    });
+              else {
+                console.log('error');
+              }
+            });
+          }
+        }
+      });
 
     this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
       .subscribe((currentTransformationObj) => {
@@ -320,30 +318,57 @@ export class AppComponent implements OnInit {
             console.log(error);
           });
     }
-    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-      return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
-        newTransformationConfiguration).then(
-          (result) => {
-            console.log('New transformation created');
-            if (userUploadedFile) {
-              this.router.navigate([result.publisher, 'transformations', result.id, userUploadedFile, 'tabular-transformation']).then(() => this.showLoading = false);
-            }
-            else if (this.selectedFile == undefined) {
-              this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
-            }
-            else {
-              this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
-                this.showLoading = false;
-                this.distributionList = [];
-                this.selectedFile = undefined;
-              });
-            }
-          },
-          (error) => {
-            console.log('Error creating new transformation');
-            console.log(error);
-          });
+  }
+
+  createNewTransformation(publisher?: string) {
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+    let newTransformationName = null;
+    let newTransformationDescription = null;
+    let newTransformationKeywords = null;
+    let isPublic = null;
+    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+      newTransformationName = result.title;
+      newTransformationDescription = result.description;
+      newTransformationKeywords = result.keywords;
+      isPublic = result.isPublic;
     }
+    );
+    let transformationType = 'graft';
+    let transformationCommand = 'my-graft';
+    if (this.transformationObjSource.graphs === 0) {
+      transformationType = 'pipe';
+      transformationCommand = 'my-pipe';
+    }
+    if (!this.transformationObjSource.pipelines[0]) {
+      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [], []);
+    }
+    const newTransformationConfiguration = {
+      type: transformationType,
+      command: transformationCommand,
+      code: clojureCode,
+      json: JSON.stringify(this.transformationObjSource)
+    };
+    return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
+      newTransformationConfiguration).then(
+        (result) => {
+          console.log('New transformation created');
+          if (this.selectedFile == undefined) {
+            this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
+              this.showLoading = false;
+              this.showTabularTransformationTab = true;
+              this.showRdfMappingTab = true;
+              this.showLoadDistributionDialog = true;
+              this.showDeleteButton = true;
+              this.showDownloadButton = true;
+              this.showForkButton = true;
+              this.showSaveButton = true;
+            });
+          }
+        },
+        (error) => {
+          console.log('Error creating new transformation');
+          console.log(error);
+        });
   }
 
   fork() {

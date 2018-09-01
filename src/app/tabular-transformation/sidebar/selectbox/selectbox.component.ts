@@ -48,12 +48,12 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges() {
     this.state = this.messageSvc.getCurrentDataGraftState();
     const paramMap = this.route.snapshot.paramMap;
-    if (!paramMap.has('filestoreId')) {
-      this.transformationReadOnlyView = true;
-      if (this.state == 'transformations.transformation') {
-        this.transformationReadOnlyView = false;
-      }
-    }
+    // if (!paramMap.has('filestoreId')) {
+    //   this.transformationReadOnlyView = true;
+    //   if (this.state == 'transformations.transformation' || this.state == 'transformations.new') {
+    //     this.transformationReadOnlyView = false;
+    //   }
+    // }
     if (this.suggestions) {
       this.transformations = this.suggestions;
     }
