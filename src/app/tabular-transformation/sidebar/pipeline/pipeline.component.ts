@@ -25,7 +25,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private steps: Array<any>;
   private disableButton: boolean = true;
   private currentFunctionIndex: number;
-  private state: any;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -47,15 +46,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
     this.steps = [];
   }
 
-  private getIndexOfPreviewedFunction(): number {
-    for (let i = 0; i < this.steps.length; ++i) {
-      if (this.steps[i].isPreviewed) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   ngOnInit() {
     this.transformationSubscription = this.transformationService.currentTransformationObj.subscribe((transformation) => {
       if (transformation.pipelines.length) {
@@ -75,13 +65,12 @@ export class PipelineComponent implements OnInit, OnDestroy {
     });
 
     this.route.url.subscribe(() => {
-      this.state = this.messageSvc.getCurrentDataGraftState();
       const paramMap = this.route.snapshot.paramMap;
       if (paramMap.has('publisher')) {
         this.dispatch.getAllTransformations('', false).then((result) => {
-          if (result[0].publisher != paramMap.get('publisher') || this.state == 'transformations.readonly') {
+          if (result[0].publisher != paramMap.get('publisher') || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly') {
             this.disableButton = true;
-          } else if (this.state == 'transformations.transformation' || this.state == 'transformations.new') {
+          } else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.new' || document.referrer.includes('/new/')) {
             this.disableButton = false;
           }
         });
@@ -219,6 +208,15 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
     }
+  }
+
+  getIndexOfPreviewedFunction(): number {
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (this.steps[i].isPreviewed) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   openDeleteConfirmationModal(event) {

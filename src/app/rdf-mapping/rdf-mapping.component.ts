@@ -26,7 +26,6 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private tableContainer: any;
   private vocabSvcPath: string;
   private transformationReadOnlyView: boolean = false;
-  private state: any;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -75,14 +74,13 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
     this.route.url.subscribe(() => {
-      this.state = this.messageSvc.getCurrentDataGraftState();
       const paramMap = this.route.snapshot.paramMap;
       if (paramMap.has('filestoreId')) {
         console.log('rdf')
         this.transformationReadOnlyView = false;
       } else if (!paramMap.has('filestoreId')) {
         this.transformationReadOnlyView = true;
-        if (this.state == 'transformations.transformation') {
+        if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
           this.transformationReadOnlyView = false;
         }
       }

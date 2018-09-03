@@ -99,27 +99,24 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     });
 
     const paramMap = this.route.snapshot.paramMap;
-    console.log('paramMap tab transformation component: ');
-    console.log(paramMap);
-    console.log(this.messageSvc.getCurrentDataGraftState());
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       if (!paramMap.has('filestoreId')) {
         this.showPipelineOnly = false;
         this.showHandsonTableProfiling = false;
-        if (this.messageSvc.getCurrentDataGraftState() == 'transformations.readonly') {
+        if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || document.referrer.includes('/new/')) {
+          this.showPipelineOnly = false;
+          this.showHandsonTableProfiling = false;
+        }
+        else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly' || this.messageSvc.getCurrentDataGraftMessageState() == undefined) {
           this.showPipelineOnly = true;
           this.showHandsonTableProfiling = false;
         }
-        // else if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftState() == 'transformations.new') {
-        //   this.showPipelineOnly = false;
-        //   this.showHandsonTableProfiling = false;
-        // }
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
-            this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
+            this.transformationSvc.currentTransformationMetadata.subscribe((metadata) => this.metadata = metadata);
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
@@ -135,7 +132,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     else if (!paramMap.has('publisher')) {
       this.showPipelineOnly = true;
     }
-
   }
 
   ngOnDestroy() {

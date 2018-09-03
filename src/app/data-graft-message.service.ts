@@ -39,7 +39,7 @@ export class DataGraftMessageService {
     return this.dataGraftMessage.asObservable();
   }
 
-  public getCurrentDataGraftState(): string {
+  public getCurrentDataGraftMessageState(): string {
     return this.currentDataGraftState;
   }
 
@@ -57,13 +57,10 @@ export class DataGraftMessageService {
 
   public receiveMessage(event) {
     const data = event.data;
-
     if (!data || !data.channel || data.channel !== this.channel) {
       return;
     }
-
     this.connected = true;
-
     try {
       if (data.toParams) {
         if (data.toParams.path_back) {
@@ -74,7 +71,6 @@ export class DataGraftMessageService {
       switch (data.message) {
         case 'state.go':
           console.log('state.go');
-          this.changeDataGraftMessage(data);
           this.currentDataGraftState = data.state;
           switch (data.state) {
             case 'transformations.readonly':

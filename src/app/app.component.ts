@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { Http } from '@angular/http';
 import 'rxjs/Rx';
@@ -11,6 +11,7 @@ import { DataGraftMessageService } from './data-graft-message.service';
 import { RoutingService } from './routing.service';
 import { GlobalErrorReportingService } from './global-error-reporting.service';
 import { PipelineEventsService } from './tabular-transformation/pipeline-events.service';
+import { TabularTransformationComponent } from './tabular-transformation/tabular-transformation.component';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
@@ -21,7 +22,9 @@ import * as generateClojure from '../assets/generateclojure.js';
   styleUrls: ['./app.component.css'],
   providers: [DispatchService, DataGraftMessageService]
 })
+
 export class AppComponent implements OnInit {
+
   private loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
@@ -72,7 +75,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-
     const self = this;
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
@@ -97,7 +99,7 @@ export class AppComponent implements OnInit {
                     else if (!paramMap.has('filestoreId')) {
                       this.showTabularTransformationTab = true;
                       this.showRdfMappingTab = true;
-                      if (this.messageSvc.getCurrentDataGraftState() == 'transformations.transformation') {
+                      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                         this.showSaveButton = true;
                         this.showForkButton = true;
                         this.showDownloadButton = true;
@@ -106,23 +108,18 @@ export class AppComponent implements OnInit {
                       }
                     }
                   }
+                  else if (result !== 'Beginning OAuth Flow') {
+                    console.log(result);
+                  }
                 },
                 (error) => {
                   console.log(error);
                 });
           }
-          // else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-          //   this.showLoadDistributionDialog = true;
-          //   this.showSaveButton = false;
-          //   this.showForkButton = false;
-          //   this.showDownloadButton = false;
-          //   this.showDeleteButton = false;
-          // }
           // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
           else if (!paramMap.has('publisher')) {
             this.showLoading = true;
             this.dispatch.getAllTransformations('', false).then((result) => {
-              console.log(result);
               if (result !== 'Beginning OAuth Flow') {
                 if (result[0].publisher) {
                   this.createNewTransformation(result[0].publisher);
@@ -303,7 +300,7 @@ export class AppComponent implements OnInit {
         newTransformationConfiguration).then(
           (result) => {
             console.log('Data uploaded');
-            if (this.selectedFile == 'undefined') {
+            if (this.selectedFile == undefined) {
               this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
             }
             else {
