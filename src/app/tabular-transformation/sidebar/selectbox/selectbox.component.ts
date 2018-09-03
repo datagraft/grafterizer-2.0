@@ -24,8 +24,8 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private transformations: SelectItem[];
-  private selected: any;
+  private transformations: SelectItem[] = [];
+  private selected: any = { id: null, defaultParams: null };
   private modalEnabled = false;
   private message: any;
   private transformationReadOnlyView: boolean = false;
@@ -39,10 +39,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService, private messageSvc: DataGraftMessageService) {
-    this.transformations = [];
-    this.selected = { id: null, defaultParams: null };
-  }
+  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService, private messageSvc: DataGraftMessageService) { }
 
   ngOnChanges() {
     if (this.suggestions) {
