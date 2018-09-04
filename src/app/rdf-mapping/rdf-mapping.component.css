@@ -10,3 +10,25 @@
     opacity:.40; 
     filter: alpha(opacity=00); 
 }
+
+.content-container {
+  height: 90%;
+}
+
+.handsontable {
+  position: absolute;
+  overflow: hidden;
+  top: 65px;
+  left: 630px;
+  right: 5px;
+  bottom: 5px;
+}
+
+#handsontable > div.ht_clone_left.handsontable {
+    z-index: -100;
+    visibility: hidden;
+}
+
+.sidenav {
+min-width: 26rem;
+}

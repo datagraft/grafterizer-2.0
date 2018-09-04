@@ -1,24 +1,3 @@
-<split [hidden]="transformationReadOnlyView" direction="horizontal">
-  <split-area [size]="45" style="padding: 16px;">
-    <div rdfPrefixManagementDialogAnchor></div>
-    <button mat-button (click)="openPrefixManagementDialog()" style="margin-bottom: 16px;">
-      <i class="fa fa-cubes"></i>
-      Edit RDF mapping prefixes
-    </button>
-    <mat-tab-group>
-      <mat-tab label="Custom RDF mappings">
-        <graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>
-      </mat-tab>
-      <mat-tab label="Tabular Annotation mappings">
-        <graph-mapping *ngIf="transformationObj.graphs.length > 1" [graph]="transformationObj.graphs[1]"></graph-mapping>
-      </mat-tab>
-    </mat-tab-group>
-  </split-area>
-  <split-area [size]="55" [visible]="!transformationReadOnlyView">
-    <div id="previewTable" style="height: 92vh"></div>
-  </split-area>
-</split>
-
 <div *ngIf="transformationReadOnlyView">
   <div rdfPrefixManagementDialogAnchor></div>
   <button mat-button (click)="openPrefixManagementDialog()" style="margin-bottom: 16px;" disabled>
@@ -37,4 +16,29 @@
       <graph-mapping *ngIf="transformationObj.graphs.length > 1" [graph]="transformationObj.graphs[1]"></graph-mapping>
     </mat-tab>
   </mat-tab-group>
+</div>
+
+<div [hidden]="transformationReadOnlyView" class="main-container">
+  <div class="content-container">
+    <div [hidden]="!showTable" class="content-area">
+      <div id="previewTable"></div>
+    </div>
+    <nav class="sidenav">
+      <perfect-scrollbar style="height: 96%;">
+        <div rdfPrefixManagementDialogAnchor></div>
+        <button mat-button (click)="openPrefixManagementDialog()" style="margin-bottom: 16px;">
+          <i class="fa fa-cubes"></i>
+          Edit RDF mapping prefixes
+        </button>
+        <mat-tab-group>
+          <mat-tab label="Custom RDF mappings">
+            <graph-mapping *ngIf="transformationObj.graphs.length > 0" [graph]="transformationObj.graphs[0]"></graph-mapping>
+          </mat-tab>
+          <mat-tab label="Tabular Annotation mappings">
+            <graph-mapping *ngIf="transformationObj.graphs.length > 1" [graph]="transformationObj.graphs[1]"></graph-mapping>
+          </mat-tab>
+        </mat-tab-group>
+      </perfect-scrollbar>
+    </nav>
+  </div>
 </div>

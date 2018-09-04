@@ -26,6 +26,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private tableContainer: any;
   private vocabSvcPath: string;
   private transformationReadOnlyView: boolean = false;
+  private showTable: boolean = true;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -75,13 +76,14 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
 
     this.route.url.subscribe(() => {
       const paramMap = this.route.snapshot.paramMap;
-      if (paramMap.has('filestoreId')) {
-        console.log('rdf')
-        this.transformationReadOnlyView = false;
-      } else if (!paramMap.has('filestoreId')) {
-        this.transformationReadOnlyView = true;
-        if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
-          this.transformationReadOnlyView = false;
+      if (!paramMap.has('filestoreId')) {
+        switch (this.messageSvc.getCurrentDataGraftMessageState()) {
+          case 'transformations.readonly':
+            this.transformationReadOnlyView = true;
+            break;
+          case 'transformations.transformation':
+            this.showTable = false;
+            break;
         }
       }
     })
@@ -129,7 +131,9 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
   }
+
   openPrefixManagementDialog() {
     let componentRef = this.rdfPrefixManagementAnchor.createDialog(RdfPrefixManagementDialogComponent);
   }
+
 }
