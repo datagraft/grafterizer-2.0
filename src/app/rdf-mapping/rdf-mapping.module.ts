@@ -32,6 +32,14 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { AngularSplitModule } from 'angular-split';
 import { MatTabsModule } from '@angular/material/tabs';
+import {
+  PerfectScrollbarModule, PerfectScrollbarConfigInterface,
+  PERFECT_SCROLLBAR_CONFIG
+} from 'ngx-perfect-scrollbar';
+
+const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
+  suppressScrollX: true
+};
 
 
 @NgModule({
@@ -54,7 +62,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatExpansionModule,
     MatListModule,
     AngularSplitModule,
-    MatTabsModule
+    MatTabsModule,
+    PerfectScrollbarModule
   ],
   declarations: [
     RdfMappingComponent,
@@ -71,6 +80,12 @@ import { MatTabsModule } from '@angular/material/tabs';
     PropertyNodeDialogAnchorDirective,
     RdfPrefixManagementDialogComponent,
     RdfPrefixManagementDialogAnchorDirective
+  ],
+  providers: [
+    {
+      provide: PERFECT_SCROLLBAR_CONFIG,
+      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
+    }
   ]
 })
 

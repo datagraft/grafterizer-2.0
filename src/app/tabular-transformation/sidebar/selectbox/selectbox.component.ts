@@ -8,6 +8,7 @@ import {
 } from '../../../../assets/transformationdatamodel.js';
 import { TransformationService } from 'app/transformation.service';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 @Component({
   moduleId: module.id,
@@ -23,12 +24,11 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private transformations: SelectItem[];
-  private selected: any;
+  private transformations: SelectItem[] = [];
+  private selected: any = { id: null, defaultParams: null };
   private modalEnabled = false;
   private message: any;
-  private transformationOnlyView: boolean = false;
-  private selectboxDisabled: boolean;
+  private transformationReadOnlyView: boolean = false;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -39,27 +39,23 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
-    this.transformations = [];
-    this.selected = { id: null, defaultParams: null };
-  }
+  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService, private messageSvc: DataGraftMessageService) { }
 
   ngOnChanges() {
     if (this.suggestions) {
       this.transformations = this.suggestions;
-      const paramMap = this.route.snapshot.paramMap;
-      if (!paramMap.has('filestoreId')) {
-        this.transformationOnlyView = true;
-      };
-      if (!paramMap.has('transformationId') && !paramMap.has('filestoreId')) {
-        this.selectboxDisabled = true;
-      } else {
-        this.selectboxDisabled = false;
-      }
     }
   }
 
   ngOnInit() {
+
+    const paramMap = this.route.snapshot.paramMap;
+    if (!paramMap.has('filestoreId')) {
+      this.transformationReadOnlyView = true;
+      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.new' || document.referrer.includes('/new/')) {
+        this.transformationReadOnlyView = false;
+      }
+    }
 
     this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
       this.transformationObj = transformation;

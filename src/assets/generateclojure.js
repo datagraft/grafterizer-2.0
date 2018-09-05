@@ -128,7 +128,7 @@ function addGrafterPrefixer(name, prefixString, parentPrefix) {
   if (parentPrefix.toString().trim() === '') {
     prefixer = new jsedn.List([
       jsedn.sym('def'),
-      jsedn.sym(name),
+      jsedn.sym(name.replace(/\./g, '-')),
       new jsedn.List([jsedn.sym('prefixer'), prefixString])
     ]);
 
@@ -136,7 +136,7 @@ function addGrafterPrefixer(name, prefixString, parentPrefix) {
 
     prefixer = new jsedn.List([
       jsedn.sym('def'),
-      jsedn.sym(name),
+      jsedn.sym(name.replace(/\./g, '-')),
       new jsedn.List(
         [jsedn.sym('prefixer'), new jsedn.List([jsedn.sym(parentPrefix), prefixString])])
     ]);
@@ -349,7 +349,7 @@ export function constructRDFGraphFunction(transformation) {
   for (i = 0; i < transformation.graphs.length; ++i) {
     currentGraph = transformation.graphs[i];
     if (i === 0) {
-      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
+      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI || "http://example.com/"]);
     }
     // construct a vector for each of the roots and add it to the graph jsedn
     for (j = 0; j < currentGraph.graphRoots.length; ++j) {
@@ -723,15 +723,12 @@ function constructColumnURINodeJsEdn(colURINode, containingGraph) {
     if (isSupportedPrefix(nodePrefix.trim())) {
       // supported prefix - no need to use prefixer - simple library call
       // nodePrefix:nodeValue (e.g. vcard:Address)
-      //        alertInterface('Cannot associate column \'' + nodeValue + '\' with prefix \'' + nodePrefix + '\'!');
-
-      //                return;
       return new jsedn.sym(nodePrefix + ':' + nodeValue);
     } else {
       // TODO make a check if we have defined the prefix
       // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
       // both are symbols and we get (nodePrefix nodeValue) as a result
-      return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue)]);
+      return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue.replace(/\./g, '-'))]);
     }
   }
 
@@ -760,7 +757,7 @@ function constructConstantURINodeJsEdn(constURINode, containingGraph) {
       // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
       // both are symbols and we get (nodePrefix nodeValue) as a result
 
-      return new jsedn.sym(nodePrefix + ':' + nodeValue);
+      return new jsedn.sym(nodePrefix + ':' + nodeValue.replace(/\./g, '-'));
     }
   }
 
@@ -948,7 +945,7 @@ function getConcept(element, str, containingGraph, prefixersInGUI) {
     if (element.__type === 'ConstantURI') {
       if (!isConceptExist(element.prefix, element.constant)) {
         if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.constant)) {
-          str += '(def ' + element.prefix + ':' + element.constant + ' (' + element.prefix + ' "' + element.constant +
+          str += '(def ' + element.prefix + ':' + element.constant.replace(/\./g, '-') + ' (' + element.prefix + ' "' + element.constant +
             '"))';
           str += '\n';
         }

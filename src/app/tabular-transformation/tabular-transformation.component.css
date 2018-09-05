@@ -1,25 +1,28 @@
-.sidenav {
-  padding: 0px;
+#container {
+  padding-bottom: 27px;
 }
 
-#input-field{
-  padding-top: 20px;
-  padding-bottom: 20px;  
-}
-
-#toggle{
-  padding-top: 30px;
-}
-
-#container{
-  height:360px;
-  margin-bottom: 9px;
+.content-container {
+  height: 90%;
 }
 
 .sin-pipeline {
   padding-top: 20px;
   width: 200px;
 }
+
+.sin-error-pipeline {
+  margin: 10px;
+}
+
+.sin-pipeline-show-pipeline-only {
+    margin: 0;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+  }
 
 .sin-hidden {
   display: none;
@@ -30,10 +33,26 @@
 }
 
 .handsontable {
-  padding-top: 5px;
-  padding-left: 5px;
+  position: absolute;
+  overflow: hidden;
+  top: 65px;
+  left: 318px;
+  right: 5px;
+  bottom: 5px;
+  max-height: 64vh;
 }
 
-.sin-error-pipeline {
-  margin: 10px;
+.profiling {
+    position: absolute;
+    bottom: 0px;
 }
+
+#handsontable > div.ht_clone_left.handsontable {
+    z-index: -100;
+    visibility: hidden;
+}
+
+.sidenav {
+  width: 800px;
+}
+

@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
 import { PipelineEventsService } from '../../pipeline-events.service';
+import { DispatchService } from '../../../dispatch.service';
 import { Subscription } from 'rxjs/Subscription';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
+import { ActivatedRoute } from '@angular/router';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 
 @Component({
@@ -20,7 +23,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   private transformationObj: any;
   private steps: Array<any>;
-  private showPipeline: boolean;
+  private disableButton: boolean = true;
+  private currentFunctionIndex: number;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -38,18 +42,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private deleteFunctionEvent: any;
   private deleteConfirmationModal = false;
 
-  constructor(private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
+  constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService, private messageSvc: DataGraftMessageService) {
     this.steps = [];
-    this.showPipeline = false; // TODO: not sure why we need this
-  }
-
-  private getIndexOfPreviewedFunction(): number {
-    for (let i = 0; i < this.steps.length; ++i) {
-      if (this.steps[i].isPreviewed) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   ngOnInit() {
@@ -70,6 +64,18 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.pipelineEvent = currentEvent;
     });
 
+    this.route.url.subscribe(() => {
+      const paramMap = this.route.snapshot.paramMap;
+      if (paramMap.has('publisher')) {
+        this.dispatch.getAllTransformations('', false).then((result) => {
+          if (result[0].publisher != paramMap.get('publisher') || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly') {
+            this.disableButton = true;
+          } else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.new' || document.referrer.includes('/new/')) {
+            this.disableButton = false;
+          }
+        });
+      }
+    })
   }
 
   ngOnDestroy() {
@@ -79,17 +85,16 @@ export class PipelineComponent implements OnInit, OnDestroy {
   }
 
   selectFunction(event) {
-    console.log('selection changed');
     const index = event.selectedIndex;
 
     // establish the function being changed
-    const currentFunctionIndex = parseInt(index, 10);
-    if (currentFunctionIndex === undefined) {
+    this.currentFunctionIndex = parseInt(index, 10);
+    if (this.currentFunctionIndex === undefined) {
       console.log('ERROR: Something bad and unexpected has happened!');
       return;
     }
     this.pipelineEventsSvc.changeSelectedFunction({
-      currentFunction: this.steps[currentFunctionIndex],
+      currentFunction: this.steps[this.currentFunctionIndex],
       changedFunction: {}
     });
   }
@@ -173,6 +178,13 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
       case 'edit':
+        // if pipeline steps have not been clicked/ activated yet by user, set currentFunction to first function in pipeline
+        if (!this.currentFunctionIndex) {
+          this.pipelineEventsSvc.changeSelectedFunction({
+            currentFunction: this.steps[0],
+            changedFunction: {}
+          });
+        }
         // edit event triggered; keep preview until this step
         this.pipelineEvent.startEdit = true;
         this.pipelineEvent.commitEdit = false;
@@ -196,6 +208,15 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
     }
+  }
+
+  getIndexOfPreviewedFunction(): number {
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (this.steps[i].isPreviewed) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   openDeleteConfirmationModal(event) {

@@ -9,6 +9,7 @@ import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
+import { DataGraftMessageService } from '../data-graft-message.service';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -31,6 +32,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private showHandsonTableProfiling: boolean = true;
   private showHandsontable: boolean = true;
   private showProfiling: boolean = true;
+  private showPipelineOnly: boolean = false;
 
   private metadata: any;
   private title: string;
@@ -54,7 +56,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
-    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
+    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService, public messageSvc: DataGraftMessageService) {
     this.recommendations = [
       { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
@@ -63,15 +65,16 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
       { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
-      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
-      // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
     ];
-    route.url.subscribe(() => this.routingService.concatURL(route));
+    route.url.subscribe((result) => {
+      this.routingService.concatURL(route);
+    });
   }
 
   ngOnInit() {
@@ -97,16 +100,22 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       if (!paramMap.has('filestoreId')) {
-        this.showSelectbox = true;
-        this.showPipelineMetadataTabs = false;
+        this.showPipelineOnly = false;
         this.showHandsonTableProfiling = false;
+        if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || document.referrer.includes('/new/')) {
+          this.showPipelineOnly = false;
+          this.showHandsonTableProfiling = false;
+        }
+        else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly' || this.messageSvc.getCurrentDataGraftMessageState() == undefined) {
+          this.showPipelineOnly = true;
+          this.showHandsonTableProfiling = false;
+        }
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
-            this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
-            console.log(result)
+            this.transformationSvc.currentTransformationMetadata.subscribe((metadata) => this.metadata = metadata);
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
@@ -120,13 +129,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       this.showHandsonTableProfiling = false;
     }
     else if (!paramMap.has('publisher')) {
-      this.showHandsonTableProfiling = false;
-      this.showHandsontable = false;
-      this.showSelectbox = false;
-      this.showProfiling = false;
-      this.showPipelineMetadataTabs = false;
+      this.showPipelineOnly = true;
     }
-
   }
 
   ngOnDestroy() {

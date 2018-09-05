@@ -16,12 +16,16 @@ button:focus {
     size: 130%;
 }
 
-.load-distribution{
+.alerts {
+    z-index: 10;
+}
+
+.load-distribution {
     display: flex;
     align-items: left;
     justify-content: center;
     position: absolute;
-    top: 90%;
+    top: 85%;
     right: 5%;
   }
 
