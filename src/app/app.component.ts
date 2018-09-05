@@ -130,6 +130,7 @@ export class AppComponent implements OnInit {
               }
             });
           }
+          this.initRouteSubscription.unsubscribe();
         }
       });
 
@@ -301,14 +302,50 @@ export class AppComponent implements OnInit {
           (result) => {
             console.log('Data uploaded');
             if (this.selectedFile == undefined) {
-              this.router.navigate([result.publisher, 'transformations', result.id]).then(() => this.showLoading = false);
+              this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
+                this.dispatch.getTransformationJson(result.id, result.publisher)
+                  .then(
+                    (result) => {
+                      const transformationObj = transformationDataModel.Transformation.revive(result);
+                      this.transformationSvc.changeTransformationObj(transformationObj);
+                      this.showTabularTransformationTab = true;
+                      this.showRdfMappingTab = true;
+                      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
+                        this.showSaveButton = true;
+                        this.showForkButton = true;
+                        this.showDownloadButton = true;
+                        this.showDeleteButton = true;
+                        this.showLoadDistributionDialog = true;
+                      }
+                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    },
+                    (error) => {
+                      console.log(error);
+                    });
+              });
             }
             else {
               this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
-                this.showLoading = false;
-                this.distributionList = [];
+                this.dispatch.getTransformationJson(result.id, result.publisher)
+                  .then(
+                    (result) => {
+                      const transformationObj = transformationDataModel.Transformation.revive(result);
+                      this.transformationSvc.changeTransformationObj(transformationObj);
+                      this.showRdfMappingTab = true;
+                      this.showTabularAnnotationTab = true;
+                      this.showSaveButton = true;
+                      this.showForkButton = true;
+                      this.showDownloadButton = true;
+                      this.showDeleteButton = true;
+                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    },
+                    (error) => {
+                      console.log(error);
+                    });
               });
             }
+            this.showLoading = false;
+            this.distributionList = [];
           },
           (error) => {
             console.log('Error updating transformation');
@@ -374,14 +411,32 @@ export class AppComponent implements OnInit {
     if (paramMap.has('transformationId') && paramMap.has('publisher')) {
       const publisher = paramMap.get('publisher');
       const existingTransformationID = paramMap.get('transformationId');
-      console.log(publisher);
-      console.log(existingTransformationID);
-
       return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
         (result) => {
           console.log('Transformation forked');
-          console.log(result);
-          this.router.navigate([result["foaf:publisher"], 'transformations', result.id, 'tabular-transformation']).then(() => this.showLoading = false);
+          this.router.navigate([result["foaf:publisher"], 'transformations', result.id, 'tabular-transformation']).then(() => {
+            this.dispatch.getTransformationJson(result.id, result["foaf:publisher"])
+              .then(
+                (result) => {
+                  const transformationObj = transformationDataModel.Transformation.revive(result);
+                  this.transformationSvc.changeTransformationObj(transformationObj);
+                  this.showTabularTransformationTab = true;
+                  this.showRdfMappingTab = true;
+                  this.showTabularAnnotationTab = false;
+                  if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
+                    this.showSaveButton = true;
+                    this.showForkButton = true;
+                    this.showDownloadButton = true;
+                    this.showDeleteButton = true;
+                    this.showLoadDistributionDialog = true;
+                  }
+                  this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  this.showLoading = false;
+                },
+                (error) => {
+                  console.log(error);
+                });
+          });
         },
         (error) => {
           console.log('Error forking transformation');
