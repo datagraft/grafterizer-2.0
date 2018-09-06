@@ -27,6 +27,7 @@ export class ExtensionComponent implements OnInit {
   public readDatesFromCol: string;
   public selectedDate: any;
   public weatherParameters: string[];
+  public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
   public weatherOffsets: number[];
 
@@ -67,7 +68,23 @@ export class ExtensionComponent implements OnInit {
     }
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
-    this.weatherParameters = ['10u', '10v', '2d', '2t', 'rh', 'sd', 'sf', 'sp', 'ssr', 'sund', 'tcc', 'tp', 'vis', 'ws'];
+    this.weatherParametersDescriptions = {
+      '10u': '10 metre U wind component',
+      '10v': '10 metre V wind component',
+      '2d': '2 metre dewpoint temperature',
+      '2t': '2 metre temperature',
+      'rh': 'Relative humidity',
+      'sd': 'Snow depth',
+      'sf': 'Snowfall',
+      'sp': 'Surface pressure',
+      'ssr': 'Surface net solar radiation',
+      'sund': 'Sunshine duration',
+      'tcc': 'Total cloud cover',
+      'tp': 'Total precipitation',
+      'vis': 'Visibility',
+      'ws': 'Wind speed'
+    };
+    this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max'];
   }
 
