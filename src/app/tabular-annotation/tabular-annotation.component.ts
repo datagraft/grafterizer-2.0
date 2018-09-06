@@ -21,6 +21,7 @@ import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichm
 import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
+import {ShiftColumnFunction} from 'assets/transformationdatamodel';
 
 declare var Handsontable: any;
 
@@ -214,8 +215,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       if (result) {
         let updateSettings = false;
         if (result['deriveMaps']) {
-          result['deriveMaps'].forEach((deriveMap: DeriveMap) => {
-            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
+          result['deriveMaps'].forEach((deriveMap: DeriveMap, index) => {
+            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], index + 1);
             if (deriveMap.newColTypes.length > 0) {
               updateSettings = true;
             }
@@ -593,8 +594,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param deriveMap
    * @param conciliator
+   * @param offset
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService, offset: number) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
@@ -605,17 +607,23 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
     // Create the derive column step
-    const newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
+    let newFunction: any = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
       [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
       [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
+
+    // Pipeline update
+    this.transformationObj.pipelines[0].addAfter({}, newFunction);
+
+    // Shift the new column next to the deriveFrom column
+    newFunction = new transformationDataModel.ShiftColumnFunction(
+      {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
+      colsToDeriveFromIdx + offset, 'position', '');
+    this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
     this.pipelineEventsSvc.changeSelectedFunction({
       currentFunction: {},
       changedFunction: newFunction
     });
-
-    // Pipeline update
-    this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
     // Mark this column as reconciled if a conciliator is given
     if (conciliator) {
