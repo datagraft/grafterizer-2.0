@@ -157,6 +157,7 @@ export class EnrichmentService {
     };
 
     return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+      results.sort(function(a, b){return a.offset - b.offset}); // sort results by offset
       const extensions: Map<string, Extension> = new Map();
       results.forEach(obs => {
         const weatherObs = new WeatherObservation(obs);
