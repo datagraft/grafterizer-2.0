@@ -197,8 +197,8 @@ export class AppComponent implements OnInit {
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
-        this.dispatch.uploadFile(file).subscribe((result) => {
-          this.save(result.id);
+        this.dispatch.uploadFile(file).subscribe(() => {
+          this.save(true);
           this.showLoading = false;
         });
       };
@@ -206,7 +206,7 @@ export class AppComponent implements OnInit {
   }
 
   accept() {
-    this.save();
+    this.save(true);
     this.showLoading = true;
     this.modalEnabled = false;
     this.showLoadDistributionDialog = false;
@@ -259,7 +259,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  save(userUploadedFile?: any) {
+  save(redirect: boolean) {
+    console.log('SAVE');
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
@@ -291,7 +292,7 @@ export class AppComponent implements OnInit {
       code: clojureCode,
       json: JSON.stringify(this.transformationObjSource)
     };
-    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+    if (!redirect) {
       return this.dispatch.updateTransformation(existingTransformationID,
         publisher,
         newTransformationName,
@@ -301,57 +302,86 @@ export class AppComponent implements OnInit {
         newTransformationConfiguration).then(
           (result) => {
             console.log('Data uploaded');
-            if (this.selectedFile == undefined) {
-              this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
-                this.dispatch.getTransformationJson(result.id, result.publisher)
-                  .then(
-                    (result) => {
-                      const transformationObj = transformationDataModel.Transformation.revive(result);
-                      this.transformationSvc.changeTransformationObj(transformationObj);
-                      this.showTabularTransformationTab = true;
-                      this.showRdfMappingTab = true;
-                      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
-                        this.showSaveButton = true;
-                        this.showForkButton = true;
-                        this.showDownloadButton = true;
-                        this.showDeleteButton = true;
-                        this.showLoadDistributionDialog = true;
-                      }
-                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                    },
-                    (error) => {
-                      console.log(error);
-                    });
-              });
-            }
-            else {
-              this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
-                this.dispatch.getTransformationJson(result.id, result.publisher)
-                  .then(
-                    (result) => {
-                      const transformationObj = transformationDataModel.Transformation.revive(result);
-                      this.transformationSvc.changeTransformationObj(transformationObj);
-                      this.showRdfMappingTab = true;
-                      this.showTabularAnnotationTab = true;
-                      this.showSaveButton = true;
-                      this.showForkButton = true;
-                      this.showDownloadButton = true;
-                      this.showDeleteButton = true;
-                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                    },
-                    (error) => {
-                      console.log(error);
-                    });
-              });
-            }
-            this.showLoading = false;
-            this.distributionList = [];
+            this.dispatch.getTransformationJson(result.id, result.publisher)
+              .then(
+                (result) => {
+                  const transformationObj = transformationDataModel.Transformation.revive(result);
+                  this.transformationSvc.changeTransformationObj(transformationObj);
+                },
+                (error) => {
+                  console.log(error);
+                });
           },
           (error) => {
             console.log('Error updating transformation');
             console.log(error);
           });
     }
+    else if (redirect) {
+      this.saveAndRedirect(existingTransformationID, publisher, newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration);
+    }
+  }
+
+  saveAndRedirect(existingTransformationID, publisher, newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration) {
+    return this.dispatch.updateTransformation(existingTransformationID,
+      publisher,
+      newTransformationName,
+      isPublic,
+      newTransformationDescription,
+      newTransformationKeywords,
+      newTransformationConfiguration).then(
+        (result) => {
+          console.log('Data uploaded');
+          if (this.selectedFile == undefined) {
+            this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
+              this.dispatch.getTransformationJson(result.id, result.publisher)
+                .then(
+                  (result) => {
+                    const transformationObj = transformationDataModel.Transformation.revive(result);
+                    this.transformationSvc.changeTransformationObj(transformationObj);
+                    this.showTabularTransformationTab = true;
+                    this.showRdfMappingTab = true;
+                    if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
+                      this.showSaveButton = true;
+                      this.showForkButton = true;
+                      this.showDownloadButton = true;
+                      this.showDeleteButton = true;
+                      this.showLoadDistributionDialog = true;
+                    }
+                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  },
+                  (error) => {
+                    console.log(error);
+                  });
+            });
+          }
+          else {
+            this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
+              this.dispatch.getTransformationJson(result.id, result.publisher)
+                .then(
+                  (result) => {
+                    const transformationObj = transformationDataModel.Transformation.revive(result);
+                    this.transformationSvc.changeTransformationObj(transformationObj);
+                    this.showRdfMappingTab = true;
+                    this.showTabularAnnotationTab = true;
+                    this.showSaveButton = true;
+                    this.showForkButton = true;
+                    this.showDownloadButton = true;
+                    this.showDeleteButton = true;
+                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  },
+                  (error) => {
+                    console.log(error);
+                  });
+            });
+          }
+          this.showLoading = false;
+          this.distributionList = [];
+        },
+        (error) => {
+          console.log('Error updating transformation');
+          console.log(error);
+        });
   }
 
   createNewTransformation(publisher?: string) {
@@ -492,7 +522,7 @@ export class AppComponent implements OnInit {
   }
 
   downloadTriples(rdfFormat: string = 'nt') {
-    this.save().then(
+    this.save(false).then(
       () => {
         console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
@@ -514,7 +544,7 @@ export class AppComponent implements OnInit {
   }
 
   downloadCSV() {
-    this.save().then(
+    this.save(false).then(
       () => {
         console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
