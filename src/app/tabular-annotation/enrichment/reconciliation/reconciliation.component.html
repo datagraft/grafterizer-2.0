@@ -30,6 +30,12 @@
         <label for="column-name">New column name</label>
         <input type="text" id="column-name" placeholder="{{header}}_{{selectedService}}" size="45"
                [(ngModel)]="newColumnName" name="newColumnName">
+        <clr-checkbox
+          name="shiftColumn"
+          id="shiftColumn"
+          [(ngModel)]="shiftColumn">
+          Shift the new column next to <i>{{header}}</i>
+        </clr-checkbox>
       </div>
     </section>
   </form>

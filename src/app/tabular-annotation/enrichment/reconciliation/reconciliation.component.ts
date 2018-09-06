@@ -48,6 +48,8 @@ export class ReconciliationComponent implements OnInit {
 
   public mappingComparator = new MappingComparator();
 
+  public shiftColumn: boolean = false;
+
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
               private enrichmentService: EnrichmentService) { }
@@ -100,7 +102,8 @@ export class ReconciliationComponent implements OnInit {
         .buildFromMapping(this.reconciledData, this.threshold,[this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': this.services.get(this.selectedService)
+      'conciliator': this.services.get(this.selectedService),
+      'shift': this.shiftColumn
     });
 
   }

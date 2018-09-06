@@ -216,7 +216,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         let updateSettings = false;
         if (result['deriveMaps']) {
           result['deriveMaps'].forEach((deriveMap: DeriveMap, index) => {
-            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], index + 1);
+            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator'], result['shift'], index + 1);
             if (deriveMap.newColTypes.length > 0) {
               updateSettings = true;
             }
@@ -594,9 +594,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param deriveMap
    * @param conciliator
+   * @param shift
    * @param offset
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService, offset: number) {
+  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService, shift: boolean, offset: number) {
 
     // Create a new custom function
     const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
@@ -615,10 +616,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
     // Shift the new column next to the deriveFrom column
-    newFunction = new transformationDataModel.ShiftColumnFunction(
-      {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
-      colsToDeriveFromIdx + offset, 'position', '');
-    this.transformationObj.pipelines[0].addAfter({}, newFunction);
+    if (shift) {
+      newFunction = new transformationDataModel.ShiftColumnFunction(
+        {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
+        colsToDeriveFromIdx + offset, 'position', '');
+      this.transformationObj.pipelines[0].addAfter({}, newFunction);
+    }
 
     this.pipelineEventsSvc.changeSelectedFunction({
       currentFunction: {},

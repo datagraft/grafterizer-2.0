@@ -41,6 +41,8 @@ export class ExtensionComponent implements OnInit {
 
   public reconciledFromService: ConciliatorService;
 
+  public shiftColumn: boolean = false;
+
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
               private enrichmentService: EnrichmentService) { }
@@ -160,7 +162,8 @@ export class ExtensionComponent implements OnInit {
     });
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': conciliator
+      'conciliator': conciliator,
+      'shift': this.shiftColumn
     });
 
   }
