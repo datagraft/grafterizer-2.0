@@ -30,7 +30,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DataGraftMessageService } from 'app/data-graft-message.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {EnrichmentService} from './tabular-annotation/enrichment/enrichment.service';
+import { EnrichmentService } from './tabular-annotation/enrichment/enrichment.service';
+import { ArangoGeneratorService } from 'app/arango-generator.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -67,6 +68,7 @@ export function initConfig(config: AppConfig) {
     AnnotationService,
     AbstatService,
     EnrichmentService,
+    ArangoGeneratorService,
     RoutingService,
     {
       provide: APP_INITIALIZER,
