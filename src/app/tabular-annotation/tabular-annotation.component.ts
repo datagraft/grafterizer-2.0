@@ -239,8 +239,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           data: h, // don't remove leading ':' from header here!
           renderer: (instance, td, row, col, prop, value, cellProperties) => {
             const annotation = this.annotationService.getAnnotation(this.annotationService.headers[col]);
-            td.className = 'htCenter htMiddle';
-            td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
+            td.className = 'htCenter htMiddle htDimmed';
+            if (value) {
+              td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
+            } else {
+              td.innerHTML = '';
+            }
             return td;
           }
         });
