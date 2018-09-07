@@ -9,11 +9,10 @@
       </a>
     </div>
     <div class="header-nav">
-      <a *ngIf="showTabularTransformationTab" routerLink="/{{grafterizerUrl}}tabular-transformation" routerLinkActive="active"
-        class="nav-link">
+      <a routerLink="/{{grafterizerUrl}}tabular-transformation" routerLinkActive="active" class="nav-link">
         <span class="nav-text">Tabular Transformation</span>
       </a>
-      <a *ngIf="showRdfMappingTab" routerLink="/{{grafterizerUrl}}rdf-mapping" routerLinkActive="active" class="nav-link">
+      <a routerLink="/{{grafterizerUrl}}rdf-mapping" routerLinkActive="active" class="nav-link">
         <span class="nav-text">RDF Mapping</span>
       </a>
       <a *ngIf="showTabularAnnotationTab" routerLink="/{{grafterizerUrl}}tabular-annotation" routerLinkActive="active"
@@ -126,7 +125,12 @@
       <input type="radio" [(ngModel)]="downloadMode" value="arango-json" id="mode_4">
       <label for="mode_4">ArangoDB JSON collections</label>
     </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="downloadMode" value="grafterizer-json" id="mode_5">
+      <label for="mode_5">Grafterizer transformation as JSON</label>
+    </div>
   </div>
+
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="download()">OK</button>

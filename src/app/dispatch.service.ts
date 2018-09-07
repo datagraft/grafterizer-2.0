@@ -204,6 +204,17 @@ export class DispatchService {
       .toPromise()
       .catch((error) => this.errorHandler(error));
   }
+
+  // Get the JSON serialisation of a transformation
+  public getLegacyTransformationJson(id: string, publisher: string): Promise<any> {
+    const url = this.computeTransformationURL(publisher, id) + '/configuration';
+    const options = new RequestOptions({ withCredentials: true });
+    return this.http
+      .get(url, options)
+      .map((response: Response) => response.json())
+      .toPromise()
+      .catch((error) => this.errorHandler(error));
+  }
   // Update transformation on DataGraft
   public updateTransformation(id: string, publisher: string, name: string, isPublic: boolean, description: string,
     keywords: Array<string>, configuration: TransformationConfiguration): Promise<any> {

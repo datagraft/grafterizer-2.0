@@ -54,8 +54,6 @@ export class AppComponent implements OnInit {
   private showConfirmDeleteDialog: boolean = false;
   private showLoadDistributionDialog: boolean = false;
   private modalEnabled: boolean = false;
-  private showTabularTransformationTab: boolean = false;
-  private showRdfMappingTab: boolean = false;
   private showTabularAnnotationTab: boolean = false;
   private showSaveButton: boolean = false;
   private showForkButton: boolean = false;
@@ -88,7 +86,6 @@ export class AppComponent implements OnInit {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.changeTransformationObj(transformationObj);
                     if (paramMap.has('filestoreId')) {
-                      this.showRdfMappingTab = true;
                       this.showTabularAnnotationTab = true;
                       this.showSaveButton = true;
                       this.showForkButton = true;
@@ -97,8 +94,6 @@ export class AppComponent implements OnInit {
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     }
                     else if (!paramMap.has('filestoreId')) {
-                      this.showTabularTransformationTab = true;
-                      this.showRdfMappingTab = true;
                       if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                         this.showSaveButton = true;
                         this.showForkButton = true;
@@ -339,8 +334,6 @@ export class AppComponent implements OnInit {
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.showTabularTransformationTab = true;
-                    this.showRdfMappingTab = true;
                     if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                       this.showSaveButton = true;
                       this.showForkButton = true;
@@ -362,7 +355,6 @@ export class AppComponent implements OnInit {
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.showRdfMappingTab = true;
                     this.showTabularAnnotationTab = true;
                     this.showSaveButton = true;
                     this.showForkButton = true;
@@ -419,8 +411,6 @@ export class AppComponent implements OnInit {
           if (this.selectedFile == undefined) {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
               this.showLoading = false;
-              this.showTabularTransformationTab = true;
-              this.showRdfMappingTab = true;
               this.showLoadDistributionDialog = true;
               this.showDeleteButton = true;
               this.showDownloadButton = true;
@@ -450,8 +440,6 @@ export class AppComponent implements OnInit {
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
                   this.transformationSvc.changeTransformationObj(transformationObj);
-                  this.showTabularTransformationTab = true;
-                  this.showRdfMappingTab = true;
                   this.showTabularAnnotationTab = false;
                   if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                     this.showSaveButton = true;
@@ -501,8 +489,30 @@ export class AppComponent implements OnInit {
       this.downloadTriples();
     } else if (this.downloadMode == 'arango-json') {
       this.downloadArangoJson();
+    } else if (this.downloadMode == 'grafterizer-json') {
+      this.downloadGrafterizerJson();
     }
     this.showDownloadDialog = false;
+  }
+  downloadGrafterizerJson(): any {
+    this.save(false).then(
+      () => {
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+          this.dispatch.getLegacyTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
+            .then((result) => {
+              this.saveToFile(JSON.stringify(result), 'transformation.json', 'application/json');
+            },
+              (error) => {
+                // TODO throw exception?
+                console.log('Error loading transformation from backend');
+                console.log(error)
+              })
+        } else {
+          console.log('Error getting transformation JSON. Missing publisher and transformation ID');
+          // TODO throw exception?
+        }
+      });
   }
 
   downloadArangoJson(): any {
