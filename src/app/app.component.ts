@@ -11,10 +11,10 @@ import { DataGraftMessageService } from './data-graft-message.service';
 import { RoutingService } from './routing.service';
 import { GlobalErrorReportingService } from './global-error-reporting.service';
 import { PipelineEventsService } from './tabular-transformation/pipeline-events.service';
-import { TabularTransformationComponent } from './tabular-transformation/tabular-transformation.component';
 
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
+import { ArangoGeneratorService } from 'app/arango-generator.service';
 
 @Component({
   selector: 'app-root',
@@ -54,8 +54,6 @@ export class AppComponent implements OnInit {
   private showConfirmDeleteDialog: boolean = false;
   private showLoadDistributionDialog: boolean = false;
   private modalEnabled: boolean = false;
-  private showTabularTransformationTab: boolean = false;
-  private showRdfMappingTab: boolean = false;
   private showTabularAnnotationTab: boolean = false;
   private showSaveButton: boolean = false;
   private showForkButton: boolean = false;
@@ -66,7 +64,7 @@ export class AppComponent implements OnInit {
   constructor(public router: Router, private http: Http, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
-    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService) {
+    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService, private arangoGeneratorSvc: ArangoGeneratorService) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
@@ -88,7 +86,6 @@ export class AppComponent implements OnInit {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.changeTransformationObj(transformationObj);
                     if (paramMap.has('filestoreId')) {
-                      this.showRdfMappingTab = true;
                       this.showTabularAnnotationTab = true;
                       this.showSaveButton = true;
                       this.showForkButton = true;
@@ -97,8 +94,6 @@ export class AppComponent implements OnInit {
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     }
                     else if (!paramMap.has('filestoreId')) {
-                      this.showTabularTransformationTab = true;
-                      this.showRdfMappingTab = true;
                       if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                         this.showSaveButton = true;
                         this.showForkButton = true;
@@ -284,7 +279,7 @@ export class AppComponent implements OnInit {
       transformationCommand = 'my-pipe';
     }
     if (!this.transformationObjSource.pipelines[0]) {
-      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [], []);
+      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     }
     const newTransformationConfiguration = {
       type: transformationType,
@@ -339,8 +334,6 @@ export class AppComponent implements OnInit {
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.showTabularTransformationTab = true;
-                    this.showRdfMappingTab = true;
                     if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                       this.showSaveButton = true;
                       this.showForkButton = true;
@@ -362,7 +355,6 @@ export class AppComponent implements OnInit {
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.showRdfMappingTab = true;
                     this.showTabularAnnotationTab = true;
                     this.showSaveButton = true;
                     this.showForkButton = true;
@@ -404,7 +396,7 @@ export class AppComponent implements OnInit {
       transformationCommand = 'my-pipe';
     }
     if (!this.transformationObjSource.pipelines[0]) {
-      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [], []);
+      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     }
     const newTransformationConfiguration = {
       type: transformationType,
@@ -419,8 +411,6 @@ export class AppComponent implements OnInit {
           if (this.selectedFile == undefined) {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
               this.showLoading = false;
-              this.showTabularTransformationTab = true;
-              this.showRdfMappingTab = true;
               this.showLoadDistributionDialog = true;
               this.showDeleteButton = true;
               this.showDownloadButton = true;
@@ -450,8 +440,6 @@ export class AppComponent implements OnInit {
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
                   this.transformationSvc.changeTransformationObj(transformationObj);
-                  this.showTabularTransformationTab = true;
-                  this.showRdfMappingTab = true;
                   this.showTabularAnnotationTab = false;
                   if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
                     this.showSaveButton = true;
@@ -499,8 +487,64 @@ export class AppComponent implements OnInit {
     }
     else if (this.downloadMode == 'n-triples') {
       this.downloadTriples();
+    } else if (this.downloadMode == 'arango-json') {
+      this.downloadArangoJson();
+    } else if (this.downloadMode == 'grafterizer-json') {
+      this.downloadGrafterizerJson();
     }
     this.showDownloadDialog = false;
+  }
+  downloadGrafterizerJson(): any {
+    this.save(false).then(
+      () => {
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+          this.dispatch.getLegacyTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
+            .then((result) => {
+              this.saveToFile(JSON.stringify(result), 'transformation.json', 'application/json');
+            },
+              (error) => {
+                // TODO throw exception?
+                console.log('Error loading transformation from backend');
+                console.log(error)
+              })
+        } else {
+          console.log('Error getting transformation JSON. Missing publisher and transformation ID');
+          // TODO throw exception?
+        }
+      });
+  }
+
+  downloadArangoJson(): any {
+    // this.
+    this.save(false).then(
+      () => {
+        const paramMap = this.route.firstChild.snapshot.paramMap;
+        if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
+          const existingTransformationID = paramMap.get('transformationId');
+          const filestoreID = paramMap.get('filestoreId');
+          this.transformationSvc.transformFile(filestoreID, existingTransformationID, 'pipe-download').then(
+            (transformed) => {
+
+              let inputCsv = new Blob([transformed], { type: 'text/csv' });
+              let inputCsvFile = new File([inputCsv], 'input.csv');
+              this.arangoGeneratorSvc.getArangoCollections(inputCsvFile, { extra: this.transformationObjSource })
+                .then((arangoJsonZIP) => {
+                  this.saveToFile(arangoJsonZIP, 'arango-json.zip', 'application/zip');
+                },
+                  (error) => {
+                    console.log('Error retrieving ArangoDB JSON');
+                    console.log(error);
+                  });
+            },
+            (error) => {
+              console.log('Error downloading file');
+              console.log(error);
+            }
+          );
+        }
+      }
+    );
   }
 
   saveToFile(data, filename, MIMEtype) {
