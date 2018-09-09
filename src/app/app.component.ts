@@ -16,6 +16,7 @@ import { PipelineEventsService } from './tabular-transformation/pipeline-events.
 import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
 import { ArangoGeneratorService } from 'app/arango-generator.service';
+import { TransformationUpdaterService } from 'app/transformation-updater.service';
 
 @Component({
   selector: 'app-root',
@@ -65,7 +66,8 @@ export class AppComponent implements OnInit {
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
-    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService, private arangoGeneratorSvc: ArangoGeneratorService) {
+    private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
+    , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
@@ -624,6 +626,8 @@ export class AppComponent implements OnInit {
     var input = document.createElement('input');
     input.type = 'text';
     input.name = 'clojure';
+    // TODO next line is a hack; we should do this on first load of service and exactly once!
+    this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
     input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, false);
 
     var submit = document.createElement('input');

@@ -33,6 +33,7 @@ import { DataGraftMessageService } from 'app/data-graft-message.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EnrichmentService } from './tabular-annotation/enrichment/enrichment.service';
 import { ArangoGeneratorService } from 'app/arango-generator.service';
+import { TransformationUpdaterService } from 'app/transformation-updater.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -70,6 +71,7 @@ export function initConfig(config: AppConfig) {
     AbstatService,
     EnrichmentService,
     ArangoGeneratorService,
+    TransformationUpdaterService,
     RoutingService,
     JarfterService,
     {
