@@ -20,6 +20,7 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
+import { JarfterService } from './jarfter.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
@@ -70,6 +71,7 @@ export function initConfig(config: AppConfig) {
     EnrichmentService,
     ArangoGeneratorService,
     RoutingService,
+    JarfterService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

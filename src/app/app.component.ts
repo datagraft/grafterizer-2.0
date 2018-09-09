@@ -1,11 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Http } from '@angular/http';
+import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/Rx';
 import { SelectItem } from 'primeng/primeng';
 import { Subscription } from 'rxjs/Subscription';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
+import { JarfterService } from './jarfter.service';
 import { TransformationService } from './transformation.service';
 import { DataGraftMessageService } from './data-graft-message.service';
 import { RoutingService } from './routing.service';
@@ -61,8 +62,8 @@ export class AppComponent implements OnInit {
   private showDeleteButton: boolean = false;
   private showLoading: boolean = false;
 
-  constructor(public router: Router, private http: Http, private route: ActivatedRoute, private config: AppConfig,
-    public dispatch: DispatchService, private transformationSvc: TransformationService,
+  constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
+    public dispatch: DispatchService, private jarfter: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService, private arangoGeneratorSvc: ArangoGeneratorService) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
@@ -492,6 +493,9 @@ export class AppComponent implements OnInit {
     } else if (this.downloadMode == 'grafterizer-json') {
       this.downloadGrafterizerJson();
     }
+    else if (this.downloadMode == 'JAR') {
+      this.downloadJAR();
+    }
     this.showDownloadDialog = false;
   }
   downloadGrafterizerJson(): any {
@@ -607,6 +611,13 @@ export class AppComponent implements OnInit {
         }
       }
     );
+  }
+
+  downloadJAR() {
+    const headers = new Headers({ 'Content-Type': 'application/edn', 'Accept': 'application/edn' });
+    const options = new RequestOptions({ headers: headers, withCredentials: true });
+    console.log(this.previewedTransformationObj);
+    this.http.post(this.jarfter.getJarCreatorStandAloneEndpoint(), this.jarfter.generateClojure(this.previewedTransformationObj), options);
   }
 
   /**
