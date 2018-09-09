@@ -1,12 +1,16 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <p-listbox [options]="transformations" [(ngModel)]="selected" [disabled]="transformationReadOnlyView" (ngModelChange)="onChange($event)"
-    [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'200px'}">
+  <div id="btn-show-all-functions" *ngIf="!transformationReadOnlyView">
+    <button class="btn btn-primary btn-block btn-sm" (click)="showAllFunctions()">Reset selection</button>
+  </div>
+  <p-listbox [options]="recommendedFunctions" [(ngModel)]="selected" [disabled]="transformationReadOnlyView"
+    (ngModelChange)="onChange($event)" [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}"
+    [listStyle]="{'height':'200px'}">
   </p-listbox>
   <div id="btn-custom-functions" *ngIf="transformationReadOnlyView">
-    <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()" disabled>Custom functions</button>
+    <button class="btn btn-outline btn-sm" (click)="openCustomFunctionModal()" disabled>Custom functions</button>
   </div>
   <div id="btn-custom-functions" *ngIf="!transformationReadOnlyView">
-    <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
+    <button class="btn btn-outline btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
   </div>
 </div>
 
