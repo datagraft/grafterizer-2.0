@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
   private showLoading: boolean = false;
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
-    public dispatch: DispatchService, private jarfter: JarfterService, private transformationSvc: TransformationService,
+    public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService, private arangoGeneratorSvc: ArangoGeneratorService) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
@@ -613,11 +613,41 @@ export class AppComponent implements OnInit {
     );
   }
 
+
   downloadJAR() {
-    const headers = new Headers({ 'Content-Type': 'application/edn', 'Accept': 'application/edn' });
-    const options = new RequestOptions({ headers: headers, withCredentials: true });
-    console.log(this.previewedTransformationObj);
-    this.http.post(this.jarfter.getJarCreatorStandAloneEndpoint(), this.jarfter.generateClojure(this.previewedTransformationObj), options);
+    var form = document.createElement('form');
+    form.action = '/jarfter/webresources/jarCreatorStandAlone';
+    form.method = 'POST';
+    form.target = '_blank';
+    form.style.display = 'none';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'clojure';
+    input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, false);
+
+    var submit = document.createElement('input');
+    submit.type = 'submit';
+    submit.id = 'submitProject';
+
+    form.appendChild(input);
+    form.appendChild(submit);
+    document.body.appendChild(form);
+
+    document.getElementById('submitProject').click();
+
+    document.body.removeChild(form);
+
+
+    // var self = this;
+    // this.jarfterSvc.getTransformationJar(this.transformationObjSource)
+    //   .then((response) => {
+    //     const blob = new Blob([response._body], { type: 'application/java-archive' });
+    //     debugger;
+    //     this.saveToFile(blob, 'transformation.jar', 'application/java-archive');
+    //   }, (error) => {
+    //     debugger;
+    //   });
   }
 
   /**

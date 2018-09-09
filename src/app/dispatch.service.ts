@@ -211,7 +211,15 @@ export class DispatchService {
     const options = new RequestOptions({ withCredentials: true });
     return this.http
       .get(url, options)
-      .map((response: Response) => response.json())
+      .map((response: Response) => {
+        return {
+          transformationType: response.json().type,
+          transformationCommand: response.json().command,
+          code: response.json().code,
+          extra: JSON.parse(response.json().extra)
+        }
+        // response.json()
+      })
       .toPromise()
       .catch((error) => this.errorHandler(error));
   }
