@@ -133,6 +133,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         return 'Columns merged'
       case 'SortDatasetFunction':
         return 'Columns sorted'
+      case 'RemoveDuplicatesFunction':
+        return 'Duplicates removed'
       default:
         return label;
     }
