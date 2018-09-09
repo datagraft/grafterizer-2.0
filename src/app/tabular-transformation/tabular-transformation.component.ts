@@ -81,7 +81,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
-        if (this.profilingComponent !== undefined) {
+        if (this.profilingComponent) {
           this.profilingComponent.loadJSON(this.graftwerkData);
           this.profilingComponent.refresh(this.handsontableSelection);
         }
@@ -116,6 +116,10 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           (result) => {
             this.transformationSvc.changeTransformationMetadata(result);
             this.transformationSvc.currentTransformationMetadata.subscribe((metadata) => this.metadata = metadata);
+            if (this.profilingComponent && this.graftwerkData) {
+              this.profilingComponent.loadJSON(this.graftwerkData);
+              this.profilingComponent.refresh(this.handsontableSelection);
+            }
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
