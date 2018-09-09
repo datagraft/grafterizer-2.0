@@ -24,7 +24,9 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private transformations: SelectItem[] = [];
+  private recommendedFunctions: SelectItem[] = [];
+  private allFunctions: SelectItem[] = [];
+
   private selected: any = { id: null, defaultParams: null };
   private modalEnabled = false;
   private message: any;
@@ -43,7 +45,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges() {
     if (this.suggestions) {
-      this.transformations = this.suggestions;
+      this.recommendedFunctions = this.suggestions;
     }
   }
 
@@ -112,12 +114,19 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     this.selectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selectedFunction) => {
       this.selectedFunction = selectedFunction;
     });
+
+    this.allFunctions = this.recommendedFunctions;
+
   }
 
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.selectedFunctionSubscription.unsubscribe();
     this.transformationSubscription.unsubscribe();
+  }
+
+  showAllFunctions() {
+    this.recommendedFunctions = this.allFunctions;
   }
 
   emitFunction(value: any) {

@@ -19,7 +19,12 @@
 }
 
 #btn-custom-functions {
-  padding-top: 5px;
+  width: 220px;
   padding-right: 58px;
-  padding-bottom: 20px;
+  padding-bottom: 15px;
+}
+
+#btn-show-all-functions {
+  width: 220px;
+  margin-top: -10px;
 }
