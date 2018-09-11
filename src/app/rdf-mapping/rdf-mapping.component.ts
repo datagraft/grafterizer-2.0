@@ -35,6 +35,9 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
 
   @ViewChild(RdfPrefixManagementDialogAnchorDirective) rdfPrefixManagementAnchor: RdfPrefixManagementDialogAnchorDirective;
 
@@ -74,19 +77,20 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     };
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
-    this.route.url.subscribe(() => {
-      const paramMap = this.route.snapshot.paramMap;
-      if (!paramMap.has('filestoreId')) {
-        switch (this.messageSvc.getCurrentDataGraftMessageState()) {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      if (state) {
+        this.currentDataGraftState = state;
+        switch (this.currentDataGraftState) {
           case 'transformations.readonly':
             this.transformationReadOnlyView = true;
             break;
           case 'transformations.transformation':
+          case 'transformations.new':
             this.showTable = false;
             break;
         }
       }
-    })
+    });
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {

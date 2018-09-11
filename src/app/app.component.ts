@@ -45,6 +45,9 @@ export class AppComponent implements OnInit {
   private globalErrorSubscription: Subscription;
   private globalErrors: Array<any>;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
   private isEmbedded: boolean;
   private downloadMode: string = 'csv';
 
@@ -77,6 +80,37 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     const self = this;
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      if (state) {
+        this.currentDataGraftState = state;
+        switch (state) {
+          case 'transformations.transformation':
+            this.showSaveButton = true;
+            this.showForkButton = true;
+            this.showDownloadButton = true;
+            this.showDeleteButton = true;
+            this.showLoadDistributionDialog = true;
+            break;
+          case 'transformations.readonly':
+            this.showSaveButton = false;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+            this.showLoadDistributionDialog = true;
+            break;
+          case 'transformations.new':
+            this.showSaveButton = true;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+            this.showLoadDistributionDialog = true;
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
         if (event instanceof NavigationEnd && self.route.firstChild != null) {
@@ -89,21 +123,9 @@ export class AppComponent implements OnInit {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.changeTransformationObj(transformationObj);
                     if (paramMap.has('filestoreId')) {
-                      this.showTabularAnnotationTab = true;
-                      this.showSaveButton = true;
-                      this.showForkButton = true;
-                      this.showDownloadButton = true;
-                      this.showDeleteButton = true;
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                    }
-                    else if (!paramMap.has('filestoreId')) {
-                      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
-                        this.showSaveButton = true;
-                        this.showForkButton = true;
-                        this.showDownloadButton = true;
-                        this.showDeleteButton = true;
-                        this.showLoadDistributionDialog = true;
-                      }
+                    } else {
+                      this.showLoadDistributionDialog = true;
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
@@ -337,13 +359,6 @@ export class AppComponent implements OnInit {
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
-                    if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
-                      this.showSaveButton = true;
-                      this.showForkButton = true;
-                      this.showDownloadButton = true;
-                      this.showDeleteButton = true;
-                      this.showLoadDistributionDialog = true;
-                    }
                     this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                   },
                   (error) => {
@@ -444,13 +459,6 @@ export class AppComponent implements OnInit {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
                   this.transformationSvc.changeTransformationObj(transformationObj);
                   this.showTabularAnnotationTab = false;
-                  if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation') {
-                    this.showSaveButton = true;
-                    this.showForkButton = true;
-                    this.showDownloadButton = true;
-                    this.showDeleteButton = true;
-                    this.showLoadDistributionDialog = true;
-                  }
                   this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                   this.showLoading = false;
                 },

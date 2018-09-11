@@ -37,6 +37,9 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private pipelineEventsSubscription: Subscription;
   private currentlySelectedFunctionSubscription: Subscription;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
   private previewedTransformationObj: any;
 
   private deleteFunctionEvent: any;
@@ -64,18 +67,20 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.pipelineEvent = currentEvent;
     });
 
-    this.route.url.subscribe(() => {
-      const paramMap = this.route.snapshot.paramMap;
-      if (paramMap.has('publisher')) {
-        this.dispatch.getAllTransformations('', false).then((result) => {
-          if (result[0].publisher != paramMap.get('publisher') || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly') {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      if (state) {
+        this.currentDataGraftState = state;
+        switch (this.currentDataGraftState) {
+          case 'transformations.readonly':
             this.disableButton = true;
-          } else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.new' || document.referrer.includes('/new/')) {
+            break;
+          case 'transformations.transformation':
+          case 'transformations.new':
             this.disableButton = false;
-          }
-        });
+            break;
+        }
       }
-    })
+    });
   }
 
   ngOnDestroy() {

@@ -50,6 +50,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private previewErrorSubscription: Subscription;
   private previewError: string;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
@@ -97,20 +100,25 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       }
     });
 
-    const paramMap = this.route.snapshot.paramMap;
-    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-      if (!paramMap.has('filestoreId')) {
-        this.showPipelineOnly = false;
-        this.showHandsonTableProfiling = false;
-        if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || document.referrer.includes('/new/')) {
-          this.showPipelineOnly = false;
-          this.showHandsonTableProfiling = false;
-        }
-        else if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.readonly' || this.messageSvc.getCurrentDataGraftMessageState() == undefined) {
-          this.showPipelineOnly = true;
-          this.showHandsonTableProfiling = false;
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      if (state) {
+        this.currentDataGraftState = state;
+        switch (this.currentDataGraftState) {
+          case 'transformations.readonly':
+            this.showPipelineOnly = true;
+            this.showHandsonTableProfiling = false;
+            break;
+          case 'transformations.transformation':
+          case 'transformations.new':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = false;
+            break;
         }
       }
+    });
+
+    const paramMap = this.route.snapshot.paramMap;
+    if (paramMap.has('publisher') && paramMap.has('transformationId')) {
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {

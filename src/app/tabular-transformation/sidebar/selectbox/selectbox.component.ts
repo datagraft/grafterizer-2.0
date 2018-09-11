@@ -32,6 +32,9 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private message: any;
   private transformationReadOnlyView: boolean = false;
 
+  private transformationMetadataSubscription: Subscription;
+  private isOwned: boolean;
+
   private transformationSubscription: Subscription;
   private transformationObj: any;
 
@@ -41,7 +44,16 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService, private messageSvc: DataGraftMessageService) { }
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
+
+  constructor(private route: ActivatedRoute,
+    private transformationSvc: TransformationService,
+    private pipelineEventsSvc: PipelineEventsService,
+    private messageSvc: DataGraftMessageService) {
+
+  }
 
   ngOnChanges() {
     if (this.suggestions) {
@@ -51,13 +63,30 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnInit() {
 
-    const paramMap = this.route.snapshot.paramMap;
-    if (!paramMap.has('filestoreId')) {
-      this.transformationReadOnlyView = true;
-      if (this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.transformation' || this.messageSvc.getCurrentDataGraftMessageState() == 'transformations.new' || document.referrer.includes('/new/')) {
-        this.transformationReadOnlyView = false;
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      if (state) {
+        this.currentDataGraftState = state;
+        if (this.currentDataGraftState == 'transformations.transformation'
+          || this.currentDataGraftState == 'transformations.new'
+          || document.referrer.includes('/new/')
+          || this.currentDataGraftState == 'standalone') {
+          this.transformationReadOnlyView = false;
+        } else {
+          this.transformationReadOnlyView = true;
+        }
       }
-    }
+    });
+
+    // const paramMap = this.route.snapshot.paramMap;
+    // if (!paramMap.has('filestoreId')) {
+
+    // }
+
+    this.transformationMetadataSubscription = this.transformationSvc.currentTransformationMetadata.subscribe((transformationMeta) => {
+      if (transformationMeta.is_owned) {
+        this.isOwned = true;
+      }
+    });
 
     this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
       this.transformationObj = transformation;

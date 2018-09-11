@@ -14,6 +14,7 @@ export interface TransformationMetadata {
   modified: Date;
   created: Date;
   keywords?: Array<string>;
+  is_owned: string;
 }
 
 export interface TransformationConfiguration {
@@ -444,7 +445,8 @@ export class DispatchService {
       publisher: dcatSerialisation['foaf:publisher'],
       modified: new Date(dcatSerialisation['dct:modified']),
       created: new Date(dcatSerialisation['dct:issued']),
-      keywords: dcatSerialisation['dcat:keyword']
+      keywords: dcatSerialisation['dcat:keyword'],
+      is_owned: dcatSerialisation['is_owned']
     }
   }
 
