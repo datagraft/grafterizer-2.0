@@ -85,6 +85,7 @@ export class ReconciliationComponent implements OnInit {
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
       });
       this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
+      this.updateThreshold();
       this.dataLoading = false;
     });
   }
