@@ -190,7 +190,7 @@ export class ExtensionComponent implements OnInit {
     let valid = true;
     this.extensionData.forEach((extension: Extension) => {
       const objects = extension.properties.get(prop);
-      if (objects.length !== extension.properties.get(prop).filter(obj => {
+      if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
           return !(obj && !obj['id']);
         }).length) {
         valid = false;
