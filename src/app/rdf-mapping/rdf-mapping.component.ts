@@ -78,15 +78,13 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
     this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
-      if (state) {
-        this.currentDataGraftState = state;
+      console.log('rdf state');
+      if (state.mode) {
+        console.log(state.mode);
+        this.currentDataGraftState = state.mode;
         switch (this.currentDataGraftState) {
           case 'transformations.readonly':
             this.transformationReadOnlyView = true;
-            break;
-          case 'transformations.transformation':
-          case 'transformations.new':
-            this.showTable = false;
             break;
         }
       }

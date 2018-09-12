@@ -63,24 +63,20 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnInit() {
 
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
-      if (state) {
-        this.currentDataGraftState = state;
-        if (this.currentDataGraftState == 'transformations.transformation'
-          || this.currentDataGraftState == 'transformations.new'
-          || document.referrer.includes('/new/')
-          || this.currentDataGraftState == 'standalone') {
-          this.transformationReadOnlyView = false;
-        } else {
-          this.transformationReadOnlyView = true;
-        }
-      }
-    });
-
-    // const paramMap = this.route.snapshot.paramMap;
-    // if (!paramMap.has('filestoreId')) {
-
-    // }
+    // this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    //   if (state.mode) {
+    //     this.currentDataGraftState = state.mode;
+    //     if (this.currentDataGraftState == 'transformations.transformation'
+    //       || this.currentDataGraftState == 'transformations.new'
+    //       || this.currentDataGraftState == 'transformations.transformation.preview'
+    //       || document.referrer.includes('/new/')
+    //       || this.currentDataGraftState == 'standalone') {
+    //       this.transformationReadOnlyView = false;
+    //     } else {
+    //       this.transformationReadOnlyView = true;
+    //     }
+    //   }
+    // });
 
     this.transformationMetadataSubscription = this.transformationSvc.currentTransformationMetadata.subscribe((transformationMeta) => {
       if (transformationMeta.is_owned) {

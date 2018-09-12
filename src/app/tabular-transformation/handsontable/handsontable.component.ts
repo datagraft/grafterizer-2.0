@@ -26,7 +26,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   private data: any;
   private container: any;
   private settings: any;
-  private showLoading: boolean;
+  private showLoading: boolean = false;
 
   public selectedFunction: any;
   public selectedDefaultParams: any;

@@ -46,9 +46,10 @@ export class AppComponent implements OnInit {
   private globalErrors: Array<any>;
 
   private currentDataGraftStateSubscription: Subscription;
-  private currentDataGraftState: string;
+  private currentDataGraftState: any;
+  private currentDataGraftParams: any;
 
-  private isEmbedded: boolean;
+  private showWizardNavigation: boolean;
   private downloadMode: string = 'csv';
 
   private distributionList: SelectItem[] = [];
@@ -65,6 +66,7 @@ export class AppComponent implements OnInit {
   private showDownloadButton: boolean = false;
   private showDeleteButton: boolean = false;
   private showLoading: boolean = false;
+  private transformationType: string;
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
@@ -72,7 +74,6 @@ export class AppComponent implements OnInit {
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
     , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
-    this.isEmbedded = this.messageSvc.isEmbeddedMode();
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.grafterizerUrl = url;
     });
@@ -81,22 +82,33 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     const self = this;
     this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
-      if (state) {
-        this.currentDataGraftState = state;
-        switch (state) {
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
+        switch (state.mode) {
           case 'transformations.transformation':
             this.showSaveButton = true;
             this.showForkButton = true;
             this.showDownloadButton = true;
             this.showDeleteButton = true;
             this.showLoadDistributionDialog = true;
+            this.showWizardNavigation = false;
+            break;
+          case 'transformations.transformation.preview':
+            this.showTabularAnnotationTab = true;
+            this.showSaveButton = true;
+            this.showForkButton = false;
+            this.showDownloadButton = true;
+            this.showDeleteButton = false;
+            this.showLoadDistributionDialog = false;
+            this.showWizardNavigation = true;
             break;
           case 'transformations.readonly':
             this.showSaveButton = false;
             this.showForkButton = false;
             this.showDownloadButton = false;
             this.showDeleteButton = false;
-            this.showLoadDistributionDialog = true;
+            this.showLoadDistributionDialog = false;
+            this.showWizardNavigation = false;
             break;
           case 'transformations.new':
             this.showSaveButton = true;
@@ -104,10 +116,23 @@ export class AppComponent implements OnInit {
             this.showDownloadButton = false;
             this.showDeleteButton = false;
             this.showLoadDistributionDialog = true;
+            this.showWizardNavigation = false;
+            break;
+          case 'transformations.new.preview':
+            this.showTabularAnnotationTab = true;
+            this.showSaveButton = true;
+            this.showForkButton = false;
+            this.showDownloadButton = false;
+            this.showDeleteButton = false;
+            this.showLoadDistributionDialog = false;
+            this.showWizardNavigation = true;
             break;
           default:
             break;
         }
+      }
+      if (state.params) {
+        this.currentDataGraftParams = state.params;
       }
     });
 
@@ -125,7 +150,7 @@ export class AppComponent implements OnInit {
                     if (paramMap.has('filestoreId')) {
                       this.transformationSvc.changePreviewedTransformationObj(transformationObj);
                     } else {
-                      this.showLoadDistributionDialog = true;
+                      // this.showLoadDistributionDialog = true;
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
@@ -141,9 +166,8 @@ export class AppComponent implements OnInit {
             this.showLoading = true;
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
-                if (result[0].publisher) {
-                  this.createNewTransformation(result[0].publisher);
-                }
+                console.log(result)
+                this.createNewTransformation();
               }
               else {
                 console.log('error');
@@ -182,6 +206,7 @@ export class AppComponent implements OnInit {
             }
           });
         } else {
+          console.log('this.updatePreviewedData()')
           // the sub-components are already initialised, so we can get the route parameters as normal
           this.updatePreviewedData();
         }
@@ -368,9 +393,12 @@ export class AppComponent implements OnInit {
           }
           else {
             this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
+              console.log(result)
+              console.log(this.selectedFile.id)
               this.dispatch.getTransformationJson(result.id, result.publisher)
                 .then(
                   (result) => {
+                    console.log(result)
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
                     this.showTabularAnnotationTab = true;
@@ -394,7 +422,8 @@ export class AppComponent implements OnInit {
         });
   }
 
-  createNewTransformation(publisher?: string) {
+  createNewTransformation(distributionID?: string) {
+    console.log('createnewtrans')
     const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
     let newTransformationName = null;
     let newTransformationDescription = null;
@@ -426,14 +455,17 @@ export class AppComponent implements OnInit {
       newTransformationConfiguration).then(
         (result) => {
           console.log('New transformation created');
-          if (this.selectedFile == undefined) {
+          console.log(this.currentDataGraftParams.distributionId);
+          console.log(result);
+          if (this.currentDataGraftParams.distributionId) {
+            this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
+              this.updatePreviewedData();
+              this.showLoading = false;
+            });
+          }
+          else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
               this.showLoading = false;
-              this.showLoadDistributionDialog = true;
-              this.showDeleteButton = true;
-              this.showDownloadButton = true;
-              this.showForkButton = true;
-              this.showSaveButton = true;
             });
           }
         },
@@ -680,15 +712,15 @@ export class AppComponent implements OnInit {
       const transformedFileName = paramMap.get('filestoreId');
       const transformationId = paramMap.get('transformationId');
       const wizardIdRegexMatch = transformedFileName.match(/^upwizards--(\d+)$/);
-      const transformationType = 'graft'; // TODO this is hard-coded and will only work for RDF transformation wizards
       if (wizardIdRegexMatch) {
         this.loadingNextStepMessage = 'Computing transformation. Please wait...';
         this.fillingWizard = true;
-        this.dispatch.fillDataGraftWizard(transformedFileName, transformationId, wizardIdRegexMatch[1], transformationType)
+        this.dispatch.fillDataGraftWizard(transformedFileName, transformationId, wizardIdRegexMatch[1], this.transformationType)
           .then((result) => {
             this.loadingNextStepMessage = 'Success! You will now be redirected to the next step...';
             // wait 5 seconds and close dialog?
-            const location = '/myassets/upwizards/fill_sparql_endpoint/' + wizardIdRegexMatch[1];
+            const wizardPath = this.transformationType == 'pipe' ? 'fill_filestore' : 'fill_sparql_endpoint';
+            const location = '/myassets/upwizards/' + wizardPath + '/' + wizardIdRegexMatch[1];
             this.messageSvc.setLocation(location);
           }, (error) => {
             console.log(error);

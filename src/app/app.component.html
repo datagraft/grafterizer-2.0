@@ -1,6 +1,6 @@
 <div class="main-container">
   <header class="header-6">
-    <div class="branding" *ngIf="!isEmbedded">
+    <div class="branding" *ngIf="!showWizardNavigation">
       <a href="/" class="nav-link">
         <img src="/assets/logo.png" height="24" width="48">
         <span class="title">
@@ -36,9 +36,9 @@
       <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon">
         <clr-icon shape="trash"></clr-icon>
       </a>
-      <!-- <button mat-raised-button *ngIf="isEmbedded" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
-      <button mat-raised-button *ngIf="isEmbedded" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next
-        step</button> -->
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next
+        step</button>
     </div>
   </header>
   <clr-alerts>
@@ -98,11 +98,21 @@
 <clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
   <h3 class="modal-title">Are you sure you want to continue?</h3>
   <div class="modal-body">
+    <div class="radio">
+      <input type="radio" [(ngModel)]="transformationType" value="pipe" id="mode_1">
+      <label for="mode_1">Save as file</label>
+    </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="transformationType" value="graft" id="mode_2">
+      <label for="mode_2">Save as graph in a SPARQL endpoint</label>
+    </div>
+    <br>
     <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
     </mat-progress-spinner> -->
-    <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
-    <br />
-    <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
+    <div>
+      <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
+      <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>

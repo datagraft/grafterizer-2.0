@@ -22,8 +22,7 @@ export class DataGraftMessageService {
   private currentDataGraftStateSrc: BehaviorSubject<any>;
   public currentDataGraftState: Observable<any>;
 
-  private currentParamsSrc: BehaviorSubject<any>;
-  public currentParams: Observable<any>;
+
 
 
   constructor(public dispatch: DispatchService, private router: Router, private routingService: RoutingService) {
@@ -32,19 +31,12 @@ export class DataGraftMessageService {
     this.routingService.getMessage().subscribe((url) => this.grafterizerUrl = url);
 
     this.currentDataGraftStateSrc = new BehaviorSubject<any>('unknown');
-    this.currentParamsSrc = new BehaviorSubject<any>({});
-
     this.currentDataGraftState = this.currentDataGraftStateSrc.asObservable();
-    this.currentParams = this.currentParamsSrc.asObservable();
     this.init();
   }
 
-  public changeCurrentState(message: any) {
-    this.currentDataGraftStateSrc.next(message);
-  }
-
-  public changeCurrentParams(message: any) {
-    this.currentParamsSrc.next(message);
+  public changeCurrentState(mode: any, params: any) {
+    this.currentDataGraftStateSrc.next({ mode: mode, params: params });
   }
 
   init() {
@@ -70,7 +62,11 @@ export class DataGraftMessageService {
     }
   };
 
-  public getCurrentDataGraftMessageState(debug?: boolean): void {
+  public refreshCurrentState(debug?: boolean): void {
+    if (!this.isEmbeddedMode) {
+      this.changeCurrentState('standalone', {});
+      return;
+    }
     window.parent.postMessage({
       channel: this.channel,
       message: 'get-state-and-params'
@@ -91,6 +87,9 @@ export class DataGraftMessageService {
 
   public receiveMessage(event) {
     const data = event.data;
+    if (data) {
+      console.log(data)
+    }
     if (!data || !data.channel || data.channel !== this.channel) {
       return;
     }
@@ -102,15 +101,15 @@ export class DataGraftMessageService {
         }
       }
       if (data.state) {
-        this.changeCurrentState(data.state);
+        this.changeCurrentState(data.state, data.toParams
+        );
       }
-      if (data.toParams) {
-        this.changeCurrentParams(data.toParams);
-      }
+
       switch (data.message) {
         case 'state.go':
           switch (data.state) {
             case 'transformations.readonly':
+              console.log(data.message)
               console.log('transformations.readonly');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
@@ -121,7 +120,13 @@ export class DataGraftMessageService {
                 this.router.navigate(['transformations', 'new', 'tabular-transformation']);
               }
               break;
+            case 'transformations.new.preview':
+              console.log('transformations.new.preview');
+              console.log('re-routing-from-datagraft-message-service');
+              this.router.navigate(['transformations', 'new', 'tabular-transformation']);
+              break;
             case 'transformations.transformation':
+              console.log(data.message)
               console.log('transformations.transformation');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;

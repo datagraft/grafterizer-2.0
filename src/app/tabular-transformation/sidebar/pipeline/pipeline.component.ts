@@ -68,16 +68,23 @@ export class PipelineComponent implements OnInit, OnDestroy {
     });
 
     this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
-      if (state) {
-        this.currentDataGraftState = state;
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
         switch (this.currentDataGraftState) {
           case 'transformations.readonly':
             this.disableButton = true;
             break;
           case 'transformations.transformation':
+            this.disableButton = false;
+            break;
+          case 'transformations.transformation.preview':
+            this.disableButton = false;
+            break;
           case 'transformations.new':
             this.disableButton = false;
             break;
+          case 'transformations.new.preview':
+            this.disableButton = false;
         }
       }
     });

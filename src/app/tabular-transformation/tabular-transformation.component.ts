@@ -101,17 +101,23 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     });
 
     this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
-      if (state) {
-        this.currentDataGraftState = state;
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
         switch (this.currentDataGraftState) {
           case 'transformations.readonly':
             this.showPipelineOnly = true;
             this.showHandsonTableProfiling = false;
             break;
           case 'transformations.transformation':
+            this.showHandsonTableProfiling = false;
+            break;
           case 'transformations.new':
             this.showPipelineOnly = false;
             this.showHandsonTableProfiling = false;
+            break;
+          case 'transformations.new.preview':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = true;
             break;
         }
       }
@@ -119,6 +125,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
 
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+      if (paramMap.has('filestoreId')) {
+        this.showHandsonTableProfiling = true;
+      }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
@@ -136,12 +145,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           (error) => {
             console.log(error);
           });
-    }
-    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-      this.showHandsonTableProfiling = false;
-    }
-    else if (!paramMap.has('publisher')) {
-      this.showPipelineOnly = true;
     }
   }
 
