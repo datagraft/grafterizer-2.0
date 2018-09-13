@@ -9,7 +9,7 @@
             </div>
             <span class="alert-text">
               {{previewError._body ? 'Error while computing transformation. Error message:' : previewError.toString()}}
-              <br/> {{previewError._body ? previewError._body : '' }}
+              <br /> {{previewError._body ? previewError._body : '' }}
             </span>
           </div>
         </div>
@@ -26,7 +26,8 @@
         <mat-tab-group>
           <mat-tab label="Pipeline" id="pipeline-tab">
             <br>
-            <selectbox fxflex class="sin-suggested-transformations" id="selectbox" [suggestions]="recommendations" [headers]="loadedDataHeaders"></selectbox>
+            <selectbox fxflex class="sin-suggested-transformations" id="selectbox" [suggestions]="recommendations"
+              [headers]="loadedDataHeaders"></selectbox>
           </mat-tab>
           <mat-tab label="Metadata" id="metadata-tab">
             <br>
@@ -70,6 +71,8 @@
   </div>
 </div>
 
-<div *ngIf="showPipelineOnly" class="sin-pipeline-show-pipeline-only">
-  <pipeline></pipeline>
-</div>
+<perfect-scrollbar *ngIf="showPipelineOnly" style="width: 100vw; height: 100%;">
+  <div class="horizontal-container" fxLayout="row" fxLayoutAlign="center" fxFlex="100%">
+    <pipeline></pipeline>
+  </div>
+</perfect-scrollbar>
