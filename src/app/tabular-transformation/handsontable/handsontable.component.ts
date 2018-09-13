@@ -1,12 +1,13 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
 import { Subscription } from 'rxjs/Subscription';
+
 import {
   AddRowFunction, DropRowsFunction, ColumnsFunction, MakeDatasetFunction,
   MapcFunction, KeyFunctionPair, CustomFunctionDeclaration
 } from '../../../assets/transformationdatamodel.js';
-import { timeout } from 'q';
+
 import { TransformationService } from 'app/transformation.service';
+import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 declare var Handsontable: any;
 
@@ -26,18 +27,20 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   private data: any;
   private container: any;
   private settings: any;
-  private showLoading: boolean = false;
 
   public selectedFunction: any;
   public selectedDefaultParams: any;
 
-  private dataSubscription: Subscription;
+  private showLoading: boolean;
+
+  private progressIndicatorSubscription: Subscription;
   private previewedTransformationSubscription: Subscription;
+  private dataSubscription: Subscription;
 
   @Input() suggestions;
   @Output() emitter = new EventEmitter();
 
-  constructor(private transformationSvc: TransformationService, private cd: ChangeDetectorRef) {
+  constructor(private transformationSvc: TransformationService, private progressIndicatorService: ProgressIndicatorService, private cd: ChangeDetectorRef) {
     this.data = [];
   }
 
@@ -78,9 +81,16 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     this.hot = new Handsontable(this.container, this.settings);
+
+    this.progressIndicatorSubscription = this.progressIndicatorService.currentDataLoadingStatus.subscribe((status) => {
+      if (status == true || status == false) {
+        this.showLoading = status;
+      }
+    })
+
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.showLoading = true;
+      .subscribe(() => {
+        this.progressIndicatorService.changeDataLoadingStatus(true);
       });
 
     this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
@@ -93,6 +103,8 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.dataSubscription.unsubscribe();
+    this.progressIndicatorSubscription.unsubscribe();
+    this.previewedTransformationSubscription.unsubscribe();
   }
 
   emitFunction(value: any) {
@@ -165,8 +177,9 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         });
       }
       console.log('removing loading bar..');
-      this.showLoading = false;
-    } else {
+      this.progressIndicatorService.changeDataLoadingStatus(false);
+    }
+    else {
       // TODO error handling one day!!
       throw new Error('Invalid format of data!');
     }

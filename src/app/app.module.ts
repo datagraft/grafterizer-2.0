@@ -34,6 +34,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EnrichmentService } from './tabular-annotation/enrichment/enrichment.service';
 import { ArangoGeneratorService } from 'app/arango-generator.service';
 import { TransformationUpdaterService } from 'app/transformation-updater.service';
+import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -74,6 +75,7 @@ export function initConfig(config: AppConfig) {
     TransformationUpdaterService,
     RoutingService,
     JarfterService,
+    ProgressIndicatorService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

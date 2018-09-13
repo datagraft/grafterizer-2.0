@@ -17,6 +17,7 @@ import * as transformationDataModel from '../assets/transformationdatamodel.js';
 import * as generateClojure from '../assets/generateclojure.js';
 import { ArangoGeneratorService } from 'app/arango-generator.service';
 import { TransformationUpdaterService } from 'app/transformation-updater.service';
+import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +36,7 @@ export class AppComponent implements OnInit {
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
   private updateDataRouteSubscription: Subscription;
+  private progressIndicatorSubscription: Subscription;
 
   private previewedTransformationSubscription: Subscription;
   private previewedTransformationObj: any;
@@ -72,7 +74,7 @@ export class AppComponent implements OnInit {
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
-    , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService) {
+    , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService, private progressIndicatorService: ProgressIndicatorService, ) {
     console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.grafterizerUrl = url;
@@ -163,7 +165,7 @@ export class AppComponent implements OnInit {
           }
           // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
           else if (!paramMap.has('publisher')) {
-            this.showLoading = true;
+            this.progressIndicatorService.changeDataLoadingStatus(true);
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
                 console.log(result)
@@ -212,6 +214,12 @@ export class AppComponent implements OnInit {
         }
       });
 
+    this.progressIndicatorSubscription = this.progressIndicatorService.currentDataLoadingStatus.subscribe((status) => {
+      if (status == true || status == false) {
+        this.showLoading = status;
+      }
+    })
+
     this.globalErrorSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
       this.globalErrors = globalErrors;
     });
@@ -219,6 +227,7 @@ export class AppComponent implements OnInit {
 
   ngOnDestroy() {
     this.initRouteSubscription.unsubscribe();
+    this.progressIndicatorSubscription.unsubscribe();
   }
 
   onChange($event) {
@@ -237,14 +246,12 @@ export class AppComponent implements OnInit {
   onFileChange(event) {
     let reader = new FileReader();
     if (event.target.files && event.target.files.length > 0) {
-      this.showLoading = true;
       this.showLoadDistributionDialog = false;
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
         this.dispatch.uploadFile(file).subscribe(() => {
           this.save(true);
-          this.showLoading = false;
         });
       };
     }
@@ -252,7 +259,7 @@ export class AppComponent implements OnInit {
 
   accept() {
     this.save(true);
-    this.showLoading = true;
+    this.progressIndicatorService.changeDataLoadingStatus(true);
     this.modalEnabled = false;
     this.showLoadDistributionDialog = false;
   }
@@ -393,12 +400,9 @@ export class AppComponent implements OnInit {
           }
           else {
             this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
-              console.log(result)
-              console.log(this.selectedFile.id)
               this.dispatch.getTransformationJson(result.id, result.publisher)
                 .then(
                   (result) => {
-                    console.log(result)
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.changeTransformationObj(transformationObj);
                     this.showTabularAnnotationTab = true;
@@ -413,7 +417,6 @@ export class AppComponent implements OnInit {
                   });
             });
           }
-          this.showLoading = false;
           this.distributionList = [];
         },
         (error) => {
@@ -423,7 +426,6 @@ export class AppComponent implements OnInit {
   }
 
   createNewTransformation(distributionID?: string) {
-    console.log('createnewtrans')
     const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
     let newTransformationName = null;
     let newTransformationDescription = null;
@@ -460,12 +462,11 @@ export class AppComponent implements OnInit {
           if (this.currentDataGraftParams.distributionId) {
             this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
               this.updatePreviewedData();
-              this.showLoading = false;
             });
           }
           else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
-              this.showLoading = false;
+              this.progressIndicatorService.changeDataLoadingStatus(false);
             });
           }
         },
@@ -492,7 +493,7 @@ export class AppComponent implements OnInit {
                   this.transformationSvc.changeTransformationObj(transformationObj);
                   this.showTabularAnnotationTab = false;
                   this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                  this.showLoading = false;
+                  this.progressIndicatorService.changeDataLoadingStatus(false);
                 },
                 (error) => {
                   console.log(error);

@@ -56,7 +56,7 @@
   </clr-alerts>
   <div class="content-container">
     <router-outlet></router-outlet>
-    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
+    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" [hidden]="!showLoading">
       <div class="spinner">
         <span class="spinner spinner-lg" fxflex>
           Loading...
