@@ -62,8 +62,8 @@ export class DataGraftMessageService {
     }
   };
 
-  public refreshCurrentState(debug?: boolean): void {
-    if (!this.isEmbeddedMode) {
+  public refreshCurrentState(): void {
+    if (!this.isEmbeddedMode()) {
       this.changeCurrentState('standalone', {});
       return;
     }
@@ -87,9 +87,6 @@ export class DataGraftMessageService {
 
   public receiveMessage(event) {
     const data = event.data;
-    if (data) {
-      console.log(data)
-    }
     if (!data || !data.channel || data.channel !== this.channel) {
       return;
     }
@@ -101,15 +98,14 @@ export class DataGraftMessageService {
         }
       }
       if (data.state) {
-        this.changeCurrentState(data.state, data.toParams
-        );
+        this.changeCurrentState(data.state, data.toParams);
       }
 
       switch (data.message) {
         case 'state.go':
+        case 'get-state-and-params':
           switch (data.state) {
             case 'transformations.readonly':
-              console.log(data.message)
               console.log('transformations.readonly');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;

@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
   private globalErrors: Array<any>;
 
   private currentDataGraftStateSubscription: Subscription;
-  private currentDataGraftState: any;
+  private currentDataGraftState: string = 'unknown';
   private currentDataGraftParams: any;
 
   private showWizardNavigation: boolean;
@@ -129,6 +129,18 @@ export class AppComponent implements OnInit {
             this.showLoadDistributionDialog = false;
             this.showWizardNavigation = true;
             break;
+          case 'standalone':
+            console.log('APP: standalone!');
+            // TODO - this block is not really functional - fix next
+            // check username - if none - determine it
+            // also reroute to standalone new transformation mode
+            this.showSaveButton = true;
+            this.showForkButton = true;
+            this.showDownloadButton = true;
+            this.showDeleteButton = true;
+            this.showLoadDistributionDialog = true;
+            this.showWizardNavigation = false;
+            break;
           default:
             break;
         }
@@ -138,6 +150,9 @@ export class AppComponent implements OnInit {
       }
     });
 
+    if (this.currentDataGraftState == 'unknown') {
+      this.messageSvc.refreshCurrentState();
+    }
     this.initRouteSubscription = this.router.events.subscribe(
       (event) => {
         if (event instanceof NavigationEnd && self.route.firstChild != null) {
