@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, ViewChildren, QueryList, OnDestroy } from '@angular/core';
 import { FormControl, Validators, ValidationErrors, AbstractControl, FormGroup } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { startWith } from 'rxjs/operators/startWith';
 import { map } from 'rxjs/operators/map';
 import { MatAutocomplete } from '@angular/material';

@@ -1,8 +1,8 @@
 import { Injectable, OnChanges } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';

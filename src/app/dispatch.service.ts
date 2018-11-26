@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
+import 'rxjs/add/operator/map'
 
 // Interface of transformation that is used to serialise responses from DataGraft Fields are self-explanatory...
 export interface TransformationMetadata {

@@ -55,3 +55,9 @@ button:focus {
     margin-top: 250px;
     margin-left: 650px;    
   }
+
+  .sin-nav-icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }

@@ -6,10 +6,7 @@
       <div class="form-group">
         <label class="required" for="service-group">Service group: </label>
         <div class="select">
-          <select id="service-group"
-                  name="service-group"
-                  [(ngModel)]="selectedGroup"
-                  (change)="updateServicesForSelectedGroup();">
+          <select id="service-group" name="service-group" [(ngModel)]="selectedGroup" (change)="updateServicesForSelectedGroup();">
             <option *ngFor="let group of servicesGroups" [value]="group">{{group}}</option>
           </select>
         </div>
@@ -18,22 +15,18 @@
       <div class="form-group" *ngIf="selectedGroup">
         <label for="service">Services: </label>
         <div class="select">
-          <select id="service"
-                  name="service"
-                  [(ngModel)]="selectedService">
-            <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}} Reconciliation</option>
+          <select id="service" name="service" [(ngModel)]="selectedService">
+            <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}}
+              Reconciliation</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
         <label for="column-name">New column name</label>
-        <input type="text" id="column-name" placeholder="{{header}}_{{selectedService}}" size="45"
-               [(ngModel)]="newColumnName" name="newColumnName">
-        <clr-checkbox
-          name="shiftColumn"
-          id="shiftColumn"
-          [(ngModel)]="shiftColumn">
+        <input type="text" id="column-name" placeholder="{{header}}_{{selectedService}}" size="45" [(ngModel)]="newColumnName"
+          name="newColumnName">
+        <clr-checkbox name="shiftColumn" id="shiftColumn" [(ngModel)]="shiftColumn">
           New column next to <i>{{header}}</i>
         </clr-checkbox>
       </div>
@@ -45,25 +38,27 @@
       <div class="col-md-9">
         <h3> Preview </h3>
         <ng-container *ngIf="guessedType != null">
-          Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable" target="_blank">{{guessedType.name}}</a>
+          Inferred type: <a href="{{services.get(selectedService).getSchemaSpace()}}{{guessedType.id}}" class="label label-orange clickable"
+            target="_blank">{{guessedType.name}}</a>
         </ng-container>
       </div>
       <div class="col-md-3" *ngIf="reconciledData.length > 0">
         <label for="threshold">Threshold: </label>
-        <input type="number" size="5" id="threshold" step="0.01" max="1.0" min="0.0" style="width: 75px" [(ngModel)]="threshold" (change)="updateThreshold()">
+        <input type="number" size="5" id="threshold" step="0.01" max="1.0" min="0.0" style="width: 75px" [(ngModel)]="threshold"
+          (change)="updateThreshold()">
 
-        <clr-tooltip>
-          <clr-icon clrTooltipTrigger shape="success-standard" class="is-success is-solid"></clr-icon>
+        <clr-tooltip style="vertical-align: middle;">
+          <div clrTooltipTrigger><i class="material-icons sin-success-color">check_circle</i></div>
           <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
             <span>Reconciled {{validMappingsCount - skippedCount}} out of {{reconciledData.length}} unique values</span>
           </clr-tooltip-content>
         </clr-tooltip>
         {{(validMappingsCount - skippedCount)/ reconciledData.length * 100 | number:'1.2-2'}} %
 
-        <clr-tooltip>
-          <clr-icon clrTooltipTrigger shape="error-standard" class="is-danger is-solid"></clr-icon>
+        <clr-tooltip style="vertical-align: middle;">
+          <div clrTooltipTrigger><i class="material-icons sin-error-color">error</i></div>
           <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
-            <span>Number of entities with a score lower then {{threshold}}</span>
+            <span>Number of entities with a score lower than {{threshold}}</span>
           </clr-tooltip-content>
         </clr-tooltip>
         {{skippedCount}}
@@ -80,13 +75,15 @@
         <ng-container *ngIf="mapping.results.length > 0">
           <ng-container *ngIf="mapping.results[0].score >= threshold">
             <clr-dg-cell>{{mapping.originalQuery}}</clr-dg-cell>
-            <clr-dg-cell><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+            <clr-dg-cell><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}"
+                target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
             <clr-dg-cell>{{mapping.results[0].name}}</clr-dg-cell>
             <clr-dg-cell>{{mapping.results[0].score}}</clr-dg-cell>
           </ng-container>
           <ng-container *ngIf="mapping.results[0].score < threshold">
             <clr-dg-cell style="background-color: lightcoral">{{mapping.originalQuery}}</clr-dg-cell>
-            <clr-dg-cell style="background-color: lightcoral"><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}" target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
+            <clr-dg-cell style="background-color: lightcoral"><a href="{{services.get(selectedService).getIdentifierSpace()}}{{mapping.results[0].id}}"
+                target="_blank">{{mapping.results[0].id}}</a></clr-dg-cell>
             <clr-dg-cell style="background-color: lightcoral">{{mapping.results[0].name}}</clr-dg-cell>
             <clr-dg-cell style="background-color: lightcoral">{{mapping.results[0].score}}</clr-dg-cell>
           </ng-container>
@@ -112,6 +109,8 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()" cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0" (click)="submit()" *ngIf="showPreview">Apply</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()"
+    cdkFocusInitial>Reconcile</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
+    (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

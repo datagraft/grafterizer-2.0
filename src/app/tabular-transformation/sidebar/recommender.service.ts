@@ -198,6 +198,7 @@ export class RecommenderService {
   }
 
   hasLowercase(str) {
+    return false;
     // return !(str === str.toUpperCase());
   }
 

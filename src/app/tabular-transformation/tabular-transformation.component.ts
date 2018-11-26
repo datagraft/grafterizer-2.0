@@ -7,7 +7,7 @@ import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
 import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 import { DataGraftMessageService } from '../data-graft-message.service';
 

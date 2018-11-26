@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { DispatchService } from './dispatch.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 import { RoutingService } from './routing.service';
 import { BehaviorSubject } from 'rxjs';
 

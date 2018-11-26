@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Router, ActivatedRoute, ParamMap, NavigationEnd } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
-import { Subject } from 'rxjs/Subject';
+import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class RoutingService {

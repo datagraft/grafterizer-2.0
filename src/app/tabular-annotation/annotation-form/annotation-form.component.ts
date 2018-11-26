@@ -11,7 +11,7 @@ import {
 import { Annotation, ColumnTypes, XSDDatatypes } from '../annotation.model';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { AbstatService } from '../abstat.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 class CustomValidators {
 

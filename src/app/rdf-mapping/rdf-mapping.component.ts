@@ -4,7 +4,7 @@ import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
 import { DataGraftMessageService } from '../data-graft-message.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
 import { RdfPrefixManagementDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
 

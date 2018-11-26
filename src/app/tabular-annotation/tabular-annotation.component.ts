@@ -15,13 +15,13 @@ import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { EnrichmentService } from './enrichment/enrichment.service';
 import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
 import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
-import {ShiftColumnFunction} from 'assets/transformationdatamodel';
+import { ShiftColumnFunction } from 'assets/transformationdatamodel';
 
 declare var Handsontable: any;
 
@@ -102,7 +102,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           console.log('annotation');
           blockCalculations.cells = true;
           this.openAnnotationDialog(coords.col);
-        } else if (event.target.parentNode.id.startsWith('enrich_') || event.realTarget.id.startsWith('enrich_') ) {
+        } else if (event.target.parentNode.id.startsWith('enrich_') || event.realTarget.id.startsWith('enrich_')) {
           console.log('enrichment');
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
@@ -588,7 +588,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param shift
    */
   deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
-                              conciliator: ConciliatorService, shift: boolean) {
+    conciliator: ConciliatorService, shift: boolean) {
     let newFunction: any = null;
 
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
@@ -611,7 +611,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // Shift the new column next to the deriveFrom column
       if (shift) {
         newFunction = new transformationDataModel.ShiftColumnFunction(
-          {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
+          { id: this.enrichmentService.headers.length, value: deriveMap.newColName },
           colsToDeriveFromIdx + index + 1, 'position', '');
         this.transformationObj.pipelines[0].addAfter({}, newFunction);
       }

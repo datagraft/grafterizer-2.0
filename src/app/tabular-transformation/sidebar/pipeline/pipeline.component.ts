@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/co
 import { TransformationService } from '../../../transformation.service';
 import { PipelineEventsService } from '../../pipeline-events.service';
 import { DispatchService } from '../../../dispatch.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';

@@ -1,7 +1,5 @@
 import { ErrorHandler, Injectable, Injector } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 @Injectable()

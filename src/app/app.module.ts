@@ -4,7 +4,7 @@ import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from 'clarity-angular';
+import { ClarityModule } from '@clr/angular';
 import { SuiModule } from 'ng2-semantic-ui';
 import { ListboxModule } from 'primeng/primeng';
 
@@ -49,7 +49,7 @@ export function initConfig(config: AppConfig) {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    ClarityModule.forRoot(),
+    ClarityModule,
     TabularTransformationModule,
     RdfMappingModule,
     TabularAnnotationModule,

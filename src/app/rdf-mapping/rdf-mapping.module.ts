@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { GraphMappingComponent } from './graph-mapping/graph-mapping.component';
 import { RdfNodeMappingDialogComponent } from './graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog.component';
-import { ClarityModule } from 'clarity-angular';
+import { ClarityModule } from '@clr/angular';
 import { RdfNodeMappingDialogAnchorDirective } from './graph-mapping/rdf-node-mapping-dialog/rdf-node-mapping-dialog-anchor.directive';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';

@@ -3,7 +3,7 @@ import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/Rx';
 import { SelectItem } from 'primeng/primeng';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { AppConfig } from './app.config';
 import { DispatchService } from './dispatch.service';
 import { JarfterService } from './jarfter.service';
