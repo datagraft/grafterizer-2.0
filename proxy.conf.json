@@ -1,0 +1,7 @@
+{
+    "/vocabularies/ManageVocabulary/api/vocabulary": {
+        "target": "https://grafterizer.datagraft.io",
+        "secure": false,
+        "changeOrigin": true
+    }
+}

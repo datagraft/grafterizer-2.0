@@ -24,25 +24,17 @@
       </a> -->
     </div>
     <div class="header-actions">
-      <a *ngIf="showSaveButton" href="javascript://" (click)="save(false)" title="Save" class="nav-link nav-icon sin-nav-icon">
-        <i class="material-icons md-48">
-          save
-        </i>
+      <a *ngIf="showSaveButton" href="javascript://" (click)="save(false)" title="Save" class="sin-nav-icon">
+        <i class="material-icons md-light">save</i>
       </a>
-      <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="nav-link nav-icon sin-nav-icon">
-        <i class="material-icons md-36">
-          file_copy
-        </i>
+      <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="sin-nav-icon">
+        <i class="material-icons md-light md-22">file_copy</i>
       </a>
-      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download" class="nav-link nav-icon sin-nav-icon">
-        <i class="material-icons md-48">
-          get_app
-        </i>
+      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download" class="sin-nav-icon">
+        <i class="material-icons md-light">get_app</i>
       </a>
-      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon sin-nav-icon">
-        <i class="material-icons md-48">
-          delete
-        </i>
+      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="sin-nav-icon">
+        <i class="material-icons md-light">delete</i>
       </a>
       <button mat-raised-button *ngIf="showWizardNavigation" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
       <button mat-raised-button *ngIf="showWizardNavigation" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next

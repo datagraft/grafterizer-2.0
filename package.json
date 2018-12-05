@@ -34,7 +34,7 @@
     "@ngrx/store": "6.1.2",
     "@ngui/auto-complete": "2.0.0",
     "@nomadreservations/ngx-codemirror": "2.0.0",
-    "@swimlane/ngx-charts": "10.0.0",
+    "@swimlane/ngx-charts": "git+https://github.com/datagraft/ngx-charts.git",
     "@swimlane/ngx-datatable": "14.0.0",
     "@types/codemirror": "0.0.67",
     "@webcomponents/custom-elements": "1.2.1",

@@ -9,7 +9,7 @@
 
     <div>
       <label for="cols">Columns to filter:</label>
-<!--
+      <!--
       <rl-tag-input [(ngModel)]="colsToFilter" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true"
         placeholder="Column names" id="cols"></rl-tag-input>
 -->
@@ -48,15 +48,12 @@
     <div *ngIf="grepmode=='function'">
       <div *ngFor="let filterFunction of filterFunctionsNames; index as i;">
         <div class="row ">
-          <button class="btn btn-link btn-icon-link removablePropertyButton"> 
-              <clr-icon  shape="remove" size="22"  (click)="removeFilterFunction(idx)"></clr-icon> 
-       
+          <button class="btn btn-link btn-icon-link removablePropertyButton">
+            <i class="material-icons md-dark" (click)="removeFilterFunction(idx)">remove_circle_outline</i>
           </button>
-
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="filterFunctionsNames[i]" [datasource]="functionNames" [openOnFocus]="true"
-            [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
+          <ng2-completer class="removablePropertyFields" [(ngModel)]="filterFunctionsNames[i]" [datasource]="functionNames"
+            [openOnFocus]="true" [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
         </div>
-
       </div>
       <button class="btn btn-primary" (click)="addFilterFunction()">Compose with</button>
     </div>

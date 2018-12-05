@@ -60,4 +60,9 @@ button:focus {
     display: flex !important;
     align-items: center;
     justify-content: center;
+    padding-left: 20px;
+    padding-right: 10px;
   }
+
+.material-icons.md-light { color: rgba(255, 255, 255, 1); }
+.material-icons.md-22 { font-size: 22px; }

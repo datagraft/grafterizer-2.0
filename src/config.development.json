@@ -4,7 +4,7 @@
   "graftwerk-cache-path": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:8083",
   "abstat-path": "http://abstat.disco.unimib.it",
   "abstat-path-ba": "http://193.204.59.21",
-  "vocabulary-service-path": "https://grafterizer.datagraft.io/vocabularies/api/vocabulary",
+  "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:8088",
   "arango-generator": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:3030"
 }
