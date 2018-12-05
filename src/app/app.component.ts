@@ -265,7 +265,8 @@ export class AppComponent implements OnInit {
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
-        this.dispatch.uploadFile(file).subscribe(() => {
+        this.dispatch.uploadFile(file).subscribe((result) => {
+          this.selectedFile = { id: result.id };
           this.save(true);
         });
       };
