@@ -1,8 +1,8 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {EnrichmentService} from '../enrichment.service';
-import {Observable} from 'rxjs/Observable';
-import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator} from '../enrichment.model';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { EnrichmentService } from '../enrichment.service';
+import { Observable } from 'rxjs/Observable';
+import { ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator } from '../enrichment.model';
 
 @Component({
   selector: 'app-extension',
@@ -34,6 +34,7 @@ export class ExtensionComponent implements OnInit {
   public selectedWeatherParameters: any[];
   public selectedWeatherOffsets: any[];
   public selectedWeatherAggregators: any[];
+  public selectedKGService: string;
 
   public dateChoice: any;
 
@@ -43,9 +44,12 @@ export class ExtensionComponent implements OnInit {
 
   public shiftColumn: boolean = false;
 
+  public kgServices: [];
+
+
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
-              private enrichmentService: EnrichmentService) { }
+    @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
+    private enrichmentService: EnrichmentService) { }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
@@ -65,8 +69,9 @@ export class ExtensionComponent implements OnInit {
       this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
       this.services.push(this.reconciledFromService);
       if (this.reconciledFromService.getId() === 'geonames') {
-        this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+        this.services.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
       }
+      this.services.push(new ConciliatorService({ 'id': 'sameas', 'name': 'Same as', group: 'sameas' }));
     }
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -88,7 +93,20 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max'];
+
+    this.getKGServices();
+
   }
+
+  // Stub: send list of observable to template
+  getKGServices =(): Observable<Object> => { 
+    const kgServices = [
+      { 'id': 'kgService1', 'name': 'KG Service 1' },
+      { 'id': 'kgService2', 'name': 'KG Service 2' },
+      { 'id': 'kgService3', 'name': 'KG Service 3' },
+    ];
+    return Observable.of(kgServices);
+  }  
 
   public extend() {
     this.dataLoading = true;
@@ -128,18 +146,37 @@ export class ExtensionComponent implements OnInit {
     this.showPreview = true;
 
     let weatherConfig = null;
-    const wcObj = {parameters: this.selectedWeatherParameters,
+    const wcObj = {
+      parameters: this.selectedWeatherParameters,
       aggregators: this.selectedWeatherAggregators,
       offsets: this.selectedWeatherOffsets
     };
 
     if (this.dateChoice === 'fromCol') {
-      weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.readDatesFromCol}});
+      weatherConfig = new WeatherConfigurator({ ...wcObj, ...{ readDatesFromCol: this.readDatesFromCol } });
     } else {
-      weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
+      weatherConfig = new WeatherConfigurator({ ...wcObj, ...{ date: this.selectedDate } });
     }
 
     this.enrichmentService.weatherData(this.header, weatherConfig).subscribe((data: Extension[]) => {
+      this.extensionData = data;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
+  }
+
+  public sameas() {
+    // set data loading and showpreview
+    this.dataLoading = true;
+    this.showPreview = true;
+    
+    // get KB source and KB target parameters
+    let sameAsSource = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
+
+    // pass parameters to enrichement service through Extension object
+    this.enrichmentService.sameasData(this.header, sameAsSource.getId(), this.selectedKGService).subscribe((data) => {
       this.extensionData = data;
       if (this.extensionData.length > 0) {
         this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -191,8 +228,8 @@ export class ExtensionComponent implements OnInit {
     this.extensionData.forEach((extension: Extension) => {
       const objects = extension.properties.get(prop);
       if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
-          return !(obj && !obj['id']);
-        }).length) {
+        return !(obj && !obj['id']);
+      }).length) {
         valid = false;
       }
     });

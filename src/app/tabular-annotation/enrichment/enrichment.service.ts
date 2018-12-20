@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs/Observable';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
 import {
   ConciliatorService,
   Extension,
@@ -10,15 +10,15 @@ import {
   WeatherConfigurator, WeatherObservation,
   WeatherParameter
 } from './enrichment.model';
-import {AppConfig} from '../../app.config';
-import {forkJoin} from 'rxjs/observable/forkJoin';
+import { AppConfig } from '../../app.config';
+import { forkJoin } from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
 
 @Injectable()
 export class EnrichmentService {
 
-  private constResponse = {'q1': {'result': []}, 'q2': {'result': [{'id': '9171308', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': true}, {'id': '6477265', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '10295254', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.THTR', 'name': 'S.THTR'}], 'score': 1.0, 'match': false}, {'id': '10242712', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '6477349', 'name': 'Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 1.0, 'match': false}, {'id': '6355286', 'name': 'Gasteiz / Vitoria', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 0.9666666666666667, 'match': false}, {'id': '3104499', 'name': 'Vitoria-Gasteiz', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPLA', 'name': 'P.PPLA'}], 'score': 0.9666666666666667, 'match': false}, {'id': '6357260', 'name': 'Victoria, La', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 0.9629629629629629, 'match': false}, {'id': '2515119', 'name': 'La Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL'}], 'score': 0.9090909090909092, 'match': false}, {'id': '6525501', 'name': 'Nh Victoria', 'type': [{'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL'}], 'score': 0.9090909090909092, 'match': false}, {'id': '3104497', 'name': 'Bitoriano', 'type': [{'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL'}], 'score': 0.9074074074074073, 'match': false}]}, 'q3': {'result': [{'id': '2177478', 'name': 'Australian Capital Territory', 'type': [{'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3'}], 'score': 1.0, 'match': true}]}, 'q4': {'result': []}, 'q5': {'result': []}, 'q6': {'result': []}, 'q7': {'result': []}, 'q0': {'result': []}};
-  private extResponse = {'rows': {'6355286': {'geocoordinates': [{'str': '(-9.5, 9.3)'}], 'country': []}, '2177478': {'country': [{'name': 'Australia', 'id': 'http://sws.geonames.org/2077456/'}], 'geocoordinates': [{'str': '(-35.5, 149)'}]}}};
+  private constResponse = { 'q1': { 'result': [] }, 'q2': { 'result': [{ 'id': '9171308', 'name': 'Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL' }], 'score': 1.0, 'match': true }, { 'id': '6477265', 'name': 'Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL' }], 'score': 1.0, 'match': false }, { 'id': '10295254', 'name': 'Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.THTR', 'name': 'S.THTR' }], 'score': 1.0, 'match': false }, { 'id': '10242712', 'name': 'Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL' }], 'score': 1.0, 'match': false }, { 'id': '6477349', 'name': 'Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL' }], 'score': 1.0, 'match': false }, { 'id': '6355286', 'name': 'Gasteiz / Vitoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3' }], 'score': 0.9666666666666667, 'match': false }, { 'id': '3104499', 'name': 'Vitoria-Gasteiz', 'type': [{ 'id': 'http://www.geonames.org/ontology#P.PPLA', 'name': 'P.PPLA' }], 'score': 0.9666666666666667, 'match': false }, { 'id': '6357260', 'name': 'Victoria, La', 'type': [{ 'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3' }], 'score': 0.9629629629629629, 'match': false }, { 'id': '2515119', 'name': 'La Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL' }], 'score': 0.9090909090909092, 'match': false }, { 'id': '6525501', 'name': 'Nh Victoria', 'type': [{ 'id': 'http://www.geonames.org/ontology#S.HTL', 'name': 'S.HTL' }], 'score': 0.9090909090909092, 'match': false }, { 'id': '3104497', 'name': 'Bitoriano', 'type': [{ 'id': 'http://www.geonames.org/ontology#P.PPL', 'name': 'P.PPL' }], 'score': 0.9074074074074073, 'match': false }] }, 'q3': { 'result': [{ 'id': '2177478', 'name': 'Australian Capital Territory', 'type': [{ 'id': 'http://www.geonames.org/ontology#A.ADM3', 'name': 'A.ADM3' }], 'score': 1.0, 'match': true }] }, 'q4': { 'result': [] }, 'q5': { 'result': [] }, 'q6': { 'result': [] }, 'q7': { 'result': [] }, 'q0': { 'result': [] } };
+  private extResponse = { 'rows': { '6355286': { 'geocoordinates': [{ 'str': '(-9.5, 9.3)' }], 'country': [] }, '2177478': { 'country': [{ 'name': 'Australia', 'id': 'http://sws.geonames.org/2077456/' }], 'geocoordinates': [{ 'str': '(-35.5, 149)' }] } } };
 
   public headers: string[];
   public data;
@@ -37,7 +37,7 @@ export class EnrichmentService {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
-    values = values.filter(function(e) { return e === 0 || e; });  // remove empty strings
+    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
 
     const mappings = new Map<string, Mapping>();
     const queries = [];
@@ -63,7 +63,7 @@ export class EnrichmentService {
 
       const httpOptions = {
         headers: new HttpHeaders({
-          'Content-Type':  'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded'
         }),
         params: params
       };
@@ -87,19 +87,19 @@ export class EnrichmentService {
     });
   }
 
-  extendColumn(header: string, properties: string[]): Observable<{ext: Extension[], props: Property[]}> {
+  extendColumn(header: string, properties: string[]): Observable<{ ext: Extension[], props: Property[] }> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
-    values = values.filter(function(e) { return e === 0 || e; });  // remove empty strings
+    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
 
     const extensions: Extension[] = [];
     values.forEach((value: string) => {
       extensions.push(new Extension(value, properties));
     });
 
-    const queryProperties = properties.map(prop => ({'id': prop}));
-    const extendQuery = {ids: values, properties: queryProperties};
+    const queryProperties = properties.map(prop => ({ 'id': prop }));
+    const extendQuery = { ids: values, properties: queryProperties };
 
     const requestURL = this.asiaURL + '/extend';
 
@@ -109,7 +109,7 @@ export class EnrichmentService {
 
     const httpOptions = {
       headers: new HttpHeaders({
-        'Content-Type':  'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded'
       }),
       params: params
     };
@@ -121,19 +121,60 @@ export class EnrichmentService {
       const propDescriptions: Property[] = [];
       res['meta'].forEach(p => propDescriptions.push(new Property(p)));
 
-      return {ext: extensions, props: propDescriptions};
+      return { ext: extensions, props: propDescriptions };
     });
   }
 
+  
+  sameasData(header: string, sameAsSource: string, sameAsDestination: string): Observable<Extension[]> {
+    // taken all values of the column without duplicates and empty values
+    const colData = this.data.map(row => row[':' + header]);
+    let values = Array.from(new Set(colData));
+
+    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
+    
+    // create objects {id:..., properties:{prop1:[], prp2:[],...}}
+    const extensions: Extension[] = [];
+    
+    const requestURL = this.asiaURL + '/exactMatch';
+
+    // create query params
+    const params = new HttpParams()
+      .set('ids', values.join(","))
+      .set('source', this.getReconciliationServiceOfColumn(header).getId())
+      .set('target',sameAsDestination);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map(res => {
+      res['rows'].forEach((row) => {
+        const rowId = Object.keys(row)[0];
+        const propId = Object.keys(row[rowId])[0];
+
+        const currExt = new Extension(rowId, [propId]);
+        currExt.setResultsFromService(row[rowId]);
+      });
+
+      return extensions;
+    });
+  }
+
+
   weatherData(header: string, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
+  
 
     let geoIds = this.data.map(row => row[':' + header]);
-    geoIds = Array.from(new Set(geoIds)).filter(function(e) { return e === 0 || e; });  // remove empty strings
+    geoIds = Array.from(new Set(geoIds)).filter(function (e) { return e === 0 || e; });  // remove empty strings
 
     let dates = [];
     if (weatherConfig.getReadDatesFromCol()) {
       dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
-      dates = Array.from(new Set(dates)).filter(function(e) { return e === 0 || e; });  // remove empty strings
+      dates = Array.from(new Set(dates)).filter(function (e) { return e === 0 || e; });  // remove empty strings
       dates = dates.map(date => moment(date).toISOString(true));
       console.log(dates);
     } else {
@@ -151,13 +192,13 @@ export class EnrichmentService {
 
     const httpOptions = {
       headers: new HttpHeaders({
-        'Content-Type':  'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded'
       }),
       params: params
     };
 
     return this.http.post(requestURL, null, httpOptions).map((results: any) => {
-      results.sort(function(a, b){return a.offset - b.offset}); // sort results by offset
+      results.sort(function (a, b) { return a.offset - b.offset }); // sort results by offset
       const extensions: Map<string, Extension> = new Map();
       results.forEach(obs => {
         const weatherObs = new WeatherObservation(obs);
@@ -169,7 +210,7 @@ export class EnrichmentService {
         }
         weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
           const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getValidTime()}_+${weatherObs.getOffset()}`;
-          properties.set(newParamName, [{'str': `${weatherParam.getValue()}`}]);
+          properties.set(newParamName, [{ 'str': `${weatherParam.getValue()}` }]);
         });
         extension.addProperties(properties);
         extensions.set(weatherObs.getGeonamesId(), extension);
@@ -202,16 +243,16 @@ export class EnrichmentService {
 
   public propertiesAvailable = (): Observable<any> => {
     const properties = [
-      {'id': 'parentADM1', 'name': 'level 1 administrative parent'},
-      {'id': 'parentADM2', 'name': 'level 2 administrative parent'},
-      {'id': 'parentADM3', 'name': 'level 3 administrative parent'},
-      {'id': 'parentADM4', 'name': 'level 4 administrative parent'}
-      ];
+      { 'id': 'parentADM1', 'name': 'level 1 administrative parent' },
+      { 'id': 'parentADM2', 'name': 'level 2 administrative parent' },
+      { 'id': 'parentADM3', 'name': 'level 3 administrative parent' },
+      { 'id': 'parentADM4', 'name': 'level 4 administrative parent' }
+    ];
     return Observable.of(properties);
     // return Observable.of(['parentADM1', 'parentADM2', 'parentADM3', 'parentADM4']);
   }
 
-  public listServices = (): Observable<Object> => {
+  public listServices = (): Observable<Object> => { // !!!
     const url = this.asiaURL + '/services';
     return this.http
       .get(url);
@@ -220,4 +261,11 @@ export class EnrichmentService {
   getReconciliationServiceOfColumn(header: string) {
     return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
   }
+
+  /*public kg
+     service che prende parametri e contatta servizio same as 
+     chiamata backend tramite http
+     legge risposta */
+
 }
+

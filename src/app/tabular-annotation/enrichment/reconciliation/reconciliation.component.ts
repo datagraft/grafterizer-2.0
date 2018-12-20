@@ -1,8 +1,8 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {EnrichmentService} from '../enrichment.service';
-import {ConciliatorService, DeriveMap, Mapping, Result, Type} from '../enrichment.model';
-import {Comparator} from 'clarity-angular';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { EnrichmentService } from '../enrichment.service';
+import { ConciliatorService, DeriveMap, Mapping, Result, Type } from '../enrichment.model';
+import { Comparator } from 'clarity-angular';
 
 class MappingComparator implements Comparator<Mapping> {
   compare(a: Mapping, b: Mapping) {
@@ -51,17 +51,17 @@ export class ReconciliationComponent implements OnInit {
   public shiftColumn: boolean = false;
 
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
-              private enrichmentService: EnrichmentService) { }
+    @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
+    private enrichmentService: EnrichmentService) { }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.services = new Map();
     this.servicesGroups = [];
-    this.enrichmentService.listServices().subscribe((data) => {
+    this.enrichmentService.listServices().subscribe((data) => { // !!!
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
-          this.services.set(service['id'], new ConciliatorService({...service, ...{'group': serviceCategory}}));
+          this.services.set(service['id'], new ConciliatorService({ ...service, ...{ 'group': serviceCategory } }));
         });
         this.servicesGroups.push(serviceCategory);
       });
@@ -100,7 +100,7 @@ export class ReconciliationComponent implements OnInit {
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
     deriveMaps.push(
       new DeriveMap(this.newColumnName)
-        .buildFromMapping(this.reconciledData, this.threshold,[this.guessedType].filter(p => p != null)));
+        .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.services.get(this.selectedService),
@@ -110,7 +110,7 @@ export class ReconciliationComponent implements OnInit {
   }
 
   updateServicesForSelectedGroup(): void {
-    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup );
+    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup);
     this.selectedService = this.servicesForSelectedGroup[0].getId();
     this.showPreview = false;
   }
@@ -152,7 +152,7 @@ export class ReconciliationComponent implements OnInit {
     });
 
     if (Object.keys(scores).length > 0) {
-      const bestTypeId = Object.keys(scores).reduce(function(a, b) { return scores[a] > scores[b] ? a : b; });
+      const bestTypeId = Object.keys(scores).reduce(function (a, b) { return scores[a] > scores[b] ? a : b; });
       return types[bestTypeId];
     }
 
