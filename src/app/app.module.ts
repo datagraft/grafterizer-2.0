@@ -37,6 +37,7 @@ import { TransformationUpdaterService } from 'app/transformation-updater.service
 import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 
+
 export function initConfig(config: AppConfig) {
   return () => config.load();
 }
@@ -44,7 +45,8 @@ export function initConfig(config: AppConfig) {
 @NgModule({
   declarations: [
     AppComponent,
-    DataExplorationComponent
+    DataExplorationComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -62,7 +64,8 @@ export function initConfig(config: AppConfig) {
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+
   ],
   providers: [
     AppConfig,

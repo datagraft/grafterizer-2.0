@@ -1,0 +1,47 @@
+<h1 mat-dialog-title>Add entity</h1>
+<div mat-dialog-content>
+
+  <form class="example-form">
+    <mat-form-field class="example-full-width">
+      <input matInput placeholder="Entity name:" [(ngModel)]="data.dialog_data.name" name="name" [formControl]="nameFormControl"  >
+      <mat-error *ngIf="nameFormControl.hasError('required')">
+      name is required
+    </mat-error>
+    </mat-form-field>
+
+    <p> </p>
+
+    <mat-form-field class="example-full-width">
+        <input matInput placeholder="Entity url:" [(ngModel)]="data.dialog_data.link" name="link" [formControl]="linkFormControl">
+        <mat-error *ngIf="linkFormControl.hasError('pattern')">
+          enter valid url
+        </mat-error>
+        <mat-error *ngIf="linkFormControl.hasError('required')">
+          url is required
+        </mat-error>
+
+    </mat-form-field>
+
+    <p> </p>
+
+    <mat-form-field class="example-full-width">
+      <input matInput type="number" step="0.01" max="1.0" min="0.0"
+            placeholder="Entity score:" [(ngModel)]="data.dialog_data.score" name="score" [formControl]="numberFormControl" >
+
+        <mat-error *ngIf="numberFormControl.hasError('required') || numberFormControl.hasError('min') || numberFormControl.hasError('max') ">
+          score between 0 a 1 is required
+        </mat-error>
+
+     </mat-form-field>
+
+      <mat-checkbox  [(ngModel)]="data.dialog_data.matched" name="match" > matched </mat-checkbox>
+      <br><br>
+     <mat-checkbox [(ngModel)]="data.dialog_data.set_as_reconciled" name="set_as" > set as reconciled entity </mat-checkbox>
+    </form>
+    <br>
+    <button mat-button class="btn btn-sm btn-link" [mat-dialog-close]="0"><span class="red"> Discard </span></button>
+
+    <button mat-button class="btn btn-sm btn-link" [disabled]="!nameFormControl.valid || !linkFormControl.valid || !numberFormControl.valid" [mat-dialog-close]="data.dialog_data">
+      Apply
+    </button>
+</div>

@@ -14,7 +14,7 @@ import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './ann
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
-import { ConfigComponent } from './config/config.component';
+import { ConfigComponent } from './config/config.component'; 
 import { Subscription } from 'rxjs';
 import { EnrichmentService } from './enrichment/enrichment.service';
 import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
