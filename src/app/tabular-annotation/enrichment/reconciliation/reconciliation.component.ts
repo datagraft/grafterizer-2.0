@@ -234,8 +234,9 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2[index].results[select].match = this.temp_match;
 
       this.selected = 0;
-      this.updateThreshold();
+
     }
+    this.updateThreshold();
 
   }//end set_reconcilied
 
@@ -285,7 +286,7 @@ export class ReconciliationComponent implements OnInit {
           this.set_reconciled(row_index, this.index_added);
 
         }//end if set_as_reconciled true;
-
+        this.updateThreshold();
       }
       this.data_for_add_entity_dialog = { name: "", link : "",  score : 0, matched: false, set_as_reconciled :false};
     });//dialogRef
