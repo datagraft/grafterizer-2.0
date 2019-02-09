@@ -8,10 +8,6 @@ import { AddEntityDialog} from './addEntityDialog.component';
 export interface dialog_add_entity_data {
    name: string;
    link : string;
-   score : number;
-   matched: boolean;
-   set_as_reconciled : boolean;
-
 }
 
 export interface DialogData {
@@ -29,7 +25,7 @@ export interface DialogData {
 export class ReconciliationComponent implements OnInit {
 
   public data_for_add_entity_dialog : dialog_add_entity_data =
-  { name: "", link : "",  score : 0, matched: false, set_as_reconciled :false};
+  { name: "", link : ""};
   public filter_column = 0;
   public index_filtered_reconciled :number = 0;
   public index_added : number;
@@ -81,7 +77,7 @@ export class ReconciliationComponent implements OnInit {
     this.dataLoading = false;
     this.reconciledData = [];
     this.threshold = 0.8;
-    this.skippedCount = 0;
+
 
   }
 
@@ -273,22 +269,15 @@ export class ReconciliationComponent implements OnInit {
         {
           this.dataSource_2[row_index].results.splice(4, 1);
         }
-
-
         this.dataSource_2[row_index].results.push({id : this.data_for_add_entity_dialog.link, name: this.data_for_add_entity_dialog.name,
-          types: null, score: this.data_for_add_entity_dialog.score, match: this.data_for_add_entity_dialog.matched});
+          types: null, score: 1, match: true});
 
 
-        if(this.data_for_add_entity_dialog.set_as_reconciled)
-        {
-          //swap entity added position with pos 0
           this.index_added = this.dataSource_2[row_index].results.length-1;
           this.set_reconciled(row_index, this.index_added);
-
-        }//end if set_as_reconciled true;
-        this.updateThreshold();
+          this.apply_column_filter(this.filter_column);
       }
-      this.data_for_add_entity_dialog = { name: "", link : "",  score : 0, matched: false, set_as_reconciled :false};
+      this.data_for_add_entity_dialog = { name: "", link : ""};
     });//dialogRef
   }//end openAddEntityDialog
 
@@ -318,7 +307,7 @@ export class ReconciliationComponent implements OnInit {
     else if(filter == 2)
     { //filter by >= threshold
       this.reconciledData.forEach((mapping: Mapping) => {
-        if ((mapping.results.length > 0 && mapping.results[0].score < this.threshold) || mapping.results.length == 0)
+        if (( mapping.results.length > 0 && (mapping.results[0].match || mapping.results[0].score < this.threshold)) || mapping.results.length == 0)
         {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
