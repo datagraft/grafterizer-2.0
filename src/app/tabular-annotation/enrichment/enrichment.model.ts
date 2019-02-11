@@ -99,7 +99,7 @@ export class DeriveMap {
     this.deriveMap = {};
     this.newColTypes = types;
     mapping.forEach(m => {
-      if (m.results.length > 0 && (m.results[0].match || m.results[0].score >= threshold)) {
+      if (m.results.length > 0 && m.results[0].match) {
         this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
       }
     });

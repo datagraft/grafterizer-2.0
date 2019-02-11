@@ -119,6 +119,17 @@
           <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search entity">
         </mat-form-field>
       </div>
+      <div class="matchedButton">
+        <mat-dialog-actions>
+          <button mat-button class="btn btn-sm  btn-link custom-width" [disabled]="maxThresholdCount === 0"
+            (click)="setAllMaxThresholdAsMAtched()">
+              <sup> set all </sup>
+              <i class="material-icons margin_top" fontsize="8" style="color:green;">check_circle</i>
+              <sup> to </sup>
+              <i class="material-icons" style="color:DeepSkyBlue;">verified_user</i>
+            </button>
+        </mat-dialog-actions>
+      </div>
       <div class="filter">
 
         <mat-form-field>

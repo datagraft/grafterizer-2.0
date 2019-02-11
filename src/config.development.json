@@ -6,5 +6,5 @@
   "abstat-path-ba": "http://193.204.59.21",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "http://10.80.1.8:8088",
-  "arango-generator": "http://10.80.1.8:3003"
+  "arango-generator": "http://10.80.1.8:3030"
 }

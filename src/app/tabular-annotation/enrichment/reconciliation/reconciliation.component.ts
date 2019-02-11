@@ -27,6 +27,7 @@ export class ReconciliationComponent implements OnInit {
   public data_for_add_entity_dialog : dialog_add_entity_data =
   { name: "", link : ""};
   public filter_column = 0;
+  public change_selecet = false;
   public index_filtered_reconciled :number = 0;
   public index_added : number;
   public temp_option:string;
@@ -228,12 +229,18 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2[index].results[select].score = this.temp_score;
       this.dataSource_2[index].results[select].id= this.temp_link;
       this.dataSource_2[index].results[select].match = this.temp_match;
-
-      this.selected = 0;
-
+      if (this.change_selecet)
+      {
+        this.selected = -4;
+        this.change_selecet = false;
+      }
+      else
+      {
+        this.selected = -3;
+        this.change_selecet = true;
+      }
     }
     this.updateThreshold();
-
   }//end set_reconcilied
 
   applyFilter(filterValue: string)
@@ -391,5 +398,16 @@ export class ReconciliationComponent implements OnInit {
       return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
     }
 
-
+    setAllMaxThresholdAsMAtched()
+    {
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if ( mapping.results.length > 0 && mapping.results[0].score  >= this.threshold)
+          mapping.results[0].match = true;
+      }
+      this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
+      this.dataSource_2 = this.reconciledData;
+      this.updateThreshold();
+      this.filter_column = 1;
+      this.apply_column_filter(1);
+    }
 }//end export class

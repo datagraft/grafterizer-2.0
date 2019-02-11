@@ -73,7 +73,31 @@ div.col_2{
 div.search{
   float:left;
   display: inline;
-  width: 70%;
+  width: 35%;
+
+}
+div.matchedButton{
+  margin:0;
+  float:left;
+  display: inline;
+  width: 35%;
+
+
+}
+mat-dialog-actions{
+    margin:0;
+    padding:0;
+    width: 100%;
+    text-align: center;
+
+}
+button.custom-width{
+  width: 50%;
+  margin-left: 25%;
+  margin-right:25%;
+  margin-top:0;
+  margin-bottom:0;
+  padding:1;
 
 }
 div.filter{
