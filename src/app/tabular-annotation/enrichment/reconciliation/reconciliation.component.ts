@@ -403,11 +403,11 @@ export class ReconciliationComponent implements OnInit {
       this.reconciledData.forEach((mapping: Mapping) => {
         if ( mapping.results.length > 0 && mapping.results[0].score  >= this.threshold)
           mapping.results[0].match = true;
-      }
+      });
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData;
       this.updateThreshold();
       this.filter_column = 1;
       this.apply_column_filter(1);
-    }
+  }
 }//end export class
