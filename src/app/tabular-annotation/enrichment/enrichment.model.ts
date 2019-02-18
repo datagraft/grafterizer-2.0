@@ -225,7 +225,7 @@ export class WeatherConfigurator {
     return this.offsets;
   }
 
-  getReadDatesFromCol(): string {
+  getReadDatesFromCol(): string { 
     return this.readDatesFromCol;
   }
 

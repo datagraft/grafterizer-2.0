@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource, Sort } from '@angular/material';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource, Sort, MatPaginator } from '@angular/material';
 import { EnrichmentService } from '../enrichment.service';
 import { ConciliatorService, DeriveMap, Mapping, Result, Type } from '../enrichment.model';
 import { ClrDatagridComparatorInterface } from '@clr/angular';
@@ -26,6 +26,7 @@ export class ReconciliationComponent implements OnInit {
 
   public data_for_add_entity_dialog : dialog_add_entity_data =
   { name: "", link : ""};
+  public colIndex: any;
   public filter_column = 0;
   public change_selecet = false;
   public index_filtered_reconciled :number = 0;
@@ -58,12 +59,16 @@ export class ReconciliationComponent implements OnInit {
   public notReconciledCount: number;
   public shiftColumn: boolean = false;
 
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog,
     private enrichmentService: EnrichmentService) { }
 
   ngOnInit() {
+
     this.header = this.dialogInputData.header;
+    this.colIndex = this.dialogInputData.indexCol;
     this.services = new Map();
     this.servicesGroups = [];
     this.enrichmentService.listServices().subscribe((data) => {
@@ -78,7 +83,10 @@ export class ReconciliationComponent implements OnInit {
     this.dataLoading = false;
     this.reconciledData = [];
     this.threshold = 0.8;
-
+    this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
 
   }
 
@@ -89,6 +97,7 @@ export class ReconciliationComponent implements OnInit {
       this.reconciledData = data;
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.dataSource.paginator = this.paginator;
       this.reconciledDataFiltered = Object.assign([], this.reconciledData);
       this.guessedType = this.guessType();
       this.reconciledData.forEach((mapping: Mapping) => {
@@ -115,7 +124,9 @@ export class ReconciliationComponent implements OnInit {
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.services.get(this.selectedService),
-      'shift': this.shiftColumn
+      'shift': this.shiftColumn,
+      'header': this.header,
+      'indexCol': this.colIndex
     });
 
   }
@@ -182,10 +193,7 @@ export class ReconciliationComponent implements OnInit {
       this.threshold = 0.8;
     }
     this.threshold = parseFloat(this.threshold.toFixed(2));
-    this.skippedCount = 0;
-    this.matchedCount = 0;
-    this.maxThresholdCount = 0;
-    this.notReconciledCount= 0;
+
 
     this.reconciledData.forEach((mapping: Mapping) => {
       if (mapping.results.length > 0)
@@ -296,6 +304,7 @@ export class ReconciliationComponent implements OnInit {
     { // no filter
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.dataSource.paginator = this.paginator;
     }
     else if(filter == 1)
     { //filter by matched
@@ -310,6 +319,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
     }//end filter 1
     else if(filter == 2)
     { //filter by >= threshold
@@ -323,6 +333,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
     }//end filter 2
     else if(filter == 3)
     {//filter by < threshold
@@ -336,6 +347,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
     }//end filter 3
     else if(filter == 4)
     {//filter by not reconciled
@@ -349,6 +361,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
     }//end filter 4
 
   }//end apply_column_filter
@@ -391,6 +404,7 @@ export class ReconciliationComponent implements OnInit {
 
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.dataSource.paginator = this.paginator;
     }//end sortData
 
     compare(a: number | string, b: number | string, isAsc: boolean)
@@ -406,6 +420,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData;
+      this.dataSource.paginator = this.paginator;
       this.updateThreshold();
       this.filter_column = 1;
       this.apply_column_filter(1);

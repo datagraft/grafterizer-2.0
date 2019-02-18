@@ -14,7 +14,7 @@ import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './ann
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
-import { ConfigComponent } from './config/config.component'; 
+import { ConfigComponent } from './config/config.component';
 import { Subscription } from 'rxjs';
 import { EnrichmentService } from './enrichment/enrichment.service';
 import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
@@ -199,21 +199,32 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   openEnrichmentDialog(headerIdx): void {
     const currentHeader = this.annotationService.headers[headerIdx];
+    const isReconciled = this.enrichmentService.isColumnReconciled(currentHeader);
+    const isDateColumn = this.enrichmentService.isColumnDate(currentHeader);
+
     let dialogRef;
     const dialogConfig = {
-      width: '750px',
-      data: { header: currentHeader }
+      width: '800px',
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : isDateColumn  }
     };
 
-    if (this.enrichmentService.isColumnReconciled(currentHeader)) {
+    if (isReconciled )
+    {
       dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
-    } else {
+    }
+    else if (isDateColumn)
+    {
+      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
+
+    }
+    else
+    {
       dialogRef = this.dialog.open(ReconciliationComponent, dialogConfig);
     }
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && result['deriveMaps']) {
-        this.deriveColumnsFromEnrichment(headerIdx, currentHeader, result['deriveMaps'], result['conciliator'], result['shift']);
+        this.deriveColumnsFromEnrichment(result['indexCol'], result['header'], result['deriveMaps'], result['conciliator'], result['shift']);
       }
       // Update headers (some columns might have been annotated)
       this.hot.updateSettings({
@@ -257,31 +268,33 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const buttonIconShape = annotation ? 'pencil' : 'plus';
     let HTMLHeader = header +
       '<button class="btn btn-sm btn-link btn-icon" id="annotation_ ' + col + '">' +
-      '<clr-icon shape="' + buttonIconShape + '"></clr-icon>' +
+      '<i class="material-icons" > edit </i>' +
       '</button>';
     if (annotation) {
       // STATUS ICON
       let statusIcon = '';
       let tooltipContent = '';
       if (annotation.status === AnnotationStatuses.wrong) {
-        statusIcon = '<clr-icon shape="error-standard" class="is-danger is-solid"></clr-icon>';
+        statusIcon = '<i class="material-icons" style="color:red	;">error</i>';
         tooltipContent = 'This column is not correctly annotated';
       } else if (annotation.status === AnnotationStatuses.warning) {
-        statusIcon = '<clr-icon shape="warning-standard" class="is-warning is-solid"></clr-icon>';
+        statusIcon = '<i class="material-icons" style="color:Gold	;">warning</i>';
         tooltipContent = 'This column annotation depends on <i>' + annotation.subject + '</i> column, which is not correctly annotated';
       } else if (annotation.status === AnnotationStatuses.valid) {
-        statusIcon = '<clr-icon shape="success-standard" class="is-success is-solid"></clr-icon>';
+        statusIcon = '<i class="material-icons" style="color:green;">check_circle</i>';
         tooltipContent = 'This column is properly annotated';
       }
       HTMLHeader += '<label role="tooltip" aria-haspopup="true" class="tooltip tooltip-sm tooltip-bottom-right">' +
+      '<button class="btn btn-sm btn-link btn-icon">' +
         statusIcon +
+        '</button>' +
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
     }
 
     // ENRICHMENT BUTTON
     HTMLHeader += '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + col + '">' +
-      '<clr-icon shape="view-columns"></clr-icon>' +
+      '<i class="material-icons top-margin" > view_column </i>' +
       '</button>';
 
     if (annotation) {

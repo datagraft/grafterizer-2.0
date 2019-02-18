@@ -1,4 +1,4 @@
-<h4 mat-dialog-title>Column Reconciliation  </h4>
+<h4 mat-dialog-title>Column Reconciliation </h4>
 
 
 <div mat-dialog-content>
@@ -245,7 +245,7 @@
                 </mat-panel-title>
               </mat-expansion-panel-header>
               <p> add entity:
-                <button mat-icon-button class="btn btn-sm btn-link"  (click)="openAddEntityDialog(i)">
+                <button mat-button class="btn btn-sm btn-link"  (click)="openAddEntityDialog(i)">
                   <mat-icon aria-label="add icon">add</mat-icon>
                 </button>
               </p>
@@ -258,6 +258,7 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns; "></tr>
   </table>
+  <mat-paginator [pageSize]="5" showFirstLastButtons></mat-paginator>
 </div>
 </div>
 
@@ -266,6 +267,6 @@
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()"
     cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
+  <button mat-button class="btn btn-sm btn-link" [disabled]="matchedCount === 0 || dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
     (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

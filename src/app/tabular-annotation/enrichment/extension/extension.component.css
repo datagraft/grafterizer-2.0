@@ -1,0 +1,17 @@
+mat-form-field{
+  padding:0;
+  margin:0;
+}
+div.weather-parameters{
+  float:left;
+  display: inline;
+  margin: 0;
+}
+div.weather-offset{
+  float:left;
+  display: inline;
+  margin: 0;
+}
+li.bottom-margin{
+  margin-bottom: 2px;
+}

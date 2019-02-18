@@ -1,7 +1,9 @@
-<h1 mat-dialog-title>Column Extension</h1>
+<h1 mat-dialog-title>Column Extension </h1>
+
 <div mat-dialog-content>
 
   <form #configForm="ngForm">
+
     <section class="form-block">
       <div class="form-group">
         <label class="required" for="service">Extensions from selected datasets: </label>
@@ -21,6 +23,7 @@
       [(ngModel)]="shiftColumn">
       New column(s) next to <i>{{header}}</i>
     </clr-checkbox>
+    <ng-container *ngIf="isColReconciled">
     <section class="form-block" *ngIf="selectedService === reconciledFromService.getId()">
       <div class="form-group">
         <label class="required">Select properties: </label>
@@ -45,9 +48,26 @@
         </tag-input>
       </div>
     </section>
+
+</ng-container>
     <section class="form-block" *ngIf="selectedService === 'ecmwf'">
 
+
       <div class="form-group">
+        <ng-container *ngIf="!isColReconciled && isColDate">
+          <label>Select palce(s)</label>
+          <div class="radio-inline">
+            <input type="radio" name="placeChoice" id="colPlaceRadio" value="fromCol" [(ngModel)]="placeChoice">
+            <label for="colPlaceRadio">Read place from column:</label>
+            <label for="colPlace" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                   auto-complete [source]="allowedSources" (valueChanged)="changePlaceColumn($event)">
+              <input id="colPlace" type="text" name="colPlace" placeholder="Choose a place column">
+            </label>
+          </div>
+
+
+        </ng-container>
+        <ng-container *ngIf="isColReconciled && !isColDate">
         <label>Select date(s)</label>
         <div class="radio-inline">
           <input type="radio" name="dateChoice" id="colDateRadio" value="fromCol" [(ngModel)]="dateChoice">
@@ -62,30 +82,52 @@
           <label for="datePickerRadio">Enter Date</label>
           <input type="date" id="date" name="date" [(ngModel)]="selectedDate" clrDate>
         </div>
+      </ng-container>
       </div>
 
       <div class="form-group">
         <label class="required" for="wParameters">Select weather parameters: </label>
-        <div class="select">
-          <select id="wParameters"
-                  name="wParameters"
-                  [(ngModel)]="selectedWeatherParameters"
-                  multiple style="z-index: 0">
-            <option *ngFor="let p of weatherParameters" [value]="p">{{weatherParametersDescriptions[p]}} ({{p}})</option>
-          </select>
+        <div class="weather-parameters">
+          <mat-form-field>
+            <mat-select id="wParameters" placeholder="weather parameters" multiple [(ngModel)]="selectedWeatherParameters" name="wParameters">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedWeatherParameters?.length > 0">
+                  <ul>
+                    <li *ngFor="let w_selected of selectedWeatherParameters" class="bottom-margin">
+                      {{w_selected}};
+                    </li>
+                  </ul>
+                </ng-container>
+                </mat-select-trigger>
+              <mat-option *ngFor="let p of weatherParameters" [value]="p"> {{weatherParametersDescriptions[p]}} ({{p}})</mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
       </div>
+
       <div class="form-group">
-        <label class="required" for="wOffsets">Select weather offsets (day): </label>
-        <div class="select">
-          <select id="wOffsets"
-                  name="wOffsets"
-                  [(ngModel)]="selectedWeatherOffsets"
-                  multiple style="z-index: 0">
-            <option *ngFor="let p of weatherOffsets" [value]="p">{{p}}</option>
-          </select>
+        <label class="required" for="wParameters">Select weather parameters: </label>
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="wOffsets" placeholder="weather offset" multiple [(ngModel)]="selectedWeatherOffsets" name="wOffsets">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedWeatherOffsets?.length > 0">
+                  <ul>
+                    <li *ngFor="let o_selected of selectedWeatherOffsets" class="bottom-margin">
+                      {{o_selected}};
+                    </li>
+                  </ul>
+                </ng-container>
+                </mat-select-trigger>
+              <mat-option *ngFor="let p of weatherOffsets" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
-      </div>
+
+        </div>
+
       <!--<div class="form-group">-->
         <!--<label class="required" for="wAggregators">Select weather aggregator: </label>-->
         <!--<div class="select">-->
@@ -105,7 +147,7 @@
 
     <h3> Preview </h3>
     <clr-datagrid [clrDgLoading]="dataLoading" class="datagrid-compact">
-      <clr-dg-column>{{header}}</clr-dg-column>
+      <clr-dg-column>{{previewHeader}}</clr-dg-column>
       <clr-dg-column *ngFor="let prop of previewProperties">
         {{prop}}
         <a *ngIf="propertyDescriptions.get(prop) && propertyDescriptions.get(prop).type"
@@ -113,6 +155,7 @@
            class="label label-orange clickable"
            target="_blank">
           {{propertyDescriptions.get(prop).type.id}}
+
         </a>
       </clr-dg-column>
 
@@ -121,6 +164,9 @@
         <clr-dg-cell *ngFor="let prop of previewProperties">
           <span *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['str']">
             {{extension.properties.get(prop)[0]['str']}}
+
+
+
           </span>
           <a *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
              href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
@@ -139,15 +185,29 @@
 
 </div>
 <div mat-dialog-actions>
+
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
+<ng-container *ngIf="isColReconciled">
   <button *ngIf="selectedService === reconciledFromService.getId()"
           mat-button class="btn btn-sm btn-link"
           [disabled]="selectedProperties.length === 0 || dataLoading"
           (click)="extend()" cdkFocusInitial>Extend</button>
+
+
   <button *ngIf="selectedService === 'ecmwf'"
           mat-button class="btn btn-sm btn-link"
           [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
           (dateChoice === 'fromCol' && readDatesFromCol || dateChoice === 'fromPicker' && selectedDate))"
           (click)="weather()" cdkFocusInitial>Fetch Weather data!</button>
+  </ng-container>
+  <ng-container *ngIf="!isColReconciled && isColDate">
+    <button *ngIf="selectedService === 'ecmwf'"
+            mat-button class="btn btn-sm btn-link"
+            [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
+            (placeChoice === 'fromCol' && readPlacesFromCol || placeChoice === 'fromPicker' && selectedPlace))"
+            (click)="weather()" cdkFocusInitial>Fetch Weather data
+    </button>
+  </ng-container>
+
   <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

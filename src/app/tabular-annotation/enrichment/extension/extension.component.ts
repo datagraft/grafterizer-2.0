@@ -12,6 +12,11 @@ import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator}
 export class ExtensionComponent implements OnInit {
 
   public header: any;
+  public previewHeader: any;
+  public colIndex: any;
+  public isColDate : boolean;
+  public isColReconciled : boolean;
+
   public extensionData: any;
   public propertyDescriptions: Map<string, Property>;
 
@@ -25,7 +30,10 @@ export class ExtensionComponent implements OnInit {
   public servicesGroups: string[];
   public allowedSources: string[];
   public readDatesFromCol: string;
+  public readPlacesFromCol: string;
   public selectedDate: any;
+  public selectedPlace: any;
+
   public weatherParameters: string[];
   public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
@@ -36,6 +44,7 @@ export class ExtensionComponent implements OnInit {
   public selectedWeatherAggregators: any[];
 
   public dateChoice: any;
+  public placeChoice: any;
 
   public dataLoading: boolean;
 
@@ -49,24 +58,45 @@ export class ExtensionComponent implements OnInit {
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
+    this.previewHeader = this.header;
+    this.colIndex = this.dialogInputData.indexCol;
+    this.isColDate = this.dialogInputData.colDate;
+    this.isColReconciled = this.dialogInputData.colReconciled;
     this.showPreview = false;
     this.dataLoading = false;
     this.extensionData = [];
     this.propertyDescriptions = new Map();
     this.allowedSources = this.enrichmentService.headers.filter(h => h !== this.header);
-
     this.selectedProperties = [];
     this.alreadyExtendedProperties = [];
     this.previewProperties = [];
     this.services = [];
     this.servicesGroups = [];
 
-    if (this.enrichmentService.isColumnReconciled(this.header)) { // it should be always true!
+    if (!this.isColReconciled && this.isColDate)
+    {
+      this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+      this.reconciledFromService = new ConciliatorService({'id': 'geonames', 'name': 'GeoNames', group: 'geo', identifierSpace: 'http://sws.geonames.org/', schemaSpace: 'http://www.geonames.org/ontology# ExtensionECMWF'});
+    }
+    else if (this.isColReconciled && !this.isColDate)
+    {
       this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
       this.services.push(this.reconciledFromService);
       if (this.reconciledFromService.getId() === 'geonames') {
         this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+
       }
+    }
+    else if (this.isColReconciled && this.isColDate)
+    {
+    /*  this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
+      this.services.push(this.reconciledFromService);
+      if (this.reconciledFromService.getId() === 'geonames') {
+        this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+
+      }
+      */
+      //to do
     }
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -132,20 +162,60 @@ export class ExtensionComponent implements OnInit {
       aggregators: this.selectedWeatherAggregators,
       offsets: this.selectedWeatherOffsets
     };
-
-    if (this.dateChoice === 'fromCol') {
-      weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.readDatesFromCol}});
-    } else {
-      weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
-    }
-
-    this.enrichmentService.weatherData(this.header, weatherConfig).subscribe((data: Extension[]) => {
-      this.extensionData = data;
-      if (this.extensionData.length > 0) {
-        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+    if(this.isColReconciled && !this.isColDate)
+    {
+      if (this.dateChoice === 'fromCol')
+      {
+        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.readDatesFromCol}});
       }
-      this.dataLoading = false;
-    });
+      else
+      {
+        weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
+      }
+      this.enrichmentService.weatherData(this.header, weatherConfig).subscribe((data: Extension[]) => {
+        this.extensionData = data;
+        if (this.extensionData.length > 0) {
+          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+        }
+        this.dataLoading = false;
+      });
+    }//end if (this.isColReconciled && !this.isColDate)
+    else if (!this.isColReconciled && this.isColDate)
+    {
+      if (this.placeChoice === 'fromCol')
+      {
+        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
+      }
+      this.previewHeader = this.readPlacesFromCol;
+
+      this.enrichmentService.weatherData(this.readPlacesFromCol, weatherConfig).subscribe((data: Extension[]) => {
+        this.extensionData = data;
+        if (this.extensionData.length > 0)
+        {
+          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+        }
+        this.dataLoading = false;
+      });
+
+
+    }//end if (!this.isColReconciled && this.isColDate)
+    else if (this.isColReconciled && this.isColDate)
+    {
+      /*if (this.placeChoice === 'fromCol') {
+        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
+      }
+      this.previewHeader = this.readPlacesFromCol;
+
+      this.enrichmentService.weatherData(this.readPlacesFromCol, weatherConfig).subscribe((data: Extension[]) => {
+        this.extensionData = data;
+        if (this.extensionData.length > 0) {
+          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+        }
+        this.dataLoading = false;
+      });
+       to do */
+
+    }
   }
 
   public submit() {
@@ -163,9 +233,10 @@ export class ExtensionComponent implements OnInit {
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': conciliator,
-      'shift': this.shiftColumn
+      'shift': this.shiftColumn,
+      'header': this.previewHeader,
+      'indexCol': this.colIndex
     });
-
   }
 
   public extensionProperties = (): Observable<Response> => {
@@ -182,8 +253,12 @@ export class ExtensionComponent implements OnInit {
     }
   }
 
-  changeDateColumn(dateColValue) {
-    this.readDatesFromCol = dateColValue;
+  changeDateColumn(placeColValue) {
+    this.readDatesFromCol = placeColValue;
+  }
+  
+  changePlaceColumn(dateColValue) {
+    this.readPlacesFromCol = dateColValue;
   }
 
   private propertyWithReconciledValues(prop): boolean {

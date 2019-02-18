@@ -19,7 +19,8 @@ import {
         MatFormFieldModule,
         MatCheckboxModule,
         MatSortModule,
-        Sort
+        Sort,
+        MatPaginatorModule
        } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
 import { TagInputModule } from 'ngx-chips';
@@ -50,7 +51,8 @@ import { ExtensionComponent } from './enrichment/extension/extension.component';
     MatIconModule,
     MatFormFieldModule,
     MatCheckboxModule,
-    MatSortModule
+    MatSortModule,
+    MatPaginatorModule
 
   ],
   entryComponents: [AnnotationFormComponent,AddEntityDialog, ConfigComponent, ExtensionComponent, ReconciliationComponent],

@@ -186,6 +186,14 @@ export class EnrichmentService {
     return Object.keys(this.reconciledColumns).includes(header);
   }
 
+  isColumnDate(header: string): boolean {
+    if( header.toLowerCase().search('date') !== -1)
+      return true;
+    else
+      return false;
+  }
+
+
   getReconciledColumns(): ReconciledColumn[] {
     const recCols = [];
     Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
