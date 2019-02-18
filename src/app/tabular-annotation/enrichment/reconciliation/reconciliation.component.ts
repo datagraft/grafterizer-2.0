@@ -91,6 +91,10 @@ export class ReconciliationComponent implements OnInit {
   }
 
   public reconcile() {
+    this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
     this.dataLoading = true;
     this.showPreview = true;
     this.enrichmentService.reconcileColumn(this.header, this.services.get(this.selectedService)).subscribe((data) => {
@@ -182,6 +186,10 @@ export class ReconciliationComponent implements OnInit {
   }
 
   updateThreshold() {
+    this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
     if (this.threshold != null) {
       if (this.threshold < 0) {
         this.threshold = 0;
@@ -249,6 +257,7 @@ export class ReconciliationComponent implements OnInit {
       }
     }
     this.updateThreshold();
+    this.apply_column_filter(this.filter_column);
   }//end set_reconcilied
 
   applyFilter(filterValue: string)
