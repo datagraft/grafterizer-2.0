@@ -26,6 +26,7 @@ import { ConfigComponent } from './config/config.component';
 import { TagInputModule } from 'ngx-chips';
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { AddEntityDialog } from './enrichment/reconciliation/addEntityDialog.component';
+import { ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
 
 
@@ -55,13 +56,14 @@ import { ExtensionComponent } from './enrichment/extension/extension.component';
     MatPaginatorModule
 
   ],
-  entryComponents: [AnnotationFormComponent,AddEntityDialog, ConfigComponent, ExtensionComponent, ReconciliationComponent],
+  entryComponents: [AnnotationFormComponent, ChooseExtensionOrReconciliationDialog, AddEntityDialog, ConfigComponent, ExtensionComponent, ReconciliationComponent],
   declarations: [
     TabularAnnotationComponent,
     TabularAnnotationDetailComponent,
     AnnotationFormComponent,
     ConfigComponent,
     AddEntityDialog,
+    ChooseExtensionOrReconciliationDialog,
     ReconciliationComponent,
     ExtensionComponent
   ]

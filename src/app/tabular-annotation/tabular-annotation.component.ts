@@ -22,6 +22,7 @@ import { PipelineEventsService } from '../tabular-transformation/pipeline-events
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
 import { ShiftColumnFunction } from 'assets/transformationdatamodel';
+import { ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 
 declare var Handsontable: any;
 
@@ -46,6 +47,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   public saveLoading: boolean;
   public retrieveRDFLoading: boolean;
   public dataLoading: boolean;
+  public formChoose : number = 0;
 
   public saveButtonDisabled: boolean;
   public rdfButtonDisabled: boolean;
@@ -204,26 +206,53 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     let dialogRef;
     const dialogConfig = {
+      width: '750px',
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : isDateColumn  }
+    };
+    const dialogConfigReconciliation = {
       width: '800px',
       data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : isDateColumn  }
     };
+    const dialogConfigChoose = {
+      width: '400px',
+      disableClose: true,
+      data: {indexCol : headerIdx}
+    };
 
-    if (isReconciled )
+    if (isReconciled || (isDateColumn && this.formChoose == 2) )
     {
       dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
     }
-    else if (isDateColumn)
+    else if (isDateColumn && this.formChoose == 0)
+    {
+      dialogRef = this.dialog.open(ChooseExtensionOrReconciliationDialog, dialogConfigChoose);
+
+    }
+    else if (!isDateColumn || (isDateColumn && this.formChoose == 1))
+    {
+      dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+
+    }
+  /*  else if (isDateColumn && this.formChoose == 2)
     {
       dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
 
-    }
-    else
+    }*/
+  /*  else
     {
       dialogRef = this.dialog.open(ReconciliationComponent, dialogConfig);
-    }
+    }*/
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result && result['deriveMaps']) {
+
+      if (result && result['chosen']){//open reconciliation form
+
+        this.formChoose = result['chosen'];
+        this.openEnrichmentDialog(headerIdx);
+        this.formChoose = 0;
+
+      }
+      else if (result && result['deriveMaps']) {
         this.deriveColumnsFromEnrichment(result['indexCol'], result['header'], result['deriveMaps'], result['conciliator'], result['shift']);
       }
       // Update headers (some columns might have been annotated)
