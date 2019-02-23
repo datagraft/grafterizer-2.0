@@ -33,6 +33,8 @@ declare var Handsontable: any;
 })
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
+  public  geoNamesSources :string [];
+
   private transformationObj: any;
   private graftwerkData: any;
 
@@ -76,6 +78,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.retrieveRDFLoading = false;
     this.saveButtonDisabled = this.annotationService.getAnnotations().length === 0;
     this.rdfButtonDisabled = true;
+
   }
 
   ngOnInit() {
@@ -167,6 +170,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         this.hot.loadData(this.annotationService.data);
       }
     });
+
   }
 
   ngOnDestroy() {
@@ -201,59 +205,142 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   openEnrichmentDialog(headerIdx): void {
     const currentHeader = this.annotationService.headers[headerIdx];
+    const annotation = this.annotationService.getAnnotation(currentHeader);
     const isReconciled = this.enrichmentService.isColumnReconciled(currentHeader);
     const isDateColumn = this.enrichmentService.isColumnDate(currentHeader);
+
+    this.geoNamesSources = [];
+    this.annotationService.headers.forEach((geo: string ) => {
+      const annotation =this.annotationService.getAnnotation(geo);
+        if (annotation)
+        {
+          if (annotation.columnValuesType === ColumnTypes.URI)
+          {
+            for (let i = 0; i < annotation.columnTypes.length; ++i)
+            {
+              const type = annotation.columnTypes[i];
+              if(type.search("geonames.org") !== -1 ) //http://sws.geonames.org/
+              {
+                this.geoNamesSources.push(geo);
+              }
+            }//end for
+          }// end uri
+        }//end if annotation
+    });
 
     let dialogRef;
     const dialogConfig = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : isDateColumn  }
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
+    };
+    const dialogConfigExtension = {
+      width: '750px',
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
+    };
+    const dialogConfigDateCOlumn = {
+      width: '750px',
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : true, geoSoources : this.geoNamesSources  }
     };
     const dialogConfigReconciliation = {
       width: '800px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : isDateColumn  }
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
     };
-    const dialogConfigChoose = {
+    /*const dialogConfigChoose = {
       width: '400px',
       disableClose: true,
       data: {indexCol : headerIdx}
-    };
+    };*/
 
-    if (isReconciled || (isDateColumn && this.formChoose == 2) )
+    if (isReconciled )  //|| (isDateColumn && this.formChoose == 2)
+    {
+      if(annotation)
+      { //to check if it's a dateCOlumn
+        if (annotation.columnValuesType === ColumnTypes.URI)
+        {
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+        }
+
+        else
+        {
+
+          const type = annotation.columnDatatype;
+          const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+            if(shortType === "dateTime")
+            {//it's a dateColumn --> open dialogConfigDateCOlumn
+              dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
+            }
+            else //it's not a dateColumn --> open with normal dialogConfigExtension
+            {
+              dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+            }
+        }
+
+      }
+      else //not annotated if you wrong to use annotation
+      {
+        dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+      }
+
+    }//end if reconciled
+    //now check if a not reconciled is a dateTColumn
+    else if(annotation)
+    {
+      if (annotation.columnValuesType === ColumnTypes.URI)
+      {
+        //to do
+          dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+
+      }
+
+      else
+      {
+
+        const type = annotation.columnDatatype;
+        const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+          if(shortType === "dateTime")
+          {//it's a dateColumn --> open dialogConfigDateCOlumn
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
+          }
+          else
+          {//it's not a dateColumn --> open a normal ReconciliationComponent
+            dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+          }
+      }
+
+    }
+  /*  else if (isDateColumn && this.formChoose == 0)
     {
       dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
-    }
-    else if (isDateColumn && this.formChoose == 0)
-    {
-      dialogRef = this.dialog.open(ChooseExtensionOrReconciliationDialog, dialogConfigChoose);
 
-    }
-    else if (!isDateColumn || (isDateColumn && this.formChoose == 1))
+    }*/
+    /*else if (!isDateColumn || (isDateColumn && this.formChoose == 1))
     {
       dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
 
-    }
+    }*/
   /*  else if (isDateColumn && this.formChoose == 2)
     {
       dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
 
     }*/
-  /*  else
-    {
-      dialogRef = this.dialog.open(ReconciliationComponent, dialogConfig);
-    }*/
+    else
+    { //it's not reconcled and not annotated column so --> open ReconciliationComponent
+      dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+    }
 
     dialogRef.afterClosed().subscribe(result => {
 
-      if (result && result['chosen']){//open reconciliation form
+    /*  if (result && result['chosen']){//open reconciliation form
 
         this.formChoose = result['chosen'];
         this.openEnrichmentDialog(headerIdx);
         this.formChoose = 0;
 
       }
-      else if (result && result['deriveMaps']) {
+      else */
+      if (result && result['deriveMaps']) {
         this.deriveColumnsFromEnrichment(result['indexCol'], result['header'], result['deriveMaps'], result['conciliator'], result['shift']);
+
       }
       // Update headers (some columns might have been annotated)
       this.hot.updateSettings({
@@ -261,6 +348,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         colHeaders: (col) => this.getTableHeader(col)
       });
     });
+
   }
 
   getTableColumns() {
@@ -294,10 +382,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   getTableHeader(col): string {
     const header = this.annotationService.headers[col];
     const annotation = this.annotationService.getAnnotation(header);
-    const buttonIconShape = annotation ? 'pencil' : 'plus';
+    const buttonIconShape = annotation ? 'edit' : 'add';
     let HTMLHeader = header +
       '<button class="btn btn-sm btn-link btn-icon" id="annotation_ ' + col + '">' +
-      '<i class="material-icons" > edit </i>' +
+      '<i class="material-icons" >'+ buttonIconShape+' </i>' +
       '</button>';
     if (annotation) {
       // STATUS ICON
@@ -347,8 +435,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         annInfoLabel = '<p class="p7 ann-info-label">Datatype:</p>';
         const type = annotation.columnDatatype;
         const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
-        annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
-      }
+
+          annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+        }
       annInfoValues = '<div class="ann-info-values">' + annInfoTypes + '</div>';
       HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
 

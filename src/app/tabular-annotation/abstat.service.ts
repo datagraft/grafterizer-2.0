@@ -101,7 +101,7 @@ export class AbstatService {
     }
     return this.abstatSuggestions(keyword, 'subj');
   }
-
+  
   /**
    * Search for property suggestions
    * @param keyword

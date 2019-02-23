@@ -1,8 +1,9 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import {MAT_DIALOG_DATA, MatDialogRef,  MatTableDataSource} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator} from '../enrichment.model';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-extension',
@@ -10,18 +11,18 @@ import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator}
   styleUrls: ['./extension.component.css']
 })
 export class ExtensionComponent implements OnInit {
-
+  public dataSource  :any;
+  public displayedColumns: string[] = ['placeSuggestions'];
+  public geo_answer : any;
   public header: any;
   public previewHeader: any;
   public colIndex: any;
   public isColDate : boolean;
   public isColReconciled : boolean;
-
+  public placeSuggestion: any= [];
   public extensionData: any;
   public propertyDescriptions: Map<string, Property>;
-
   public services: ConciliatorService[];
-
   public showPreview: boolean;
   public selectedProperties: any[];
   public alreadyExtendedProperties: string[];
@@ -29,36 +30,33 @@ export class ExtensionComponent implements OnInit {
   public selectedService: string;
   public servicesGroups: string[];
   public allowedSources: string[];
+  public geoAllowedSources: string[];
   public readDatesFromCol: string;
   public readPlacesFromCol: string;
   public selectedDate: any;
   public selectedPlace: any;
-
   public weatherParameters: string[];
   public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
   public weatherOffsets: number[];
-
   public selectedWeatherParameters: any[];
   public selectedWeatherOffsets: any[];
   public selectedWeatherAggregators: any[];
-
   public dateChoice: any;
   public placeChoice: any;
-
   public dataLoading: boolean;
-
   public reconciledFromService: ConciliatorService;
-
   public shiftColumn: boolean = false;
 
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
+              private http: HttpClient,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
               private enrichmentService: EnrichmentService) { }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.previewHeader = this.header;
+    this.geoAllowedSources = this.dialogInputData.geoSoources;
     this.colIndex = this.dialogInputData.indexCol;
     this.isColDate = this.dialogInputData.colDate;
     this.isColReconciled = this.dialogInputData.colReconciled;
@@ -72,6 +70,7 @@ export class ExtensionComponent implements OnInit {
     this.previewProperties = [];
     this.services = [];
     this.servicesGroups = [];
+    this.dataSource = [];
 
     if (!this.isColReconciled && this.isColDate)
     {
@@ -82,9 +81,9 @@ export class ExtensionComponent implements OnInit {
     {
       this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
       this.services.push(this.reconciledFromService);
-      if (this.reconciledFromService.getId() === 'geonames') {
+      if (this.reconciledFromService.getId() === 'geonames')
+      {
         this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
-
       }
     }
     else if (this.isColReconciled && this.isColDate)
@@ -118,7 +117,7 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max'];
-  }
+  }//end ngOnInit
 
   public extend() {
     this.dataLoading = true;
@@ -156,9 +155,9 @@ export class ExtensionComponent implements OnInit {
   public weather() {
     this.dataLoading = true;
     this.showPreview = true;
-
     let weatherConfig = null;
-    const wcObj = {parameters: this.selectedWeatherParameters,
+    const wcObj = {
+      parameters: this.selectedWeatherParameters,
       aggregators: this.selectedWeatherAggregators,
       offsets: this.selectedWeatherOffsets
     };
@@ -172,7 +171,7 @@ export class ExtensionComponent implements OnInit {
       {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
       }
-      this.enrichmentService.weatherData(this.header, weatherConfig).subscribe((data: Extension[]) => {
+      this.enrichmentService.weatherData(this.header,false, weatherConfig).subscribe((data: Extension[]) => {
         this.extensionData = data;
         if (this.extensionData.length > 0) {
           this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -182,13 +181,20 @@ export class ExtensionComponent implements OnInit {
     }//end if (this.isColReconciled && !this.isColDate)
     else if (!this.isColReconciled && this.isColDate)
     {
+      let singlePlaceSelected = false;
       if (this.placeChoice === 'fromCol')
       {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
+        this.previewHeader = this.readPlacesFromCol;
       }
-      this.previewHeader = this.readPlacesFromCol;
-
-      this.enrichmentService.weatherData(this.readPlacesFromCol, weatherConfig).subscribe((data: Extension[]) => {
+      else
+      {
+        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
+        this.previewHeader = this.header;
+        this.readPlacesFromCol = this.selectedPlace;
+        singlePlaceSelected = true;
+      }
+      this.enrichmentService.weatherData(this.readPlacesFromCol,singlePlaceSelected, weatherConfig).subscribe((data: Extension[]) => {
         this.extensionData = data;
         if (this.extensionData.length > 0)
         {
@@ -256,9 +262,16 @@ export class ExtensionComponent implements OnInit {
   changeDateColumn(placeColValue) {
     this.readDatesFromCol = placeColValue;
   }
-  
+
   changePlaceColumn(dateColValue) {
     this.readPlacesFromCol = dateColValue;
+
+  }
+
+  setManualPlace(row){
+
+    this.selectedPlace = this.dataSource[row].geonameId;
+    this.dataSource = [];
   }
 
   private propertyWithReconciledValues(prop): boolean {
@@ -272,5 +285,29 @@ export class ExtensionComponent implements OnInit {
       }
     });
     return valid;
+  }
+
+
+  geoSuggestions(new_val)  {
+    this.placeSuggestion= [];
+    if(new_val !== "")
+    {
+      this.http.get('http://api.geonames.org/searchJSON?q='+this.selectedPlace+'&maxRows=50&username=asia_geo')
+      .subscribe(data  => {
+        this.geo_answer = data;
+        for(let i = 0; i < this.geo_answer.geonames.length; i++ )
+        {
+          if(this.geo_answer.geonames[i].fcl === "A")
+          {
+            this.placeSuggestion.push(this.geo_answer.geonames[i]);
+          }
+        }
+        this.dataSource = this.placeSuggestion;
+      });
+    }
+    else
+    {
+      this.dataSource = [];
+    }
   }
 }

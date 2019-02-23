@@ -156,8 +156,9 @@
         </mat-form-field>
       </div>
   </div>
-
+    <mat-spinner *ngIf="dataLoading"></mat-spinner>
     <div class="c1">
+
       <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"  class="mat-elevation-z8">
 
         <ng-container matColumnDef="position">
@@ -259,6 +260,7 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumns; "></tr>
   </table>
   <mat-paginator [pageSize]="5" showFirstLastButtons></mat-paginator>
+
 </div>
 </div>
 

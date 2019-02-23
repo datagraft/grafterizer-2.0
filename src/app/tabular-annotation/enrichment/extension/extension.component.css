@@ -15,3 +15,27 @@ div.weather-offset{
 li.bottom-margin{
   margin-bottom: 2px;
 }
+
+span.round {
+  border: 1px solid ;
+  padding: 5px;
+  border-radius: 15px;
+  margin-right: 5px;
+  width:35px;
+  text-align: center;
+}
+span.red{
+  color:red;
+}
+li.suggestions{
+  margin-top: 5px;
+}
+div.suggestions
+{
+  margin-left: 5%;
+}
+div.c1{
+    padding: 0;
+    overflow-y: scroll;
+    max-height:250px;
+}

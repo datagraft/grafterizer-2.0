@@ -125,18 +125,27 @@ export class EnrichmentService {
     });
   }
 
-  weatherData(header: string, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
+  weatherData(header: string,singlePlace: boolean, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
+    let geoIds = [];
+    if(singlePlace){
+       geoIds.push(header);
 
-    let geoIds = this.data.map(row => row[':' + header]);
-    geoIds = Array.from(new Set(geoIds)).filter(function (e) { return e === 0 || e; });  // remove empty strings
-
+    }
+    else
+    {
+         geoIds = this.data.map(row => row[':' + header]);
+        geoIds = Array.from(new Set(geoIds)).filter(function (e) { return e === 0 || e; });  // remove empty strings
+    }
     let dates = [];
-    if (weatherConfig.getReadDatesFromCol()) {
+    if (weatherConfig.getReadDatesFromCol())
+    {
       dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
       dates = Array.from(new Set(dates)).filter(function (e) { return e === 0 || e; });  // remove empty strings
       dates = dates.map(date => moment(date + '').format());
       console.log(dates);
-    } else {
+    }
+    else
+    {
       dates.push(moment(weatherConfig.getDate()).toISOString(true));
     }
 
@@ -163,20 +172,44 @@ export class EnrichmentService {
         const weatherObs = new WeatherObservation(obs);
         const properties: Map<string, any[]> = new Map();
 
-        let extension = extensions.get(weatherObs.getGeonamesId());
-        if (!extension) {
-          extension = new Extension(weatherObs.getGeonamesId(), []);
+        if(singlePlace)
+        {
+          const date = weatherObs.getValidTime().substring(0, 10).replace("-", "").replace("-", "");
+
+          let extension = extensions.get(date);
+          if (!extension)
+          {
+            extension = new Extension(date, []);
+          }
+          weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
+            const newParamName = `WF_${weatherParam.getId()}_${header}_+${weatherObs.getOffset()}`;
+            properties.set(newParamName, [{ 'str': `${weatherParam.getValue()}` }]);
+          });
+          extension.addProperties(properties);
+          extensions.set(date, extension);
+
         }
-        weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
-          const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getValidTime()}_+${weatherObs.getOffset()}`;
-          properties.set(newParamName, [{ 'str': `${weatherParam.getValue()}` }]);
-        });
-        extension.addProperties(properties);
-        extensions.set(weatherObs.getGeonamesId(), extension);
+        else
+        {
+          const date = weatherObs.getValidTime().substring(0, 10).replace("-", "").replace("-", "");
+
+          let extension = extensions.get(weatherObs.getGeonamesId());
+          if (!extension)
+          {
+            extension = new Extension(weatherObs.getGeonamesId(), []);
+          }
+
+          weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
+            const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getValidTime()}_+${weatherObs.getOffset()}`;
+            properties.set(newParamName, [{ 'str': `${weatherParam.getValue()}` }]);
+          });
+          extension.addProperties(properties);
+          extensions.set(weatherObs.getGeonamesId(), extension);
+      }
       });
       return Array.from(extensions.values());
     });
-  }
+  }//end weatherData
 
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
     this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;

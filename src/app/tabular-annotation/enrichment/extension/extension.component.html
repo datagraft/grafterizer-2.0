@@ -1,5 +1,4 @@
 <h1 mat-dialog-title>Column Extension </h1>
-
 <div mat-dialog-content>
 
   <form #configForm="ngForm">
@@ -51,38 +50,63 @@
 
 </ng-container>
     <section class="form-block" *ngIf="selectedService === 'ecmwf'">
-
-
       <div class="form-group">
-        <ng-container *ngIf="!isColReconciled && isColDate">
-          <label>Select palce(s)</label>
+        <ng-container *ngIf="isColDate">
+          <label>Select place(s)</label>
           <div class="radio-inline">
             <input type="radio" name="placeChoice" id="colPlaceRadio" value="fromCol" [(ngModel)]="placeChoice">
             <label for="colPlaceRadio">Read place from column:</label>
             <label for="colPlace" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
-                   auto-complete [source]="allowedSources" (valueChanged)="changePlaceColumn($event)">
-              <input id="colPlace" type="text" name="colPlace" placeholder="Choose a place column">
+                   auto-complete [source]="geoAllowedSources" (valueChanged)="changePlaceColumn($event)">
+              <input id="colPlace" type="text" name="colPlace" [(ngModel)]="readPlacesFromCol" placeholder="Choose a place column"
+                [disabled]="placeChoice === 'placefromPicker'">
             </label>
           </div>
 
+          <div class="radio">
+            <input type="radio" name="placeChoice" id="placePickerRadio" value="placefromPicker" [(ngModel)]="placeChoice">
+            <label for="placePickerRadio">Enter place:</label>
+          </div>
+          <div class="suggestions">
+            <input type="text" id="place" name="place" [(ngModel)]="selectedPlace" size="45" (ngModelChange)="geoSuggestions($event)" placeholder="Enter a place"
+              [disabled]="placeChoice === 'fromCol'">
+            <ng-container *ngIf="dataSource.length >0">
+              <div class="c1">
+              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+                <ng-container matColumnDef="placeSuggestions">
+                  <th mat-header-cell *matHeaderCellDef>  </th>
+                    <td  mat-cell *matCellDef="let element let i= index"  (click)="setManualPlace(i)" >
+                      <ul >
+                        <li class="suggestions"><b>ID: {{element.geonameId}}</b> </li>
+                        <li> <a href="http://www.geonames.org/{{element.geonameId}}" target="blank"> {{element.toponymName}} </a> </li>
+                        <li> <span class="red">{{element.fcl}}  {{element.fcode}} </span></li>
+                        <li>{{element.countryName}} > {{element.adminName1}}</li>
+                      </ul>
+                    </td>
+                  </ng-container>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!isColDate">
+          <label>Select date(s)</label>
+          <div class="radio-inline">
+            <input type="radio" name="dateChoice" id="colDateRadio" value="fromCol" [(ngModel)]="dateChoice">
+            <label for="colDateRadio">Read date from column:</label>
+            <label for="colDate" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                 auto-complete [source]="allowedSources" (valueChanged)="changeDateColumn($event)">
+              <input id="colDate" type="text" name="colDate" placeholder="Choose a date column" [disabled]="dateChoice === 'fromPicker'">
+            </label>
+          </div>
+          <div class="radio-inline">
+            <input type="radio" name="dateChoice" id="datePickerRadio" value="fromPicker" [(ngModel)]="dateChoice">
+            <label for="datePickerRadio">Enter Date</label>
+            <input type="date" id="date" name="date" [(ngModel)]="selectedDate" [disabled]="dateChoice === 'fromCol'" clrDate>
+          </div>
 
         </ng-container>
-        <ng-container *ngIf="isColReconciled && !isColDate">
-        <label>Select date(s)</label>
-        <div class="radio-inline">
-          <input type="radio" name="dateChoice" id="colDateRadio" value="fromCol" [(ngModel)]="dateChoice">
-          <label for="colDateRadio">Read date from column:</label>
-          <label for="colDate" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
-                 auto-complete [source]="allowedSources" (valueChanged)="changeDateColumn($event)">
-            <input id="colDate" type="text" name="colDate" placeholder="Choose a date column">
-          </label>
-        </div>
-        <div class="radio-inline">
-          <input type="radio" name="dateChoice" id="datePickerRadio" value="fromPicker" [(ngModel)]="dateChoice">
-          <label for="datePickerRadio">Enter Date</label>
-          <input type="date" id="date" name="date" [(ngModel)]="selectedDate" clrDate>
-        </div>
-      </ng-container>
       </div>
 
       <div class="form-group">
@@ -93,11 +117,9 @@
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedWeatherParameters?.length > 0">
-                  <ul>
-                    <li *ngFor="let w_selected of selectedWeatherParameters" class="bottom-margin">
-                      {{w_selected}};
-                    </li>
-                  </ul>
+                  <span *ngFor="let w_selected of selectedWeatherParameters" class="round">
+                    {{w_selected}}
+                  </span>
                 </ng-container>
                 </mat-select-trigger>
               <mat-option *ngFor="let p of weatherParameters" [value]="p"> {{weatherParametersDescriptions[p]}} ({{p}})</mat-option>
@@ -114,19 +136,17 @@
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedWeatherOffsets?.length > 0">
-                  <ul>
-                    <li *ngFor="let o_selected of selectedWeatherOffsets" class="bottom-margin">
-                      {{o_selected}};
-                    </li>
-                  </ul>
+                    <span *ngFor="let o_selected of selectedWeatherOffsets" class="round">
+                      {{o_selected}}
+                    </span>
+
                 </ng-container>
                 </mat-select-trigger>
               <mat-option *ngFor="let p of weatherOffsets" [value]="p"> {{p}} </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
-
-        </div>
+      </div>
 
       <!--<div class="form-group">-->
         <!--<label class="required" for="wAggregators">Select weather aggregator: </label>-->
@@ -187,27 +207,27 @@
 <div mat-dialog-actions>
 
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-<ng-container *ngIf="isColReconciled">
-  <button *ngIf="selectedService === reconciledFromService.getId()"
+    <ng-container *ngIf="!isColDate">
+      <button *ngIf="selectedService === reconciledFromService.getId()"
           mat-button class="btn btn-sm btn-link"
           [disabled]="selectedProperties.length === 0 || dataLoading"
           (click)="extend()" cdkFocusInitial>Extend</button>
 
 
-  <button *ngIf="selectedService === 'ecmwf'"
+      <button *ngIf="selectedService === 'ecmwf'"
           mat-button class="btn btn-sm btn-link"
           [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
           (dateChoice === 'fromCol' && readDatesFromCol || dateChoice === 'fromPicker' && selectedDate))"
           (click)="weather()" cdkFocusInitial>Fetch Weather data!</button>
-  </ng-container>
-  <ng-container *ngIf="!isColReconciled && isColDate">
-    <button *ngIf="selectedService === 'ecmwf'"
+    </ng-container>
+    <ng-container *ngIf="isColDate">
+      <button *ngIf="selectedService === 'ecmwf'"
             mat-button class="btn btn-sm btn-link"
             [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
-            (placeChoice === 'fromCol' && readPlacesFromCol || placeChoice === 'fromPicker' && selectedPlace))"
+            (placeChoice === 'fromCol' && readPlacesFromCol || placeChoice === 'placefromPicker' && selectedPlace))"
             (click)="weather()" cdkFocusInitial>Fetch Weather data
-    </button>
-  </ng-container>
+      </button>
+    </ng-container>
 
   <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0" (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

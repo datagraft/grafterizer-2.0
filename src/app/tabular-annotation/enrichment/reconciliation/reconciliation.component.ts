@@ -111,6 +111,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.updateThreshold();
       this.dataLoading = false;
+      
     });
   }
 
@@ -413,6 +414,7 @@ export class ReconciliationComponent implements OnInit {
 
       this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.apply_column_filter(this.filter_column);
       this.dataSource.paginator = this.paginator;
     }//end sortData
 
