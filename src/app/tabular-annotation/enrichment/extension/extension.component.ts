@@ -19,7 +19,6 @@ export class ExtensionComponent implements OnInit {
   public colIndex: any;
   public isColDate : boolean;
   public isColReconciled : boolean;
-  public placeSuggestion: any= [];
   public extensionData: any;
   public propertyDescriptions: Map<string, Property>;
   public services: ConciliatorService[];
@@ -31,6 +30,7 @@ export class ExtensionComponent implements OnInit {
   public servicesGroups: string[];
   public allowedSources: string[];
   public geoAllowedSources: string[];
+  public geo_Sources: string[];
   public readDatesFromCol: string;
   public readPlacesFromCol: string;
   public selectedDate: any;
@@ -56,7 +56,9 @@ export class ExtensionComponent implements OnInit {
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.previewHeader = this.header;
-    this.geoAllowedSources = this.dialogInputData.geoSoources;
+
+    this.geo_Sources = this.dialogInputData.geoSoources;
+    this.geoAllowedSources = this.geo_Sources;
     this.colIndex = this.dialogInputData.indexCol;
     this.isColDate = this.dialogInputData.colDate;
     this.isColReconciled = this.dialogInputData.colReconciled;
@@ -289,7 +291,7 @@ export class ExtensionComponent implements OnInit {
 
 
   geoSuggestions(new_val)  {
-    this.placeSuggestion= [];
+    this.dataSource = [];
     if(new_val !== "")
     {
       this.http.get('http://api.geonames.org/searchJSON?q='+this.selectedPlace+'&maxRows=50&username=asia_geo')
@@ -297,17 +299,31 @@ export class ExtensionComponent implements OnInit {
         this.geo_answer = data;
         for(let i = 0; i < this.geo_answer.geonames.length; i++ )
         {
-          if(this.geo_answer.geonames[i].fcl === "A")
+          if(this.geo_answer.geonames[i].fcl === "A" && (this.geo_answer.geonames[i].fcode === "ADM1" ||
+         this.geo_answer.geonames[i].fcode === "ADM2" ||this.geo_answer.geonames[i].fcode === "ADM3" ||this.geo_answer.geonames[i].fcode === "ADM4"))
           {
-            this.placeSuggestion.push(this.geo_answer.geonames[i]);
+            this.dataSource.push(this.geo_answer.geonames[i]);
           }
         }
-        this.dataSource = this.placeSuggestion;
+
       });
     }
     else
     {
       this.dataSource = [];
     }
+  }
+  public _filter(value: string) {
+    this.geoAllowedSources = [];
+    const filterValue = value.toLowerCase();
+
+    for ( let i = 0; i < this.geo_Sources.length; i++ )
+    {
+        if(this.geo_Sources[i].toLowerCase().search(filterValue) !== -1)
+        {
+           this.geoAllowedSources.push(this.geo_Sources[i]);
+        }
+    }
+
   }
 }

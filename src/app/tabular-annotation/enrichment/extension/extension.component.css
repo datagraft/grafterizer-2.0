@@ -24,8 +24,12 @@ span.round {
   width:35px;
   text-align: center;
 }
-span.red{
+span.fcode{
   color:red;
+  margin-left: 5%;
+}
+span.toponymName{
+  margin-left: 5%;
 }
 li.suggestions{
   margin-top: 5px;
@@ -34,8 +38,24 @@ div.suggestions
 {
   margin-left: 5%;
 }
+div.country
+{
+  margin-top: 3px;
+  background-color: red;
+
+}
+
 div.c1{
     padding: 0;
     overflow-y: scroll;
-    max-height:250px;
+    max-height:200px;
+
+}
+mat-option.option_suggestions {
+  height: auto;
+  font-size: 12px;
+}
+hr{
+  margin:0px;
+
 }

@@ -56,11 +56,17 @@
           <div class="radio-inline">
             <input type="radio" name="placeChoice" id="colPlaceRadio" value="fromCol" [(ngModel)]="placeChoice">
             <label for="colPlaceRadio">Read place from column:</label>
-            <label for="colPlace" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
-                   auto-complete [source]="geoAllowedSources" (valueChanged)="changePlaceColumn($event)">
+
+
               <input id="colPlace" type="text" name="colPlace" [(ngModel)]="readPlacesFromCol" placeholder="Choose a place column"
-                [disabled]="placeChoice === 'placefromPicker'">
-            </label>
+                [disabled]="placeChoice === 'placefromPicker'" matInput [matAutocomplete]="placeColumn" (ngModelChange)="_filter($event)">
+                <mat-autocomplete #placeColumn="matAutocomplete">
+                  <mat-option class="option_suggestions" *ngFor="let element of geoAllowedSources" [value]="element">
+                    {{element}}
+                   </mat-option>
+                  </mat-autocomplete>
+
+
           </div>
 
           <div class="radio">
@@ -68,26 +74,19 @@
             <label for="placePickerRadio">Enter place:</label>
           </div>
           <div class="suggestions">
-            <input type="text" id="place" name="place" [(ngModel)]="selectedPlace" size="45" (ngModelChange)="geoSuggestions($event)" placeholder="Enter a place"
-              [disabled]="placeChoice === 'fromCol'">
-            <ng-container *ngIf="dataSource.length >0">
-              <div class="c1">
-              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-                <ng-container matColumnDef="placeSuggestions">
-                  <th mat-header-cell *matHeaderCellDef>  </th>
-                    <td  mat-cell *matCellDef="let element let i= index"  (click)="setManualPlace(i)" >
-                      <ul >
-                        <li class="suggestions"><b>ID: {{element.geonameId}}</b> </li>
-                        <li> <a href="http://www.geonames.org/{{element.geonameId}}" target="blank"> {{element.toponymName}} </a> </li>
-                        <li> <span class="red">{{element.fcl}}  {{element.fcode}} </span></li>
-                        <li>{{element.countryName}} > {{element.adminName1}}</li>
-                      </ul>
-                    </td>
-                  </ng-container>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
-              </div>
-            </ng-container>
+            <input type="text" id="place" name="place" [(ngModel)]="selectedPlace" size="55" (ngModelChange)="geoSuggestions($event)" placeholder="Enter a place"
+              [disabled]="placeChoice === 'fromCol'" matInput [matAutocomplete]="auto">
+
+              <mat-autocomplete #auto="matAutocomplete">
+                <mat-option class="option_suggestions" *ngFor="let element of dataSource" [value]="element.geonameId">
+                  <b>  ID: {{element.geonameId}}</b>
+                  <span class="toponymName">
+                     <a href="http://www.geonames.org/{{element.geonameId}}" target="blank"> {{element.toponymName}} </a>
+                   </span>
+                     <span class="fcode">{{element.fcl}}  {{element.fcode}} </span> <hr style="height:1px; visibility:hidden;" />
+                   {{element.countryName}} > {{element.adminName1}} <hr style="height:1px;" />
+                 </mat-option>
+                </mat-autocomplete>
           </div>
         </ng-container>
         <ng-container *ngIf="!isColDate">
