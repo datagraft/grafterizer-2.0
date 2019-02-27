@@ -59,3 +59,10 @@ hr{
   margin:0px;
 
 }
+.chip-list{
+  width: 80%;
+  margin-left: 5%;
+}
+span.red{
+  color:red;
+}

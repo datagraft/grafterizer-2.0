@@ -26,6 +26,7 @@ export class ReconciliationComponent implements OnInit {
 
   public data_for_add_entity_dialog : dialog_add_entity_data =
   { name: "", link : ""};
+  public close : boolean = false;
   public colIndex: any;
   public filter_column = 0;
   public change_selecet = false;
@@ -37,7 +38,7 @@ export class ReconciliationComponent implements OnInit {
   public temp_match:boolean;
   public form_hidden = false;
   public selected =-1;
-  public displayedColumns: string[] = ['position', 'original_value', 'reconciled_entity'];
+  public displayedColumns: string[] = ['position', 'original_value', 'reconciled_entity', 'set matching'];
   public dataSource = null;
   public dataSource_2 = null;
   public header: any;
@@ -58,6 +59,7 @@ export class ReconciliationComponent implements OnInit {
   public maxThresholdCount: number;
   public notReconciledCount: number;
   public shiftColumn: boolean = false;
+  public manualMatched : any[] = [];
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -111,7 +113,7 @@ export class ReconciliationComponent implements OnInit {
       });
       this.updateThreshold();
       this.dataLoading = false;
-      
+
     });
   }
 
@@ -231,7 +233,7 @@ export class ReconciliationComponent implements OnInit {
 
     if (select != 0)
     {
-
+      this.manualMatched.push(this.dataSource_2[index].results[select].id);
       this.temp_option = this.dataSource_2[index].results[0].name;
       this.temp_score = this.dataSource_2[index].results[0].score;
       this.temp_link = this.dataSource_2[index].results[0].id;
@@ -240,7 +242,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2[index].results[0].name = this.dataSource_2[index].results[select].name;
       this.dataSource_2[index].results[0].score = this.dataSource_2[index].results[select].score;
       this.dataSource_2[index].results[0].id = this.dataSource_2[index].results[select].id;
-      this.dataSource_2[index].results[0].match = this.dataSource_2[index].results[select].match;
+      this.dataSource_2[index].results[0].match = true;
 
       this.dataSource_2[index].results[select].name = this.temp_option;
       this.dataSource_2[index].results[select].score = this.temp_score;
@@ -373,6 +375,21 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
     }//end filter 4
+    else if(filter == 5)
+    {//filter by matched by user
+      this.reconciledData.forEach((mapping: Mapping) => {
+      if ((mapping.results.length > 0 && this.manualMatched.indexOf(mapping.results[0].id) === -1) || mapping.results.length == 0)
+      {
+        this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+        this.index_filtered_reconciled--;
+      }
+      this.index_filtered_reconciled++;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 4
+
 
   }//end apply_column_filter
 
@@ -436,4 +453,42 @@ export class ReconciliationComponent implements OnInit {
       this.filter_column = 1;
       this.apply_column_filter(1);
   }
+
+  removeManualMatched(index, id){
+    let isManualMAtched = this.manualMatched.indexOf(id);
+      if(isManualMAtched !== -1)
+      {
+        this.manualMatched.splice(isManualMAtched, 1);
+      }
+      else
+      {
+        this.matchedCount--;
+      }
+      if(this.dataSource_2[index].results[0].score >= this.threshold)
+      {
+        this.maxThresholdCount++;
+      }
+      else
+      {
+        this.skippedCount++;
+      }
+    this.dataSource_2[index].results[0].match = false;
+
+    }
+
+    addManualMatched(index, id){
+      this.manualMatched.push(id);
+      this.dataSource_2[index].results[0].match = true;
+      if(this.dataSource_2[index].results[0].score >= this.threshold)
+      {
+        this.maxThresholdCount--;
+      }
+      else
+      {
+        this.skippedCount--;
+      }
+
+
+      }
+
 }//end export class

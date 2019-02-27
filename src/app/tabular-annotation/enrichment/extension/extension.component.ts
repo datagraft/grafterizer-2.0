@@ -1,5 +1,5 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef,  MatTableDataSource} from '@angular/material';
+import {Component, Inject, OnInit,ViewChild,ElementRef} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef,  MatTableDataSource,MatAutocompleteSelectedEvent, MatChipInputEvent,MatAutocomplete} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator} from '../enrichment.model';
@@ -11,7 +11,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
   styleUrls: ['./extension.component.css']
 })
 export class ExtensionComponent implements OnInit {
+  public isGeonamesColumn : boolean = false;
+  public isCategoriesColumn : boolean = false;
   public dataSource  :any;
+  public categorySuggestions  :any;
   public displayedColumns: string[] = ['placeSuggestions'];
   public geo_answer : any;
   public header: any;
@@ -30,11 +33,15 @@ export class ExtensionComponent implements OnInit {
   public servicesGroups: string[];
   public allowedSources: string[];
   public geoAllowedSources: string[];
+  public categoriesAllowedSources: string[];
   public geo_Sources: string[];
+  public categories_Sources: string[];
   public readDatesFromCol: string;
   public readPlacesFromCol: string;
+  public readCategoriesFromCol: string;
   public selectedDate: any;
   public selectedPlace: any;
+  public selectedCategory: any;
   public weatherParameters: string[];
   public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
@@ -44,9 +51,16 @@ export class ExtensionComponent implements OnInit {
   public selectedWeatherAggregators: any[];
   public dateChoice: any;
   public placeChoice: any;
+  public categoryChoice: any;
   public dataLoading: boolean;
   public reconciledFromService: ConciliatorService;
   public shiftColumn: boolean = false;
+  public selectedChipsPlaces : any = [];
+  public selectedChipsCategories : any = [];
+
+
+  @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
+  @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
 
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
               private http: HttpClient,
@@ -56,9 +70,10 @@ export class ExtensionComponent implements OnInit {
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.previewHeader = this.header;
-
     this.geo_Sources = this.dialogInputData.geoSoources;
     this.geoAllowedSources = this.geo_Sources;
+    this.categories_Sources = this.dialogInputData.categoriesSoources;
+    this.categoriesAllowedSources = this.categories_Sources;
     this.colIndex = this.dialogInputData.indexCol;
     this.isColDate = this.dialogInputData.colDate;
     this.isColReconciled = this.dialogInputData.colReconciled;
@@ -73,10 +88,12 @@ export class ExtensionComponent implements OnInit {
     this.services = [];
     this.servicesGroups = [];
     this.dataSource = [];
+    this.categorySuggestions = [];
 
     if (!this.isColReconciled && this.isColDate)
     {
       this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+      this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
       this.reconciledFromService = new ConciliatorService({'id': 'geonames', 'name': 'GeoNames', group: 'geo', identifierSpace: 'http://sws.geonames.org/', schemaSpace: 'http://www.geonames.org/ontology# ExtensionECMWF'});
     }
     else if (this.isColReconciled && !this.isColDate)
@@ -85,18 +102,20 @@ export class ExtensionComponent implements OnInit {
       this.services.push(this.reconciledFromService);
       if (this.reconciledFromService.getId() === 'geonames')
       {
+        this.isGeonamesColumn = true;
         this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
+        this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
       }
+      else if (this.reconciledFromService.getId() === 'productsservices')
+      {
+        this.isCategoriesColumn = true;
+        this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
+      }
+      //
     }
     else if (this.isColReconciled && this.isColDate)
     {
-    /*  this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
-      this.services.push(this.reconciledFromService);
-      if (this.reconciledFromService.getId() === 'geonames') {
-        this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
 
-      }
-      */
       //to do
     }
 
@@ -294,6 +313,7 @@ export class ExtensionComponent implements OnInit {
     this.dataSource = [];
     if(new_val !== "")
     {
+
       this.http.get('http://api.geonames.org/searchJSON?q='+this.selectedPlace+'&maxRows=50&username=asia_geo')
       .subscribe(data  => {
         this.geo_answer = data;
@@ -307,12 +327,21 @@ export class ExtensionComponent implements OnInit {
         }
 
       });
+
     }
     else
     {
       this.dataSource = [];
     }
   }
+
+
+
+  categoriesSuggestions(new_val)  {
+    //to do --> http call for cateogories entities suggestions
+
+  }
+
   public _filter(value: string) {
     this.geoAllowedSources = [];
     const filterValue = value.toLowerCase();
@@ -326,4 +355,80 @@ export class ExtensionComponent implements OnInit {
     }
 
   }
+  public _filterCategories(value: string) {
+    this.categoriesAllowedSources = [];
+    const filterValue = value.toLowerCase();
+
+    for ( let i = 0; i < this.categories_Sources.length; i++ )
+    {
+        if(this.categories_Sources[i].toLowerCase().search(filterValue) !== -1)
+        {
+           this.categoriesAllowedSources.push(this.categories_Sources[i]);
+        }
+    }
+
+  }
+  public _filterDates(value: string) {
+
+    const filterValue = value.toLowerCase();
+    if(value !== ""){
+      this.allowedSources = this.enrichmentService.headers.filter(h => h.toLowerCase().search(filterValue) !== -1);
+    }
+    else
+    {
+      this.allowedSources = this.enrichmentService.headers.filter(h => h !== this.header);
+    }
+  }
+
+  addPlaceChips(geoId: string): void {
+      this.selectedChipsPlaces.push(geoId);
+      this.inputPLaceChips.nativeElement.value = '';
+
+  }
+
+  removePlaceChips(place: string): void {
+    const index = this.selectedChipsPlaces.indexOf(place);
+
+    if (index >= 0) {
+      this.selectedChipsPlaces.splice(index, 1);
+    }
+  }
+
+  addCategoriesChips(categories: string): void {
+      //to do -> method than add chips
+
+    }
+
+  removeCategoriesChips(categories: string): void {
+    const index = this.selectedChipsCategories.indexOf(categories);
+
+    if (index >= 0) {
+      this.selectedChipsCategories.splice(index, 1);
+    }
+  }
+
+  resetVariables(){
+    this.placeChoice = "";
+    this.dateChoice = "";
+    this.categoryChoice = "";
+
+    this.selectedDate = "";
+    this.selectedPlace = "";
+    this.selectedCategory = "";
+
+    this.readDatesFromCol = "";
+    this.readPlacesFromCol = "";
+    this.readCategoriesFromCol = "";
+
+    this.dataSource = [];
+    this.geoAllowedSources = this.geo_Sources;
+    this.allowedSources = this.enrichmentService.headers.filter(h => h !== this.header);
+
+  }
+
+  event(){
+    this.showPreview = true;
+    //to do method for EventRegistry service
+  }
+
 }

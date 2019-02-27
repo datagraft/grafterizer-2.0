@@ -1,4 +1,4 @@
-<h4 mat-dialog-title>Column Reconciliation </h4>
+<h4 mat-dialog-title>Column Reconciliation  </h4>
 
 
 <div mat-dialog-content>
@@ -76,7 +76,15 @@
               <clr-tooltip>
                 <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">verified_user</i> {{matchedCount}} </div>
                 <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
-                  <span>Reconciled entity matched </span>
+                  <span>Reconciled entity automatically matched  </span>
+                </clr-tooltip-content>
+              </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+              <clr-tooltip>
+                <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">check_circle_outline</i> {{manualMatched.length}} </div>
+                <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                  <span>Reconciled entity matched by user  </span>
                 </clr-tooltip-content>
               </clr-tooltip>
           </div>
@@ -123,9 +131,9 @@
         <mat-dialog-actions>
           <button mat-button class="btn btn-sm  btn-link custom-width" [disabled]="maxThresholdCount === 0"
             (click)="setAllMaxThresholdAsMAtched()">
-              <sup> set all </sup>
+
               <i class="material-icons margin_top" fontsize="8" style="color:green;">check_circle</i>
-              <sup> to </sup>
+              <i class="material-icons margin_top" fontsize="8" >arrow_forward</i>
               <i class="material-icons" style="color:DeepSkyBlue;">verified_user</i>
             </button>
         </mat-dialog-actions>
@@ -133,21 +141,28 @@
       <div class="filter">
 
         <mat-form-field>
-          <mat-select [(value)]="filter_column" placeholder="filter" (selectionChange)="apply_column_filter(filter_column);">
+          <mat-select [(value)]="filter_column" placeholder="filter by matching" (selectionChange)="apply_column_filter(filter_column);">
 
             <mat-option [value]="0" >
               none
             </mat-option>
 
             <mat-option *ngIf="matchedCount > 0" [value]="1" >
-              Matched
+              automatic Matched
             </mat-option>
+
+            <mat-option *ngIf="manualMatched.length > 0" [value]="5" >
+              Matched by user
+            </mat-option>
+
             <mat-option *ngIf="maxThresholdCount > 0" [value]="2">
               >= threshold
             </mat-option>
+
             <mat-option *ngIf="skippedCount > 0" [value]="3">
               < threshold
             </mat-option>
+
             <mat-option *ngIf="notReconciledCount > 0" [value]="4">
               not reconciled
             </mat-option>
@@ -185,7 +200,7 @@
 
           <ng-container *ngIf="element.results.length > 0">
             <mat-accordion>
-              <mat-expansion-panel _ngcontent-c0="" class="" #mep="matExpansionPanel"  >
+              <mat-expansion-panel _ngcontent-c0="" [expanded]="close" class="" #mep="matExpansionPanel"  >
                 <mat-expansion-panel-header>
                   <mat-panel-title>
                     <div class="entity_reconciled_name">
@@ -194,8 +209,12 @@
                             <sub> ({{element.results[0].score}}) </sub>
                     </div>
                     <div clas="entity_reconciled_icon">
-                      <ng-container *ngIf="element.results[0].match && (element.results[0].score < threshold || element.results[0].score >= threshold)">
+                      <ng-container *ngIf="element.results[0].match && manualMatched.indexOf(element.results[0].id) === -1">
                             <mat-icon mat-list-icon style="color: DeepSkyBlue;">verified_user</mat-icon>
+                      </ng-container>
+
+                      <ng-container *ngIf="manualMatched.indexOf(element.results[0].id) !== -1">
+                            <mat-icon mat-list-icon style="color: DeepSkyBlue;">check_circle_outline</mat-icon>
                       </ng-container>
 
                       <ng-container *ngIf="!element.results[0].match && element.results[0].score >= threshold">
@@ -256,6 +275,40 @@
       </td>
     </ng-container>
 
+    <ng-container matColumnDef="set matching">
+      <th mat-header-cell *matHeaderCellDef> <span class="setMatching">set matching</span> </th>
+      <td mat-cell *matCellDef="let element let i=index" class="fourth_td">
+        <ng-container *ngIf="element.results.length >0">
+          <ng-container *ngIf="element.results[0].match && element.results[0].score >= threshold">
+            <span class="setMatching" (click)="removeManualMatched(i,element.results[0].id)">
+              <i class="material-icons margin_top" fontsize="8" >arrow_forward</i>
+              <mat-icon mat-list-icon class="sin-success-color">check_circle</mat-icon>
+            </span>
+          </ng-container>
+
+          <ng-container *ngIf="element.results[0].match && element.results[0].score < threshold">
+            <span class="setMatching" (click)="removeManualMatched(i,element.results[0].id)">
+              <i class="material-icons margin_top" fontsize="8" >arrow_forward</i>
+              <mat-icon mat-list-icon class="sin-error-color">error</mat-icon>
+            </span>
+          </ng-container>
+
+
+
+          <ng-container *ngIf="!element.results[0].match &&
+                          (element.results[0].score < threshold || element.results[0].score >= threshold)">
+            <span class="setMatching" (click)="addManualMatched(i,element.results[0].id)">
+              <i class="material-icons margin_top" fontsize="8" >arrow_forward</i>
+              <mat-icon mat-list-icon style="color: DeepSkyBlue;">
+                check_circle_outline
+              </mat-icon>
+            </span>
+          </ng-container>
+        </ng-container>
+
+      </td>
+    </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns; "></tr>
   </table>
@@ -269,6 +322,6 @@
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
   <button mat-button class="btn btn-sm btn-link" [disabled]="!selectedService || dataLoading" (click)="reconcile()"
     cdkFocusInitial>Reconcile</button>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="matchedCount === 0 || dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
+  <button mat-button class="btn btn-sm btn-link" [disabled]=" (matchedCount === 0 && manualMatched.length === 0 ) || dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
     (click)="submit()" *ngIf="showPreview">Apply</button>
 </div>

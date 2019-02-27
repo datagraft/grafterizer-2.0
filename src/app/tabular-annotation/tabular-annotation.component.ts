@@ -34,6 +34,7 @@ declare var Handsontable: any;
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   public  geoNamesSources :string [];
+  public  categoriesSources :string [];
 
   private transformationObj: any;
   private graftwerkData: any;
@@ -210,7 +211,20 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const isDateColumn = this.enrichmentService.isColumnDate(currentHeader);
 
     this.geoNamesSources = [];
-    this.annotationService.headers.forEach((geo: string ) => {
+    this.categoriesSources = [];
+    this.annotationService.headers.forEach((header: string ) => {
+      if(this.enrichmentService.isColumnReconciled(header))
+      {
+        if(this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === "geonames")
+        {
+          this.geoNamesSources.push(header);
+        }
+        else if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === "productsservices")
+        {
+          this.categoriesSources.push(header);
+        }
+      }
+      /*
       const annotation =this.annotationService.getAnnotation(geo);
         if (annotation)
         {
@@ -225,7 +239,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
               }
             }//end for
           }// end uri
-        }//end if annotation
+        }//end if annotation*/
     });
 
     let dialogRef;
@@ -235,11 +249,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     };
     const dialogConfigExtension = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false, geoSoources : this.geoNamesSources, categoriesSoources : this.categoriesSources  }
     };
     const dialogConfigDateCOlumn = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : true, geoSoources : this.geoNamesSources  }
+      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : true, geoSoources : this.geoNamesSources, categoriesSoources : this.categoriesSources  }
     };
     const dialogConfigReconciliation = {
       width: '800px',

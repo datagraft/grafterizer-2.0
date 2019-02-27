@@ -23,18 +23,21 @@ p.ridge {
 }
 
  td.third_td {
-  width:50%;
+  width:45%;
   padding:0;
   margin:0;
  }
 
  td.second_td {
-  width:35%;
+  width:30%;
  }
 
 td.first_td {
-  width:15%;
+  width:10%;
  }
+ td.fourth_td {
+   width:15%;
+  }
 
  mat-accordion{
    width: 600px;
@@ -150,12 +153,15 @@ span.left_margin{
 
 div.icons{
   width: 100%;
-  margin-right: 16%;
-  margin-left: 15%;
+  margin-right: 17%;
+  margin-left: 12%;
 }
 div.specific_icon{
-  margin-right: 8%;
+  margin-right: 6%;
   display: inline;
   float:left;
-
+}
+span.setMatching{
+  margin-left: 15px;
+  cursor : pointer;
 }
