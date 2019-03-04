@@ -161,7 +161,11 @@ div.specific_icon{
   display: inline;
   float:left;
 }
-span.setMatching{
+span.setMatchingHeader{
   margin-left: 15px;
+  
+}
+span.setMatching{
+  margin-left: 20px;
   cursor : pointer;
 }
