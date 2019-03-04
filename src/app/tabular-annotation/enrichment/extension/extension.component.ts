@@ -1,9 +1,16 @@
-import {Component, Inject, OnInit,ViewChild,ElementRef} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef,  MatTableDataSource,MatAutocompleteSelectedEvent, MatChipInputEvent,MatAutocomplete} from '@angular/material';
+import {Component, Inject, OnInit, ViewChild, ElementRef} from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatTableDataSource,
+  MatAutocompleteSelectedEvent,
+  MatChipInputEvent,
+  MatAutocomplete
+} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator} from '../enrichment.model';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 
 @Component({
   selector: 'app-extension',
@@ -11,17 +18,17 @@ import { HttpClient, HttpParams } from '@angular/common/http';
   styleUrls: ['./extension.component.css']
 })
 export class ExtensionComponent implements OnInit {
-  public isGeonamesColumn : boolean = false;
-  public isCategoriesColumn : boolean = false;
-  public dataSource  :any;
-  public categorySuggestions  :any;
+  public isGeonamesColumn: boolean = false;
+  public isCategoriesColumn: boolean = false;
+  public dataSource: any;
+  public categorySuggestions: any;
   public displayedColumns: string[] = ['placeSuggestions'];
-  public geo_answer : any;
+  public geo_answer: any;
   public header: any;
   public previewHeader: any;
   public colIndex: any;
-  public isColDate : boolean;
-  public isColReconciled : boolean;
+  public isColDate: boolean;
+  public isColReconciled: boolean;
   public extensionData: any;
   public propertyDescriptions: Map<string, Property>;
   public services: ConciliatorService[];
@@ -55,8 +62,8 @@ export class ExtensionComponent implements OnInit {
   public dataLoading: boolean;
   public reconciledFromService: ConciliatorService;
   public shiftColumn: boolean = false;
-  public selectedChipsPlaces : any = [];
-  public selectedChipsCategories : any = [];
+  public selectedChipsPlaces: any = [];
+  public selectedChipsCategories: any = [];
 
 
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
@@ -65,7 +72,8 @@ export class ExtensionComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
               private http: HttpClient,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
-              private enrichmentService: EnrichmentService) { }
+              private enrichmentService: EnrichmentService) {
+  }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
@@ -90,31 +98,29 @@ export class ExtensionComponent implements OnInit {
     this.dataSource = [];
     this.categorySuggestions = [];
 
-    if (!this.isColReconciled && this.isColDate)
-    {
+    if (!this.isColReconciled && this.isColDate) {
       this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
       this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
-      this.reconciledFromService = new ConciliatorService({'id': 'geonames', 'name': 'GeoNames', group: 'geo', identifierSpace: 'http://sws.geonames.org/', schemaSpace: 'http://www.geonames.org/ontology# ExtensionECMWF'});
-    }
-    else if (this.isColReconciled && !this.isColDate)
-    {
+      this.reconciledFromService = new ConciliatorService({
+        'id': 'geonames',
+        'name': 'GeoNames',
+        group: 'geo',
+        identifierSpace: 'http://sws.geonames.org/',
+        schemaSpace: 'http://www.geonames.org/ontology# ExtensionECMWF'
+      });
+    } else if (this.isColReconciled && !this.isColDate) {
       this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
       this.services.push(this.reconciledFromService);
-      if (this.reconciledFromService.getId() === 'geonames')
-      {
+      if (this.reconciledFromService.getId() === 'geonames') {
         this.isGeonamesColumn = true;
         this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
         this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
-      }
-      else if (this.reconciledFromService.getId() === 'productsservices')
-      {
+      } else if (this.reconciledFromService.getId() === 'productsservices') {
         this.isCategoriesColumn = true;
         this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
       }
       //
-    }
-    else if (this.isColReconciled && this.isColDate)
-    {
+    } else if (this.isColReconciled && this.isColDate) {
 
       //to do
     }
@@ -182,17 +188,13 @@ export class ExtensionComponent implements OnInit {
       aggregators: this.selectedWeatherAggregators,
       offsets: this.selectedWeatherOffsets
     };
-    if(this.isColReconciled && !this.isColDate)
-    {
-      if (this.dateChoice === 'fromCol')
-      {
+    if (this.isColReconciled && !this.isColDate) {
+      if (this.dateChoice === 'fromCol') {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.readDatesFromCol}});
-      }
-      else
-      {
+      } else {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
       }
-      this.enrichmentService.weatherData(this.header,false, weatherConfig).subscribe((data: Extension[]) => {
+      this.enrichmentService.weatherData(this.header, false, weatherConfig).subscribe((data: Extension[]) => {
         this.extensionData = data;
         if (this.extensionData.length > 0) {
           this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -200,25 +202,20 @@ export class ExtensionComponent implements OnInit {
         this.dataLoading = false;
       });
     }//end if (this.isColReconciled && !this.isColDate)
-    else if (!this.isColReconciled && this.isColDate)
-    {
+    else if (!this.isColReconciled && this.isColDate) {
       let singlePlaceSelected = false;
-      if (this.placeChoice === 'fromCol')
-      {
+      if (this.placeChoice === 'fromCol') {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
         this.previewHeader = this.readPlacesFromCol;
-      }
-      else
-      {
+      } else {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
         this.previewHeader = this.header;
         this.readPlacesFromCol = this.selectedPlace;
         singlePlaceSelected = true;
       }
-      this.enrichmentService.weatherData(this.readPlacesFromCol,singlePlaceSelected, weatherConfig).subscribe((data: Extension[]) => {
+      this.enrichmentService.weatherData(this.readPlacesFromCol, singlePlaceSelected, weatherConfig).subscribe((data: Extension[]) => {
         this.extensionData = data;
-        if (this.extensionData.length > 0)
-        {
+        if (this.extensionData.length > 0) {
           this.previewProperties = Array.from(this.extensionData[0].properties.keys());
         }
         this.dataLoading = false;
@@ -226,8 +223,7 @@ export class ExtensionComponent implements OnInit {
 
 
     }//end if (!this.isColReconciled && this.isColDate)
-    else if (this.isColReconciled && this.isColDate)
-    {
+    else if (this.isColReconciled && this.isColDate) {
       /*if (this.placeChoice === 'fromCol') {
         weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
       }
@@ -268,7 +264,7 @@ export class ExtensionComponent implements OnInit {
 
   public extensionProperties = (): Observable<Response> => {
     return this.enrichmentService.propertiesAvailable();
-  }
+  };
 
   public removePropertyFromPreview(property: string) {
     this.previewProperties = this.previewProperties.filter(prop => prop !== property);
@@ -289,7 +285,7 @@ export class ExtensionComponent implements OnInit {
 
   }
 
-  setManualPlace(row){
+  setManualPlace(row) {
 
     this.selectedPlace = this.dataSource[row].geonameId;
     this.dataSource = [];
@@ -300,8 +296,8 @@ export class ExtensionComponent implements OnInit {
     this.extensionData.forEach((extension: Extension) => {
       const objects = extension.properties.get(prop);
       if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
-          return !(obj && !obj['id']);
-        }).length) {
+        return !(obj && !obj['id']);
+      }).length) {
         valid = false;
       }
     });
@@ -309,35 +305,18 @@ export class ExtensionComponent implements OnInit {
   }
 
 
-  geoSuggestions(new_val)  {
+  geoSuggestions(new_val) {
     this.dataSource = [];
-    if(new_val !== "")
-    {
-
-      this.http.get('http://api.geonames.org/searchJSON?q='+this.selectedPlace+'&maxRows=50&username=asia_geo')
-      .subscribe(data  => {
-        this.geo_answer = data;
-        for(let i = 0; i < this.geo_answer.geonames.length; i++ )
-        {
-          if(this.geo_answer.geonames[i].fcl === "A" && (this.geo_answer.geonames[i].fcode === "ADM1" ||
-         this.geo_answer.geonames[i].fcode === "ADM2" ||this.geo_answer.geonames[i].fcode === "ADM3" ||this.geo_answer.geonames[i].fcode === "ADM4"))
-          {
-            this.dataSource.push(this.geo_answer.geonames[i]);
-          }
-        }
-
-      });
-
-    }
-    else
-    {
-      this.dataSource = [];
+    if (new_val && new_val.length > 1) {
+      this.http.get('http://api.geonames.org/searchJSON?q=' + this.selectedPlace + '&maxRows=50&featureClass=A&username=asia_geo')
+        .subscribe(data => {
+          this.dataSource = data['geonames'];
+        });
     }
   }
 
 
-
-  categoriesSuggestions(new_val)  {
+  categoriesSuggestions(new_val) {
     //to do --> http call for cateogories entities suggestions
 
   }
@@ -346,43 +325,39 @@ export class ExtensionComponent implements OnInit {
     this.geoAllowedSources = [];
     const filterValue = value.toLowerCase();
 
-    for ( let i = 0; i < this.geo_Sources.length; i++ )
-    {
-        if(this.geo_Sources[i].toLowerCase().search(filterValue) !== -1)
-        {
-           this.geoAllowedSources.push(this.geo_Sources[i]);
-        }
+    for (let i = 0; i < this.geo_Sources.length; i++) {
+      if (this.geo_Sources[i].toLowerCase().search(filterValue) !== -1) {
+        this.geoAllowedSources.push(this.geo_Sources[i]);
+      }
     }
 
   }
+
   public _filterCategories(value: string) {
     this.categoriesAllowedSources = [];
     const filterValue = value.toLowerCase();
 
-    for ( let i = 0; i < this.categories_Sources.length; i++ )
-    {
-        if(this.categories_Sources[i].toLowerCase().search(filterValue) !== -1)
-        {
-           this.categoriesAllowedSources.push(this.categories_Sources[i]);
-        }
+    for (let i = 0; i < this.categories_Sources.length; i++) {
+      if (this.categories_Sources[i].toLowerCase().search(filterValue) !== -1) {
+        this.categoriesAllowedSources.push(this.categories_Sources[i]);
+      }
     }
 
   }
+
   public _filterDates(value: string) {
 
     const filterValue = value.toLowerCase();
-    if(value !== ""){
+    if (value !== '') {
       this.allowedSources = this.enrichmentService.headers.filter(h => h.toLowerCase().search(filterValue) !== -1);
-    }
-    else
-    {
+    } else {
       this.allowedSources = this.enrichmentService.headers.filter(h => h !== this.header);
     }
   }
 
   addPlaceChips(geoId: string): void {
-      this.selectedChipsPlaces.push(geoId);
-      this.inputPLaceChips.nativeElement.value = '';
+    this.selectedChipsPlaces.push(geoId);
+    this.inputPLaceChips.nativeElement.value = '';
 
   }
 
@@ -395,9 +370,9 @@ export class ExtensionComponent implements OnInit {
   }
 
   addCategoriesChips(categories: string): void {
-      //to do -> method than add chips
+    //to do -> method than add chips
 
-    }
+  }
 
   removeCategoriesChips(categories: string): void {
     const index = this.selectedChipsCategories.indexOf(categories);
@@ -407,18 +382,18 @@ export class ExtensionComponent implements OnInit {
     }
   }
 
-  resetVariables(){
-    this.placeChoice = "";
-    this.dateChoice = "";
-    this.categoryChoice = "";
+  resetVariables() {
+    this.placeChoice = '';
+    this.dateChoice = '';
+    this.categoryChoice = '';
 
-    this.selectedDate = "";
-    this.selectedPlace = "";
-    this.selectedCategory = "";
+    this.selectedDate = '';
+    this.selectedPlace = '';
+    this.selectedCategory = '';
 
-    this.readDatesFromCol = "";
-    this.readPlacesFromCol = "";
-    this.readCategoriesFromCol = "";
+    this.readDatesFromCol = '';
+    this.readPlacesFromCol = '';
+    this.readCategoriesFromCol = '';
 
     this.dataSource = [];
     this.geoAllowedSources = this.geo_Sources;
@@ -426,7 +401,7 @@ export class ExtensionComponent implements OnInit {
 
   }
 
-  event(){
+  event() {
     this.showPreview = true;
     //to do method for EventRegistry service
   }
