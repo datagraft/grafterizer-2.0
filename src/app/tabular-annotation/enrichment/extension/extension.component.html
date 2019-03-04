@@ -323,8 +323,12 @@
             </mat-chip-list>
             <mat-autocomplete #chipsCategory="matAutocomplete">
               <mat-option class="option_suggestions" *ngFor="let element of categorySuggestions"
-                          (click)="addCategoriesChips(element)">
-                {{element}}
+                          (click)="addCategoriesChips(element.id)">
+                <b> ID: {{element.id}}</b>
+                <span class="toponymName">
+                  {{element.name}}
+                </span>
+                <hr style="height:1px;"/>
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>

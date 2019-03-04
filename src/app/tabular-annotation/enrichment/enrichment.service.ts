@@ -2,13 +2,14 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-  ConciliatorService,
+  ConciliatorService, EventConfigurator,
   Extension,
   Mapping,
   Property,
   ReconciledColumn,
   WeatherConfigurator, WeatherObservation,
-  WeatherParameter
+  WeatherParameter,
+  Event
 } from './enrichment.model';
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
@@ -144,7 +145,6 @@ export class EnrichmentService {
         return e === 0 || e;
       });  // remove empty strings
       dates = dates.map(date => moment(date + '').format());
-      console.log(dates);
     } else {
       dates.push(moment(weatherConfig.getDate()).toISOString(true));
     }
@@ -208,6 +208,97 @@ export class EnrichmentService {
     });
   }//end weatherData
 
+  eventData(on: string, eventConfig: EventConfigurator): Observable<Extension[]> {
+    let geoIds = [];
+    if (eventConfig.getReadPlacesFromCol()) {
+      geoIds = this.data.map(row => row[':' + eventConfig.getReadPlacesFromCol()]);
+      geoIds = Array.from(new Set(geoIds)).filter(function (e) {
+        return e === 0 || e;
+      });  // remove empty strings
+    } else {
+      geoIds = eventConfig.getPlaces();
+    }
+
+    let dates = [];
+    if (eventConfig.getReadDatesFromCol()) {
+      dates = this.data.map(row => row[':' + eventConfig.getReadDatesFromCol()]);
+      dates = Array.from(new Set(dates)).filter(function (e) {
+        return e === 0 || e;
+      });  // remove empty strings
+      dates = dates.map(date => moment(date + '').format());
+    } else {
+      dates.push(moment(eventConfig.getDate()).toISOString(true));
+    }
+
+    let categories = [];
+    if (eventConfig.getReadCategoriesFromCol()) {
+      categories = this.data.map(row => row[':' + eventConfig.getReadCategoriesFromCol()]);
+      categories = Array.from(new Set(categories)).filter(function (e) {
+        return e === 0 || e;
+      });  // remove empty strings
+    } else {
+      categories = eventConfig.getCategories();
+    }
+
+    const requestURL = this.asiaURL + '/events';
+
+    const params = new HttpParams()
+      .set('ids', geoIds.join(','))
+      .set('dates', dates.join(','))
+      .set('categories', categories.join(','));
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+      results.sort(function (a, b) {
+        return a.offset - b.offset;
+      }); // sort results by offset
+      const extensions: Map<string, Extension> = new Map();
+      results.forEach(obs => {
+        const event = new Event(obs);
+        const properties: Map<string, any[]> = new Map();
+
+        if (on === 'date') {
+          // Create extensions based on date
+          let extension = extensions.get(event.getEventDate());
+          if (!extension) {
+            extension = new Extension(event.getEventDate(), []);
+          }
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          extension.addProperties(properties);
+          extensions.set(event.getEventDate(), extension);
+        } else if (on === 'place') {
+          // Create extensions based on place
+          let extension = extensions.get(event.getGeonamesId());
+          if (!extension) {
+            extension = new Extension(event.getGeonamesId(), []);
+          }
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          extension.addProperties(properties);
+          extensions.set(event.getGeonamesId(), extension);
+        } else if (on === 'category') {
+          // Create extensions based on category
+
+          // In this case (extend from category column), only one category is expected
+          // If any result exists, a category must be set (only one)
+          let extension = extensions.get(event.getCategories()[0]);
+          if (!extension) {
+            extension = new Extension(event.getCategories()[0], []);
+          }
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          extension.addProperties(properties);
+          extensions.set(event.getCategories()[0], extension);
+        }
+      });
+      return Array.from(extensions.values());
+    });
+  }//end weatherData
+
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
     this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
   }
@@ -258,4 +349,44 @@ export class EnrichmentService {
   getReconciliationServiceOfColumn(header: string) {
     return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
   }
+
+  geoNamesAutocomplete(keyword) {
+    if (keyword && keyword.length > 1 ) {
+      const params = new HttpParams()
+        .set('q', keyword)
+        .set('maxRows', '50')
+        .set('featureClass', 'A')
+        .set('username', 'asia_geo');
+
+      const url = 'http://api.geonames.org/searchJSON';
+
+      return this.http
+        .get(url, { params: params })
+        .map(res => res['geonames']);
+    }
+    return Observable.of([]);
+  }
+
+  googleCategoriesAutocomplete(keyword) {
+    if (keyword && keyword.length > 1 ) {
+
+      const params = new HttpParams()
+        .set('queries', '{"q0": {"query": "' + keyword + '"}}')
+        .set('conciliator', 'productsservices');
+
+      const httpOptions = {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }),
+        params: params
+      };
+
+      const url = this.asiaURL + '/reconcile';
+
+      return this.http.post(url, null, httpOptions)
+        .map(res => res['q0']['result']);
+    }
+    return Observable.of([]);
+  }
+
 }

@@ -303,3 +303,76 @@ export class WeatherParameter {
     return this.value;
   }
 }
+
+export class EventConfigurator {
+  private readDatesFromCol: string;
+  private date: string;
+  private readPlacesFromCol: string;
+  private places: string[];
+  private readCategoriesFromCol: string;
+  private categories: string[];
+
+  constructor(obj: any) {
+    this.readDatesFromCol = obj && obj.readDatesFromCol || '';
+    this.date = obj && obj.date || '';
+    this.readPlacesFromCol = obj && obj.readPlacesFromCol || '';
+    this.places = obj && obj.places || [];
+    this.readCategoriesFromCol = obj && obj.readCategoriesFromCol || '';
+    this.categories = obj && obj.categories || [];
+  }
+
+  getReadDatesFromCol(): string {
+    return this.readDatesFromCol;
+  }
+
+  getDate(): string {
+    return this.date;
+  }
+
+  getReadPlacesFromCol(): string {
+    return this.readPlacesFromCol;
+  }
+
+  getPlaces(): string[] {
+    return this.places;
+  }
+
+  getReadCategoriesFromCol(): string {
+    return this.readCategoriesFromCol;
+  }
+
+  getCategories(): string[] {
+    return this.categories;
+  }
+}
+
+export class Event {
+  private geonamesId: string;
+  private eventDate: string;
+  private categories: string[];
+  private eventsCount: number;
+
+  constructor(obj: any) {
+    this.geonamesId = obj && obj.geonamesId || '';
+    this.eventDate = obj && obj.eventDate || '';
+    this.categories = obj && obj.categories || [];
+    this.eventsCount = obj && obj.eventsCount || 0;
+  }
+
+  getGeonamesId(): string {
+    return this.geonamesId;
+  }
+
+  getEventDate(): string {
+    return this.eventDate;
+  }
+
+  getCategories(): string[] {
+    return this.categories;
+  }
+
+  getEventsCount(): number {
+    return this.eventsCount;
+  }
+
+}
