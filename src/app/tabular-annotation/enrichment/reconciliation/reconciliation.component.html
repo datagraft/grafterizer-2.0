@@ -75,7 +75,7 @@
           <div class="specific_icon">
               <clr-tooltip>
                 <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">verified_user</i> {{matchedCount}} </div>
-                <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
                   <span>Reconciled entity automatically matched  </span>
                 </clr-tooltip-content>
               </clr-tooltip>
@@ -83,7 +83,7 @@
           <div class="specific_icon">
               <clr-tooltip>
                 <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">check_circle_outline</i> {{manualMatched.length}} </div>
-                <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
                   <span>Reconciled entity matched by user  </span>
                 </clr-tooltip-content>
               </clr-tooltip>
@@ -111,7 +111,7 @@
               <div clrTooltipTrigger>
                 <i class="material-icons" style="color:Gold	;">warning</i> {{notReconciledCount}}
               </div>
-              <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
+              <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
                 <span> row not reconciled </span>
               </clr-tooltip-content>
             </clr-tooltip>
@@ -276,7 +276,7 @@
     </ng-container>
 
     <ng-container matColumnDef="set matching">
-      <th mat-header-cell *matHeaderCellDef> <span class="setMatching">set matching</span> </th>
+      <th mat-header-cell *matHeaderCellDef> <span class="setMatchingHeader">set matching</span> </th>
       <td mat-cell *matCellDef="let element let i=index" class="fourth_td">
         <ng-container *ngIf="element.results.length >0">
           <ng-container *ngIf="element.results[0].match && element.results[0].score >= threshold">

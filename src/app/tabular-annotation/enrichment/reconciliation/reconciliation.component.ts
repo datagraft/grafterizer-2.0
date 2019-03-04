@@ -209,7 +209,7 @@ export class ReconciliationComponent implements OnInit {
     this.reconciledData.forEach((mapping: Mapping) => {
       if (mapping.results.length > 0)
       {
-            if(mapping.results[0].match)
+            if(mapping.results[0].match && this.manualMatched.indexOf(mapping.results[0].id) === -1 )
             {
               this.matchedCount += 1;
             }
@@ -321,7 +321,7 @@ export class ReconciliationComponent implements OnInit {
     else if(filter == 1)
     { //filter by matched
       this.reconciledData.forEach((mapping: Mapping) => {
-        if ((mapping.results.length > 0 && !mapping.results[0].match) || mapping.results.length == 0)
+        if ((mapping.results.length > 0 && (!mapping.results[0].match || this.manualMatched.indexOf(mapping.results[0].id) !== -1)) || mapping.results.length == 0)
         {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
