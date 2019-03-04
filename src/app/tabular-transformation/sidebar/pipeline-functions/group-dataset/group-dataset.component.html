@@ -1,48 +1,42 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Group and aggregate</h3>
-
   <div class="modal-body">
-
-    <label for="colnames">Group by columns:</label>
-    <!--
-    <rl-tag-input [(ngModel)]="colnames" [autocomplete]="true" [autocompleteItems]="columns" [autocompleteMustMatch]="true" placeholder="Column names"
-      id="colnames"></rl-tag-input>
--->
-    <br>
-    <div *ngFor="let idx of getsetlength()">
-
-
-      <div class="row ">
-        <button class="btn btn-link btn-icon-link removablePropertyButton" [disabled]="colnamesFunctionsSet.length === 1">
-          <i class="material-icons md-dark" (click)="removeAggregation(idx)" suiPopup popupText="Remove aggregation"
-            popupPlacement="left top">remove_circle_outline</i>
-        </button>
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="colnamesFunctionsSet[idx]" [datasource]="columns"
-          [openOnFocus]="true" [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
-
-        <ng2-completer class="removablePropertyFields" [(ngModel)]="colnamesFunctionsSet[idx+1]" [datasource]="aggrTypes"
-          [openOnFocus]="true" [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
-
-        <div class="removablePropertyFields" *ngIf="colnamesFunctionsSet[idx+1]=='MERGE'">
-
-          <input type="text" [(ngModel)]="separatorSet[idx]" id="{{'sep'+idx}}" size="10" placeholder="Separator">
-
+    <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true"
+      bindLabel="value" appendTo="body" placeholder="Group by columns" [(ngModel)]="colnames"></ng-select>
+    <div *ngFor="let idx of getSetLength()">
+      <div fxLayout="column">
+        <div fxLayout="row" fxLayoutGap="30px">
+          <div fxFlex="5">
+            <button class="btn btn-link btn-icon-link" [disabled]="colnamesFunctionsSet.length === 2">
+              <mat-icon size="22" id="remove-icon" (click)="removeAggregation(idx)">clear</mat-icon>
+            </button>
+          </div>
+          <div fxFlex="60">
+            <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true"
+              bindLabel="value" appendTo="body" placeholder="Select column" [(ngModel)]="colnamesFunctionsSet[idx]"
+              style="width: 100%;">
+            </ng-select>
+          </div>
+          <div fxFlex="35">
+            <ng-select class="ng-select" [items]="aggrTypes" [multiple]="false" [hideSelected]="true" bindLabel="name"
+              appendTo="body" placeholder="Select aggregation function" [(ngModel)]="colnamesFunctionsSet[idx+1]">
+            </ng-select>
+          </div>
+          <div fxFlex id="removablePropertyFields" *ngIf="colnamesFunctionsSet[idx+1]=='MERGE'">
+            <mat-form-field>
+              <input matInput placeholder="Separator" id="{{'sep'+idx}}" [(ngModel)]="separatorSet[idx]">
+            </mat-form-field>
+          </div>
         </div>
-
       </div>
     </div>
-    <button class="btn btn-primary" (click)="addAggregation()">Add column</button>
-
-
-
-
-
-
     <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
+    <button class="btn btn-primary btn-sm" (click)="addAggregation()">Add aggregated column</button>
+    <br>
+    <br>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Comment" [(ngModel)]="docstring">
+    </mat-form-field>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

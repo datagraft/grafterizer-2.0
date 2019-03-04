@@ -20,7 +20,7 @@ export class RecommenderService {
     // [0, 0, 0, 1, 0, 0], //Insert row above
     // [0, 0, 0, 1, 0, 0], //Insert row below
     // [0, 0, 0, 0, 0, 0], //Filter
-    // [0, 0, 1, -1, 0, 0], //Group and Aggregate
+    [0, 0, 1, -1, 0, 0], //Group and Aggregate
     [0, 0, 1, -1, 0, 0], //Mapc
     // [1, 0, 1, -1, 1, 0], //uppercase
     [0, 1, 1, -1, 0, 0],  //Merge columns
@@ -133,26 +133,26 @@ export class RecommenderService {
       // { label: 'Insert row above', value: { id: 'add-row-above', defaultParams: { position: rs - 1, values: new Array(columns) } } },
       // { label: 'Insert row below', value: { id: 'add-row-below', defaultParams: { position: rs + 1, values: new Array(columns) } } },
       // { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: { colsToFilter: headers } } },
-      // { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: { colnames: headers } } },
-      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: { keyFunctionPairs: this.keyFunctionPairs(headers, null) } } },
+      { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
+      { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
+      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
+      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
+      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Split columns', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
+      { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Convert to uppercase', value: { id: 'map-columns-uc', defaultParams: { keyFunctionPairs: this.keyFunctionPairs(headers, new transformationDataModel.CustomFunctionDeclaration('upper-case', '', 'STRING', 'Converts string to all upper-case')) } } },
-      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: { colsToMerge: headers } } },
       // { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: { colsToRename: headers } } },
       // { label: 'Delete row', value: { id: 'take-columns-delete', defaultParams: { take: false, indexFrom: rs - 1, indexTo: rs } } },
-      { label: 'Split columns', value: { id: 'SplitFunction', defaultParams: { colToSplit: headers[0] } } },
-      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
       // { label: 'Delete column', value: { id: 'take-columns-delete', defaultParams: { take: false, colToDelete: headers[0] } } },
-      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
-      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
-      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
-      { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       // { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
-      { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: { colsToSort: headers } } },
-      { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
-      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
-      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
     ];
 
     for (let i = 0; i < this.conditionMatrix.length; i++) {

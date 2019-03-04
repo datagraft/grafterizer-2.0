@@ -147,6 +147,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         return 'Columns sorted'
       case 'RemoveDuplicatesFunction':
         return 'Duplicates removed'
+      case 'GroupRowsFunction':
+        return 'Grouped and aggregated'
       default:
         return label;
     }

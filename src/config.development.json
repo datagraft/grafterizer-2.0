@@ -1,10 +1,10 @@
 {
   "jarfter-path": "https://grafterizer.datagraft.io",
-  "dispatch-path": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:8082",
-  "graftwerk-cache-path": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:8083",
+  "dispatch-path": "http://localhost:8082",
+  "graftwerk-cache-path": "http://localhost:8083",
   "abstat-path": "http://abstat.disco.unimib.it",
   "abstat-path-ba": "http://193.204.59.21",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
-  "asia-backend": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:8088",
-  "arango-generator": "http://sintef-sd-ewshopp.westeurope.cloudapp.azure.com:3030"
+  "asia-backend": "http://localhost:8088",
+  "arango-generator": "http://localhost:3030"
 }

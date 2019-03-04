@@ -61,19 +61,20 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     private transformationSvc: TransformationService, private routingService: RoutingService,
     private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService, public messageSvc: DataGraftMessageService) {
     this.recommendations = [
-      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
-      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
-      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
-      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
-      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
-      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
-      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
-      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
+      { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
+      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
+      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
+      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
-      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } }
     ];
     route.url.subscribe((result) => {
       this.routingService.concatURL(route);
