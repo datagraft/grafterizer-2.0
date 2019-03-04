@@ -61,14 +61,14 @@
     "ngx-perfect-scrollbar": "7.0.0",
     "primeng": "7.0.0-beta.1",
     "rxjs": "6.3.3",
-    "rxjs-compat": "^6.3.3",
+    "rxjs-compat": "6.3.3",
     "semantic-ui": "^2.4.2",
     "wink-nlp-utils": "2.0.0",
     "zone.js": "0.8.26"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.10.0",
-    "@angular/cli": "7.0.4",
+    "@angular/cli": "^7.3.4",
     "@angular/compiler-cli": "7.0.3",
     "@angular/language-service": "7.0.3",
     "@types/jasmine": "2.8.11",
