@@ -203,6 +203,8 @@ export class WeatherConfigurator {
   private offsets: number[];
   private readDatesFromCol: string;
   private date: string;
+  private readPlacesFromCol: string;
+  private place: string;
 
   constructor(obj: any) {
     this.parameters = obj && obj.parameters || [];
@@ -210,6 +212,8 @@ export class WeatherConfigurator {
     this.offsets = obj && obj.offsets || [];
     this.readDatesFromCol = obj && obj.readDatesFromCol || '';
     this.date = obj && obj.date || '';
+    this.readPlacesFromCol = obj && obj.readPlacesFromCol || '';
+    this.place = obj && obj.place || '';
   }
 
 
@@ -225,12 +229,20 @@ export class WeatherConfigurator {
     return this.offsets;
   }
 
-  getReadDatesFromCol(): string { 
+  getReadDatesFromCol(): string {
     return this.readDatesFromCol;
   }
 
   getDate(): string {
     return this.date;
+  }
+
+  getReadPlacesFromCol(): string {
+    return this.readPlacesFromCol;
+  }
+
+  getPlace(): string {
+    return this.place;
   }
 }
 

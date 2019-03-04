@@ -182,63 +182,41 @@ export class ExtensionComponent implements OnInit {
   public weather() {
     this.dataLoading = true;
     this.showPreview = true;
-    let weatherConfig = null;
     const wcObj = {
       parameters: this.selectedWeatherParameters,
       aggregators: this.selectedWeatherAggregators,
       offsets: this.selectedWeatherOffsets
     };
-    if (this.isColReconciled && !this.isColDate) {
-      if (this.dateChoice === 'fromCol') {
-        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.readDatesFromCol}});
-      } else {
-        weatherConfig = new WeatherConfigurator({...wcObj, ...{date: this.selectedDate}});
-      }
-      this.enrichmentService.weatherData(this.header, false, weatherConfig).subscribe((data: Extension[]) => {
-        this.extensionData = data;
-        if (this.extensionData.length > 0) {
-          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-        }
-        this.dataLoading = false;
-      });
-    }//end if (this.isColReconciled && !this.isColDate)
-    else if (!this.isColReconciled && this.isColDate) {
-      let singlePlaceSelected = false;
-      if (this.placeChoice === 'fromCol') {
-        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
-        this.previewHeader = this.readPlacesFromCol;
-      } else {
-        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
-        this.previewHeader = this.header;
-        this.readPlacesFromCol = this.selectedPlace;
-        singlePlaceSelected = true;
-      }
-      this.enrichmentService.weatherData(this.readPlacesFromCol, singlePlaceSelected, weatherConfig).subscribe((data: Extension[]) => {
-        this.extensionData = data;
-        if (this.extensionData.length > 0) {
-          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-        }
-        this.dataLoading = false;
-      });
 
+    let dateConfig = {};
+    let placeConfig = {};
 
-    }//end if (!this.isColReconciled && this.isColDate)
-    else if (this.isColReconciled && this.isColDate) {
-      /*if (this.placeChoice === 'fromCol') {
-        weatherConfig = new WeatherConfigurator({...wcObj, ...{readDatesFromCol: this.header}});
-      }
-      this.previewHeader = this.readPlacesFromCol;
-
-      this.enrichmentService.weatherData(this.readPlacesFromCol, weatherConfig).subscribe((data: Extension[]) => {
-        this.extensionData = data;
-        if (this.extensionData.length > 0) {
-          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-        }
-        this.dataLoading = false;
-      });
-       to do */
-
+    if (this.isColDate) {
+      dateConfig = {readDatesFromCol: this.header};
+    } else if (this.dateChoice === 'fromCol') {
+      dateConfig = {readDatesFromCol: this.readDatesFromCol};
+    } else {
+      dateConfig = {date: this.selectedDate};
     }
+
+    if (!this.isColDate) {
+      placeConfig = {readPlacesFromCol: this.header};
+    } else if (this.placeChoice === 'fromCol') {
+      placeConfig = {readPlacesFromCol: this.readPlacesFromCol};
+    } else {
+      placeConfig = {place: this.selectedPlace};
+    }
+
+    const weatherConfig = new WeatherConfigurator({...wcObj, ...dateConfig, ...placeConfig});
+    const basedOn = this.isColDate ? 'date' : 'place';
+
+    this.enrichmentService.weatherData(basedOn, weatherConfig).subscribe((data: Extension[]) => {
+      this.extensionData = data;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
   }
 
   public submit() {
