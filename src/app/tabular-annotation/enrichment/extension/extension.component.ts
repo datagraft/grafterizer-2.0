@@ -245,7 +245,7 @@ export class ExtensionComponent implements OnInit {
 
     if (this.isCategoriesColumn) {
       categoryConfig = {readCategoriesFromCol: this.header};
-    } else if (this.placeChoice === 'fromCol') {
+    } else if (this.categoryChoice === 'fromCol') {
       categoryConfig = {readCategoriesFromCol: this.readCategoriesFromCol};
     } else {
       categoryConfig = {categories: this.selectedChipsCategories};
