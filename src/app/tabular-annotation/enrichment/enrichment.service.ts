@@ -174,7 +174,7 @@ export class EnrichmentService {
         const weatherObs = new WeatherObservation(obs);
         const properties: Map<string, any[]> = new Map();
 
-        // Hard-coded -> input data must be in ISO format
+        // TODO Hard-coded -> input data must be in ISO format
         const date = weatherObs.getValidTime().substring(0, 10).replace('-', '').replace('-', '');
 
         if (on === 'date') {
@@ -263,15 +263,18 @@ export class EnrichmentService {
         const event = new Event(obs);
         const properties: Map<string, any[]> = new Map();
 
+        // TODO Hard-coded -> input data must be in ISO format
+        const date = event.getEventDate().substring(0, 10).replace('-', '').replace('-', '');
+
         if (on === 'date') {
           // Create extensions based on date
-          let extension = extensions.get(event.getEventDate());
+          let extension = extensions.get(date);
           if (!extension) {
-            extension = new Extension(event.getEventDate(), []);
+            extension = new Extension(date, []);
           }
           properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
           extension.addProperties(properties);
-          extensions.set(event.getEventDate(), extension);
+          extensions.set(date, extension);
         } else if (on === 'place') {
           // Create extensions based on place
           let extension = extensions.get(event.getGeonamesId());
