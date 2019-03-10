@@ -74,6 +74,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
       { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
+      { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: null } },
       { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } }
     ];
     route.url.subscribe((result) => {

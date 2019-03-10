@@ -1,1 +1,16 @@
-.material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
+#remove-icon {
+    padding-top: 12px;
+    margin-left: -55px;
+}
+
+#checkbox {
+    padding-top: 20px;
+}
+
+#addFilterFunctionBtn {
+    padding-left: 50px;
+}
+
+#customFunctions {
+padding-top: 10px;
+}

@@ -19,7 +19,7 @@ export class RecommenderService {
     //[string|multiple|column|row|hasLowercase|hasDuplicates|first]
     // [0, 0, 0, 1, 0, 0], //Insert row above
     // [0, 0, 0, 1, 0, 0], //Insert row below
-    // [0, 0, 0, 0, 0, 0], //Filter
+    [0, 0, 0, 0, 0, 0], //Filter
     [0, 0, 1, -1, 0, 0], //Group and Aggregate
     [0, 0, 1, -1, 0, 0], //Mapc
     // [1, 0, 1, -1, 1, 0], //uppercase
@@ -132,7 +132,7 @@ export class RecommenderService {
     var functionList = [
       // { label: 'Insert row above', value: { id: 'add-row-above', defaultParams: { position: rs - 1, values: new Array(columns) } } },
       // { label: 'Insert row below', value: { id: 'add-row-below', defaultParams: { position: rs + 1, values: new Array(columns) } } },
-      // { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: { colsToFilter: headers } } },
+      { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
       { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: null } },
       { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
