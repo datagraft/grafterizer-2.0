@@ -267,13 +267,16 @@ export class ExtensionComponent implements OnInit {
     const deriveMaps = [];
     let conciliator = null;
     this.previewProperties.forEach((prop: string) => {
-      const propDescr = this.propertyDescriptions.get(prop) && this.propertyDescriptions.get(prop).type || null;
+
+      const propDescr = this.propertyDescriptions.has(prop) && this.propertyDescriptions.get(prop) || null;
 
       if (this.propertyWithReconciledValues(prop)) {
         conciliator = this.reconciledFromService;
       }
-      deriveMaps.push(new DeriveMap(prop.replace(/\s/g, '_'))
-        .buildFromExtension(prop, this.extensionData, [propDescr].filter(p => p != null)));
+
+      deriveMaps.push(new DeriveMap(prop, propDescr ? propDescr.id : null)
+        .buildFromExtension(prop, this.extensionData, [propDescr.type].filter(p => p != null)));
+
     });
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
@@ -285,7 +288,7 @@ export class ExtensionComponent implements OnInit {
   }
 
   public extensionProperties = (): Observable<Response> => {
-    return this.enrichmentService.propertiesAvailable();
+    return this.enrichmentService.propertiesAvailable(this.reconciledFromService);
   };
 
   public removePropertyFromPreview(property: string) {
@@ -335,7 +338,6 @@ export class ExtensionComponent implements OnInit {
 
   categoriesSuggestions(new_val) {
     this.enrichmentService.googleCategoriesAutocomplete(this.selectedCategory).subscribe(data => {
-      console.log(data);
       this.categorySuggestions = data;
     });
   }

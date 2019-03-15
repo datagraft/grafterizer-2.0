@@ -332,15 +332,24 @@ export class EnrichmentService {
     delete this.reconciledColumns[columnHeader];
   }
 
-  public propertiesAvailable = (): Observable<any> => {
-    const properties = [
-      {'id': 'parentADM1', 'name': 'level 1 administrative parent'},
-      {'id': 'parentADM2', 'name': 'level 2 administrative parent'},
-      {'id': 'parentADM3', 'name': 'level 3 administrative parent'},
-      {'id': 'parentADM4', 'name': 'level 4 administrative parent'}
-    ];
-    return Observable.of(properties);
-    // return Observable.of(['parentADM1', 'parentADM2', 'parentADM3', 'parentADM4']);
+  public propertiesAvailable = (service: ConciliatorService): Observable<any> => {
+    const requestURL = this.asiaURL + '/propose_properties';
+
+    const params = new HttpParams()
+      .set('limit', '50')
+      .set('conciliator', service.getId());
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+        return results['properties'];
+      });
+    // return Observable.of([]);
   };
 
   public listServices = (): Observable<Object> => {

@@ -1,3 +1,5 @@
+import {XSDDatatypes} from '../annotation.model';
+
 export class Type {
   public id: string;
   public name: string;
@@ -88,10 +90,18 @@ export class DeriveMap {
   private deriveMap: {};
   public newColName: string;
   public newColTypes: Type[];
+  public withProperty: string;
+  public newColDatatype: string = null;
 
-  constructor(newColName: string) {
+  constructor(newColName: string, withProperty: string) {
     this.deriveMap = {};
     this.newColTypes = [];
+    this.withProperty = withProperty;
+
+    // Column name can be a URI -> clean it and get the suffix
+    newColName = newColName.lastIndexOf('/') > 0 ? newColName.substr(newColName.lastIndexOf('/')) : newColName; // get suffix after /
+    newColName = newColName.lastIndexOf('#') > 0 ? newColName.substr(newColName.lastIndexOf('#')) : newColName; // get suffix after #
+    newColName = newColName.replace(/[^a-zA-Z0-9]/g, ''); // remove special chars
     this.newColName = newColName;
   }
 
@@ -116,6 +126,19 @@ export class DeriveMap {
           this.deriveMap[e.id] = firstRes['id'];
         } else if (firstRes['str']) {
           this.deriveMap[e.id] = firstRes['str'];
+          this.newColDatatype = XSDDatatypes.string;
+        } else if (firstRes['date']) {
+          this.deriveMap[e.id] = firstRes['date'];
+          this.newColDatatype = XSDDatatypes.date;
+        } else if (firstRes['float']) {
+          this.deriveMap[e.id] = firstRes['float'];
+          this.newColDatatype = XSDDatatypes.float;
+        } else if (firstRes['int']) {
+          this.deriveMap[e.id] = firstRes['int'];
+          this.newColDatatype = XSDDatatypes.integer;
+        } else if (firstRes['bool']) {
+          this.deriveMap[e.id] = firstRes['bool'];
+          this.newColDatatype = XSDDatatypes.boolean;
         }
       }
     });

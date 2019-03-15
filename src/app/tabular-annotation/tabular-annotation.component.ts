@@ -1,28 +1,28 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AnnotationService } from './annotation.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AnnotationService} from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import { TransformationService } from '../transformation.service';
-import { DispatchService } from '../dispatch.service';
-import { ActivatedRoute } from '@angular/router';
-import { RoutingService } from '../routing.service';
-import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
+import {TransformationService} from '../transformation.service';
+import {DispatchService} from '../dispatch.service';
+import {ActivatedRoute} from '@angular/router';
+import {RoutingService} from '../routing.service';
+import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
-import { MatDialog } from '@angular/material';
-import { ConfigComponent } from './config/config.component';
-import { Subscription } from 'rxjs';
-import { EnrichmentService } from './enrichment/enrichment.service';
-import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
-import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
-import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
-import { ExtensionComponent } from './enrichment/extension/extension.component';
-import { ShiftColumnFunction } from 'assets/transformationdatamodel';
-import { ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
+import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
+import {MatDialog} from '@angular/material';
+import {ConfigComponent} from './config/config.component';
+import {Subscription} from 'rxjs';
+import {EnrichmentService} from './enrichment/enrichment.service';
+import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
+import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
+import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
+import {ExtensionComponent} from './enrichment/extension/extension.component';
+import {ShiftColumnFunction} from 'assets/transformationdatamodel';
+import {ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 
 declare var Handsontable: any;
 
@@ -33,8 +33,8 @@ declare var Handsontable: any;
 })
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
-  public  geoNamesSources :string [];
-  public  categoriesSources :string [];
+  public geoNamesSources: string [];
+  public categoriesSources: string [];
 
   private transformationObj: any;
   private graftwerkData: any;
@@ -50,7 +50,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   public saveLoading: boolean;
   public retrieveRDFLoading: boolean;
   public dataLoading: boolean;
-  public formChoose : number = 0;
+  public formChoose = 0;
 
   public saveButtonDisabled: boolean;
   public rdfButtonDisabled: boolean;
@@ -71,9 +71,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-    public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
-    private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
-    private pipelineEventsSvc: PipelineEventsService) {
+              public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
+              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
+              private pipelineEventsSvc: PipelineEventsService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -186,7 +186,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
       width: '750px',
-      data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs }
+      data: {header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs}
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -212,15 +212,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     this.geoNamesSources = [];
     this.categoriesSources = [];
-    this.annotationService.headers.forEach((header: string ) => {
-      if(this.enrichmentService.isColumnReconciled(header))
-      {
-        if(this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === "geonames")
-        {
+    this.annotationService.headers.forEach((header: string) => {
+      if (this.enrichmentService.isColumnReconciled(header)) {
+        if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'geonames') {
           this.geoNamesSources.push(header);
-        }
-        else if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === "productsservices")
-        {
+        } else if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'productsservices') {
           this.categoriesSources.push(header);
         }
       }
@@ -245,19 +241,33 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     let dialogRef;
     const dialogConfig = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
+      data: { header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false }
     };
     const dialogConfigExtension = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false, geoSoources : this.geoNamesSources, categoriesSoources : this.categoriesSources  }
+      data: {
+        header: currentHeader,
+        indexCol: headerIdx,
+        colReconciled: isReconciled,
+        colDate: false,
+        geoSoources: this.geoNamesSources,
+        categoriesSoources: this.categoriesSources
+      }
     };
     const dialogConfigDateCOlumn = {
       width: '750px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : true, geoSoources : this.geoNamesSources, categoriesSoources : this.categoriesSources  }
+      data: {
+        header: currentHeader,
+        indexCol: headerIdx,
+        colReconciled: isReconciled,
+        colDate: true,
+        geoSoources: this.geoNamesSources,
+        categoriesSoources: this.categoriesSources
+      }
     };
     const dialogConfigReconciliation = {
       width: '800px',
-      data: { header: currentHeader, indexCol : headerIdx, colReconciled : isReconciled, colDate : false  }
+      data: {header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false}
     };
     /*const dialogConfigChoose = {
       width: '400px',
@@ -265,93 +275,55 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       data: {indexCol : headerIdx}
     };*/
 
-    if (isReconciled )  //|| (isDateColumn && this.formChoose == 2)
-    {
-      if(annotation)
-      { //to check if it's a dateCOlumn
-        if (annotation.columnValuesType === ColumnTypes.URI)
-        {
-            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
-        }
-
-        else
-        {
+    if (isReconciled) {
+      if (annotation) { // to check if it's a dateCOlumn
+        if (annotation.columnValuesType === ColumnTypes.URI) {
+          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+        } else {
 
           const type = annotation.columnDatatype;
           const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
-            if(shortType === "dateTime")
-            {//it's a dateColumn --> open dialogConfigDateCOlumn
-              dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
-            }
-            else //it's not a dateColumn --> open with normal dialogConfigExtension
-            {
-              dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
-            }
+          if (shortType === 'dateTime') { // it's a dateColumn --> open dialogConfigDateCOlumn
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
+          } else {
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+          }
         }
 
-      }
-      else //not annotated if you wrong to use annotation
-      {
+      } else {
         dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
       }
 
-    }//end if reconciled
-    //now check if a not reconciled is a dateTColumn
-    else if(annotation)
-    {
-      if (annotation.columnValuesType === ColumnTypes.URI)
-      {
-        //to do
-          dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+    } else if (annotation) {
+      if (annotation.columnValuesType === ColumnTypes.URI) {
+        // to do
+        dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
 
-      }
-
-      else
-      {
+      } else {
 
         const type = annotation.columnDatatype;
         const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
-          if(shortType === "dateTime")
-          {//it's a dateColumn --> open dialogConfigDateCOlumn
-            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
-          }
-          else
-          {//it's not a dateColumn --> open a normal ReconciliationComponent
-            dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
-          }
+        if (shortType === 'dateTime') {// it's a dateColumn --> open dialogConfigDateCOlumn
+          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
+        } else {// it's not a dateColumn --> open a normal ReconciliationComponent
+          dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+        }
       }
 
-    }
-  /*  else if (isDateColumn && this.formChoose == 0)
-    {
-      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
-
-    }*/
-    /*else if (!isDateColumn || (isDateColumn && this.formChoose == 1))
-    {
-      dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
-
-    }*/
-  /*  else if (isDateColumn && this.formChoose == 2)
-    {
-      dialogRef = this.dialog.open(ExtensionComponent, dialogConfig);
-
-    }*/
-    else
-    { //it's not reconcled and not annotated column so --> open ReconciliationComponent
+    } else { // it's not reconcled and not annotated column so --> open ReconciliationComponent
       dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
     }
 
     dialogRef.afterClosed().subscribe(result => {
 
-    /*  if (result && result['chosen']){//open reconciliation form
+      /*  if (result && result['chosen']){//open reconciliation form
 
-        this.formChoose = result['chosen'];
-        this.openEnrichmentDialog(headerIdx);
-        this.formChoose = 0;
+          this.formChoose = result['chosen'];
+          this.openEnrichmentDialog(headerIdx);
+          this.formChoose = 0;
 
-      }
-      else */
+        }
+        else */
       if (result && result['deriveMaps']) {
         this.deriveColumnsFromEnrichment(result['indexCol'], result['header'], result['deriveMaps'], result['conciliator'], result['shift']);
 
@@ -383,7 +355,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           }
         });
       } else {
-        return { data: h }; // don't remove leading ':' from header here!
+        return {data: h}; // don't remove leading ':' from header here!
       }
     });
   }
@@ -399,7 +371,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const buttonIconShape = annotation ? 'edit' : 'add';
     let HTMLHeader = header +
       '<button class="btn btn-sm btn-link btn-icon" id="annotation_ ' + col + '">' +
-      '<i class="material-icons" >'+ buttonIconShape+' </i>' +
+      '<i class="material-icons" >' + buttonIconShape + ' </i>' +
       '</button>';
     if (annotation) {
       // STATUS ICON
@@ -416,7 +388,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         tooltipContent = 'This column is properly annotated';
       }
       HTMLHeader += '<label role="tooltip" aria-haspopup="true" class="tooltip tooltip-sm tooltip-bottom-right">' +
-      '<button class="btn btn-sm btn-link btn-icon">' +
+        '<button class="btn btn-sm btn-link btn-icon">' +
         statusIcon +
         '</button>' +
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
@@ -450,8 +422,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         const type = annotation.columnDatatype;
         const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
 
-          annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
-        }
+        annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
+      }
       annInfoValues = '<div class="ann-info-values">' + annInfoTypes + '</div>';
       HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
 
@@ -583,8 +555,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach(annotation => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': annotation.columnHeader },
+          {'id': 0, 'value': annotation.urifyPrefix},
+          {'id': 0, 'value': annotation.columnHeader},
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           [], // subelements
         );
@@ -594,8 +566,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           datatype = 'custom';
         }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          { 'id': 0, 'value': annotation.columnHeader },
-          { 'id': 0, 'name': datatype }, // datatype
+          {'id': 0, 'value': annotation.columnHeader},
+          {'id': 0, 'name': datatype}, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
@@ -610,8 +582,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach((annotation) => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          { 'id': 0, 'value': annotation.urifyPrefix },
-          { 'id': 0, 'value': annotation.columnHeader },
+          {'id': 0, 'value': annotation.urifyPrefix},
+          {'id': 0, 'value': annotation.columnHeader},
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
@@ -630,8 +602,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @returns {transformationDataModel.Condition}
    */
   private getEmptyCondition(columnHeader) {
-    const column = { 'id': 0, 'value': columnHeader };
-    const operator = { 'id': 0, 'name': 'Not empty' };
+    const column = {'id': 0, 'value': columnHeader};
+    const operator = {'id': 0, 'name': 'Not empty'};
     const conj = null;
     const operand = '';
     return new transformationDataModel.Condition(column, operator, operand, conj);
@@ -720,8 +692,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     }
     // TODO: create a new RDFVocabulary instance
-    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
+    this.transformationObj.rdfVocabs.push({name: prefix, namespace: namespace, fromServer: false});
     return prefix;
+  }
+
+  private createFunctionName(deriveFrom: string, deriveTo: string) {
+    // Create a random element to append to the name function
+    return `enrich${deriveFrom}to${deriveTo}${Date.now()}`;
   }
 
   /**
@@ -733,21 +710,21 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param shift
    */
   deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
-    conciliator: ConciliatorService, shift: boolean) {
+                              conciliator: ConciliatorService, shift: boolean) {
     let newFunction: any = null;
 
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
       // Create a new custom function
-      const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
+      const fName = this.createFunctionName(String(colsToDeriveFromIdx), deriveMap.newColName);
       const fMap = deriveMap.toClojureMap();
-      const fDescription = '';
+      const fDescription = `Enrichment - ${colsToDeriveFrom} to ${deriveMap.newColName}}`;
       const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} v ""))`;
       const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
       this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
       // Create the derive column step
       newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
-        [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
+        [{id: colsToDeriveFromIdx, value: colsToDeriveFrom}],
         [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
       // Pipeline update
@@ -756,7 +733,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // Shift the new column next to the deriveFrom column
       if (shift) {
         newFunction = new transformationDataModel.ShiftColumnFunction(
-          { id: this.enrichmentService.headers.length, value: deriveMap.newColName },
+          {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
           colsToDeriveFromIdx + index + 1, 'position', '');
         this.transformationObj.pipelines[0].addAfter({}, newFunction);
       }
@@ -768,19 +745,26 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
       }
 
-      // Annotate the derived column, if it contains instances (URIs)
-      if (deriveMap.newColTypes.length > 0) {
+      // Annotate the derived column, if the DeriveMap comes with a property defined
+      if (deriveMap.withProperty) {
         const annotation = new Annotation({
-          columnHeader: deriveMap.newColName,
-          columnValuesType: ColumnTypes.URI,
-          columnTypes: deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id),
-          urifyNamespace: conciliator.getIdentifierSpace()
+          columnHeader: deriveMap.newColName
         });
-        // If the colsToDeriveFrom is reconciled, this is an extension step
-        if (this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
-          annotation.property = conciliator.getSchemaSpace() + deriveMap.newColName;
-          annotation.subject = colsToDeriveFrom;
+        // If there are col types, annotate the new column as URI col
+        if (deriveMap.newColTypes.length > 0) {
+          annotation.columnValuesType = ColumnTypes.URI;
+          annotation.columnTypes = deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id);
+          annotation.urifyNamespace = conciliator.getIdentifierSpace();
+        } else {
+          annotation.columnValuesType = ColumnTypes.Literal;
+          annotation.columnDatatype = XSDDatatypes.string;
         }
+        if (deriveMap.withProperty.startsWith('http://')) {
+          annotation.property = deriveMap.withProperty;
+        } else {
+          annotation.property = conciliator.getSchemaSpace() + deriveMap.withProperty;
+        }
+        annotation.subject = colsToDeriveFrom;
 
         this.annotationService.setAnnotation(deriveMap.newColName, annotation);
         this.transformationObj.setAnnotations(this.annotationService.getAnnotations());

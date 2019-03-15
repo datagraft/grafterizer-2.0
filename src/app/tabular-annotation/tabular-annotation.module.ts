@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { NglModule } from 'ng-lightning/ng-lightning';
 import { NguiAutoCompleteModule } from '@ngui/auto-complete';
 import { TabularAnnotationComponent } from './tabular-annotation.component';
-import { TabularAnnotationDetailComponent } from './tabular-annotation-detail.component';
-import { TabularAnnotationRoutingModule } from './tabular-annotation-routing.module';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -19,7 +17,6 @@ import {
         MatFormFieldModule,
         MatCheckboxModule,
         MatSortModule,
-        Sort,
         MatPaginatorModule,
         MatProgressSpinnerModule,
         MatAutocompleteModule,
@@ -32,14 +29,9 @@ import { AddEntityDialog } from './enrichment/reconciliation/addEntityDialog.com
 import { ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
 
-
-
-
-
 @NgModule({
   imports: [
     CommonModule,
-    TabularAnnotationRoutingModule,
     NglModule.forRoot(),
     NguiAutoCompleteModule,
     ClarityModule,
@@ -62,10 +54,14 @@ import { ExtensionComponent } from './enrichment/extension/extension.component';
     MatChipsModule
 
   ],
-  entryComponents: [AnnotationFormComponent, ChooseExtensionOrReconciliationDialog, AddEntityDialog, ConfigComponent, ExtensionComponent, ReconciliationComponent],
+  entryComponents: [AnnotationFormComponent,
+    ChooseExtensionOrReconciliationDialog,
+    AddEntityDialog,
+    ConfigComponent,
+    ExtensionComponent,
+    ReconciliationComponent],
   declarations: [
     TabularAnnotationComponent,
-    TabularAnnotationDetailComponent,
     AnnotationFormComponent,
     ConfigComponent,
     AddEntityDialog,
