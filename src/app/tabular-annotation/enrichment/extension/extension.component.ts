@@ -266,7 +266,7 @@ export class ExtensionComponent implements OnInit {
       const propDescr = this.propertyDescriptions.has(prop) && this.propertyDescriptions.get(prop) || null;
       const propType = propDescr ? propDescr.type : null;
 
-      deriveMaps.push(new DeriveMap(prop, propDescr ? propDescr.id : null)
+      deriveMaps.push(new DeriveMap(`${this.header}_${prop}`, propDescr ? propDescr.id : null)
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });
