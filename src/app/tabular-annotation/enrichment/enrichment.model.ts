@@ -1,4 +1,5 @@
 import {XSDDatatypes} from '../annotation.model';
+import {UrlUtilsService} from '../shared/url-utils.service';
 
 export class Type {
   public id: string;
@@ -98,11 +99,13 @@ export class DeriveMap {
     this.newColTypes = [];
     this.withProperty = withProperty;
 
-    // Column name can be a URI -> clean it and get the suffix
-    newColName = newColName.lastIndexOf('/') > 0 ? newColName.substr(newColName.lastIndexOf('/')) : newColName; // get suffix after /
-    newColName = newColName.lastIndexOf('#') > 0 ? newColName.substr(newColName.lastIndexOf('#')) : newColName; // get suffix after #
-    newColName = newColName.replace(/[^a-zA-Z0-9]/g, ''); // remove special chars
     this.newColName = newColName;
+
+    // Column name can be a URI -> clean it and get the suffix
+    if (this.newColName.startsWith('http')) {
+      this.newColName = this.newColName.replace(UrlUtilsService.getNamespaceFromURL(new URL(newColName)), '');
+    }
+
   }
 
   buildFromMapping(mapping: Mapping[], threshold: number, types: Type[]) {

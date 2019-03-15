@@ -739,11 +739,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
 
       // Mark this column as reconciled if a conciliator is given
-      if (conciliator) {
-        const reconciledColumn: ReconciledColumn = new ReconciledColumn(deriveMap, conciliator);
-        this.enrichmentService.setReconciledColumn(reconciledColumn);
-        this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-      }
 
       // Annotate the derived column, if
       // - the DeriveMap comes with a property defined (extension with property)
@@ -752,11 +747,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         const annotation = new Annotation({
           columnHeader: deriveMap.newColName
         });
-        // If there are col types, annotate the new column as URI col of that types
+        // If there are col types, annotate the new column as URI col of that types and reconcile its values
         if (deriveMap.newColTypes.length > 0) {
           annotation.columnValuesType = ColumnTypes.URI;
           annotation.columnTypes = deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id);
           annotation.urifyNamespace = conciliator.getIdentifierSpace();
+
+          const reconciledColumn: ReconciledColumn = new ReconciledColumn(deriveMap, conciliator);
+          this.enrichmentService.setReconciledColumn(reconciledColumn);
+          this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
+
         } else if (deriveMap.newColDatatype) { // annotate as Literal
           annotation.columnValuesType = ColumnTypes.Literal;
           annotation.columnDatatype = deriveMap.newColDatatype;

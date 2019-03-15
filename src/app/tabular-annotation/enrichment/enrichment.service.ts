@@ -14,6 +14,8 @@ import {
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
+import {TabularAnnotationComponent} from '../tabular-annotation.component';
+import {UrlUtilsService} from '../shared/url-utils.service';
 
 @Injectable()
 export class EnrichmentService {
@@ -347,9 +349,14 @@ export class EnrichmentService {
     };
 
     return this.http.post(requestURL, null, httpOptions).map((results: any) => {
-        return results['properties'];
+        return results['properties'].map(prop => {
+          // Sometimes an URI is received as prop name (when a "name" is not available) -> use the suffix as name
+          if (prop.name.startsWith('http://') || prop.name.startsWith('https://')) {
+            prop.name = prop.name.replace(UrlUtilsService.getNamespaceFromURL(new URL(prop.name)), '');
+          }
+          return prop;
+        });
       });
-    // return Observable.of([]);
   };
 
   public listServices = (): Observable<Object> => {

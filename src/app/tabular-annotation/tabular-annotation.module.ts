@@ -28,6 +28,7 @@ import { ReconciliationComponent } from './enrichment/reconciliation/reconciliat
 import { AddEntityDialog } from './enrichment/reconciliation/addEntityDialog.component';
 import { ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
+import {SharedModule} from './shared/shared.module';
 
 @NgModule({
   imports: [
@@ -51,8 +52,8 @@ import { ExtensionComponent } from './enrichment/extension/extension.component';
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatAutocompleteModule,
-    MatChipsModule
-
+    MatChipsModule,
+    SharedModule
   ],
   entryComponents: [AnnotationFormComponent,
     ChooseExtensionOrReconciliationDialog,

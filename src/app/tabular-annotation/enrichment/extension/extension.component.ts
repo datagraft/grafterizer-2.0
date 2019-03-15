@@ -98,17 +98,17 @@ export class ExtensionComponent implements OnInit {
     this.dataSource = [];
     this.categorySuggestions = [];
 
-    if (!this.isColReconciled && this.isColDate) {
+    if (this.isColDate) {
       this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
       this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
-      this.reconciledFromService = new ConciliatorService({
-        'id': 'geonames',
-        'name': 'GeoNames',
-        group: 'geo',
-        identifierSpace: 'http://sws.geonames.org/',
-        schemaSpace: 'http://www.geonames.org/ontology# ExtensionECMWF'
-      });
-    } else if (this.isColReconciled && !this.isColDate) {
+      // this.reconciledFromService = new ConciliatorService({
+      //   'id': 'geonames',
+      //   'name': 'GeoNames',
+      //   group: 'geo',
+      //   identifierSpace: 'http://sws.geonames.org/',
+      //   schemaSpace: 'http://www.geonames.org/ontology#'
+      // });
+    } else if (this.isColReconciled) {
       this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
       this.services.push(this.reconciledFromService);
       if (this.reconciledFromService.getId() === 'geonames') {
@@ -119,10 +119,6 @@ export class ExtensionComponent implements OnInit {
         this.isCategoriesColumn = true;
         this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
       }
-      //
-    } else if (this.isColReconciled && this.isColDate) {
-
-      //to do
     }
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -265,22 +261,18 @@ export class ExtensionComponent implements OnInit {
 
   public submit() {
     const deriveMaps = [];
-    let conciliator = null;
     this.previewProperties.forEach((prop: string) => {
 
       const propDescr = this.propertyDescriptions.has(prop) && this.propertyDescriptions.get(prop) || null;
-
-      if (this.propertyWithReconciledValues(prop)) {
-        conciliator = this.reconciledFromService;
-      }
+      const propType = propDescr ? propDescr.type : null;
 
       deriveMaps.push(new DeriveMap(prop, propDescr ? propDescr.id : null)
-        .buildFromExtension(prop, this.extensionData, [propDescr.type].filter(p => p != null)));
+        .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': conciliator,
+      'conciliator': this.reconciledFromService,
       'shift': this.shiftColumn,
       'header': this.previewHeader,
       'indexCol': this.colIndex

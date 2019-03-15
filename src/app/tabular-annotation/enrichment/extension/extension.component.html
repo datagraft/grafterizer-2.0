@@ -38,11 +38,11 @@
                      (onRemove)="removePropertyFromPreview($event.value)">
             <tag-input-dropdown [autocompleteObservable]='extensionProperties'
                                 [zIndex]="9999"
-                                [identifyBy]="'id'" [displayBy]="'id'" #input>
+                                [identifyBy]="'id'" [displayBy]="'name'" #input>
               <ng-template let-item="item">
               <span class="p5" style="display: block; margin-top: 0">
-                <b>{{item.id}}</b> <br/>
-                ({{item.name}})
+                <b>{{item.name}}</b> <br/>
+                ({{item.id}})
               </span>
               </ng-template>
             </tag-input-dropdown>
