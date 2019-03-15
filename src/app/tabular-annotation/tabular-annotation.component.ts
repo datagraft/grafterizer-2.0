@@ -745,30 +745,37 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
       }
 
-      // Annotate the derived column, if the DeriveMap comes with a property defined
-      if (deriveMap.withProperty) {
+      // Annotate the derived column, if
+      // - the DeriveMap comes with a property defined (extension with property)
+      // - the DeriveMap contains types (reconciled entity)
+      if (deriveMap.withProperty || deriveMap.newColTypes.length > 0) {
         const annotation = new Annotation({
           columnHeader: deriveMap.newColName
         });
-        // If there are col types, annotate the new column as URI col
+        // If there are col types, annotate the new column as URI col of that types
         if (deriveMap.newColTypes.length > 0) {
           annotation.columnValuesType = ColumnTypes.URI;
           annotation.columnTypes = deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id);
           annotation.urifyNamespace = conciliator.getIdentifierSpace();
-        } else {
+        } else if (deriveMap.newColDatatype) { // annotate as Literal
           annotation.columnValuesType = ColumnTypes.Literal;
-          annotation.columnDatatype = XSDDatatypes.string;
+          annotation.columnDatatype = deriveMap.newColDatatype;
         }
-        if (deriveMap.withProperty.startsWith('http://')) {
-          annotation.property = deriveMap.withProperty;
-        } else {
-          annotation.property = conciliator.getSchemaSpace() + deriveMap.withProperty;
+        // Check if this column has a subject
+        if (deriveMap.withProperty) {
+          if (deriveMap.withProperty.startsWith('http://')) {
+            annotation.property = deriveMap.withProperty;
+          } else {
+            annotation.property = conciliator.getSchemaSpace() + deriveMap.withProperty;
+          }
+          annotation.subject = colsToDeriveFrom;
         }
-        annotation.subject = colsToDeriveFrom;
 
-        this.annotationService.setAnnotation(deriveMap.newColName, annotation);
-        this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
-
+        // Handle exceptions from ASIA - it should never be false
+        if (annotation.columnValuesType) {
+          this.annotationService.setAnnotation(deriveMap.newColName, annotation);
+          this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
+        }
       }
     });
 
