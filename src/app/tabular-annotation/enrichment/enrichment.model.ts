@@ -98,14 +98,7 @@ export class DeriveMap {
     this.deriveMap = {};
     this.newColTypes = [];
     this.withProperty = withProperty;
-
     this.newColName = newColName;
-
-    // Column name can be a URI -> clean it and get the suffix
-    if (this.newColName.startsWith('http')) {
-      this.newColName = this.newColName.replace(UrlUtilsService.getNamespaceFromURL(new URL(newColName)), '');
-    }
-
   }
 
   buildFromMapping(mapping: Mapping[], threshold: number, types: Type[]) {

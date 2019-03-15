@@ -11,6 +11,7 @@ import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, EventConfigurator, Extension, Property, WeatherConfigurator} from '../enrichment.model';
 import {HttpClient, HttpParams} from '@angular/common/http';
+import {UrlUtilsService} from '../../shared/url-utils.service';
 
 @Component({
   selector: 'app-extension',
@@ -266,7 +267,15 @@ export class ExtensionComponent implements OnInit {
       const propDescr = this.propertyDescriptions.has(prop) && this.propertyDescriptions.get(prop) || null;
       const propType = propDescr ? propDescr.type : null;
 
-      deriveMaps.push(new DeriveMap(`${this.header}_${prop}`, propDescr ? propDescr.id : null)
+      // Column name can be a URI -> clean it and get the suffix
+      let newColName = `${this.header}_`;
+      if (prop.startsWith('http')) {
+        newColName +=  prop.replace(UrlUtilsService.getNamespaceFromURL(new URL(prop)), '');
+      } else {
+        newColName += prop;
+      }
+
+      deriveMaps.push(new DeriveMap(newColName, propDescr ? propDescr.id : null)
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });
