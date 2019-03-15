@@ -126,7 +126,7 @@ export class ReconciliationComponent implements OnInit {
 
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
     deriveMaps.push(
-      new DeriveMap(this.newColumnName)
+      new DeriveMap(this.newColumnName, null)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
