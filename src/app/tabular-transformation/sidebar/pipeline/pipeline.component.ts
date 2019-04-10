@@ -113,42 +113,42 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   verboseLabels(label) {
     switch (label) {
-      case 'ColumnsFunction':
-        return 'Columns deleted'
       case 'MakeDatasetFunction':
         return 'Headers created'
-      case 'UtilityFunction':
-        return 'Utility'
-      case 'DropRowsFunction':
-        return 'Rows deleted'
-      case 'MapcFunction':
-        return 'Columns mapped'
-      case 'MeltFunction':
-        return 'Dataset reshaped'
-      case 'DeriveColumnFunction':
-        return 'Column derived'
-      case 'AddColumnsFunction':
-        return 'Column added'
-      case 'AddRowFunction':
-        return 'Row(s) added'
-      case 'RenameColumnsFunction':
-        return 'Header title(s) changed'
-      case 'GrepFunction':
-        return 'Row(s) filtered'
-      case 'ShiftColumnFunction':
-        return 'Column shifted'
-      case 'ShiftRowFunction':
-        return 'Row shifted'
-      case 'SplitFunction':
-        return 'Column splitted'
-      case 'MergeColumnsFunction':
-        return 'Columns merged'
-      case 'SortDatasetFunction':
-        return 'Columns sorted'
-      case 'RemoveDuplicatesFunction':
-        return 'Duplicates removed'
       case 'GroupRowsFunction':
         return 'Grouped and aggregated'
+      case 'MeltFunction':
+        return 'Dataset reshaped'
+      case 'SortDatasetFunction':
+        return 'Columns sorted'
+      case 'DeriveColumnFunction':
+        return 'Column derived'
+      case 'MapcFunction':
+        return 'Columns mapped'
+      case 'AddColumnsFunction':
+        return 'Column added'
+      case 'ColumnsFunction':
+        return 'Columns deleted'
+      case 'ShiftColumnFunction':
+        return 'Column shifted'
+      case 'MergeColumnsFunction':
+        return 'Columns merged'
+      case 'SplitFunction':
+        return 'Column split'
+      case 'RenameColumnsFunction':
+        return 'Header title(s) changed'
+      case 'AddRowFunction':
+        return 'Row(s) added'
+      case 'ShiftRowFunction':
+        return 'Row shifted'
+      case 'DropRowsFunction':
+        return 'Rows deleted'
+      case 'GrepFunction':
+        return 'Row(s) filtered'
+      case 'RemoveDuplicatesFunction':
+        return 'Duplicates removed'
+      case 'UtilityFunction':
+        return 'Utility'
       default:
         return label;
     }

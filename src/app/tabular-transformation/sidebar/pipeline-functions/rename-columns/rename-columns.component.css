@@ -1,11 +1,8 @@
-.removablePropertyFields 
-{   
-    padding: 0.8em 0.2em 0 0;
-} 
+#remove-icon {
+    padding-top: 10px;
+    margin-left: -40px;
+}
 
-.removablePropertyButton
-{ 
-    padding: 0;
-} 
-
-.material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
+#removablePropertyFields {
+    padding-top: 12px;
+}

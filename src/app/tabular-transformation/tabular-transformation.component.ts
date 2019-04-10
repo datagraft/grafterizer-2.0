@@ -72,6 +72,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
       { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
       { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: null } },
       { label: 'Add rows', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },

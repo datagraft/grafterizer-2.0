@@ -17,25 +17,23 @@ export class RecommenderService {
   // 1: compulsory condition, 0 : don't care, -1: forbidden condition
   conditionMatrix = [
     //[string|multiple|column|row|hasLowercase|hasDuplicates|first]
-    // [0, 0, 0, 1, 0, 0], //Insert row above
-    // [0, 0, 0, 1, 0, 0], //Insert row below
-    [0, 0, 0, 0, 0, 0], //Filter
-    [0, 0, 1, -1, 0, 0], //Group and Aggregate
-    [0, 0, 1, -1, 0, 0], //Mapc
-    // [1, 0, 1, -1, 1, 0], //uppercase
-    [0, 1, 1, -1, 0, 0],  //Merge columns
-    [0, -1, 1, -1, 0, 0],	//Split columns 
-    [0, -1, 1, -1, 0, 0],	//Shift column     
-    [0, -1, 1, -1, 0, 0],  //Add columns    
-    // [0, 0, 1, -1, 0, 0],	//Rename columns
-    // [0, 0, 0, 1, 0, 0],	//Delete row
-    [0, 0, 1, -1, 0, 0],	//Derive columns
     [0, 0, 0, 0, 0, 0],	//Make dataset
+    [0, 0, 1, -1, 0, 0], //Group and Aggregate
+    [0, 0, 0, 0, 0, 0], //Reshape dataset (melt)
     [0, 0, 1, -1, 0, 0],	//Sort dataset
-    [0, 0, -1, 1, 0, 0],	//Take rows
-    [0, 0, -1, 1, 0, 0],	//Shift row    
+    [0, 0, 1, -1, 0, 0],	//Derive columns
+    [0, 0, 1, -1, 0, 0], //Mapc
+    [0, -1, 1, -1, 0, 0],	//Add columns
     [0, 0, 1, -1, 0, 0],	//Take columns
-    // [0, -1, 1, -1, 0, 0],	//Delete column
+    [0, -1, 1, -1, 0, 0],	//Shift column   
+    [0, 1, 1, -1, 0, 0],  //Merge columns    
+    [0, -1, 1, -1, 0, 0],	//Split columns 
+    [0, 0, 1, -1, 0, 0],	//Rename columns
+    [0, 0, -1, 1, 0, 0],  //Add rows    
+    [0, 0, -1, 1, 0, 0],	//Shift row    
+    [0, 0, -1, 1, 0, 0],	//Take rows
+    [0, 0, -1, 1, 0, 0], //Filter rows
+    [0, 0, 0, 0, 0, 0], //Deduplicate
   ];
 
   data = [];
