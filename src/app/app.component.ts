@@ -68,6 +68,7 @@ export class AppComponent implements OnInit {
   private showDownloadButton: boolean = false;
   private showDeleteButton: boolean = false;
   private showLoading: boolean = false;
+  private showLogo: boolean = false;
   private transformationType: string;
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
@@ -140,6 +141,7 @@ export class AppComponent implements OnInit {
             this.showDeleteButton = true;
             this.showLoadDistributionDialog = true;
             this.showWizardNavigation = false;
+            this.showLogo = true;
             break;
           default:
             break;

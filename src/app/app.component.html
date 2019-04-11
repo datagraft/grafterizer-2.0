@@ -2,7 +2,7 @@
   <header class="header-6">
     <div class="branding" *ngIf="!showWizardNavigation">
       <a href="/" class="nav-link">
-        <img src="/assets/logo.png" height="24" width="48">
+        <img *ngIf="showLogo" src="/assets/logo.png" height="24" width="48">
         <span class="title">
           <strong>Grafterizer 2.0</strong>
         </span>
@@ -30,19 +30,24 @@
       <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="sin-nav-icon">
         <i class="material-icons md-light md-22">file_copy</i>
       </a>
-      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download" class="sin-nav-icon">
+      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download"
+        class="sin-nav-icon">
         <i class="material-icons md-light">get_app</i>
       </a>
-      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="sin-nav-icon">
+      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete"
+        class="sin-nav-icon">
         <i class="material-icons md-light">delete</i>
       </a>
-      <button mat-raised-button *ngIf="showWizardNavigation" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
-      <button mat-raised-button *ngIf="showWizardNavigation" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="goBack()"
+        class="sin-datagraft-wizard-button">Back</button>
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="openNextStepConfirmation()"
+        class="sin-datagraft-wizard-button">Next
         step</button>
     </div>
   </header>
   <clr-alerts>
-    <clr-alert class="alerts" [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
+    <clr-alert class="alerts" [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true"
+      *ngFor="let error of globalErrors; let i = index">
       <div class="alert-item">
         <span class="alert-text">
           Woops - something went wrong! If the problem persists, try reloading the application.
@@ -79,12 +84,14 @@
   </div>
 </div>
 
-<clr-modal *ngIf="showLoadDistributionDialog" [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
+<clr-modal *ngIf="showLoadDistributionDialog" [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false"
+  [clrModalSize]="'lg'">
   <h3 class="modal-title">Load existing file</h3>
   <div class="modal-body">
     <div fxLayout='column' fxLayoutAlign="left">
       <p-listbox [options]="distributionList" [(ngModel)]="selectedFile" (ngModelChange)="onChange($event)"
-        [styleClass]="ui-state-active" [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}"
+        [styleClass]="ui-state-active"
+        [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}"
         [listStyle]="{'height':'360px'}">
       </p-listbox>
     </div>
