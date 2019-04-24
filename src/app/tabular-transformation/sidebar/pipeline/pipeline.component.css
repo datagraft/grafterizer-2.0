@@ -1,5 +1,5 @@
 .wrapper {
-  height: 500px;
+  max-height: 50vh;
   padding-top: 5px;
 }
 

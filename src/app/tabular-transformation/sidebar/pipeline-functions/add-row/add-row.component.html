@@ -1,28 +1,27 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
-  <h3 class="modal-title">Add row</h3>
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
+  <h3 class="modal-title">Add rows</h3>
   <div class="modal-body">
-    <div class="row " *ngFor="let column of columns; let idx = index">
-      <div class="col-xs-3">
-        <label> {{column}}:</label>
+    <div class="row" *ngFor="let header of previewedDataColumns; let idx = index">
+      <div class="col-xs-4">
+        <label> {{header}}:</label>
       </div>
-      <div class="col-xs-9">
-        <input type="text" id="{{'column'+idx}}" [(ngModel)]="values[idx]" size="25" value=" ">
+      <div class="col-xs-6">
+        <input type="text" id="{{'header'+idx}}" [(ngModel)]="values[idx]" size="60">
       </div>
     </div>
     <br>
-    <div class="row ">
-      <div class="col-xs-3">
+    <div class="row">
+      <div class="col-xs-4">
         <label>Position:</label>
       </div>
-      <div class="col-xs-9">
-        <input type="text" min="0" [(ngModel)]="position" placeholder="Position for inserting" size="25">
+      <div class="col-xs-6">
+        <input type="text" min="0" [(ngModel)]="position" placeholder="insert row at given index" size="60">
       </div>
     </div>
     <br>
-    <div>
-      <label for="comment">Comment:</label>
-      <input type="text" id="comment" [(ngModel)]="docstring" placeholder="Comment" size="125">
-    </div>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Comment" [(ngModel)]="docstring">
+    </mat-form-field>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>

@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { ClarityModule } from 'clarity-angular';
+import { ClarityModule } from '@clr/angular';
 import { ListboxModule } from 'primeng/primeng';
 import { SuiModule } from 'ng2-semantic-ui';
 import { Ng2CompleterModule } from 'ng2-completer';
@@ -61,6 +61,15 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { AngularSplitModule } from 'angular-split';
 import { TagInputModule } from 'ngx-chips';
+import {
+  PerfectScrollbarModule, PerfectScrollbarConfigInterface,
+  PERFECT_SCROLLBAR_CONFIG
+} from 'ngx-perfect-scrollbar';
+
+const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
+  suppressScrollX: true
+};
+
 
 @NgModule({
   imports: [
@@ -91,7 +100,8 @@ import { TagInputModule } from 'ngx-chips';
     MatInputModule,
     MatSlideToggleModule,
     MatChipsModule,
-    NgSelectModule
+    NgSelectModule,
+    PerfectScrollbarModule
   ],
   declarations: [
     TabularTransformationComponent,
@@ -125,7 +135,13 @@ import { TagInputModule } from 'ngx-chips';
     GroupDatasetComponent,
     FilterRowsComponent,
     UtilityFunctionComponent
-  ], providers: [PipelineEventsService]
+  ],
+  providers: [PipelineEventsService,
+    {
+      provide: PERFECT_SCROLLBAR_CONFIG,
+      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
+    }
+  ]
 })
 
 export class TabularTransformationModule { }

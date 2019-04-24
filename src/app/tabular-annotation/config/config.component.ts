@@ -1,7 +1,7 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {AbstatService} from '../abstat.service';
-import {AppConfig} from '../../app.config';
+import { Component, Inject, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AbstatService } from '../abstat.service';
+import { AppConfig } from '../../app.config';
 
 @Component({
   selector: 'app-config',
@@ -33,7 +33,7 @@ export class ConfigComponent implements OnInit {
     this.summaries = [];
     const existingSummaries = this.abstat.getPreferredSummaries();
     if (existingSummaries) {
-      existingSummaries.forEach(summary => this.summaries.push({summary_name: summary,  display: summary, value: summary}));
+      existingSummaries.forEach(summary => this.summaries.push({ summary_name: summary, display: summary, value: summary }));
     }
   }
 

@@ -1,8 +1,9 @@
-import {Injectable} from '@angular/core';
-import {AppConfig} from '../app.config';
+import { Injectable } from '@angular/core';
+import { AppConfig } from '../app.config';
 import * as nlp from 'wink-nlp-utils';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs/Observable';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import 'rxjs/add/operator/map';
 
 @Injectable()
 export class AbstatService {
@@ -69,7 +70,7 @@ export class AbstatService {
    * @returns {any}
    */
   private abstatSuggestions(keyword, position) {
-    if (keyword && position ) {
+    if (keyword && position) {
       let params = new HttpParams()
         .set('qString', keyword)
         .set('qPosition', position)
@@ -81,7 +82,7 @@ export class AbstatService {
       const url = this.abstatBasePath + '/api/v1/SolrSuggestions';
 
       return this.http
-        .get(url, {params: params})
+        .get(url, { params: params })
         .map(res => res['suggestions']);
     }
     return Observable.of([]);

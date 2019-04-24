@@ -4,7 +4,7 @@ import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from 'clarity-angular';
+import { ClarityModule } from '@clr/angular';
 import { SuiModule } from 'ng2-semantic-ui';
 import { ListboxModule } from 'primeng/primeng';
 
@@ -20,6 +20,7 @@ import { DataExplorationComponent } from './data-exploration/data-exploration.co
 import { TransformationService } from 'app/transformation.service';
 import { AnnotationService } from './tabular-annotation/annotation.service';
 import { RoutingService } from './routing.service';
+import { JarfterService } from './jarfter.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
@@ -30,7 +31,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DataGraftMessageService } from 'app/data-graft-message.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {EnrichmentService} from './tabular-annotation/enrichment/enrichment.service';
+import { EnrichmentService } from './tabular-annotation/enrichment/enrichment.service';
+import { ArangoGeneratorService } from 'app/arango-generator.service';
+import { TransformationUpdaterService } from 'app/transformation-updater.service';
+import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -45,7 +49,7 @@ export function initConfig(config: AppConfig) {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    ClarityModule.forRoot(),
+    ClarityModule,
     TabularTransformationModule,
     RdfMappingModule,
     TabularAnnotationModule,
@@ -67,7 +71,11 @@ export function initConfig(config: AppConfig) {
     AnnotationService,
     AbstatService,
     EnrichmentService,
+    ArangoGeneratorService,
+    TransformationUpdaterService,
     RoutingService,
+    JarfterService,
+    ProgressIndicatorService,
     {
       provide: APP_INITIALIZER,
       useFactory: initConfig,

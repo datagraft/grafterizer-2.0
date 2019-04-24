@@ -2,8 +2,9 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { RoutingService } from '../routing.service';
 import { RdfVocabularyService } from './rdf-vocabulary.service';
 import { TransformationService } from '../transformation.service';
+import { DataGraftMessageService } from '../data-graft-message.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { RdfPrefixManagementDialogComponent } from './graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog.component';
 import { RdfPrefixManagementDialogAnchorDirective } from 'app/rdf-mapping/graph-mapping/rdf-prefix-management-dialog/rdf-prefix-management-dialog-anchor.directive';
 
@@ -24,7 +25,8 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private transformationOnlyView: boolean = false;
+  private transformationReadOnlyView: boolean = false;
+  private showTable: boolean = true;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
   private transformationObj: any;
@@ -33,11 +35,14 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private dataSubscription: Subscription;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
 
   @ViewChild(RdfPrefixManagementDialogAnchorDirective) rdfPrefixManagementAnchor: RdfPrefixManagementDialogAnchorDirective;
 
   constructor(private routingService: RoutingService, private route: ActivatedRoute, private router: Router,
-    private transformationSvc: TransformationService, vocabService: RdfVocabularyService) {
+    private transformationSvc: TransformationService, vocabService: RdfVocabularyService, private messageSvc: DataGraftMessageService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
   }
 
@@ -72,10 +77,22 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     };
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
-    const paramMap = this.route.snapshot.paramMap;
-    if (!paramMap.has('filestoreId')) {
-      this.transformationOnlyView = true;
-    }
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+      const paramMap = this.route.snapshot.paramMap;
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
+        switch (this.currentDataGraftState) {
+          case 'transformations.readonly':
+            this.transformationReadOnlyView = true;
+            break;
+          case 'transformations.transformation':
+            if (!paramMap.has('filestoreId')) {
+              this.showTable = false;
+            }
+            break;
+        }
+      }
+    });
 
     this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
       .subscribe((previewedTransformation) => {
@@ -120,7 +137,9 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
   }
+
   openPrefixManagementDialog() {
     let componentRef = this.rdfPrefixManagementAnchor.createDialog(RdfPrefixManagementDialogComponent);
   }
+
 }

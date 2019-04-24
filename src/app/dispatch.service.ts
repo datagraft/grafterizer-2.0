@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
+import 'rxjs/add/operator/map'
 
 // Interface of transformation that is used to serialise responses from DataGraft Fields are self-explanatory...
 export interface TransformationMetadata {
@@ -14,6 +15,7 @@ export interface TransformationMetadata {
   modified: Date;
   created: Date;
   keywords?: Array<string>;
+  is_owned: string;
 }
 
 export interface TransformationConfiguration {
@@ -201,6 +203,25 @@ export class DispatchService {
     return this.http
       .get(url, options)
       .map((response: Response) => response.json())
+      .toPromise()
+      .catch((error) => this.errorHandler(error));
+  }
+
+  // Get the JSON serialisation of a transformation
+  public getLegacyTransformationJson(id: string, publisher: string): Promise<any> {
+    const url = this.computeTransformationURL(publisher, id) + '/configuration';
+    const options = new RequestOptions({ withCredentials: true });
+    return this.http
+      .get(url, options)
+      .map((response: Response) => {
+        return {
+          transformationType: response.json().type,
+          transformationCommand: response.json().command,
+          code: response.json().code,
+          extra: JSON.parse(response.json().extra)
+        }
+        // response.json()
+      })
       .toPromise()
       .catch((error) => this.errorHandler(error));
   }
@@ -425,7 +446,8 @@ export class DispatchService {
       publisher: dcatSerialisation['foaf:publisher'],
       modified: new Date(dcatSerialisation['dct:modified']),
       created: new Date(dcatSerialisation['dct:issued']),
-      keywords: dcatSerialisation['dcat:keyword']
+      keywords: dcatSerialisation['dcat:keyword'],
+      is_owned: dcatSerialisation['is_owned']
     }
   }
 

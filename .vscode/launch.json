@@ -1,10 +1,11 @@
 {
   "version": "0.2.0",
-  "configurations": [{
+  "configurations": [
+    {
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:4200/tabular-transformation/nvnikolov/patients-data/preview/patients-csv",
+      "url": "http://10.80.1.8:3003/nvnikolov/transformations/ewshopp-jot-unimib-working-copy-82e87075-35fe-46ea-a493-b3213f56ba4f/edit",
       "webRoot": "${workspaceRoot}"
     },
     {
@@ -20,7 +21,9 @@
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/protractor/bin/protractor",
       "protocol": "inspector",
-      "args": ["${workspaceRoot}/protractor.conf.js"]
+      "args": [
+        "${workspaceRoot}/protractor.conf.js"
+      ]
     }
   ]
 }

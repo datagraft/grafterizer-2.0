@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
-import {Observable} from 'rxjs/Observable';
+import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, Extension, Property, WeatherConfigurator} from '../enrichment.model';
 
 @Component({
@@ -27,6 +27,7 @@ export class ExtensionComponent implements OnInit {
   public readDatesFromCol: string;
   public selectedDate: any;
   public weatherParameters: string[];
+  public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
   public weatherOffsets: number[];
 
@@ -39,6 +40,8 @@ export class ExtensionComponent implements OnInit {
   public dataLoading: boolean;
 
   public reconciledFromService: ConciliatorService;
+
+  public shiftColumn: boolean = false;
 
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
               @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
@@ -67,7 +70,23 @@ export class ExtensionComponent implements OnInit {
     }
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
-    this.weatherParameters = ['10u', '10v', '2d', '2t', 'rh', 'sd', 'sf', 'sp', 'ssr', 'sund', 'tcc', 'tp', 'vis', 'ws'];
+    this.weatherParametersDescriptions = {
+      '10u': '10 metre U wind component',
+      '10v': '10 metre V wind component',
+      '2d': '2 metre dewpoint temperature',
+      '2t': '2 metre temperature',
+      'rh': 'Relative humidity',
+      'sd': 'Snow depth',
+      'sf': 'Snowfall',
+      'sp': 'Surface pressure',
+      'ssr': 'Surface net solar radiation',
+      'sund': 'Sunshine duration',
+      'tcc': 'Total cloud cover',
+      'tp': 'Total precipitation',
+      'vis': 'Visibility',
+      'ws': 'Wind speed'
+    };
+    this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max'];
   }
 
@@ -143,7 +162,8 @@ export class ExtensionComponent implements OnInit {
     });
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': conciliator
+      'conciliator': conciliator,
+      'shift': this.shiftColumn
     });
 
   }
@@ -170,7 +190,7 @@ export class ExtensionComponent implements OnInit {
     let valid = true;
     this.extensionData.forEach((extension: Extension) => {
       const objects = extension.properties.get(prop);
-      if (objects.length !== extension.properties.get(prop).filter(obj => {
+      if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
           return !(obj && !obj['id']);
         }).length) {
         valid = false;

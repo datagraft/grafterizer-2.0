@@ -150,7 +150,7 @@ export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
         let name = 'tmp';
         let namespace = 'http://tmp.com/#';
         // get classes and properties from vocab service
-        self.rdfVocabSvc.getClassesAndPropertiesFromVocabularyFile(name, namespace, self.fileName, fileReader.result)
+        self.rdfVocabSvc.getClassesAndPropertiesFromVocabularyFile(name, namespace, self.fileName, fileReader.result.toString())
           .then(
             (result) => {
               for (let i = 0; i < result.classResult.length; ++i) {

@@ -62,12 +62,12 @@ export class AnnotationService {
   }
 
   private updateSubjects() {
-    Object.values(this.annotations).forEach((ann) => {
+    Object.values(this.annotations).forEach((ann: Annotation) => {
       this.annotations[ann.columnHeader].isSubject = Array.from(this.subjects.values()).includes(ann.columnHeader);
     });
   }
   private updateStatuses() {
-    Object.values(this.annotations).forEach((ann) => {
+    Object.values(this.annotations).forEach((ann: Annotation) => {
       this.annotations[ann.columnHeader].status = this.getAnnotationStatus(ann);
     });
   }

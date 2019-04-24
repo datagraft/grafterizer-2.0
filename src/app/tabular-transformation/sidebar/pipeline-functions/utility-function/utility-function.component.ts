@@ -1,76 +1,135 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-//TODO: remove when passing transformation is implemented
-import * as data from '../../../../../assets/data.json';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
+
 @Component({
   selector: 'utility-function',
   templateUrl: './utility-function.component.html',
   styleUrls: ['./utility-function.component.css']
 })
+
 export class UtilityFunctionComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() function: any;
-  // TODO: Pass column names of the uploaded dataset
-  //@Input() columns: String[] = [];
-  // Transformation is needed to search for prefixers/functions
-  //@Input() transformation: any;
-  private transformation: any;
-
+  private modalEnabled: boolean = false;
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+  private previewedTransformationSubscription: Subscription;
+  private selectedCustomFunction: any;
+  private docstring: string = 'Custom utility function';
+  private customFunctions: any[] = [];
+  private functParams: any[] = [];
   private functionName: any; //FunctionWithArgs
-  private fn: any; //CustomFunctionDeclaration
-  private docstring: String;
 
-  private dataService: CompleterData;
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
-  constructor(private completerService: CompleterService) {
-    this.transformation = transformationDataModel.Transformation.revive(data);
+  ngOnInit() {
 
-    /*for (let availableFunction of this.transformation.customFunctionDeclarations) {
-      this.availableFunctions.push(new transformationDataModel.FunctionWithArgs(availableFunction, []))
-    }*/
-    this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
-    if (!this.function) {
-      this.functionName = new transformationDataModel.FunctionWithArgs(null, []);
-      this.function = new transformationDataModel.UtilityFunction(this.functionName, this.docstring);
+    this.functionName = new transformationDataModel.FunctionWithArgs(this.selectedCustomFunction, [null]);
+
+    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
+      .subscribe((previewedTransformation) => {
+        if (previewedTransformation) {
+          this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+            return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+          });
+        }
+      });
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'UtilityFunction') {
+        this.modalEnabled = true;
+        this.functParams = this.currentlySelectedFunction.functionName.functParams;
+        this.selectedCustomFunction = this.currentlySelectedFunction.functionName.funct;
+        for (let funct of this.customFunctions) {
+          if (this.selectedCustomFunction.id === funct.id) {
+            this.customFunctions[funct.id] = this.selectedCustomFunction;
+          }
+        }
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'UtilityFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+  }
+
+  ngOnDestroy() {
+    this.previewedTransformationSubscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  private accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editMapColumnsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-    else {
-      this.functionName = this.function.functionName;
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      this.functionName = new transformationDataModel.FunctionWithArgs(this.selectedCustomFunction, this.functParams);
+      const newFunction = new transformationDataModel.UtilityFunction(this.functionName, this.docstring);
 
-      this.docstring = this.function.docstring;
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
 
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
     }
+    this.resetModal();
   }
 
-
-
-  ngOnInit() { }
-
-  onFunctionSelected(selected: CompleterItem) {
-
-    // this.availableDeriveFunctions[idx] = selected.originalObject;
-    this.functionName = new transformationDataModel.FunctionWithArgs(selected.originalObject, []);
-    // console.log(this.functionName);
-    // console.log(this.functionName.getParams());
+  private editMapColumnsFunction(instanceObj): any {
+    instanceObj.functionName.funct = this.selectedCustomFunction;
+    instanceObj.functionName.functParams = this.functParams;
+    instanceObj.docstring = this.docstring;
   }
 
-  accept() {
-    this.function.functionName = new transformationDataModel.FunctionWithArgs(this.fn, this.functionName.functParams);
-
-    this.function.docstring = this.docstring;
+  private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
     this.modalEnabled = false;
+    // resets the fields of the modal
+    this.selectedCustomFunction = null;
+    this.functParams = [null];
+    this.docstring = 'Custom utility function';
   }
 
-  reduceFunctionParams() {
-
-    var params = this.functionName.getParams();
-    return params;
-  }
-
-  cancel() {
-    this.modalEnabled = false;
+  private cancel() {
+    this.resetModal();
   }
 
 }

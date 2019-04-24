@@ -15,12 +15,13 @@ import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
 import { ConfigComponent } from './config/config.component';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { EnrichmentService } from './enrichment/enrichment.service';
 import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
 import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
+import { ShiftColumnFunction } from 'assets/transformationdatamodel';
 
 declare var Handsontable: any;
 
@@ -97,11 +98,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot = new Handsontable(this.container, this.settings);
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
-        if (event.target.parentNode.id.startsWith('annotation_')) {
+        if (event.target.parentNode.id.startsWith('annotation_') || event.realTarget.id.startsWith('annotation_')) {
           console.log('annotation');
           blockCalculations.cells = true;
           this.openAnnotationDialog(coords.col);
-        } else if (event.target.parentNode.id.startsWith('enrich_')) {
+        } else if (event.target.parentNode.id.startsWith('enrich_') || event.realTarget.id.startsWith('enrich_')) {
           console.log('enrichment');
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
@@ -211,23 +212,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     }
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        let updateSettings = false;
-        if (result['deriveMaps']) {
-          result['deriveMaps'].forEach((deriveMap: DeriveMap) => {
-            this.deriveColumnFromEnrichment(headerIdx, currentHeader, deriveMap, result['conciliator']);
-            if (deriveMap.newColTypes.length > 0) {
-              updateSettings = true;
-            }
-          });
-        }
-        if (updateSettings) {
-          this.hot.updateSettings({
-            columns: this.getTableColumns(),
-            colHeaders: (col) => this.getTableHeader(col)
-          });
-        }
+      if (result && result['deriveMaps']) {
+        this.deriveColumnsFromEnrichment(headerIdx, currentHeader, result['deriveMaps'], result['conciliator'], result['shift']);
       }
+      // Update headers (some columns might have been annotated)
+      this.hot.updateSettings({
+        columns: this.getTableColumns(),
+        colHeaders: (col) => this.getTableHeader(col)
+      });
     });
   }
 
@@ -239,8 +231,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           data: h, // don't remove leading ':' from header here!
           renderer: (instance, td, row, col, prop, value, cellProperties) => {
             const annotation = this.annotationService.getAnnotation(this.annotationService.headers[col]);
-            td.className = 'htCenter htMiddle';
-            td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
+            td.className = 'htCenter htMiddle htDimmed';
+            if (value) {
+              td.innerHTML = `<a href="${annotation.urifyNamespace}${value}" target="_blank">${value}</a>`;
+            } else {
+              td.innerHTML = '';
+            }
             return td;
           }
         });
@@ -584,68 +580,81 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Create a new column using the existing deriveColumn function
+   * Create new columns using the existing deriveColumn function
    * @param colsToDeriveFromIdx
    * @param colsToDeriveFrom
-   * @param deriveMap
+   * @param deriveMaps
    * @param conciliator
+   * @param shift
    */
-  deriveColumnFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMap: DeriveMap, conciliator: ConciliatorService) {
+  deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
+    conciliator: ConciliatorService, shift: boolean) {
+    let newFunction: any = null;
 
-    // Create a new custom function
-    const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
-    const fMap = deriveMap.toClojureMap();
-    const fDescription = '';
-    const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} v ""))`;
-    const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
-    this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
+    deriveMaps.forEach((deriveMap: DeriveMap, index) => {
+      // Create a new custom function
+      const fName = `rec${colsToDeriveFromIdx}To${deriveMap.newColName}`;
+      const fMap = deriveMap.toClojureMap();
+      const fDescription = '';
+      const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} v ""))`;
+      const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
+      this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
-    // Create the derive column step
-    const newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
-      [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
-      [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
+      // Create the derive column step
+      newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
+        [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
+        [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
-    this.pipelineEventsSvc.changeSelectedFunction({
-      currentFunction: {},
-      changedFunction: newFunction
-    });
+      // Pipeline update
+      this.transformationObj.pipelines[0].addAfter({}, newFunction);
 
-    // Pipeline update
-    this.transformationObj.pipelines[0].addAfter({}, newFunction);
-
-    // Mark this column as reconciled if a conciliator is given
-    if (conciliator) {
-      const reconciledColumn: ReconciledColumn = new ReconciledColumn(deriveMap, conciliator);
-      this.enrichmentService.setReconciledColumn(reconciledColumn);
-      this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-    }
-
-    // Annotate the derived column, if it contains instances (URIs)
-    if (deriveMap.newColTypes.length > 0) {
-      const annotation = new Annotation({
-        columnHeader: deriveMap.newColName,
-        columnValuesType: ColumnTypes.URI,
-        columnTypes: deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id),
-        urifyNamespace: conciliator.getIdentifierSpace()
-      });
-      // If the colsToDeriveFrom is reconciled, this is an extension step
-      if (this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
-        annotation.property = conciliator.getSchemaSpace() + deriveMap.newColName;
-        annotation.subject = colsToDeriveFrom;
+      // Shift the new column next to the deriveFrom column
+      if (shift) {
+        newFunction = new transformationDataModel.ShiftColumnFunction(
+          { id: this.enrichmentService.headers.length, value: deriveMap.newColName },
+          colsToDeriveFromIdx + index + 1, 'position', '');
+        this.transformationObj.pipelines[0].addAfter({}, newFunction);
       }
 
-      this.annotationService.setAnnotation(deriveMap.newColName, annotation);
-      this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
+      // Mark this column as reconciled if a conciliator is given
+      if (conciliator) {
+        const reconciledColumn: ReconciledColumn = new ReconciledColumn(deriveMap, conciliator);
+        this.enrichmentService.setReconciledColumn(reconciledColumn);
+        this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
+      }
 
+      // Annotate the derived column, if it contains instances (URIs)
+      if (deriveMap.newColTypes.length > 0) {
+        const annotation = new Annotation({
+          columnHeader: deriveMap.newColName,
+          columnValuesType: ColumnTypes.URI,
+          columnTypes: deriveMap.newColTypes.map((type: Type) => conciliator.getSchemaSpace() + type.id),
+          urifyNamespace: conciliator.getIdentifierSpace()
+        });
+        // If the colsToDeriveFrom is reconciled, this is an extension step
+        if (this.enrichmentService.isColumnReconciled(colsToDeriveFrom)) {
+          annotation.property = conciliator.getSchemaSpace() + deriveMap.newColName;
+          annotation.subject = colsToDeriveFrom;
+        }
+
+        this.annotationService.setAnnotation(deriveMap.newColName, annotation);
+        this.transformationObj.setAnnotations(this.annotationService.getAnnotations());
+
+      }
+    });
+
+    if (newFunction) {
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: {},
+        changedFunction: newFunction
+      });
+      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
+
+      for (let i = 0; i < this.transformationObj.pipelines[0].functions.length - 1; ++i) {
+        this.transformationObj.pipelines[0].functions.isPreviewed = false;
+      }
     }
-
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
-    this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
-
-    for (let i = 0; i < this.transformationObj.pipelines[0].functions.length - 1; ++i) {
-      this.transformationObj.pipelines[0].functions.isPreviewed = false;
-    }
-
   }
 
 }

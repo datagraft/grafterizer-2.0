@@ -5,7 +5,7 @@
       <div fxLayout="column">
         <div fxLayout="row">
           <button class="btn btn-link btn-icon-link" [disabled]="columnsArray.length === 1">
-            <clr-icon shape="times" size="22" (click)="removeColumn(id)"></clr-icon>
+            <mat-icon size="22" (click)="removeColumn(id)">clear</mat-icon>
           </button>
           <mat-form-field style="width: 100%;">
             <input matInput placeholder="Name of new column" id="{{'colname'+id}}" [(ngModel)]="columnSpec.colName">

@@ -1,8 +1,8 @@
 import { Injectable, OnChanges } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
@@ -50,7 +50,7 @@ export class TransformationService {
     this.dispatchPath = this.config.getConfig('dispatch-path');
     // Caching service for Graftwerk - caches intermediate results of transformations
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
-    const emptyTransformation = new transformationDataModel.Transformation();
+    const emptyTransformation = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationObjSource = new BehaviorSubject<any>(emptyTransformation);
     this.graftwerkDataSource = new BehaviorSubject<any>({
       ':column-names': [],

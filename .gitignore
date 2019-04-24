@@ -46,6 +46,7 @@ Thumbs.db
 # Other
 .orig
 semantic.json
+package-lock.json
 src/assets/jot.json
 
 # Visual Studio

@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 import { TransformationService } from 'app/transformation.service';
 
@@ -129,22 +129,26 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   resetModal() {
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
     this.functions = [];
     this.customFunctionDeclarations = [];
     this.retreiveCustomFunctions();
     this.selected = { clojureCode: '' };
     this.editor.setValue('');
+    this.modalEnabled = false;
   }
 
   accept() {
+    console.log(this.selected);
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
     this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
-    this.modalEnabled = false;
+    this.resetModal();
   }
 
   cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }

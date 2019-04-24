@@ -1,23 +1,2 @@
-<div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
-  <div class="spinner">
-    <span class="spinner spinner-lg" fxflex>
-      Loading...
-    </span>
-  </div>
-</div>
 <div id="handsontable" [hidden]="showLoading">
 </div>
-
-<!-- <add-columns [modalEnabled]="selectedFunction=='newcol:1'" class="sin-flex" (emitter)="emitFunction($event)"></add-columns>
-<derive-column [modalEnabled]="selectedFunction=='newcol:2'" class="sin-flex" (emitter)="emitFunction($event)"></derive-column>
-<deduplicate [modalEnabled]="selectedFunction=='deduplicate'" class="sin-flex" (emitter)="emitFunction($event)"></deduplicate>
-<add-row [modalEnabled]="selectedFunction=='newrow:3'" class="sin-flex" (emitter)="emitFunction($event)"></add-row>
-<group-dataset [modalEnabled]="selectedFunction=='group-dataset'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></group-dataset>
-<filter-rows [modalEnabled]="selectedFunction=='filter-rows'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></filter-rows>
-
-
-<split-columns [modalEnabled]="selectedFunction=='split-columns'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></split-columns>
-<sort-dataset [modalEnabled]="selectedFunction=='sort'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></sort-dataset>
-<reshape-dataset [modalEnabled]="selectedFunction=='reshape'" class="sin-flex" (emitter)="emitFunction($event)"></reshape-dataset>
-<rename-columns [modalEnabled]="selectedFunction=='rename-columns'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></rename-columns>
-<merge-columns [modalEnabled]="selectedFunction=='merge-columns'" class="sin-flex" (emitter)="emitFunction($event)" [defaultParams]="selectedDefaultParams"></merge-columns> -->

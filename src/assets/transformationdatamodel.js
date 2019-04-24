@@ -1,6 +1,6 @@
 import * as jsedn from 'jsedn';
 
-var _this = this;
+var _this = this || {};
 
 export function Prefixer(name, uri, parentPrefix) {
   this.name = name;
@@ -11,7 +11,7 @@ export function Prefixer(name, uri, parentPrefix) {
 Prefixer.revive = function (data) {
   return new Prefixer(data.name, data.uri, data.parentPrefix);
 };
-this.Prefixer = Prefixer;
+_this.Prefixer = Prefixer;
 
 export function GenericFunction() {
   if (!this.generateClojure) {
@@ -33,7 +33,7 @@ export function CustomFunctionDeclaration(name, clojureCode, group, docstring) {
 CustomFunctionDeclaration.revive = function (data) {
   return new CustomFunctionDeclaration(data.name, data.clojureCode, data.group, data.docstring);
 };
-this.CustomFunctionDeclaration = CustomFunctionDeclaration;
+_this.CustomFunctionDeclaration = CustomFunctionDeclaration;
 
 export function DropRowsFunction(indexFrom, indexTo, take, docstring) {
   GenericFunction.call(this);
@@ -83,7 +83,7 @@ DropRowsFunction.prototype.generateClojure = function () {
 
   return new jsedn.List(values);
 };
-this.DropRowsFunction = DropRowsFunction;
+_this.DropRowsFunction = DropRowsFunction;
 
 export function SplitFunction(colName, separator, docstring) {
   GenericFunction.call(this);
@@ -110,7 +110,7 @@ SplitFunction.prototype.generateClojure = function () {
   var regex = new jsedn.List([jsedn.sym('read-string'), '#\"' + this.separator + '\"']);
   return new jsedn.List([jsedn.sym('new-tabular/split-column'), jsedn.kw(':' + this.colName.value), regex]);
 };
-this.SplitFunction = SplitFunction;
+_this.SplitFunction = SplitFunction;
 
 export function FunctionWithArgs(funct, functParams) {
   this.funct = funct;
@@ -133,7 +133,7 @@ FunctionWithArgs.prototype.getParams = function () {
 FunctionWithArgs.revive = function (data) {
   return new FunctionWithArgs(data.funct, data.functParams);
 };
-this.FunctionWithArgs = FunctionWithArgs;
+_this.FunctionWithArgs = FunctionWithArgs;
 
 export function UtilityFunction(functionName, docstring) {
   GenericFunction.call(this);
@@ -176,7 +176,7 @@ UtilityFunction.prototype.generateClojure = function () {
 
   return new jsedn.List(elems);
 };
-this.UtilityFunction = UtilityFunction;
+_this.UtilityFunction = UtilityFunction;
 
 export function AddColumnsFunction(columnsArray, docstring) {
   GenericFunction.call(this);
@@ -270,7 +270,7 @@ AddColumnsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym('add-columns'), newColMap]);
   }
 };
-this.AddColumnsFunction = AddColumnsFunction;
+_this.AddColumnsFunction = AddColumnsFunction;
 
 export function AddColumnFunction(newColName, fileName, colValue, colExpr, docstring) {
   GenericFunction.call(this);
@@ -296,7 +296,7 @@ AddColumnFunction.prototype.generateClojure = function () {
   }
 
 };
-this.AddColumnFunction = AddColumnFunction;
+_this.AddColumnFunction = AddColumnFunction;
 
 export function GrepFunction(take, grepmode, colsToFilter, functionsToFilterWith, filterText, filterRegex, ignoreCase, docstring) {
   GenericFunction.call(this);
@@ -438,7 +438,7 @@ GrepFunction.prototype.generateClojure = function () {
 
   return new jsedn.List(values);
 };
-this.GrepFunction = GrepFunction;
+_this.GrepFunction = GrepFunction;
 
 export function MergeColumnsFunction(colsToMerge, separator, newColName, docstring) {
   GenericFunction.call(this);
@@ -475,7 +475,7 @@ MergeColumnsFunction.prototype.generateClojure = function () {
   var regex = new jsedn.List([jsedn.sym('read-string'), '#\"' + this.separator + '\"']);
   return new jsedn.List([jsedn.sym('new-tabular/merge-columns'), colsToMerge, regex, jsedn.kw(':' + this.newColName)]);
 };
-this.MergeColumnsFunction = MergeColumnsFunction;
+_this.MergeColumnsFunction = MergeColumnsFunction;
 
 export function DeriveColumnFunction(newColName, colsToDeriveFrom, functionsToDeriveWith, docstring) {
   GenericFunction.call(this);
@@ -578,7 +578,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   }
   return new jsedn.List(values);
 };
-this.DeriveColumnFunction = DeriveColumnFunction;
+_this.DeriveColumnFunction = DeriveColumnFunction;
 
 export function GroupRowsFunction(colnames, colnamesFunctionsSet, separatorSet, docstring) {
   GenericFunction.call(this);
@@ -620,7 +620,7 @@ GroupRowsFunction.prototype.generateClojure = function () {
 
   return new jsedn.List([jsedn.sym('new-tabular/group-rows'), colnames, set]);
 };
-this.GroupRowsFunction = GroupRowsFunction;
+_this.GroupRowsFunction = GroupRowsFunction;
 
 export function UploadDatasetFunction(selectedType, typeList, delimiter, sheetNames, selectedSheet, extension, docstring) {
   GenericFunction.call(this);
@@ -674,7 +674,7 @@ UploadDatasetFunction.prototype.generateClojure = function () {
 
   return new jsedn.List(values);
 };
-this.UploadDatasetFunction = UploadDatasetFunction;
+_this.UploadDatasetFunction = UploadDatasetFunction;
 
 export function RenameColumnsFunction(functionsToRenameWith, mappings, docstring) {
   GenericFunction.call(this);
@@ -781,7 +781,7 @@ RenameColumnsFunction.prototype.removeRenameFunction = function (index) {
   this.functionsToRenameWith.splice(index, 1);
   return true;
 };
-this.RenameColumnsFunction = RenameColumnsFunction;
+_this.RenameColumnsFunction = RenameColumnsFunction;
 
 export function KeyFunctionPair(key, funcName, funcParams) {
   this.key = key;
@@ -817,7 +817,7 @@ KeyFunctionPair.prototype.getParams = function () {
   }
   return params;
 };
-this.KeyFunctionPair = KeyFunctionPair;
+_this.KeyFunctionPair = KeyFunctionPair;
 
 export function NewColumnSpec(colName, colValue, specValue, expression) {
   this.colName = colName;
@@ -829,7 +829,7 @@ export function NewColumnSpec(colName, colValue, specValue, expression) {
 NewColumnSpec.revive = function (data) {
   return new NewColumnSpec(data.colName, data.colValue, data.specValue, data.expression);
 };
-this.NewColumnSpec = NewColumnSpec;
+_this.NewColumnSpec = NewColumnSpec;
 
 export function ApplyColumnsFunction(keyFunctionPairs, docstring) {
   // array of obj with [key, function]
@@ -886,7 +886,7 @@ ApplyColumnsFunction.prototype.removeKeyFunctionPair = function (kfPair) {
   this.keyFunctionPairs.splice(index, 1);
   return true;
 };
-this.ApplyColumnsFunction = ApplyColumnsFunction;
+_this.ApplyColumnsFunction = ApplyColumnsFunction;
 
 export function MapcFunction(keyFunctionPairs, docstring) {
   // array of obj with [key, function]
@@ -983,7 +983,7 @@ MapcFunction.prototype.removeKeyFunctionPair = function (kfPair) {
   this.keyFunctionPairs.splice(index, 1);
   return true;
 };
-this.MapcFunction = MapcFunction;
+_this.MapcFunction = MapcFunction;
 
 export function ColnameSorttype(colname, sorttype, order) {
   this.colname = colname;
@@ -994,7 +994,7 @@ export function ColnameSorttype(colname, sorttype, order) {
 ColnameSorttype.revive = function (data) {
   return new ColnameSorttype(data.colname, data.sorttype, data.order);
 };
-this.ColnameSorttype = ColnameSorttype;
+_this.ColnameSorttype = ColnameSorttype;
 
 export function SortDatasetFunction(colnamesSorttypesMap, docstring) {
   // array of column names
@@ -1068,7 +1068,7 @@ SortDatasetFunction.prototype.removeColnameSorttype = function (nametype) {
   this.colnamesSorttypesMap.splice(index, 1);
   return true;
 };
-this.SortDatasetFunction = SortDatasetFunction;
+_this.SortDatasetFunction = SortDatasetFunction;
 
 export function AddRowFunction(position, values, docstring) {
   this.name = 'add-row';
@@ -1092,7 +1092,7 @@ AddRowFunction.prototype.generateClojure = function () {
     values.val.push(this.values[i]);
   return new jsedn.List([jsedn.sym('new-tabular/add-row'), values]);
 };
-this.AddRowFunction = AddRowFunction;
+_this.AddRowFunction = AddRowFunction;
 
 export function ShiftRowFunction(indexFrom, indexTo, shiftrowmode, docstring) {
   this.name = 'shift-row';
@@ -1115,7 +1115,7 @@ ShiftRowFunction.prototype.generateClojure = function () {
   if (this.shiftrowmode === 'position') values.push(this.indexTo);
   return new jsedn.List(values);
 };
-this.ShiftRowFunction = ShiftRowFunction;
+_this.ShiftRowFunction = ShiftRowFunction;
 
 export function ShiftColumnFunction(colFrom, indexTo, shiftcolmode, docstring) {
   this.name = 'shift-column';
@@ -1138,7 +1138,7 @@ ShiftColumnFunction.prototype.generateClojure = function () {
   if (this.shiftcolmode === 'position') values.push(this.indexTo);
   return new jsedn.List(values);
 };
-this.ShiftColumnFunction = ShiftColumnFunction;
+_this.ShiftColumnFunction = ShiftColumnFunction;
 
 export function RemoveDuplicatesFunction(mode, colNames, separator, docstring) {
   // array of column names
@@ -1172,7 +1172,7 @@ RemoveDuplicatesFunction.prototype.generateClojure = function () {
   */
   return new jsedn.List(values);
 };
-this.RemoveDuplicatesFunction = RemoveDuplicatesFunction;
+_this.RemoveDuplicatesFunction = RemoveDuplicatesFunction;
 
 export function MakeDatasetFunction(columnsArray, useLazy, numberOfColumns, moveFirstRowToHeader, docstring) {
   // array of column names
@@ -1247,7 +1247,7 @@ MakeDatasetFunction.prototype.generateClojure = function () {
     ]);
   }
 };
-this.MakeDatasetFunction = MakeDatasetFunction;
+_this.MakeDatasetFunction = MakeDatasetFunction;
 
 export function ColumnsFunction(columnsArray, indexFrom, indexTo, take, docstring) {
   // array of column names
@@ -1321,7 +1321,7 @@ ColumnsFunction.prototype.generateClojure = function () {
   }
 
 };
-this.ColumnsFunction = ColumnsFunction;
+_this.ColumnsFunction = ColumnsFunction;
 
 
 export function FillRowsFunction(indexFrom, indexTo, docstring) {
@@ -1355,7 +1355,7 @@ FillRowsFunction.prototype.generateClojure = function () {
   return fillRowsEdn;
 
 };
-this.FillRowsFunction = FillRowsFunction;
+_this.FillRowsFunction = FillRowsFunction;
 
 export function MergeRowsFunction(indexFrom, indexTo, separator, docstring) {
   // array of column names
@@ -1388,7 +1388,7 @@ MergeRowsFunction.prototype.generateClojure = function () {
   return new jsedn.List([jsedn.sym('new-tabular/merge-rows'), this.indexFrom, this.indexTo, this.separator]);
 
 };
-this.MergeRowsFunction = MergeRowsFunction;
+_this.MergeRowsFunction = MergeRowsFunction;
 
 var ChangeColtype = function (columnName, datatype) {
   this.name = 'changeColtype';
@@ -1398,7 +1398,7 @@ var ChangeColtype = function (columnName, datatype) {
   this.datatype = datatype;
   this.docstring = 'Change datatype of column ' + columnName + ' to ' + datatype;
 }
-this.ChangeColtype = ChangeColtype;
+_this.ChangeColtype = ChangeColtype;
 
 export function MeltFunction(columnsArray, variable, value, aggrFunction, separator, docstring) {
   // array of column names
@@ -1453,7 +1453,7 @@ MeltFunction.prototype.generateClojure = function () {
   }
   return returnValue;
 };
-this.MeltFunction = MeltFunction;
+_this.MeltFunction = MeltFunction;
 
 export function Pipeline(functions) {
   // functions that make up the pipeline
@@ -1573,7 +1573,7 @@ Pipeline.prototype.remove = function (funct) {
   this.functions.splice(index, 1);
   return true;
 };
-this.Pipeline = Pipeline;
+_this.Pipeline = Pipeline;
 
 export function getGraphElement(inputElement) {
   if (!(inputElement instanceof RDFElement)) {
@@ -1638,7 +1638,7 @@ URINode.prototype.replaceChild = function (child, nodeToReplaceWith) {
   }
   return childIndex;
 };
-this.URINode = URINode;
+_this.URINode = URINode;
 
 export function ConstantURI(prefix, constantURIText, nodeCondition, subElements) {
   URINode.call(this, prefix, subElements);
@@ -1658,7 +1658,7 @@ ConstantURI.revive = function (data) {
   }
   return new ConstantURI(data.prefix, data.constant, conditions, data.subElements);
 };
-this.ConstantURI = ConstantURI;
+_this.ConstantURI = ConstantURI;
 
 export function ColumnURI(prefix, columnName, nodeCondition, subElements) {
   URINode.call(this, typeof prefix === 'object' ? prefix.value : prefix, subElements);
@@ -1690,7 +1690,7 @@ ColumnURI.revive = function (data) {
   }
   return new ColumnURI(prefix, colname, conditions, data.subElements);
 };
-this.ColumnURI = ColumnURI;
+_this.ColumnURI = ColumnURI;
 
 export function Condition(column, operator, operand, conj) {
   this.column = column;
@@ -1702,7 +1702,7 @@ export function Condition(column, operator, operand, conj) {
 Condition.revive = function (data) {
   return new Condition(data.column, data.operator, data.operand, data.conj);
 };
-this.Condition = Condition;
+_this.Condition = Condition;
 
 export function Property(prefix, propertyName, propertyCondition, subElements) {
   RDFElement.call(this, subElements);
@@ -1766,7 +1766,7 @@ Property.revive = function (data) {
 
   return new Property(data.prefix, data.propertyName, conditions, data.subElements);
 };
-this.Property = Property;
+_this.Property = Property;
 
 export function ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
   RDFElement.call(this, []);
@@ -1806,7 +1806,7 @@ ColumnLiteral.revive = function (data) {
   return new ColumnLiteral(colname, datatype, onEmpty, onError, langTag, datatypeURI, conditions);
 
 };
-this.ColumnLiteral = ColumnLiteral;
+_this.ColumnLiteral = ColumnLiteral;
 
 export function ConstantLiteral(literalText, nodeCondition) {
   RDFElement.call(this, []);
@@ -1826,7 +1826,7 @@ ConstantLiteral.revive = function (data) {
   }
   return new ConstantLiteral(data.literalValue, conditions);
 };
-this.ConstantLiteral = ConstantLiteral;
+_this.ConstantLiteral = ConstantLiteral;
 
 // TODO add support for blank nodes
 export function BlankNode(nodeCondition, subElements) {
@@ -1846,7 +1846,7 @@ BlankNode.revive = function (data) {
   }
   return new BlankNode(conditions, data.subElements);
 };
-this.BlankNode = BlankNode;
+_this.BlankNode = BlankNode;
 
 export function RDFVocabulary(prefixName, namespaceURI, properties, classes) {
   this.name = prefixName;
@@ -1860,7 +1860,7 @@ export function RDFVocabulary(prefixName, namespaceURI, properties, classes) {
 RDFVocabulary.revive = function (data) {
   return new RDFVocabulary(data.name, data.namespace, data.properties, data.classes);
 };
-this.RDFVocabulary = RDFVocabulary;
+_this.RDFVocabulary = RDFVocabulary;
 
 export function Graph(graphURI, existingGraphRoots) {
   var i;
@@ -1914,7 +1914,7 @@ Graph.prototype.addNodeAfter = function (root, rootToAdd) {
 Graph.revive = function (data) {
   return new Graph(data.graphURI, data.graphRoots);
 };
-this.Graph = Graph;
+_this.Graph = Graph;
 
 export function Transformation(customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
 
@@ -2030,7 +2030,7 @@ Transformation.revive = function (data) {
 Transformation.prototype.setAnnotations = function (annotations) {
   this.annotations = annotations;
 };
-Transformation.prototype.setReconciledColumns = function(reconciledColumns) {
+Transformation.prototype.setReconciledColumns = function (reconciledColumns) {
   this.reconciledColumns = reconciledColumns;
 };
 Transformation.prototype.addGraphAfter = function (graph, graphToAdd) {
@@ -2232,7 +2232,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
     return this;
   }
 };
-this.Transformation = Transformation;
+_this.Transformation = Transformation;
 
 // TODO should this just be a prototype function of every RDFElement?
 export function getKeysFromSubs(node, columnKeys) {

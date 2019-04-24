@@ -1,49 +1,32 @@
 <div fxLayout='column' fxLayoutAlign="start center">
-  <p-listbox [options]="transformations" [(ngModel)]="selected" [disabled]="selectboxDisabled" (ngModelChange)="onChange($event)"
-    [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
+  <div id="btn-show-all-functions">
+    <button class="btn btn-primary btn-block btn-sm" (click)="showAllFunctions()">Reset selection</button>
+  </div>
+  <p-listbox [options]="recommendedFunctions" [(ngModel)]="selected" (ngModelChange)="onChange($event)"
+    [styleClass]="ui-state-active" [style]="{'width':'220px', 'background-color':'white', 'border':'1px solid grey'}"
+    [listStyle]="{'height':'200px'}">
   </p-listbox>
-</div>
-
-<div id="btn-custom-functions" *ngIf="!transformationOnlyView">
-  <button class="btn btn-primary btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
+  <div id="btn-custom-functions">
+    <button class="btn btn-outline btn-sm" (click)="openCustomFunctionModal()">Custom functions</button>
+  </div>
 </div>
 
 <make-dataset class="sin-flex"></make-dataset>
-
 <add-columns class="sin-flex"></add-columns>
-
 <custom-function class="sin-flex"></custom-function>
-
 <derive-column class="sin-flex"></derive-column>
-
 <take-columns class="sin-flex"></take-columns>
-
 <take-rows class="sin-flex"></take-rows>
-
 <shift-column class="sin-flex"></shift-column>
-
 <shift-row class="sin-flex"></shift-row>
-
 <split-columns class="sin-flex"></split-columns>
-
 <merge-columns class="sin-flex"></merge-columns>
-
 <map-columns class="sin-flex"></map-columns>
-
 <sort-dataset class="sin-flex"></sort-dataset>
-
 <reshape-dataset class="sin-flex"></reshape-dataset>
-
-<deduplicate class="sin-flex"></deduplicate>
-
-<!-- <rename-columns [modalEnabled]="selected.id=='RenameColumnsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="renameColumnsFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></rename-columns>
-
-<add-row [modalEnabled]="selected.id=='AddRowFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="addRowFunction"
-  [columns]="headers"></add-row>
-
-<group-dataset [modalEnabled]="selected.id=='GroupRowsFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="function"
-  [defaultParams]="selected.defaultParams"></group-dataset>
-
-<filter-rows [modalEnabled]="selected.id=='GrepFunction'" class="sin-flex" (emitter)="emitFunction($event)" [function]="grepFunction"
-  [defaultParams]="selected.defaultParams" [columns]="headers" [transformation]="transformationObj"></filter-rows> -->
+<deduplicate-function class="sin-flex"></deduplicate-function>
+<group-dataset class="sin-flex"></group-dataset>
+<filter-rows class="sin-flex"></filter-rows>
+<add-row class="sin-flex"></add-row>
+<rename-columns class="sin-flex"></rename-columns>
+<utility-function class="sin-flex"></utility-function>

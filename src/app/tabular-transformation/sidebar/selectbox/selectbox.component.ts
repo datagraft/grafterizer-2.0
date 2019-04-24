@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, Input, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { SelectItem } from 'primeng/primeng';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../../../assets/transformationdatamodel.js';
 import { TransformationService } from 'app/transformation.service';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 @Component({
   moduleId: module.id,
@@ -23,12 +24,16 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private transformations: SelectItem[];
-  private selected: any;
+  private recommendedFunctions: SelectItem[] = [];
+  private allFunctions: SelectItem[] = [];
+
+  private selected: any = { id: null, defaultParams: null };
   private modalEnabled = false;
   private message: any;
-  private transformationOnlyView: boolean = false;
-  private selectboxDisabled: boolean;
+  private transformationReadOnlyView: boolean = false;
+
+  private transformationMetadataSubscription: Subscription;
+  private isOwned: boolean;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -39,28 +44,45 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  constructor(private route: ActivatedRoute, private transformationSvc: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
-    this.transformations = [];
-    this.selected = { id: null, defaultParams: null };
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
+
+  constructor(private route: ActivatedRoute,
+    private transformationSvc: TransformationService,
+    private pipelineEventsSvc: PipelineEventsService,
+    private messageSvc: DataGraftMessageService) {
+
   }
 
   ngOnChanges() {
     if (this.suggestions) {
-      console.log(this.suggestions)
-      this.transformations = this.suggestions;
-      const paramMap = this.route.snapshot.paramMap;
-      if (!paramMap.has('filestoreId')) {
-        this.transformationOnlyView = true;
-      };
-      if (!paramMap.has('transformationId') && !paramMap.has('filestoreId')) {
-        this.selectboxDisabled = true;
-      } else {
-        this.selectboxDisabled = false;
-      }
+      this.recommendedFunctions = this.suggestions;
     }
   }
 
   ngOnInit() {
+
+    // this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    //   if (state.mode) {
+    //     this.currentDataGraftState = state.mode;
+    //     if (this.currentDataGraftState == 'transformations.transformation'
+    //       || this.currentDataGraftState == 'transformations.new'
+    //       || this.currentDataGraftState == 'transformations.transformation.preview'
+    //       || document.referrer.includes('/new/')
+    //       || this.currentDataGraftState == 'standalone') {
+    //       this.transformationReadOnlyView = false;
+    //     } else {
+    //       this.transformationReadOnlyView = true;
+    //     }
+    //   }
+    // });
+
+    this.transformationMetadataSubscription = this.transformationSvc.currentTransformationMetadata.subscribe((transformationMeta) => {
+      if (transformationMeta.is_owned) {
+        this.isOwned = true;
+      }
+    });
 
     this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
       this.transformationObj = transformation;
@@ -117,12 +139,19 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     this.selectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selectedFunction) => {
       this.selectedFunction = selectedFunction;
     });
+
+    this.allFunctions = this.recommendedFunctions;
+
   }
 
   ngOnDestroy() {
     this.pipelineEventsSubscription.unsubscribe();
     this.selectedFunctionSubscription.unsubscribe();
     this.transformationSubscription.unsubscribe();
+  }
+
+  showAllFunctions() {
+    this.recommendedFunctions = this.allFunctions;
   }
 
   emitFunction(value: any) {

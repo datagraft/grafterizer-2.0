@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 import { TransformationService } from 'app/transformation.service';
 
 @Component({
-  selector: "deduplicate",
+  selector: "deduplicate-function",
   templateUrl: "./deduplicate.component.html",
   styleUrls: ["./deduplicate.component.css"]
 })
