@@ -62,9 +62,11 @@ export class FilterRowsComponent implements OnInit {
         this.grepmode = this.currentlySelectedFunction.grepmode;
         this.colsToFilter = this.currentlySelectedFunction.colsToFilter.map(o => o.value);
         this.selectedCustomFunction = this.currentlySelectedFunction.functionsToFilterWith["0"];
-        for (let funct of this.customFunctions) {
-          if (this.selectedCustomFunction.id === funct.id) {
-            this.customFunctions[funct.id] = this.selectedCustomFunction;
+        if (this.selectedCustomFunction) {
+          for (let funct of this.customFunctions) {
+            if (this.selectedCustomFunction.id === funct.id) {
+              this.customFunctions[funct.id] = this.selectedCustomFunction;
+            }
           }
         }
         this.filterText = this.currentlySelectedFunction.filterText;

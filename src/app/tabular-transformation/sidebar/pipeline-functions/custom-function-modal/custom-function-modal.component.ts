@@ -134,14 +134,12 @@ export class CustomFunctionModalComponent implements OnInit {
     });
     this.functions = [];
     this.customFunctionDeclarations = [];
-    this.retreiveCustomFunctions();
     this.selected = { clojureCode: '' };
     this.editor.setValue('');
     this.modalEnabled = false;
   }
 
   accept() {
-    console.log(this.selected);
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
     this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
     this.resetModal();
