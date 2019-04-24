@@ -1,3 +1,6 @@
+import {XSDDatatypes} from '../annotation.model';
+import {UrlUtilsService} from '../shared/url-utils.service';
+
 export class Type {
   public id: string;
   public name: string;
@@ -88,10 +91,13 @@ export class DeriveMap {
   private deriveMap: {};
   public newColName: string;
   public newColTypes: Type[];
+  public withProperty: string;
+  public newColDatatype: string = null;
 
-  constructor(newColName: string) {
+  constructor(newColName: string, withProperty: string) {
     this.deriveMap = {};
     this.newColTypes = [];
+    this.withProperty = withProperty;
     this.newColName = newColName;
   }
 
@@ -99,7 +105,7 @@ export class DeriveMap {
     this.deriveMap = {};
     this.newColTypes = types;
     mapping.forEach(m => {
-      if (m.results.length > 0 && m.results[0].score >= threshold) {
+      if (m.results.length > 0 && m.results[0].match) {
         this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
       }
     });
@@ -116,6 +122,19 @@ export class DeriveMap {
           this.deriveMap[e.id] = firstRes['id'];
         } else if (firstRes['str']) {
           this.deriveMap[e.id] = firstRes['str'];
+          this.newColDatatype = XSDDatatypes.string;
+        } else if (firstRes['date']) {
+          this.deriveMap[e.id] = firstRes['date'];
+          this.newColDatatype = XSDDatatypes.date;
+        } else if (firstRes['float']) {
+          this.deriveMap[e.id] = firstRes['float'];
+          this.newColDatatype = XSDDatatypes.float;
+        } else if (firstRes['int']) {
+          this.deriveMap[e.id] = firstRes['int'];
+          this.newColDatatype = XSDDatatypes.integer;
+        } else if (firstRes['bool']) {
+          this.deriveMap[e.id] = firstRes['bool'];
+          this.newColDatatype = XSDDatatypes.boolean;
         }
       }
     });
@@ -203,6 +222,8 @@ export class WeatherConfigurator {
   private offsets: number[];
   private readDatesFromCol: string;
   private date: string;
+  private readPlacesFromCol: string;
+  private place: string;
 
   constructor(obj: any) {
     this.parameters = obj && obj.parameters || [];
@@ -210,6 +231,8 @@ export class WeatherConfigurator {
     this.offsets = obj && obj.offsets || [];
     this.readDatesFromCol = obj && obj.readDatesFromCol || '';
     this.date = obj && obj.date || '';
+    this.readPlacesFromCol = obj && obj.readPlacesFromCol || '';
+    this.place = obj && obj.place || '';
   }
 
 
@@ -231,6 +254,14 @@ export class WeatherConfigurator {
 
   getDate(): string {
     return this.date;
+  }
+
+  getReadPlacesFromCol(): string {
+    return this.readPlacesFromCol;
+  }
+
+  getPlace(): string {
+    return this.place;
   }
 }
 
@@ -290,4 +321,77 @@ export class WeatherParameter {
   getValue(): string {
     return this.value;
   }
+}
+
+export class EventConfigurator {
+  private readDatesFromCol: string;
+  private date: string;
+  private readPlacesFromCol: string;
+  private places: string[];
+  private readCategoriesFromCol: string;
+  private categories: string[];
+
+  constructor(obj: any) {
+    this.readDatesFromCol = obj && obj.readDatesFromCol || '';
+    this.date = obj && obj.date || '';
+    this.readPlacesFromCol = obj && obj.readPlacesFromCol || '';
+    this.places = obj && obj.places || [];
+    this.readCategoriesFromCol = obj && obj.readCategoriesFromCol || '';
+    this.categories = obj && obj.categories || [];
+  }
+
+  getReadDatesFromCol(): string {
+    return this.readDatesFromCol;
+  }
+
+  getDate(): string {
+    return this.date;
+  }
+
+  getReadPlacesFromCol(): string {
+    return this.readPlacesFromCol;
+  }
+
+  getPlaces(): string[] {
+    return this.places;
+  }
+
+  getReadCategoriesFromCol(): string {
+    return this.readCategoriesFromCol;
+  }
+
+  getCategories(): string[] {
+    return this.categories;
+  }
+}
+
+export class Event {
+  private geonamesId: string;
+  private eventDate: string;
+  private categories: string[];
+  private eventsCount: number;
+
+  constructor(obj: any) {
+    this.geonamesId = obj && obj.geonamesId || '';
+    this.eventDate = obj && obj.eventDate || '';
+    this.categories = obj && obj.categories || [];
+    this.eventsCount = obj && obj.eventsCount || 0;
+  }
+
+  getGeonamesId(): string {
+    return this.geonamesId;
+  }
+
+  getEventDate(): string {
+    return this.eventDate;
+  }
+
+  getCategories(): string[] {
+    return this.categories;
+  }
+
+  getEventsCount(): number {
+    return this.eventsCount;
+  }
+
 }

@@ -74,10 +74,10 @@
                   {{annotationForm.get('columnInfo.columnTypes').controls[i].get('columnType').errors['invalidURL'].errorMessage}}
                 </span>
               </label>
-              
-              <clr-icon style="margin-top: .25rem;" *ngIf="annotationForm.get('columnInfo.columnTypes').controls.length > 1"
-                shape="minus-circle" (click)="deleteColType(i)"></clr-icon>
-              <clr-icon style="margin-top: .25rem;" shape="plus-circle" (click)="addColType(i)"></clr-icon>
+
+              <mat-icon style="margin-top: .25rem;" (click)="addColType(i)">add_circle_outline</mat-icon>
+              <mat-icon style="margin-top: .25rem;" *ngIf="annotationForm.get('columnInfo.columnTypes').controls.length > 1"
+                (click)="deleteColType(i)">remove_circle_outline</mat-icon>
             </div>
           </div>
         </div>
@@ -176,8 +176,8 @@
     </section>
   </div>
   <div mat-dialog-actions>
-    <button class="btn btn-sm btn-link" type="submit" [disabled]="annotationForm.invalid || submitted">Annotate</button>
-    <a class="btn btn-sm btn-link" (click)="deleteAnnotation()">Reset</a>
-    <button class="btn btn-sm btn-link" mat-dialog-close>Close</button>
+    <button mat-button color="warn" mat-dialog-close> Close </button>
+    <a mat-button routerLink="." (click)="deleteAnnotation()">Reset</a>
+    <button mat-button color="primary" type="submit" [disabled]="annotationForm.invalid || submitted">Annotate</button>
   </div>
 </form>

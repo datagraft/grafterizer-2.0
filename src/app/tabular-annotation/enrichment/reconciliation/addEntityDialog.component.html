@@ -1,0 +1,31 @@
+<h1 mat-dialog-title>Add entity</h1>
+<div mat-dialog-content>
+
+  <form class="addEntityDialog-form">
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Entity name:" [(ngModel)]="data.dialog_data.name" name="name" [formControl]="nameFormControl"  >
+      <mat-error *ngIf="nameFormControl.hasError('required')">
+      name is required
+    </mat-error>
+    </mat-form-field>
+
+    <p> </p>
+
+    <mat-form-field class="full-width">
+        <input matInput placeholder="Entity url:" [(ngModel)]="data.dialog_data.link" name="link" [formControl]="linkFormControl">
+        <mat-error *ngIf="linkFormControl.hasError('pattern')">
+          enter valid url
+        </mat-error>
+        <mat-error *ngIf="linkFormControl.hasError('required')">
+          url is required
+        </mat-error>
+
+    </mat-form-field>
+  </form>
+    <br>
+    <button mat-button class="btn btn-sm btn-link" [mat-dialog-close]="0"><span class="red"> Discard </span></button>
+
+    <button mat-button class="btn btn-sm btn-link" [disabled]="!nameFormControl.valid || !linkFormControl.valid" [mat-dialog-close]="data.dialog_data">
+      Apply
+    </button>
+</div>

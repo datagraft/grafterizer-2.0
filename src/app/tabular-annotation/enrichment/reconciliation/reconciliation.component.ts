@@ -1,24 +1,20 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource, Sort, MatPaginator } from '@angular/material';
 import { EnrichmentService } from '../enrichment.service';
 import { ConciliatorService, DeriveMap, Mapping, Result, Type } from '../enrichment.model';
 import { ClrDatagridComparatorInterface } from '@clr/angular';
+import { AddEntityDialog} from './addEntityDialog.component';
 
-class MappingComparator implements ClrDatagridComparatorInterface<Mapping> {
-  compare(a: Mapping, b: Mapping) {
-    const aRes = a.results;
-    const bRes = b.results;
+export interface dialog_add_entity_data {
+   name: string;
+   link : string;
+}
 
-    if (aRes.length === 0 && bRes.length === 0) { // no res vs no res
-      return 0;
-    } else if (aRes.length === 0) { // no res vs res
-      return -1;
-    } else if (bRes.length === 0) { // res vs no res
-      return 1;
-    } else { // res vs res
-      return aRes[0].score - bRes[0].score;
-    }
-  }
+export interface DialogData {
+
+  dialog_data: dialog_add_entity_data;
+
+
 }
 
 @Component({
@@ -28,34 +24,53 @@ class MappingComparator implements ClrDatagridComparatorInterface<Mapping> {
 })
 export class ReconciliationComponent implements OnInit {
 
+  public data_for_add_entity_dialog : dialog_add_entity_data =
+  { name: "", link : ""};
+  public close : boolean = false;
+  public colIndex: any;
+  public filter_column = 0;
+  public change_selecet = false;
+  public index_filtered_reconciled :number = 0;
+  public index_added : number;
+  public temp_option:string;
+  public temp_score:number;
+  public temp_link:string;
+  public temp_match:boolean;
+  public form_hidden = false;
+  public selected =-1;
+  public displayedColumns: string[] = ['position', 'original_value', 'reconciled_entity', 'set matching'];
+  public dataSource = null;
+  public dataSource_2 = null;
   public header: any;
   public reconciledData: any;
+  public reconciledDataFiltered = null;
   public selectedGroup: any;
   public selectedService: string;
   public services: Map<string, ConciliatorService>;
   public newColumnName: string;
-  public validMappingsCount: number;
   public guessedType: Type;
-
   public showPreview: boolean;
   public dataLoading: boolean;
-
   public servicesGroups: string[];
   public servicesForSelectedGroup: ConciliatorService[];
-
   public threshold: number;
   public skippedCount: number;
-
-  public mappingComparator = new MappingComparator();
-
+  public matchedCount: number;
+  public maxThresholdCount: number;
+  public notReconciledCount: number;
   public shiftColumn: boolean = false;
+  public manualMatched : any[] = [];
+
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
-    @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
+    @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog,
     private enrichmentService: EnrichmentService) { }
 
   ngOnInit() {
+
     this.header = this.dialogInputData.header;
+    this.colIndex = this.dialogInputData.indexCol;
     this.services = new Map();
     this.servicesGroups = [];
     this.enrichmentService.listServices().subscribe((data) => {
@@ -71,22 +86,34 @@ export class ReconciliationComponent implements OnInit {
     this.reconciledData = [];
     this.threshold = 0.8;
     this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
+
   }
 
   public reconcile() {
+    this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
     this.dataLoading = true;
     this.showPreview = true;
     this.enrichmentService.reconcileColumn(this.header, this.services.get(this.selectedService)).subscribe((data) => {
       this.reconciledData = data;
+      this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
+      this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.dataSource.paginator = this.paginator;
+      this.reconciledDataFiltered = Object.assign([], this.reconciledData);
       this.guessedType = this.guessType();
       this.reconciledData.forEach((mapping: Mapping) => {
         mapping.results = mapping.results
           .filter((result: Result) => result.types
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
       });
-      this.validMappingsCount = this.reconciledData.filter(v => v.results.length > 0).length;
       this.updateThreshold();
       this.dataLoading = false;
+
     });
   }
 
@@ -99,12 +126,14 @@ export class ReconciliationComponent implements OnInit {
 
     this.newColumnName = this.newColumnName.replace(/\s/g, '_');
     deriveMaps.push(
-      new DeriveMap(this.newColumnName)
+      new DeriveMap(this.newColumnName, null)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.services.get(this.selectedService),
-      'shift': this.shiftColumn
+      'shift': this.shiftColumn,
+      'header': this.header,
+      'indexCol': this.colIndex
     });
 
   }
@@ -160,6 +189,10 @@ export class ReconciliationComponent implements OnInit {
   }
 
   updateThreshold() {
+    this.skippedCount = 0;
+    this.matchedCount = 0;
+    this.maxThresholdCount = 0;
+    this.notReconciledCount= 0;
     if (this.threshold != null) {
       if (this.threshold < 0) {
         this.threshold = 0;
@@ -171,12 +204,291 @@ export class ReconciliationComponent implements OnInit {
       this.threshold = 0.8;
     }
     this.threshold = parseFloat(this.threshold.toFixed(2));
-    this.skippedCount = 0;
+
+
     this.reconciledData.forEach((mapping: Mapping) => {
-      if (mapping.results.length > 0 && mapping.results[0].score < this.threshold) {
-        this.skippedCount += 1;
+      if (mapping.results.length > 0)
+      {
+            if(mapping.results[0].match && this.manualMatched.indexOf(mapping.results[0].id) === -1 )
+            {
+              this.matchedCount += 1;
+            }
+            else if(!mapping.results[0].match &&  mapping.results[0].score < this.threshold)
+            {
+              this.skippedCount += 1;
+            }
+            else if(!mapping.results[0].match && mapping.results[0].score >= this.threshold)
+            {
+              this.maxThresholdCount += 1;
+            }
+      }
+      else if (mapping.results.length == 0 )
+      {
+        this.notReconciledCount +=1;
       }
     });
   }
 
-}
+  set_reconciled(index, select){
+
+    if (select != 0)
+    {
+      this.manualMatched.push(this.dataSource_2[index].results[select].id);
+      this.temp_option = this.dataSource_2[index].results[0].name;
+      this.temp_score = this.dataSource_2[index].results[0].score;
+      this.temp_link = this.dataSource_2[index].results[0].id;
+      this.temp_match = this.dataSource_2[index].results[0].match;
+
+      this.dataSource_2[index].results[0].name = this.dataSource_2[index].results[select].name;
+      this.dataSource_2[index].results[0].score = this.dataSource_2[index].results[select].score;
+      this.dataSource_2[index].results[0].id = this.dataSource_2[index].results[select].id;
+      this.dataSource_2[index].results[0].match = true;
+
+      this.dataSource_2[index].results[select].name = this.temp_option;
+      this.dataSource_2[index].results[select].score = this.temp_score;
+      this.dataSource_2[index].results[select].id= this.temp_link;
+      this.dataSource_2[index].results[select].match = this.temp_match;
+      if (this.change_selecet)
+      {
+        this.selected = -4;
+        this.change_selecet = false;
+      }
+      else
+      {
+        this.selected = -3;
+        this.change_selecet = true;
+      }
+    }
+    this.updateThreshold();
+    this.apply_column_filter(this.filter_column);
+  }//end set_reconcilied
+
+  applyFilter(filterValue: string)
+  {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }//end applyFilter
+
+  hide_form()
+  {
+    this.form_hidden = true;
+  }//end hide_form
+
+  show_form()
+  {
+    this.form_hidden = false;
+  }//end show_form
+
+  openAddEntityDialog(row_index : number): void {
+    const dialogRef = this.dialog.open(AddEntityDialog, {
+      width: '600px',
+      disableClose: true,
+      data: {dialog_data : this.data_for_add_entity_dialog}
+
+    });
+    dialogRef.afterClosed().subscribe(result => {
+
+      if(result === 0){
+      }
+      else
+      {
+        this.data_for_add_entity_dialog = result;
+        while(this.dataSource_2[row_index].results.length >= 5 )
+        {
+          this.dataSource_2[row_index].results.splice(4, 1);
+        }
+        this.dataSource_2[row_index].results.push({id : this.data_for_add_entity_dialog.link, name: this.data_for_add_entity_dialog.name,
+          types: null, score: 1, match: true});
+
+
+          this.index_added = this.dataSource_2[row_index].results.length-1;
+          this.set_reconciled(row_index, this.index_added);
+          this.apply_column_filter(this.filter_column);
+      }
+      this.data_for_add_entity_dialog = { name: "", link : ""};
+    });//dialogRef
+  }//end openAddEntityDialog
+
+  apply_column_filter(filter : number){
+    this.index_filtered_reconciled = 0;
+    this.reconciledDataFiltered = Object.assign([], this.reconciledData);
+
+    if(filter == 0)
+    { // no filter
+      this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
+      this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.dataSource.paginator = this.paginator;
+    }
+    else if(filter == 1)
+    { //filter by matched
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if ((mapping.results.length > 0 && (!mapping.results[0].match || this.manualMatched.indexOf(mapping.results[0].id) !== -1)) || mapping.results.length == 0)
+        {
+          this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+          this.index_filtered_reconciled--;
+        }
+        this.index_filtered_reconciled++;
+
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 1
+    else if(filter == 2)
+    { //filter by >= threshold
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if (( mapping.results.length > 0 && (mapping.results[0].match || mapping.results[0].score < this.threshold)) || mapping.results.length == 0)
+        {
+          this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+          this.index_filtered_reconciled--;
+        }
+        this.index_filtered_reconciled++;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 2
+    else if(filter == 3)
+    {//filter by < threshold
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if ((mapping.results.length > 0 && mapping.results[0].score >= this.threshold) || mapping.results.length == 0)
+        {
+          this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+          this.index_filtered_reconciled--;
+        }
+        this.index_filtered_reconciled++;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 3
+    else if(filter == 4)
+    {//filter by not reconciled
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if (mapping.results.length > 0)
+        {
+          this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+          this.index_filtered_reconciled--;
+        }
+        this.index_filtered_reconciled++;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 4
+    else if(filter == 5)
+    {//filter by matched by user
+      this.reconciledData.forEach((mapping: Mapping) => {
+      if ((mapping.results.length > 0 && this.manualMatched.indexOf(mapping.results[0].id) === -1) || mapping.results.length == 0)
+      {
+        this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
+        this.index_filtered_reconciled--;
+      }
+      this.index_filtered_reconciled++;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledDataFiltered);//to use material filter
+      this.dataSource_2 = this.reconciledDataFiltered;
+      this.dataSource.paginator = this.paginator;
+    }//end filter 4
+
+
+  }//end apply_column_filter
+
+  sortData(sort: Sort)
+  {
+    const data = this.reconciledData.slice();
+    if (!sort.active || sort.direction === '')
+    {
+      this.reconciledData = data;
+      return;
+    }
+
+    this.reconciledData = data.sort((a, b) => {
+        const isAsc = sort.direction === 'asc';
+        if(a.results.length > 0 && b.results.length > 0)
+        {
+          return this.compare(a.results[0].score, b.results[0].score, isAsc);
+
+        }
+        else if(a.results.length > 0 && b.results.length == 0)
+        {
+
+          return this.compare(a.results[0].score, 0, isAsc);
+
+          }
+        else if(a.results.length == 0 && b.results.length > 0)
+        {
+          return this.compare(0, b.results[0].score, isAsc);
+
+        }
+
+        else if(a.results.length == 0 && b.results.length == 0)
+        {
+          return this.compare(0, 0, isAsc);
+
+        }
+
+      });
+
+      this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
+      this.dataSource_2 = this.reconciledData; // to update reconciledData
+      this.apply_column_filter(this.filter_column);
+      this.dataSource.paginator = this.paginator;
+    }//end sortData
+
+    compare(a: number | string, b: number | string, isAsc: boolean)
+    {
+      return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+    }
+
+    setAllMaxThresholdAsMAtched()
+    {
+      this.reconciledData.forEach((mapping: Mapping) => {
+        if ( mapping.results.length > 0 && mapping.results[0].score  >= this.threshold)
+          mapping.results[0].match = true;
+      });
+      this.dataSource = new MatTableDataSource(this.reconciledData);//to use material filter
+      this.dataSource_2 = this.reconciledData;
+      this.dataSource.paginator = this.paginator;
+      this.updateThreshold();
+      this.filter_column = 1;
+      this.apply_column_filter(1);
+  }
+
+  removeManualMatched(index, id){
+    let isManualMAtched = this.manualMatched.indexOf(id);
+      if(isManualMAtched !== -1)
+      {
+        this.manualMatched.splice(isManualMAtched, 1);
+      }
+      else
+      {
+        this.matchedCount--;
+      }
+      if(this.dataSource_2[index].results[0].score >= this.threshold)
+      {
+        this.maxThresholdCount++;
+      }
+      else
+      {
+        this.skippedCount++;
+      }
+    this.dataSource_2[index].results[0].match = false;
+
+    }
+
+    addManualMatched(index, id){
+      this.manualMatched.push(id);
+      this.dataSource_2[index].results[0].match = true;
+      if(this.dataSource_2[index].results[0].score >= this.threshold)
+      {
+        this.maxThresholdCount--;
+      }
+      else
+      {
+        this.skippedCount--;
+      }
+
+
+      }
+
+}//end export class

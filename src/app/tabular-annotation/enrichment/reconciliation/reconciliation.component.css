@@ -1,0 +1,171 @@
+
+.mat-expansion-panel:not([class*='mat-elevation-z']) {
+  box-shadow: 0px 0px 0px -2px rgba(0, 0, 0, 0.2), 0px 0px 0px 0px rgba(0, 0, 0, 0.14), 0px 0px 0px 0px rgba(0, 0, 0, 0.12);
+}
+.mat-dialog-title{
+margin-bottom: 5px;
+}
+span.red{
+  color:red;
+}
+
+table {
+  width: 100%;
+ }
+div.c1{
+  width: 100%;
+    padding: 0;
+    overflow-y: scroll;
+    max-height:360px;
+}
+p.ridge {
+  border-style: ridge;
+}
+
+ td.third_td {
+  width:45%;
+  padding:0;
+  margin:0;
+ }
+
+ td.second_td {
+  width:30%;
+ }
+
+td.first_td {
+  width:10%;
+ }
+ td.fourth_td {
+   width:15%;
+  }
+
+ mat-accordion{
+   width: 600px;
+   margin-right: 0;
+ }
+
+ .mat-form-field {
+   font-size: 14px;
+   width: 100%;
+ }
+mat-icon{
+  padding:0;
+  margin:0;
+}
+
+.mat-header-row{
+  height: 15px;
+}
+
+hr{
+  margin:1px;
+}
+div.col_1{
+  float:left;
+  display: inline;
+
+  width: 50%;
+}
+div.col_2{
+  float:left;
+  display: inline;
+
+  width: 50%;
+}
+
+div.search{
+  float:left;
+  display: inline;
+  width: 35%;
+
+}
+div.matchedButton{
+  margin:0;
+  float:left;
+  display: inline;
+  width: 35%;
+
+
+}
+mat-dialog-actions{
+    margin:0;
+    padding:0;
+    width: 100%;
+    text-align: center;
+
+}
+button.custom-width{
+  width: 50%;
+  margin-left: 25%;
+  margin-right:25%;
+  margin-top:0;
+  margin-bottom:0;
+  padding:1;
+
+}
+div.filter{
+  float:left;
+  display: inline;
+  width: 30%;
+}
+div.preview_settings{
+  width: 100%;
+}
+
+
+div.threshold{
+  width: 100%;
+  text-align: center;
+  margin-bottom: 3px;
+}
+div.action_table{
+  width: 100%;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+div.entity_reconciled_name{
+  float:left;
+  display: inline;
+  width:220px;
+  margin:0px;
+  padding:0px;
+}
+div.entity_reconciled_icon{
+  float:left;
+  display: inline;
+  width:15px;
+  margin:0px;
+  padding:0px;
+}
+mat-panel-title{
+  margin:0px;
+  padding:0px;
+}
+mat-expansion-panel-header{
+  margin:0px;
+  padding:3px;
+}
+
+span.left_margin{
+  margin-left: 3px;
+}
+
+div.icons{
+  width: 100%;
+  margin-right: 17%;
+  margin-left: 12%;
+}
+div.specific_icon{
+  margin-right: 6%;
+  display: inline;
+  float:left;
+}
+span.setMatchingHeader{
+  margin-left: 15px;
+  
+}
+span.setMatching{
+  margin-left: 20px;
+  cursor : pointer;
+}
