@@ -146,7 +146,7 @@ export class TransformationService {
   }
 
   public transformFile(filestoreID: string, transformationID: string, transformationType: string, rdfFormat?: string): Promise<any> {
-    const url = this.getTransformationLink(filestoreID, transformationID, transformationType, rdfFormat) + '&useCache=1';
+    const url = this.getTransformationLink(filestoreID, transformationID, transformationType, rdfFormat) + '&useCache=0';
     const cacheUrl = this.graftwerkCachePath + '/graftermemcache/';
     const options = new RequestOptions({ withCredentials: true });
     return this.http

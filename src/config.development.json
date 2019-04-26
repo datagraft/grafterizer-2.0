@@ -1,10 +1,10 @@
 {
-  "jarfter-path": "https://10.80.1.8:8081",
-  "dispatch-path": "http://10.80.1.8:8082",
-  "graftwerk-cache-path": "http://10.80.1.8:8083",
+  "jarfter-path": "http://192.168.1.41:8081",
+  "dispatch-path": "http://192.168.1.41:8082",
+  "graftwerk-cache-path": "http://192.168.1.41:8083",
   "abstat-path": "http://abstat.disco.unimib.it",
   "abstat-path-ba": "http://193.204.59.21",
-  "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
-  "asia-backend": "http://10.80.1.8:8088",
-  "arango-generator": "http://10.80.1.8:3030"
+  "vocabulary-service-path": "https://grafterizer.datagraft.io/vocabularies/api/vocabulary",
+  "asia-backend": "http://192.168.1.41:8088",
+  "arango-generator": "http://192.168.1.41:3030"
 }

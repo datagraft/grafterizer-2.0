@@ -31,6 +31,10 @@ export class AppComponent implements OnInit {
   private loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private fillingWizard = false;
+
+  private downloadingResultDialogMessage = 'The result of this transformation will be saved in DataGraft';
+  private downloadingResult = false;
+
   private grafterizerUrl: any = 'url';
 
   private routingServiceSubscription: Subscription;
@@ -70,6 +74,7 @@ export class AppComponent implements OnInit {
   private showLoading: boolean = false;
   private showLogo: boolean = false;
   private transformationType: string;
+  chosenRdfFormatDownloadOption: string = 'nt';
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
@@ -549,14 +554,15 @@ export class AppComponent implements OnInit {
     if (this.downloadMode == 'csv') {
       this.downloadCSV();
     }
-    else if (this.downloadMode == 'n-triples') {
-      this.downloadTriples();
+    else if (this.downloadMode == 'rdf') {
+      console.log(this.chosenRdfFormatDownloadOption);
+      this.downloadTriples(this.chosenRdfFormatDownloadOption);
     } else if (this.downloadMode == 'arango-json') {
       this.downloadArangoJson();
     } else if (this.downloadMode == 'grafterizer-json') {
       this.downloadGrafterizerJson();
     }
-    else if (this.downloadMode == 'JAR') {
+    else if (this.downloadMode == 'jar') {
       this.downloadJAR();
     }
     this.showDownloadDialog = false;
