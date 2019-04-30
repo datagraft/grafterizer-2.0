@@ -13,37 +13,14 @@ export class TransformationService {
 
   private dispatchPath: string;
   private graftwerkCachePath: string;
-  // GLOBAL TRANSFORMATION OBJECT
-  //  private transformationObj: any;
-  //  private graftwerkData: any;
 
-  private previewedTransformationObjSource: BehaviorSubject<any>;
-  public currentPreviewedTransformationObj: Observable<any>;
+  public previewedTransformationObjSource: BehaviorSubject<any>;
 
-  private transformationObjSource: BehaviorSubject<any>;
-  public currentTransformationObj: Observable<any>;
+  public transformationObjSource: BehaviorSubject<any>;
 
-  private graftwerkDataSource: BehaviorSubject<any>;
-  public currentGraftwerkData: Observable<any>;
+  public graftwerkDataSource: BehaviorSubject<any>;
 
-  private transformationMetadata: BehaviorSubject<any>;
-  public currentTransformationMetadata: Observable<any>;
-
-  public changePreviewedTransformationObj(message: any) {
-    this.previewedTransformationObjSource.next(message);
-  }
-
-  public changeTransformationObj(message: any) {
-    this.transformationObjSource.next(message);
-  }
-
-  public changeGraftwerkData(message: any) {
-    this.graftwerkDataSource.next(message);
-  }
-
-  public changeTransformationMetadata(message: any) {
-    this.transformationMetadata.next(message);
-  }
+  public transformationMetadata: BehaviorSubject<any>;
 
   constructor(private http: Http, private config: AppConfig) {
     // We use the Dispatch service as a proxy to Graftwerk
@@ -52,16 +29,12 @@ export class TransformationService {
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
     const emptyTransformation = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationObjSource = new BehaviorSubject<any>(emptyTransformation);
+    this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
     this.graftwerkDataSource = new BehaviorSubject<any>({
       ':column-names': [],
       ':rows': []
     });
-    this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
     this.transformationMetadata = new BehaviorSubject<any>({});
-    this.currentTransformationObj = this.transformationObjSource.asObservable();
-    this.currentGraftwerkData = this.graftwerkDataSource.asObservable();
-    this.currentPreviewedTransformationObj = this.previewedTransformationObjSource.asObservable();
-    this.currentTransformationMetadata = this.transformationMetadata.asObservable();
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {

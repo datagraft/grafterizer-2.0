@@ -47,7 +47,7 @@ export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
       this.transformationVocabs = rdfVocabsObj.transformationVocabs;
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }

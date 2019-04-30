@@ -51,7 +51,7 @@ export class AddColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));

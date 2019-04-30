@@ -29,7 +29,7 @@ export class ConstantUriNodeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -63,7 +63,7 @@ export class ConstantUriNodeComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.parent.removeChild(this.node);
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.nodeRemoveModal = false;
   }
 

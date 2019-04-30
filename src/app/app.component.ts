@@ -84,7 +84,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     const self = this;
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
       if (state.mode) {
         this.currentDataGraftState = state.mode;
         switch (state.mode) {
@@ -165,11 +165,11 @@ export class AppComponent implements OnInit {
                 (result) => {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    self.transformationSvc.changeTransformationObj(transformationObj);
+                    self.transformationSvc.transformationObjSource.next(transformationObj);
                     console.log(transformationObj)
 
                     if (paramMap.has('filestoreId')) {
-                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                      this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                     } else {
                       // this.showLoadDistributionDialog = true;
                     }
@@ -199,39 +199,38 @@ export class AppComponent implements OnInit {
         }
       });
 
-    this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
-      .subscribe((currentTransformationObj) => {
-        this.transformationObjSource = currentTransformationObj;
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource
+      .subscribe((transformationObjSource) => {
+        this.transformationObjSource = transformationObjSource;
       });
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-        // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
-        if (!this.route.firstChild) {
-          // We use this subscription to catch the moment when the navigation has ended
-          this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
-            // If the event for navigation end is emitted, the child components are initialised.
-            // We can proceed to updating the previewed data.
-            if (event instanceof NavigationEnd) {
-              this.pipelineEventsSvc.changePipelineEvent({
-                startEdit: false, // true when we click on the 'Edit' icon of a function
-                commitEdit: false, // true when we click 'OK' after editing a function
-                preview: false, // true when we are previewing a step in the pipeline
-                delete: false, // true when we are deleting a step in the pipeline
-                createNew: false, // true when we are adding a new step to the pipeline
-                newStepType: "", // type of the new step to be added to the pipeline
-                defaultParams: {}, // default parameters for a new step (could be given by recommender)
-                commitCreateNew: false // true when we click OK after creating a new function
-              });
-            }
-          });
-        } else {
-          console.log('this.updatePreviewedData()')
-          // the sub-components are already initialised, so we can get the route parameters as normal
-          this.updatePreviewedData();
-        }
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.previewedTransformationObj = previewedTransformation;
+      // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
+      if (!this.route.firstChild) {
+        // We use this subscription to catch the moment when the navigation has ended
+        this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
+          // If the event for navigation end is emitted, the child components are initialised.
+          // We can proceed to updating the previewed data.
+          if (event instanceof NavigationEnd) {
+            this.pipelineEventsSvc.changePipelineEvent({
+              startEdit: false, // true when we click on the 'Edit' icon of a function
+              commitEdit: false, // true when we click 'OK' after editing a function
+              preview: false, // true when we are previewing a step in the pipeline
+              delete: false, // true when we are deleting a step in the pipeline
+              createNew: false, // true when we are adding a new step to the pipeline
+              newStepType: "", // type of the new step to be added to the pipeline
+              defaultParams: {}, // default parameters for a new step (could be given by recommender)
+              commitCreateNew: false // true when we click OK after creating a new function
+            });
+          }
+        });
+      } else {
+        console.log('this.updatePreviewedData()')
+        // the sub-components are already initialised, so we can get the route parameters as normal
+        this.updatePreviewedData();
+      }
+    });
 
     this.progressIndicatorSubscription = this.progressIndicatorService.currentDataLoadingStatus.subscribe((status) => {
       if (status == true || status == false) {
@@ -298,10 +297,10 @@ export class AppComponent implements OnInit {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
       this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 10000)
         .then((result) => {
-          this.transformationSvc.changeGraftwerkData(result);
+          this.transformationSvc.graftwerkDataSource.next(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);
-          this.transformationSvc.changeGraftwerkData(
+          this.transformationSvc.graftwerkDataSource.next(
             {
               ':column-names': [],
               ':rows': []
@@ -342,7 +341,7 @@ export class AppComponent implements OnInit {
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
     let isPublic = null;
-    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+    this.transformationSvc.transformationMetadata.subscribe((result) => {
       newTransformationName = result.title;
       newTransformationDescription = result.description;
       newTransformationKeywords = result.keywords;
@@ -378,7 +377,7 @@ export class AppComponent implements OnInit {
               .then(
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
-                  this.transformationSvc.changeTransformationObj(transformationObj);
+                  this.transformationSvc.transformationObjSource.next(transformationObj);
                 },
                 (error) => {
                   console.log(error);
@@ -410,8 +409,8 @@ export class AppComponent implements OnInit {
                 .then(
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    this.transformationSvc.transformationObjSource.next(transformationObj);
+                    this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                   },
                   (error) => {
                     console.log(error);
@@ -424,13 +423,13 @@ export class AppComponent implements OnInit {
                 .then(
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    this.transformationSvc.changeTransformationObj(transformationObj);
+                    this.transformationSvc.transformationObjSource.next(transformationObj);
                     this.showTabularAnnotationTab = true;
                     this.showSaveButton = true;
                     this.showForkButton = true;
                     this.showDownloadButton = true;
                     this.showDeleteButton = true;
-                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                   },
                   (error) => {
                     console.log(error);
@@ -451,7 +450,7 @@ export class AppComponent implements OnInit {
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
     let isPublic = null;
-    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+    this.transformationSvc.transformationMetadata.subscribe((result) => {
       newTransformationName = result.title;
       newTransformationDescription = result.description;
       newTransformationKeywords = result.keywords;
@@ -510,9 +509,9 @@ export class AppComponent implements OnInit {
               .then(
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
-                  this.transformationSvc.changeTransformationObj(transformationObj);
+                  this.transformationSvc.transformationObjSource.next(transformationObj);
                   this.showTabularAnnotationTab = false;
-                  this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                  this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                   this.progressIndicatorService.changeDataLoadingStatus(false);
                 },
                 (error) => {

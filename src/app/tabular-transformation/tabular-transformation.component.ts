@@ -86,7 +86,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   }
 
   ngOnInit() {
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
         if (this.profilingComponent) {
@@ -105,7 +105,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       }
     });
 
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
       if (state.mode) {
         this.currentDataGraftState = state.mode;
         switch (this.currentDataGraftState) {
@@ -136,8 +136,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
-            this.transformationSvc.changeTransformationMetadata(result);
-            this.transformationSvc.currentTransformationMetadata.subscribe((metadata) => this.metadata = metadata);
+            this.transformationSvc.transformationMetadata.next(result);
+            this.transformationSvc.transformationMetadata.subscribe((metadata) => this.metadata = metadata);
             if (this.profilingComponent && this.graftwerkData) {
               this.profilingComponent.loadJSON(this.graftwerkData);
               this.profilingComponent.refresh(this.handsontableSelection);
@@ -162,19 +162,19 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     if (this.metadata !== undefined) {
       if (this.title !== this.metadata.title) {
         this.metadata.title = this.title;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.description !== this.metadata.description) {
         this.metadata.description = this.description;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.keywords !== this.metadata.keywords) {
         this.metadata.keywords = this.keywords;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.isPublic !== this.metadata.isPublic) {
         this.metadata.isPublic = this.isPublic;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
     }
   }

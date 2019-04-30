@@ -68,7 +68,7 @@ export class RdfVocabularyService {
             (error) => this.errorHandler(error)
           );
       }
-      this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+      this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
         this.transformationVocabularies = new Map<string, Vocabulary>();
 
         this.transformationObj = transformation;
@@ -118,7 +118,7 @@ export class RdfVocabularyService {
     }
 
     this.transformationObj.rdfVocabs = newRdfVocabsArray;
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
   }
 
   /**

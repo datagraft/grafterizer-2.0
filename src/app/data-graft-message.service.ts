@@ -14,16 +14,10 @@ export class DataGraftMessageService {
   private channel: string;
   private connected: boolean;
   private dataGraftMessage = new Subject<any>();
-  // private currentDataGraftState: string = 'unknown';
-  // private currentParams: any;
   private waitingForState: boolean;
   private grafterizerUrl: string;
 
-  private currentDataGraftStateSrc: BehaviorSubject<any>;
-  public currentDataGraftState: Observable<any>;
-
-
-
+  public currentDataGraftStateSrc: BehaviorSubject<any>;
 
   constructor(public dispatch: DispatchService, private router: Router, private routingService: RoutingService) {
     this.channel = 'datagraft-post-message'
@@ -31,7 +25,6 @@ export class DataGraftMessageService {
     this.routingService.getMessage().subscribe((url) => this.grafterizerUrl = url);
 
     this.currentDataGraftStateSrc = new BehaviorSubject<any>('unknown');
-    this.currentDataGraftState = this.currentDataGraftStateSrc.asObservable();
     this.init();
   }
 

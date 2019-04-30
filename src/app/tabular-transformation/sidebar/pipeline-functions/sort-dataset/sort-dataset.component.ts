@@ -40,7 +40,7 @@ export class SortDatasetComponent implements OnInit {
       this.currentlySelectedFunction = selFunction.currentFunction;
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {

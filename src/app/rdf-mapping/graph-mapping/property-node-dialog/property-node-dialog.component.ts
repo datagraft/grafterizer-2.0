@@ -98,7 +98,7 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       this.transformationVocabs = rdfVocabsObj.transformationVocabs;
     });
 
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       if (graftwerkData[':column-names']) {
         this.columns = graftwerkData[':column-names'].map((columnName) => {
           if (columnName.indexOf(':') === 0) {
@@ -110,7 +110,7 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -170,17 +170,17 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       // Edit existing property
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, this.editedProperty.subElements);
       this.parentNode.replaceChild(this.editedProperty, newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     } else if (this.parentNode && this.siblingProperty) {
       // Add new property after
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, null);
       this.parentNode.addNodeAfter(this.siblingProperty, newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     } else if (this.parentNode) {
       // Add new child property
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, null);
       this.parentNode.addChild(newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     }
   }
 

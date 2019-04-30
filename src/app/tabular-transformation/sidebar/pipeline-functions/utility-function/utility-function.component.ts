@@ -31,14 +31,13 @@ export class UtilityFunctionComponent implements OnInit {
 
     this.functionName = new transformationDataModel.FunctionWithArgs(this.selectedCustomFunction, [null]);
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        if (previewedTransformation) {
-          this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
-            return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
-          });
-        }
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      if (previewedTransformation) {
+        this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+          return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+        });
+      }
+    });
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;

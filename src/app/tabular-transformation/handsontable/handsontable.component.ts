@@ -88,12 +88,11 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
       }
     })
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe(() => {
-        this.progressIndicatorService.changeDataLoadingStatus(true);
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe(() => {
+      this.progressIndicatorService.changeDataLoadingStatus(true);
+    });
 
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(message => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe(message => {
       if (typeof message[":column-names"] !== 'undefined' && message[":column-names"].length > 0) {
         console.log('Data Changed');
         this.displayJsEdnData(message);

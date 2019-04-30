@@ -35,14 +35,13 @@ export class DeriveColumnComponent implements OnInit {
 
   ngOnInit() {
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        if (previewedTransformation) {
-          this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
-            return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
-          });
-        }
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      if (previewedTransformation) {
+        this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+          return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+        });
+      }
+    });
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
@@ -69,7 +68,7 @@ export class DeriveColumnComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {

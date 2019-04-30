@@ -47,10 +47,9 @@ export class CustomFunctionModalComponent implements OnInit {
         this.modalEnabled = true;
       }
     });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.previewedTransformationObj = previewedTransformation;
+    });
     this.selected = { clojureCode: '' };
   }
 
@@ -141,7 +140,7 @@ export class CustomFunctionModalComponent implements OnInit {
 
   accept() {
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
-    this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
+    this.transformationSvc.previewedTransformationObjSource.next(this.previewedTransformationObj);
     this.resetModal();
   }
 

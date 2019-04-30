@@ -1,28 +1,28 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {AnnotationService} from './annotation.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AnnotationService } from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import {TransformationService} from '../transformation.service';
-import {DispatchService} from '../dispatch.service';
-import {ActivatedRoute} from '@angular/router';
-import {RoutingService} from '../routing.service';
-import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
+import { TransformationService } from '../transformation.service';
+import { DispatchService } from '../dispatch.service';
+import { ActivatedRoute } from '@angular/router';
+import { RoutingService } from '../routing.service';
+import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
-import {MatDialog} from '@angular/material';
-import {ConfigComponent} from './config/config.component';
-import {Subscription} from 'rxjs';
-import {EnrichmentService} from './enrichment/enrichment.service';
-import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
-import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
-import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
-import {ExtensionComponent} from './enrichment/extension/extension.component';
-import {ShiftColumnFunction} from 'assets/transformationdatamodel';
-import {ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
+import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
+import { MatDialog } from '@angular/material';
+import { ConfigComponent } from './config/config.component';
+import { Subscription } from 'rxjs';
+import { EnrichmentService } from './enrichment/enrichment.service';
+import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
+import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
+import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
+import { ExtensionComponent } from './enrichment/extension/extension.component';
+import { ShiftColumnFunction } from 'assets/transformationdatamodel';
+import { ChooseExtensionOrReconciliationDialog } from './chooseExtensionOrReconciliationDialog.component';
 
 declare var Handsontable: any;
 
@@ -33,8 +33,8 @@ declare var Handsontable: any;
 })
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
-  public geoNamesSources: string [];
-  public categoriesSources: string [];
+  public geoNamesSources: string[];
+  public categoriesSources: string[];
 
   private transformationObj: any;
   private graftwerkData: any;
@@ -71,9 +71,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
-              public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
-              private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
-              private pipelineEventsSvc: PipelineEventsService) {
+    public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
+    private route: ActivatedRoute, private routingService: RoutingService, public dialog: MatDialog,
+    private pipelineEventsSvc: PipelineEventsService) {
     route.url.subscribe(() => this.routingService.concatURL(route));
     this.saveLoading = false;
     this.retrieveRDFLoading = false;
@@ -122,14 +122,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     this.transformationSubscription =
-      this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
+      this.transformationSvc.transformationObjSource.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.dataLoading = true;
-      });
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.dataLoading = true;
+    });
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':rows']) {
         // Clean header name (remove leading ':' from the EDN response)
@@ -162,7 +161,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
         this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
         this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
 
         this.hot.updateSettings({
           columns: this.getTableColumns(),
@@ -186,7 +185,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(AnnotationFormComponent, {
       width: '750px',
-      data: {header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs}
+      data: { header: currentHeader, annotation: currentAnnotation, rdfVocabs: this.transformationObj.rdfVocabs }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -267,7 +266,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     };
     const dialogConfigReconciliation = {
       width: '800px',
-      data: {header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false}
+      data: { header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false }
     };
     /*const dialogConfigChoose = {
       width: '400px',
@@ -355,7 +354,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           }
         });
       } else {
-        return {data: h}; // don't remove leading ':' from header here!
+        return { data: h }; // don't remove leading ':' from header here!
       }
     });
   }
@@ -474,7 +473,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Save the new transformation
     this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.saveLoading = false;
   }
 
@@ -555,8 +554,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach(annotation => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          {'id': 0, 'value': annotation.urifyPrefix},
-          {'id': 0, 'value': annotation.columnHeader},
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': annotation.columnHeader },
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           [], // subelements
         );
@@ -566,8 +565,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           datatype = 'custom';
         }
         objNodes[annotation.columnHeader] = new transformationDataModel.ColumnLiteral(
-          {'id': 0, 'value': annotation.columnHeader},
-          {'id': 0, 'name': datatype}, // datatype
+          { 'id': 0, 'value': annotation.columnHeader },
+          { 'id': 0, 'name': datatype }, // datatype
           null, // on empty
           null, // on error
           annotation.langTag,
@@ -582,8 +581,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     annotations.forEach((annotation) => {
       if (annotation.columnValuesType === ColumnTypes.URI) {
         rootNodes[annotation.columnHeader] = new transformationDataModel.ColumnURI(
-          {'id': 0, 'value': annotation.urifyPrefix},
-          {'id': 0, 'value': annotation.columnHeader},
+          { 'id': 0, 'value': annotation.urifyPrefix },
+          { 'id': 0, 'value': annotation.columnHeader },
           [this.getEmptyCondition(annotation.columnHeader)], // node conditions
           this.buildPropertiesForURINode(annotation, objNodes, annotations), // subelements
         );
@@ -602,8 +601,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @returns {transformationDataModel.Condition}
    */
   private getEmptyCondition(columnHeader) {
-    const column = {'id': 0, 'value': columnHeader};
-    const operator = {'id': 0, 'name': 'Not empty'};
+    const column = { 'id': 0, 'value': columnHeader };
+    const operator = { 'id': 0, 'name': 'Not empty' };
     const conj = null;
     const operand = '';
     return new transformationDataModel.Condition(column, operator, operand, conj);
@@ -692,7 +691,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     }
     // TODO: create a new RDFVocabulary instance
-    this.transformationObj.rdfVocabs.push({name: prefix, namespace: namespace, fromServer: false});
+    this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
     return prefix;
   }
 
@@ -710,7 +709,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param shift
    */
   deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
-                              conciliator: ConciliatorService, shift: boolean) {
+    conciliator: ConciliatorService, shift: boolean) {
     let newFunction: any = null;
 
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
@@ -724,7 +723,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
       // Create the derive column step
       newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
-        [{id: colsToDeriveFromIdx, value: colsToDeriveFrom}],
+        [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
         [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
       // Pipeline update
@@ -733,7 +732,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // Shift the new column next to the deriveFrom column
       if (shift) {
         newFunction = new transformationDataModel.ShiftColumnFunction(
-          {id: this.enrichmentService.headers.length, value: deriveMap.newColName},
+          { id: this.enrichmentService.headers.length, value: deriveMap.newColName },
           colsToDeriveFromIdx + index + 1, 'position', '');
         this.transformationObj.pipelines[0].addAfter({}, newFunction);
       }
@@ -784,8 +783,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         currentFunction: {},
         changedFunction: newFunction
       });
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
-      this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
+      this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj.getPartialTransformation(newFunction));
 
       for (let i = 0; i < this.transformationObj.pipelines[0].functions.length - 1; ++i) {
         this.transformationObj.pipelines[0].functions.isPreviewed = false;

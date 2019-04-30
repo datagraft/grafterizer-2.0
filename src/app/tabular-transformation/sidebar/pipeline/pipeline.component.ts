@@ -50,7 +50,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationService.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationService.transformationObjSource.subscribe((transformation) => {
       if (transformation.pipelines.length) {
         // ;-(
         // TODO - not sure how to avoid having both the transformation and the steps
@@ -67,7 +67,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.pipelineEvent = currentEvent;
     });
 
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
       if (state.mode) {
         this.currentDataGraftState = state.mode;
         switch (this.currentDataGraftState) {
@@ -177,7 +177,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
         // change the previewed transformation if we toggled preview on
         if (this.pipelineEvent.preview === true) {
-          this.transformationService.changePreviewedTransformationObj(
+          this.transformationService.previewedTransformationObjSource.next(
             this.transformationObj.getPartialTransformation(currentFunction)
           );
           // reset isPreviewed for other functions
@@ -188,7 +188,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
           });
         } else {
           // reset preview if we clicked preview of the already previewed element
-          this.transformationService.changePreviewedTransformationObj(this.transformationObj);
+          this.transformationService.previewedTransformationObjSource.next(this.transformationObj);
         }
 
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
@@ -217,8 +217,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEvent.commitEdit = false;
 
         this.transformationObj.pipelines[0].remove(currentFunction);
-        this.transformationService.changePreviewedTransformationObj(this.transformationObj);
-        this.transformationService.changeTransformationObj(this.transformationObj);
+        this.transformationService.previewedTransformationObjSource.next(this.transformationObj);
+        this.transformationService.transformationObjSource.next(this.transformationObj);
         this.pipelineElement.selectedIndex = this.transformationObj.pipelines[0].functions.length - 1;
         this.pipelineElement._stateChanged();
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);

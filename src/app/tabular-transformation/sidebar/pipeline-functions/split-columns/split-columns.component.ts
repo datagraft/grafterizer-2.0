@@ -56,7 +56,7 @@ export class SplitColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {

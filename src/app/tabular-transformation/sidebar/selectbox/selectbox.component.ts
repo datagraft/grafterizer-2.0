@@ -78,13 +78,13 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     //   }
     // });
 
-    this.transformationMetadataSubscription = this.transformationSvc.currentTransformationMetadata.subscribe((transformationMeta) => {
+    this.transformationMetadataSubscription = this.transformationSvc.transformationMetadata.subscribe((transformationMeta) => {
       if (transformationMeta.is_owned) {
         this.isOwned = true;
       }
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
 
@@ -93,7 +93,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
       // in case we finished editing a step
       if (this.pipelineEvent.commitEdit) {
-        this.transformationSvc.changePreviewedTransformationObj(
+        this.transformationSvc.previewedTransformationObjSource.next(
           this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
         );
         // reset isPreviewed for other functions
@@ -114,10 +114,10 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
         this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
 
         // notify of change to transformation object
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
 
         // change previewed transformation
-        this.transformationSvc.changePreviewedTransformationObj(
+        this.transformationSvc.previewedTransformationObjSource.next(
           this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
         );
 
