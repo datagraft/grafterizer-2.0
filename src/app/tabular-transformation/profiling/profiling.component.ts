@@ -128,8 +128,8 @@ export class ProfilingComponent implements OnInit {
   }
 
   onSelect(event) {
-    console.log(event);
-    console.log(event.index);
+    // console.log(event);
+    // console.log(event.index);
   }
 
   loadJSON(data: any) {
@@ -219,7 +219,6 @@ export class ProfilingComponent implements OnInit {
     }
     this.profileSubset.chart = 2;
     this.chartSubsetEmit();
-    console.log()
   }
 
 }

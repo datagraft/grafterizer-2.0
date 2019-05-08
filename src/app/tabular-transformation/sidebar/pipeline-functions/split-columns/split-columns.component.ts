@@ -93,7 +93,6 @@ export class SplitColumnsComponent implements OnInit {
       // create object with user input
       const newFunction = new transformationDataModel.SplitFunction(
         this.colName, this.separator, this.docstring);
-      console.log(newFunction)
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
         currentFunction: this.currentlySelectedFunction,

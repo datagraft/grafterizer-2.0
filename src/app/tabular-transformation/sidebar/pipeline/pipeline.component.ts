@@ -75,16 +75,12 @@ export class PipelineComponent implements OnInit, OnDestroy {
             this.disableButton = true;
             break;
           case 'transformations.transformation':
-            this.disableButton = false;
-            break;
           case 'transformations.transformation.preview':
-            this.disableButton = false;
-            break;
-          case 'transformations.new':
-            this.disableButton = false;
-            break;
+          case 'transformations.transformation.preview.wizard':
           case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
             this.disableButton = false;
+            break;
         }
       }
     });
