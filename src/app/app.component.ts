@@ -76,7 +76,7 @@ export class AppComponent implements OnInit {
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
     , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService, private progressIndicatorService: ProgressIndicatorService, ) {
-    console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
+    // console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.grafterizerUrl = url;
     });
@@ -97,6 +97,7 @@ export class AppComponent implements OnInit {
             this.showWizardNavigation = false;
             break;
           case 'transformations.transformation.preview':
+          case 'transformations.transformation.preview.wizard':
             this.showTabularAnnotationTab = true;
             this.showSaveButton = true;
             this.showForkButton = false;
@@ -122,6 +123,7 @@ export class AppComponent implements OnInit {
             this.showWizardNavigation = false;
             break;
           case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
             this.showTabularAnnotationTab = true;
             this.showSaveButton = true;
             this.showForkButton = false;
@@ -175,7 +177,7 @@ export class AppComponent implements OnInit {
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
-                    console.log(result);
+                    // console.log(result);
                   }
                 },
                 (error) => {
@@ -187,7 +189,7 @@ export class AppComponent implements OnInit {
             this.progressIndicatorService.changeDataLoadingStatus(true);
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
-                console.log(result)
+                // console.log(result)
                 this.createNewTransformation();
               }
               else {
@@ -249,7 +251,7 @@ export class AppComponent implements OnInit {
   }
 
   onChange($event) {
-    console.log(this.selectedFile);
+    // console.log(this.selectedFile);
   }
 
   loadDistribution() {
@@ -331,7 +333,6 @@ export class AppComponent implements OnInit {
   }
 
   save(redirect: boolean) {
-    console.log('SAVE');
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
@@ -372,7 +373,18 @@ export class AppComponent implements OnInit {
         newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
-            this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            /** If we are editing a transformation, the address/slug of it may have changed (due to name change), so we need to change the URL in the browser */
+            if (this.currentDataGraftState == 'transformations.transformation.preview') {
+              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            } else if (this.currentDataGraftState == 'transformations.transformation.preview.wizard') {
+              // what should happen here?
+            } else if (this.currentDataGraftState == 'transformations.new.preview.wizard') {
+              // should not happen
+              // first save - change location to /[username]/upwizards/transform_select_preview/[wizard_id]?selected_id=[transformation_id]
+            } else {
+              // should not happen
+            }
+
             this.dispatch.getTransformationJson(result.id, result.publisher)
               .then(
                 (result) => {
@@ -401,7 +413,6 @@ export class AppComponent implements OnInit {
       newTransformationKeywords,
       newTransformationConfiguration).then(
         (result) => {
-          console.log('Data uploaded');
           this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
           if (this.selectedFile == undefined) {
             this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
@@ -475,11 +486,25 @@ export class AppComponent implements OnInit {
       newTransformationConfiguration).then(
         (result) => {
           if (this.currentDataGraftParams.distributionId) {
+            // can this be reached? (we only have a distribution ID when creating a new transformation from the wizard)
+            this.dispatch.getTransformation(result.publisher, result.id).then(
+              (result) => {
+                const wizardIdRegexMatch = this.currentDataGraftParams.distributionId.match(/^upwizards--(\d+)$/);
+                if (!wizardIdRegexMatch[1]) {
+                  throw "Error creating a new transformation. Could not find wizard identifier.";
+                }
+                if (!result['internal_id']) {
+                  throw "Error creating a new transformation. Could not find internal identifier of transformation.";
+                }
+                this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/upwizards/transform_select_preview/' + wizardIdRegexMatch[1] + '?selected_id=' + result['internal_id']);
+              },
+              (error) => {
+                console.log(error);
+              });
             this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
               this.updatePreviewedData();
             });
-          }
-          else {
+          } else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
               this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
               this.progressIndicatorService.changeDataLoadingStatus(false);
@@ -518,7 +543,7 @@ export class AppComponent implements OnInit {
       this.showConfirmDeleteDialog = false;
       return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
         (result) => {
-          console.log('Transformation deleted');
+          // console.log('Transformation deleted');
           this.messageSvc.setLocation('/dashboard');
         },
         (error) => {
@@ -618,7 +643,6 @@ export class AppComponent implements OnInit {
   downloadTriples(rdfFormat: string = 'nt') {
     this.save(false).then(
       () => {
-        console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
         if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
           const existingTransformationID = paramMap.get('transformationId');
@@ -640,7 +664,6 @@ export class AppComponent implements OnInit {
   downloadCSV() {
     this.save(false).then(
       () => {
-        console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
         if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
           const existingTransformationID = paramMap.get('transformationId');

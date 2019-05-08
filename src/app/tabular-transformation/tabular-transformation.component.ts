@@ -121,6 +121,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             this.showHandsonTableProfiling = false;
             break;
           case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
             this.showPipelineOnly = false;
             this.showHandsonTableProfiling = true;
             break;
@@ -198,9 +199,9 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const recommend = this.recommenderService.getRecommendationWithParams(
       newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
       newSelection.totalRows, newSelection.totalCols, data, headers);
-    console.log(newSelection);
-    console.log(data);
-    console.log(headers);
+    // console.log(newSelection);
+    // console.log(data);
+    // console.log(headers);
 
     this.recommendations = recommend;
   }

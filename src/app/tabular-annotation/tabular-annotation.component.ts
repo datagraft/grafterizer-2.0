@@ -105,11 +105,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
         if (event.target.parentNode.id.startsWith('annotation_') || event.realTarget.id.startsWith('annotation_')) {
-          console.log('annotation');
+          // console.log('annotation');
           blockCalculations.cells = true;
           this.openAnnotationDialog(coords.col);
         } else if (event.target.parentNode.id.startsWith('enrich_') || event.realTarget.id.startsWith('enrich_')) {
-          console.log('enrichment');
+          // console.log('enrichment');
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
         }

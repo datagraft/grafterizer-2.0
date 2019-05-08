@@ -16,6 +16,7 @@ export interface TransformationMetadata {
   created: Date;
   keywords?: Array<string>;
   is_owned: string;
+  internal_id?: string;
 }
 
 export interface TransformationConfiguration {
@@ -447,7 +448,8 @@ export class DispatchService {
       modified: new Date(dcatSerialisation['dct:modified']),
       created: new Date(dcatSerialisation['dct:issued']),
       keywords: dcatSerialisation['dcat:keyword'],
-      is_owned: dcatSerialisation['is_owned']
+      is_owned: dcatSerialisation['is_owned'],
+      internal_id: dcatSerialisation['internal_id'] || ''
     }
   }
 
