@@ -8,6 +8,7 @@ import { StatisticService } from '../statistic-service/statistic.service';
 })
 export class PieChartComponent implements OnInit {
 
+  gradient: boolean = false;
   view: any[] = undefined;
   colorScheme = {
     domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA', '#5B5393', '#FFE0AA']

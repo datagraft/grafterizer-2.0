@@ -17,7 +17,7 @@ export class ColumnLiteralNodeComponent implements OnInit, OnDestroy {
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
-  private nodeRemoveModal = false;
+  nodeRemoveModal = false;
 
   @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
 

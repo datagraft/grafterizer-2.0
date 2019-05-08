@@ -22,8 +22,8 @@ export class PipelineComponent implements OnInit, OnDestroy {
   @ViewChild('pipelineElement') pipelineElement: MatVerticalStepper;
 
   private transformationObj: any;
-  private steps: Array<any>;
-  private disableButton: boolean = true;
+  steps: Array<any>;
+  disableButton: boolean = false;
   private currentFunctionIndex: number;
 
   // contains the current pipeline event (edit, delete, preview)
@@ -43,7 +43,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private previewedTransformationObj: any;
 
   private deleteFunctionEvent: any;
-  private deleteConfirmationModal = false;
+  deleteConfirmationModal = false;
 
   constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService, private messageSvc: DataGraftMessageService) {
     this.steps = [];
@@ -77,6 +77,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
           case 'transformations.transformation':
           case 'transformations.transformation.preview':
           case 'transformations.transformation.preview.wizard':
+          case 'transformations.new':
           case 'transformations.new.preview':
           case 'transformations.new.preview.wizard':
             this.disableButton = false;

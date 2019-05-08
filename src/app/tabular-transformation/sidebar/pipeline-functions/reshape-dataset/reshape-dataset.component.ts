@@ -21,8 +21,8 @@ export class ReshapeDatasetComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private modalEnabled: boolean = false;
-  private reshapedatasetmode: string = 'melt';
+  modalEnabled: boolean = false;
+  reshapedatasetmode: string = 'melt';
   private previewedDataColumns: any = [];
   private columnsArray: any[] = [];
   private aggrFunctionArray: any[] = ['MIN', 'MAX', 'SUM', 'AVG', 'COUNT', 'COUNT-DISTINCT', 'MERGE'];
@@ -30,7 +30,7 @@ export class ReshapeDatasetComponent implements OnInit {
   private variable: string = null;
   private value: string = null;
   private separator: string = null;
-  private docstring: string = 'Reshape dataset with melt or cast function';
+  docstring: string = 'Reshape dataset with melt or cast function';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -74,7 +74,7 @@ export class ReshapeDatasetComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editMeltFunction(this.currentlySelectedFunction);
@@ -135,7 +135,7 @@ export class ReshapeDatasetComponent implements OnInit {
     this.docstring = 'Reshape dataset with melt or cast function';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

@@ -14,7 +14,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MergeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,11 +24,11 @@ export class MergeColumnsComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private separator: string;
-  private newColName: string;
-  private docstring: string = 'Merge columns';
-  private previewedDataColumns: string[] = [];
-  private colsToMerge: any[] = [];
+  separator: string;
+  newColName: string;
+  docstring: string = 'Merge columns';
+  previewedDataColumns: string[] = [];
+  colsToMerge: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -72,7 +72,7 @@ export class MergeColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editMergeColumnsFunction(this.currentlySelectedFunction);
@@ -129,7 +129,7 @@ export class MergeColumnsComponent implements OnInit {
     this.docstring = 'Merge columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

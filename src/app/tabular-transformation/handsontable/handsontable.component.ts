@@ -31,7 +31,7 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
   public selectedFunction: any;
   public selectedDefaultParams: any;
 
-  private showLoading: boolean;
+  showLoading: boolean;
 
   private progressIndicatorSubscription: Subscription;
   private previewedTransformationSubscription: Subscription;

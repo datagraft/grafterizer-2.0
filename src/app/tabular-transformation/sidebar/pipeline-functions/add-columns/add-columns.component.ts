@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class AddColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,8 +24,8 @@ export class AddColumnsComponent implements OnInit {
   private previewedDataSubscription: Subscription;
   private previewedDataColumns: any;
 
-  private columnsArray: any = [];
-  private docstring: string = 'Add columns';
+  columnsArray: any = [];
+  docstring: string = 'Add columns';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -59,16 +59,16 @@ export class AddColumnsComponent implements OnInit {
       });
   }
 
-  private addColumn() {
+  addColumn() {
     var newColSpec = new transformationDataModel.NewColumnSpec(null, null, null, null);
     this.columnsArray.push(newColSpec);
   }
 
-  private removeColumn(id: number) {
+  removeColumn(id: number) {
     this.columnsArray.splice(id, 1);
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.createAddColumnsFunction(this.currentlySelectedFunction);
@@ -125,7 +125,7 @@ export class AddColumnsComponent implements OnInit {
     this.docstring = 'Add columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

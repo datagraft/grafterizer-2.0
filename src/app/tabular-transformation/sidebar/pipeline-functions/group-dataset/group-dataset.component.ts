@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class GroupDatasetComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -23,12 +23,12 @@ export class GroupDatasetComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private previewedDataColumns: any = [];
-  private aggrTypes: String[] = ["MIN", "MAX", "SUM", "COUNT", "COUNT-DISTINCT", "AVG", "MERGE"];
-  private colnames: String[] = [];
+  previewedDataColumns: any = [];
+  aggrTypes: String[] = ["MIN", "MAX", "SUM", "COUNT", "COUNT-DISTINCT", "AVG", "MERGE"];
+  colnames: String[] = [];
   private colnamesFunctionsSet: String[] = [null, null];
   private separatorSet: any[] = [null];
-  private docstring: string = 'Group and aggregate';
+  docstring: string = 'Group and aggregate';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -71,7 +71,7 @@ export class GroupDatasetComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editGroupRowsFunction(this.currentlySelectedFunction);
@@ -128,7 +128,7 @@ export class GroupDatasetComponent implements OnInit {
     this.docstring = 'Group and aggregate';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

@@ -15,7 +15,7 @@ export class ConstantLiteralNodeComponent implements OnInit, OnDestroy {
   @Input() parent: any;
   private showActions = false;
 
-  private nodeRemoveModal = false;
+  nodeRemoveModal = false;
   private transformationSubscription: Subscription;
   private transformationObj: any;
 

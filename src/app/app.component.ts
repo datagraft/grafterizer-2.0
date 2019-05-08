@@ -28,10 +28,10 @@ import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 export class AppComponent implements OnInit {
 
-  private loadingNextStepMessage: string;
+  loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
-  private fillingWizard = false;
-  private grafterizerUrl: any = 'url';
+  fillingWizard = false;
+  grafterizerUrl: any = 'url';
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
@@ -45,31 +45,31 @@ export class AppComponent implements OnInit {
   private transformationObjSource: any;
 
   private globalErrorSubscription: Subscription;
-  private globalErrors: Array<any>;
+  globalErrors: Array<any>;
 
   private currentDataGraftStateSubscription: Subscription;
   private currentDataGraftState: string = 'unknown';
   private currentDataGraftParams: any;
 
-  private showWizardNavigation: boolean;
-  private downloadMode: string = 'csv';
+  showWizardNavigation: boolean;
+  downloadMode: string = 'csv';
 
   private distributionList: SelectItem[] = [];
   private selectedFile: any;
 
-  private showConfirmNextStepDialog: boolean = false;
-  private showDownloadDialog: boolean = false;
-  private showConfirmDeleteDialog: boolean = false;
-  private showLoadDistributionDialog: boolean = false;
-  private modalEnabled: boolean = false;
-  private showTabularAnnotationTab: boolean = false;
-  private showSaveButton: boolean = false;
-  private showForkButton: boolean = false;
-  private showDownloadButton: boolean = false;
-  private showDeleteButton: boolean = false;
-  private showLoading: boolean = false;
-  private showLogo: boolean = false;
-  private transformationType: string;
+  showConfirmNextStepDialog: boolean = false;
+  showDownloadDialog: boolean = false;
+  showConfirmDeleteDialog: boolean = false;
+  showLoadDistributionDialog: boolean = false;
+  modalEnabled: boolean = false;
+  showTabularAnnotationTab: boolean = false;
+  showSaveButton: boolean = false;
+  showForkButton: boolean = false;
+  showDownloadButton: boolean = false;
+  showDeleteButton: boolean = false;
+  showLoading: boolean = false;
+  showLogo: boolean = false;
+  transformationType: string;
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,

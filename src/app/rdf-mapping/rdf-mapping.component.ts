@@ -25,11 +25,11 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private transformationReadOnlyView: boolean = false;
-  private showTable: boolean = true;
+  transformationReadOnlyView: boolean = false;
+  showTable: boolean = true;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
-  private transformationObj: any;
+  transformationObj: any;
   private graftwerkData: any;
 
   private transformationSubscription: Subscription;

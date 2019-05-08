@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class RenameColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
   private pipelineEventsSubscription: Subscription;
@@ -24,7 +24,7 @@ export class RenameColumnsComponent implements OnInit {
   private functionsToRenameWith = [null];
   private mappings: any = [null, null];
   private renamecolumnsmode: string = 'mapping';
-  private docstring: string = 'Rename columns';
+  docstring: string = 'Rename columns';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -64,7 +64,7 @@ export class RenameColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editRenameColumnsFunction(this.currentlySelectedFunction);
@@ -117,7 +117,7 @@ export class RenameColumnsComponent implements OnInit {
     console.log(instanceObj);
   }
 
-  private resetModal() {
+  resetModal() {
     // resets modal selection from selectbox
     this.pipelineEventsSvc.changePipelineEvent({
       cancel: true

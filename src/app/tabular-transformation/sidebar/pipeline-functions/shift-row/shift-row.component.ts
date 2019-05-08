@@ -14,12 +14,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class ShiftRowComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
-  private indexFrom: string = null;
-  private indexTo: string = null;
-  private shiftrowmode: string = 'eods';
-  private docstring: string = 'Shift (move) row';
+  indexFrom: string = null;
+  indexTo: string = null;
+  shiftrowmode: string = 'eods';
+  docstring: string = 'Shift (move) row';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -58,7 +58,7 @@ export class ShiftRowComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editShiftRowFunction(this.currentlySelectedFunction);
@@ -115,7 +115,7 @@ export class ShiftRowComponent implements OnInit {
     this.docstring = 'Shift (move) row';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 
