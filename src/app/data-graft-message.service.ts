@@ -155,4 +155,21 @@ export class DataGraftMessageService {
     }, '*');
   };
 
+  /**
+   * @param  {string} location location to redirect to
+   * @param  {string} title? (optional) title of the new page
+   * @param  {any} state? (optional, @TODO not used for now) state object to be recovered on back button
+   */
+  public setLocationNoRedirect(location: string, title?: string, state?: any) {
+    if (!state) {
+      state = {};
+    }
+    window.parent.postMessage({
+      channel: this.channel,
+      message: 'set-location-no-redirect',
+      location: location,
+      title: title,
+      state: state
+    }, '*');
+  };
 }

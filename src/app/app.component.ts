@@ -372,7 +372,7 @@ export class AppComponent implements OnInit {
         newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
-            console.log('Data uploaded');
+            this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
             this.dispatch.getTransformationJson(result.id, result.publisher)
               .then(
                 (result) => {
@@ -387,8 +387,7 @@ export class AppComponent implements OnInit {
             console.log('Error updating transformation');
             console.log(error);
           });
-    }
-    else if (redirect) {
+    } else if (redirect) {
       this.saveAndRedirect(existingTransformationID, publisher, newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration);
     }
   }
@@ -403,6 +402,7 @@ export class AppComponent implements OnInit {
       newTransformationConfiguration).then(
         (result) => {
           console.log('Data uploaded');
+          this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
           if (this.selectedFile == undefined) {
             this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
               this.dispatch.getTransformationJson(result.id, result.publisher)
@@ -416,8 +416,7 @@ export class AppComponent implements OnInit {
                     console.log(error);
                   });
             });
-          }
-          else {
+          } else {
             this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
               this.dispatch.getTransformationJson(result.id, result.publisher)
                 .then(
@@ -475,9 +474,6 @@ export class AppComponent implements OnInit {
     return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
       newTransformationConfiguration).then(
         (result) => {
-          console.log('New transformation created');
-          console.log(this.currentDataGraftParams.distributionId);
-          console.log(result);
           if (this.currentDataGraftParams.distributionId) {
             this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
               this.updatePreviewedData();
@@ -485,6 +481,7 @@ export class AppComponent implements OnInit {
           }
           else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
+              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
               this.progressIndicatorService.changeDataLoadingStatus(false);
             });
           }
@@ -503,21 +500,7 @@ export class AppComponent implements OnInit {
       const existingTransformationID = paramMap.get('transformationId');
       return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
         (result) => {
-          console.log('Transformation forked');
-          this.router.navigate([result["foaf:publisher"], 'transformations', result.id, 'tabular-transformation']).then(() => {
-            this.dispatch.getTransformationJson(result.id, result["foaf:publisher"])
-              .then(
-                (result) => {
-                  const transformationObj = transformationDataModel.Transformation.revive(result);
-                  this.transformationSvc.transformationObjSource.next(transformationObj);
-                  this.showTabularAnnotationTab = false;
-                  this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
-                  this.progressIndicatorService.changeDataLoadingStatus(false);
-                },
-                (error) => {
-                  console.log(error);
-                });
-          });
+          this.messageSvc.setLocationNoRedirect('/' + result["foaf:publisher"] + '/transformations/' + result.id + '/edit');
         },
         (error) => {
           console.log('Error forking transformation');
@@ -536,6 +519,7 @@ export class AppComponent implements OnInit {
       return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
         (result) => {
           console.log('Transformation deleted');
+          this.messageSvc.setLocation('/dashboard');
         },
         (error) => {
           console.log('Error deleting transformation');
