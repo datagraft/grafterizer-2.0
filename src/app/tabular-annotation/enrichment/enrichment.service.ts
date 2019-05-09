@@ -141,14 +141,19 @@ export class EnrichmentService {
     }
 
     let dates = [];
+    let originalDateFormat;
     if (weatherConfig.getReadDatesFromCol()) {
       dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
       dates = Array.from(new Set(dates)).filter(function (e) {
         return e === 0 || e;
       });  // remove empty strings
+      if (dates.length > 0) {
+        originalDateFormat = moment(dates[0]).creationData().format; // assuming a date column uses the same format for each date
+      }
       dates = dates.map(date => moment(date + '').format());
     } else {
       dates.push(moment(weatherConfig.getDate()).toISOString(true));
+      originalDateFormat = moment(dates[0]).creationData().format;
     }
 
     const requestURL = this.asiaURL + '/weather';
@@ -176,8 +181,8 @@ export class EnrichmentService {
         const weatherObs = new WeatherObservation(obs);
         const properties: Map<string, any[]> = new Map();
 
-        // TODO Hard-coded -> input data must be in ISO format
-        const date = weatherObs.getValidTime().substring(0, 10).replace('-', '').replace('-', '');
+        // Save dates using the original format adopted by the user
+        const date = moment(weatherObs.getValidTime()).format(originalDateFormat);
 
         if (on === 'date') {
           // Create extensions based on date
@@ -222,14 +227,19 @@ export class EnrichmentService {
     }
 
     let dates = [];
+    let originalDateFormat;
     if (eventConfig.getReadDatesFromCol()) {
       dates = this.data.map(row => row[':' + eventConfig.getReadDatesFromCol()]);
       dates = Array.from(new Set(dates)).filter(function (e) {
         return e === 0 || e;
       });  // remove empty strings
+      if (dates.length > 0) {
+        originalDateFormat = moment(dates[0]).creationData().format; // assuming a date column uses the same format for each date
+      }
       dates = dates.map(date => moment(date + '').format());
     } else {
       dates.push(moment(eventConfig.getDate()).toISOString(true));
+      originalDateFormat = moment(dates[0]).creationData().format; // assuming a date column uses the same format for each date
     }
 
     let categories = [];
@@ -265,8 +275,7 @@ export class EnrichmentService {
         const event = new Event(obs);
         const properties: Map<string, any[]> = new Map();
 
-        // TODO Hard-coded -> input data must be in ISO format
-        const date = event.getEventDate().substring(0, 10).replace('-', '').replace('-', '');
+        const date = moment(event.getEventDate()).format(originalDateFormat);
 
         if (on === 'date') {
           // Create extensions based on date
@@ -274,7 +283,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension(date, []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(date, extension);
         } else if (on === 'place') {
