@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class FilterRowsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -23,18 +23,18 @@ export class FilterRowsComponent implements OnInit {
 
   private previewedTransformationSubscription: Subscription;
   private previewedDataSubscription: Subscription;
-  private previewedDataColumns: any;
+  previewedDataColumns: any;
 
-  private colsToFilter: string[] = [];
+  colsToFilter: string[] = [];
   private filterText: string = null;
   private filterRegex: string = null;
   private ignoreCase: boolean = false;
   private take: boolean = true;
-  private grepmode: string = 'text';
+  grepmode: string = 'text';
   private customFunctions: any[] = [];
   private functionsToFilterWith: any[] = [];
   private selectedCustomFunction: any;
-  private docstring: string = 'Filter rows';
+  docstring: string = 'Filter rows';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -87,7 +87,7 @@ export class FilterRowsComponent implements OnInit {
       });
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.createFilterRowsFunction(this.currentlySelectedFunction);
@@ -142,7 +142,7 @@ export class FilterRowsComponent implements OnInit {
     instanceObj.docstring = this.docstring;
   }
 
-  private resetModal() {
+  resetModal() {
     // resets modal selection from selectbox
     this.pipelineEventsSvc.changePipelineEvent({
       cancel: true

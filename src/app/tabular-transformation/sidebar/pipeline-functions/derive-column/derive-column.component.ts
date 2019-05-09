@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class DeriveColumnComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,12 +24,12 @@ export class DeriveColumnComponent implements OnInit {
   private previewedTransformationSubscription: Subscription;
   private previewedDataSubscription: Subscription;
 
-  private newColName: string;
-  private selectedCustomFunction: any;
-  private docstring: string = 'Derive column';
-  private previewedDataColumns: string[] = [];
-  private customFunctions: any[] = [];
-  private colsToDeriveFrom: any[] = [];
+  newColName: string;
+  selectedCustomFunction: any;
+  docstring: string = 'Derive column';
+  previewedDataColumns: string[] = [];
+  customFunctions: any[] = [];
+  colsToDeriveFrom: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -84,7 +84,7 @@ export class DeriveColumnComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editDeriveColumnsFunction(this.currentlySelectedFunction);
@@ -141,7 +141,7 @@ export class DeriveColumnComponent implements OnInit {
     this.colsToDeriveFrom = null;
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

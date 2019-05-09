@@ -18,21 +18,21 @@ import { ConstantLiteral } from 'assets/transformationdatamodel.js';
 export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
 
   // The mapping node that is edited (in case of editing)
-  private editedNode: any;
+  editedNode: any;
 
   // The parent node in case we are creating a new node
-  private parentNode: any;
+  parentNode: any;
 
   // The sibling node in case we are adding a new node after an existing node
-  private siblingNode: any;
+  siblingNode: any;
 
   // Opening mapping dialog is controlled using this variables
-  private openNodeMappingDialog = true;
+  openNodeMappingDialog = true;
 
   // Boolean attributes that determine which tab has been selected in the dialog
-  private uriNodeTabSelected: boolean;
-  private literalNodeTabSelected: boolean;
-  private blankNodeSelected: boolean;
+  uriNodeTabSelected: boolean;
+  literalNodeTabSelected: boolean;
+  blankNodeSelected: boolean;
 
   private selectedSourceType = 'dataset-col';
 

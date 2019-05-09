@@ -13,17 +13,17 @@ import { TransformationService } from 'app/transformation.service';
 
 export class UtilityFunctionComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
   private previewedTransformationSubscription: Subscription;
-  private selectedCustomFunction: any;
-  private docstring: string = 'Custom utility function';
-  private customFunctions: any[] = [];
+  selectedCustomFunction: any;
+  docstring: string = 'Custom utility function';
+  customFunctions: any[] = [];
   private functParams: any[] = [];
-  private functionName: any; //FunctionWithArgs
+  functionName: any; //FunctionWithArgs
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -71,7 +71,7 @@ export class UtilityFunctionComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editMapColumnsFunction(this.currentlySelectedFunction);
@@ -127,7 +127,7 @@ export class UtilityFunctionComponent implements OnInit {
     this.docstring = 'Custom utility function';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

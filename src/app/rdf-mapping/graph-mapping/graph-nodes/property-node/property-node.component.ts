@@ -13,10 +13,10 @@ import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class PropertyNodeComponent implements OnInit, OnDestroy {
-  private propertyRemoveModal = false;
+  propertyRemoveModal = false;
   @Input() property;
   @Input() parent;
-  private showActions = false;
+  showActions = false;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;

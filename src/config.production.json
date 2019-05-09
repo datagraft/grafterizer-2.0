@@ -2,8 +2,8 @@
   "jarfter-path": "/jarfter",
   "dispatch-path": "/grafterizer-dispatch",
   "graftwerk-cache-path": "/graftwerk-cache",
-  "abstat-path": "http://abstat.disco.unimib.it",
-  "abstat-path-ba": "http://193.204.59.21",
+  "abstat-path": "/abstat",
+  "abstat-path-ba": "/abstat-ba",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "/asia",
   "arango-generator": "/arango-generator"

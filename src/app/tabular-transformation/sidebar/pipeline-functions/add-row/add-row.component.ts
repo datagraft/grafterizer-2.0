@@ -12,7 +12,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class AddRowComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -21,11 +21,11 @@ export class AddRowComponent implements OnInit {
   private pipelineEvent: any;
 
   private previewedDataSubscription: Subscription;
-  private previewedDataColumns: any;
+  previewedDataColumns: any;
 
   private position: number = 0;
   private values: any = [];
-  private docstring: string = 'Add rows';
+  docstring: string = 'Add rows';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -58,7 +58,7 @@ export class AddRowComponent implements OnInit {
       });
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.createAddRowsFunction(this.currentlySelectedFunction);
@@ -117,7 +117,7 @@ export class AddRowComponent implements OnInit {
     this.docstring = 'Add rows';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

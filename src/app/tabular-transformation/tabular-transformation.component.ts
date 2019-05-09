@@ -32,7 +32,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private showHandsonTableProfiling: boolean = true;
   private showHandsontable: boolean = true;
   private showProfiling: boolean = true;
-  private showPipelineOnly: boolean = false;
+  showPipelineOnly: boolean = false;
 
   private metadata: any;
   private title: string;

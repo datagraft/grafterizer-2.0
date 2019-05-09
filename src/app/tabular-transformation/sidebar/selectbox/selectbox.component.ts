@@ -24,11 +24,12 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private recommendedFunctions: SelectItem[] = [];
+  recommendedFunctions: SelectItem[] = [];
   private allFunctions: SelectItem[] = [];
 
-  private selected: any = { id: null, defaultParams: null };
-  private modalEnabled = false;
+  uiStateActive: string = 'ui-state-active';
+  selected: any = { id: null, defaultParams: null };
+  modalEnabled = false;
   private message: any;
   private transformationReadOnlyView: boolean = false;
 

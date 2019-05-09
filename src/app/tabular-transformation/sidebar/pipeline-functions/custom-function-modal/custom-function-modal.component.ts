@@ -20,10 +20,10 @@ export class CustomFunctionModalComponent implements OnInit {
 
   @ViewChild('editor') editor: any;
 
-  private modalEnabled: any = false;
-  private functions: any[] = [];
+  modalEnabled: any = false;
+  functions: any[] = [];
   private customFunctionDeclarations: any[] = [];
-  private configurationObject: any;
+  configurationObject: any;
 
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
@@ -31,8 +31,8 @@ export class CustomFunctionModalComponent implements OnInit {
   private previewedTransformationObj: any;
   private previewedTransformationSubscription: Subscription;
 
-  private selected: any;
-  private nameWarning: boolean = false;
+  selected: any;
+  nameWarning: boolean = false;
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService, private codeMirror: CodemirrorService) { }
 

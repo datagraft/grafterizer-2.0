@@ -21,7 +21,7 @@ export class MakeDatasetComponent implements OnInit {
   private addOnBlur: boolean = true;
   private separatorKeysCodes = [ENTER, COMMA];
 
-  private modalEnabled = false;
+  modalEnabled = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -29,12 +29,12 @@ export class MakeDatasetComponent implements OnInit {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
 
-  private makedatasetmode: String = 'colnames';
+  makedatasetmode: String = 'colnames';
   private columnsArray: Array<any> = [];
   private useLazy = false;
   private moveFirstRowToHeader: boolean;
   private numberOfColumns: Number = undefined;
-  private docstring: String = 'Create headers';
+  docstring: String = 'Create headers';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
