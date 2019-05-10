@@ -24,11 +24,12 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
   @Input() headers;
   @Output() emitter = new EventEmitter();
 
-  private recommendedFunctions: SelectItem[] = [];
+  recommendedFunctions: SelectItem[] = [];
   private allFunctions: SelectItem[] = [];
 
-  private selected: any = { id: null, defaultParams: null };
-  private modalEnabled = false;
+  uiStateActive: string = 'ui-state-active';
+  selected: any = { id: null, defaultParams: null };
+  modalEnabled = false;
   private message: any;
   private transformationReadOnlyView: boolean = false;
 
@@ -78,13 +79,13 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
     //   }
     // });
 
-    this.transformationMetadataSubscription = this.transformationSvc.currentTransformationMetadata.subscribe((transformationMeta) => {
+    this.transformationMetadataSubscription = this.transformationSvc.transformationMetadata.subscribe((transformationMeta) => {
       if (transformationMeta.is_owned) {
         this.isOwned = true;
       }
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
 
@@ -93,7 +94,7 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
       // in case we finished editing a step
       if (this.pipelineEvent.commitEdit) {
-        this.transformationSvc.changePreviewedTransformationObj(
+        this.transformationSvc.previewedTransformationObjSource.next(
           this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
         );
         // reset isPreviewed for other functions
@@ -106,18 +107,18 @@ export class SelectboxComponent implements OnInit, OnDestroy, OnChanges {
 
       // in case we finished creating a step
       if (this.pipelineEvent.commitCreateNew && this.selectedFunction.changedFunction.__type) {
-        console.log(this.transformationObj)
-        console.log(this.selectedFunction.currentFunction)
-        console.log(this.selectedFunction.changedFunction)
+        // console.log(this.transformationObj)
+        // console.log(this.selectedFunction.currentFunction)
+        // console.log(this.selectedFunction.changedFunction)
 
         // add new step to the transformation object
         this.transformationObj.pipelines[0].addAfter(this.selectedFunction.currentFunction, this.selectedFunction.changedFunction);
 
         // notify of change to transformation object
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
 
         // change previewed transformation
-        this.transformationSvc.changePreviewedTransformationObj(
+        this.transformationSvc.previewedTransformationObjSource.next(
           this.transformationObj.getPartialTransformation(this.selectedFunction.changedFunction)
         );
 

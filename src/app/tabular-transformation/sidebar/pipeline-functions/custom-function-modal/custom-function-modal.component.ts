@@ -20,10 +20,10 @@ export class CustomFunctionModalComponent implements OnInit {
 
   @ViewChild('editor') editor: any;
 
-  private modalEnabled: any = false;
-  private functions: any[] = [];
+  modalEnabled: any = false;
+  functions: any[] = [];
   private customFunctionDeclarations: any[] = [];
-  private configurationObject: any;
+  configurationObject: any;
 
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
@@ -31,8 +31,8 @@ export class CustomFunctionModalComponent implements OnInit {
   private previewedTransformationObj: any;
   private previewedTransformationSubscription: Subscription;
 
-  private selected: any;
-  private nameWarning: boolean = false;
+  selected: any;
+  nameWarning: boolean = false;
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService, private codeMirror: CodemirrorService) { }
 
@@ -47,10 +47,9 @@ export class CustomFunctionModalComponent implements OnInit {
         this.modalEnabled = true;
       }
     });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.previewedTransformationObj = previewedTransformation;
+    });
     this.selected = { clojureCode: '' };
   }
 
@@ -134,16 +133,14 @@ export class CustomFunctionModalComponent implements OnInit {
     });
     this.functions = [];
     this.customFunctionDeclarations = [];
-    this.retreiveCustomFunctions();
     this.selected = { clojureCode: '' };
     this.editor.setValue('');
     this.modalEnabled = false;
   }
 
   accept() {
-    console.log(this.selected);
     this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
-    this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
+    this.transformationSvc.previewedTransformationObjSource.next(this.previewedTransformationObj);
     this.resetModal();
   }
 

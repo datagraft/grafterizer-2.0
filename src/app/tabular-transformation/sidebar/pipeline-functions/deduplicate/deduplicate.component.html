@@ -14,8 +14,8 @@
       </form>
       <br>
       <div id="reshapemode-column" *ngIf="deduplicateMode=='colnames'">
-        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value"
-          appendTo="body" placeholder="Select column(s)" [(ngModel)]="colNames"></ng-select>
+        <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true"
+          bindLabel="value" appendTo="body" placeholder="Select column(s)" [(ngModel)]="colNames"></ng-select>
       </div>
       <br>
       <mat-form-field style="width: 100%;">

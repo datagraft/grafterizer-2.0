@@ -22,6 +22,9 @@ export class ProfilingComponent implements OnInit {
   @Input() dataBoxplot: any;
   @Input() inferredType: boolean = false;
 
+  gradient: boolean = false;
+  showLegend: boolean = false;
+
   // complete dataset from graftwerk
   private data: any;
   private header: any;
@@ -32,8 +35,8 @@ export class ProfilingComponent implements OnInit {
   private advancedPieChart_init: any[];
 
   // barChart and advancedPieChart  
-  private dimensionsAdvancedPieChart: any[] = [700, 300];
-  private dimensionsBarChart: any[] = [300, 200];
+  dimensionsAdvancedPieChart: any[] = [700, 300];
+  dimensionsBarChart: any[] = [300, 200];
 
   private tileSpanMissingValues = 1;
   private tileSpanDataDistribution = 3;
@@ -59,14 +62,14 @@ export class ProfilingComponent implements OnInit {
   private outliersLayout: any;
 
   // chart 04
-  private datatableBordered = false;
-  private datatableStriped = false;
+  datatableBordered = false;
+  datatableStriped = false;
 
-  private colorSchemeAdvancedPieChart = {
+  colorSchemeAdvancedPieChart = {
     domain: ['#00A896', '#FF1654', '#F9BE02']
   };
 
-  private colorSchemeBarChart = {
+  colorSchemeBarChart = {
     domain: [
       '#003459',
       '#00171F',
@@ -128,8 +131,8 @@ export class ProfilingComponent implements OnInit {
   }
 
   onSelect(event) {
-    console.log(event);
-    console.log(event.index);
+    // console.log(event);
+    // console.log(event.index);
   }
 
   loadJSON(data: any) {
@@ -219,7 +222,6 @@ export class ProfilingComponent implements OnInit {
     }
     this.profileSubset.chart = 2;
     this.chartSubsetEmit();
-    console.log()
   }
 
 }

@@ -14,14 +14,14 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
-  private takecolumnsmode = 'colnames';
+  modalEnabled: boolean = false;
+  takecolumnsmode = 'colnames';
 
   private columnsArray: any[] = [];
   private indexFrom = null;
   private indexTo = null;
-  private take = true;
-  private docstring: string = 'Take columns';
+  take = true;
+  docstring: string = 'Take columns';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -63,7 +63,7 @@ export class TakeColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
@@ -78,7 +78,7 @@ export class TakeColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editTakeColumnsFunction(this.currentlySelectedFunction);
@@ -139,7 +139,7 @@ export class TakeColumnsComponent implements OnInit {
     this.docstring = 'Take columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

@@ -1235,11 +1235,11 @@ MakeDatasetFunction.prototype.generateClojure = function () {
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-    new jsedn.List([jsedn.parse('into []'),
+    new jsedn.List([jsedn.parse('into'), new jsedn.Vector([]),
     new jsedn.List([jsedn.sym('map'),
     jsedn.sym('keyword'),
     new jsedn.List([jsedn.sym('take'),
-    this.numberOfColumns,
+    parseInt(this.numberOfColumns),
     new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
     ])
     ])

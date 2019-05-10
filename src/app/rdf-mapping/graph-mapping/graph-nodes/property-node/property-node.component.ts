@@ -13,10 +13,10 @@ import { RdfNodeMappingDialogComponent } from 'app/rdf-mapping/graph-mapping/rdf
   styleUrls: ['../graph-mapping-node-components.scss']
 })
 export class PropertyNodeComponent implements OnInit, OnDestroy {
-  private propertyRemoveModal = false;
+  propertyRemoveModal = false;
   @Input() property;
   @Input() parent;
-  private showActions = false;
+  showActions = false;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -27,7 +27,7 @@ export class PropertyNodeComponent implements OnInit, OnDestroy {
   constructor(private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -61,7 +61,7 @@ export class PropertyNodeComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.parent.removeChild(this.property);
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.propertyRemoveModal = false;
   }
 

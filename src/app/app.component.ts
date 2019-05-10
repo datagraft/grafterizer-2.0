@@ -28,10 +28,10 @@ import { ProgressIndicatorService } from 'app/progress-indicator.service';
 
 export class AppComponent implements OnInit {
 
-  private loadingNextStepMessage: string;
+  loadingNextStepMessage: string;
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
-  private fillingWizard = false;
-  private grafterizerUrl: any = 'url';
+  fillingWizard = false;
+  grafterizerUrl: any = 'url';
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
@@ -45,37 +45,38 @@ export class AppComponent implements OnInit {
   private transformationObjSource: any;
 
   private globalErrorSubscription: Subscription;
-  private globalErrors: Array<any>;
+  globalErrors: Array<any>;
 
   private currentDataGraftStateSubscription: Subscription;
   private currentDataGraftState: string = 'unknown';
   private currentDataGraftParams: any;
 
-  private showWizardNavigation: boolean;
-  private downloadMode: string = 'csv';
+  showWizardNavigation: boolean;
+  downloadMode: string = 'csv';
 
   private distributionList: SelectItem[] = [];
   private selectedFile: any;
 
-  private showConfirmNextStepDialog: boolean = false;
-  private showDownloadDialog: boolean = false;
-  private showConfirmDeleteDialog: boolean = false;
-  private showLoadDistributionDialog: boolean = false;
-  private modalEnabled: boolean = false;
-  private showTabularAnnotationTab: boolean = false;
-  private showSaveButton: boolean = false;
-  private showForkButton: boolean = false;
-  private showDownloadButton: boolean = false;
-  private showDeleteButton: boolean = false;
-  private showLoading: boolean = false;
-  private transformationType: string;
+  showConfirmNextStepDialog: boolean = false;
+  showDownloadDialog: boolean = false;
+  showConfirmDeleteDialog: boolean = false;
+  showLoadDistributionDialog: boolean = false;
+  modalEnabled: boolean = false;
+  showTabularAnnotationTab: boolean = false;
+  showSaveButton: boolean = false;
+  showForkButton: boolean = false;
+  showDownloadButton: boolean = false;
+  showDeleteButton: boolean = false;
+  showLoading: boolean = false;
+  showLogo: boolean = false;
+  transformationType: string;
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
     , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService, private progressIndicatorService: ProgressIndicatorService, ) {
-    console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
+    // console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.grafterizerUrl = url;
     });
@@ -83,7 +84,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     const self = this;
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
       if (state.mode) {
         this.currentDataGraftState = state.mode;
         switch (state.mode) {
@@ -96,6 +97,7 @@ export class AppComponent implements OnInit {
             this.showWizardNavigation = false;
             break;
           case 'transformations.transformation.preview':
+          case 'transformations.transformation.preview.wizard':
             this.showTabularAnnotationTab = true;
             this.showSaveButton = true;
             this.showForkButton = false;
@@ -121,6 +123,7 @@ export class AppComponent implements OnInit {
             this.showWizardNavigation = false;
             break;
           case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
             this.showTabularAnnotationTab = true;
             this.showSaveButton = true;
             this.showForkButton = false;
@@ -140,6 +143,7 @@ export class AppComponent implements OnInit {
             this.showDeleteButton = true;
             this.showLoadDistributionDialog = true;
             this.showWizardNavigation = false;
+            this.showLogo = true;
             break;
           default:
             break;
@@ -163,15 +167,17 @@ export class AppComponent implements OnInit {
                 (result) => {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    self.transformationSvc.changeTransformationObj(transformationObj);
+                    self.transformationSvc.transformationObjSource.next(transformationObj);
+                    console.log(transformationObj)
+
                     if (paramMap.has('filestoreId')) {
-                      this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                      this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                     } else {
                       // this.showLoadDistributionDialog = true;
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
-                    console.log(result);
+                    // console.log(result);
                   }
                 },
                 (error) => {
@@ -183,7 +189,7 @@ export class AppComponent implements OnInit {
             this.progressIndicatorService.changeDataLoadingStatus(true);
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
-                console.log(result)
+                // console.log(result)
                 this.createNewTransformation();
               }
               else {
@@ -195,39 +201,38 @@ export class AppComponent implements OnInit {
         }
       });
 
-    this.transformationObjSourceSubscription = this.transformationSvc.currentTransformationObj
-      .subscribe((currentTransformationObj) => {
-        this.transformationObjSource = currentTransformationObj;
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource
+      .subscribe((transformationObjSource) => {
+        this.transformationObjSource = transformationObjSource;
       });
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-        // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
-        if (!this.route.firstChild) {
-          // We use this subscription to catch the moment when the navigation has ended
-          this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
-            // If the event for navigation end is emitted, the child components are initialised.
-            // We can proceed to updating the previewed data.
-            if (event instanceof NavigationEnd) {
-              this.pipelineEventsSvc.changePipelineEvent({
-                startEdit: false, // true when we click on the 'Edit' icon of a function
-                commitEdit: false, // true when we click 'OK' after editing a function
-                preview: false, // true when we are previewing a step in the pipeline
-                delete: false, // true when we are deleting a step in the pipeline
-                createNew: false, // true when we are adding a new step to the pipeline
-                newStepType: "", // type of the new step to be added to the pipeline
-                defaultParams: {}, // default parameters for a new step (could be given by recommender)
-                commitCreateNew: false // true when we click OK after creating a new function
-              });
-            }
-          });
-        } else {
-          console.log('this.updatePreviewedData()')
-          // the sub-components are already initialised, so we can get the route parameters as normal
-          this.updatePreviewedData();
-        }
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.previewedTransformationObj = previewedTransformation;
+      // Check if routes of sub-components of the app component have been initialised (firstChild is null if not)
+      if (!this.route.firstChild) {
+        // We use this subscription to catch the moment when the navigation has ended
+        this.updateDataRouteSubscription = this.router.events.subscribe((event) => {
+          // If the event for navigation end is emitted, the child components are initialised.
+          // We can proceed to updating the previewed data.
+          if (event instanceof NavigationEnd) {
+            this.pipelineEventsSvc.changePipelineEvent({
+              startEdit: false, // true when we click on the 'Edit' icon of a function
+              commitEdit: false, // true when we click 'OK' after editing a function
+              preview: false, // true when we are previewing a step in the pipeline
+              delete: false, // true when we are deleting a step in the pipeline
+              createNew: false, // true when we are adding a new step to the pipeline
+              newStepType: "", // type of the new step to be added to the pipeline
+              defaultParams: {}, // default parameters for a new step (could be given by recommender)
+              commitCreateNew: false // true when we click OK after creating a new function
+            });
+          }
+        });
+      } else {
+        console.log('this.updatePreviewedData()')
+        // the sub-components are already initialised, so we can get the route parameters as normal
+        this.updatePreviewedData();
+      }
+    });
 
     this.progressIndicatorSubscription = this.progressIndicatorService.currentDataLoadingStatus.subscribe((status) => {
       if (status == true || status == false) {
@@ -246,7 +251,7 @@ export class AppComponent implements OnInit {
   }
 
   onChange($event) {
-    console.log(this.selectedFile);
+    // console.log(this.selectedFile);
   }
 
   loadDistribution() {
@@ -265,7 +270,8 @@ export class AppComponent implements OnInit {
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
-        this.dispatch.uploadFile(file).subscribe(() => {
+        this.dispatch.uploadFile(file).subscribe((result) => {
+          this.selectedFile = { id: result.id };
           this.save(true);
         });
       };
@@ -293,10 +299,10 @@ export class AppComponent implements OnInit {
       const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
       this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 10000)
         .then((result) => {
-          this.transformationSvc.changeGraftwerkData(result);
+          this.transformationSvc.graftwerkDataSource.next(result);
         }, (err) => {
           this.globalErrorRepSvc.changePreviewError(err);
-          this.transformationSvc.changeGraftwerkData(
+          this.transformationSvc.graftwerkDataSource.next(
             {
               ':column-names': [],
               ':rows': []
@@ -327,7 +333,6 @@ export class AppComponent implements OnInit {
   }
 
   save(redirect: boolean) {
-    console.log('SAVE');
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
@@ -337,7 +342,7 @@ export class AppComponent implements OnInit {
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
     let isPublic = null;
-    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+    this.transformationSvc.transformationMetadata.subscribe((result) => {
       newTransformationName = result.title;
       newTransformationDescription = result.description;
       newTransformationKeywords = result.keywords;
@@ -368,12 +373,23 @@ export class AppComponent implements OnInit {
         newTransformationKeywords,
         newTransformationConfiguration).then(
           (result) => {
-            console.log('Data uploaded');
+            /** If we are editing a transformation, the address/slug of it may have changed (due to name change), so we need to change the URL in the browser */
+            if (this.currentDataGraftState == 'transformations.transformation.preview') {
+              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            } else if (this.currentDataGraftState == 'transformations.transformation.preview.wizard') {
+              // what should happen here?
+            } else if (this.currentDataGraftState == 'transformations.new.preview.wizard') {
+              // should not happen
+              // first save - change location to /[username]/upwizards/transform_select_preview/[wizard_id]?selected_id=[transformation_id]
+            } else {
+              // should not happen
+            }
+
             this.dispatch.getTransformationJson(result.id, result.publisher)
               .then(
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
-                  this.transformationSvc.changeTransformationObj(transformationObj);
+                  this.transformationSvc.transformationObjSource.next(transformationObj);
                 },
                 (error) => {
                   console.log(error);
@@ -383,8 +399,7 @@ export class AppComponent implements OnInit {
             console.log('Error updating transformation');
             console.log(error);
           });
-    }
-    else if (redirect) {
+    } else if (redirect) {
       this.saveAndRedirect(existingTransformationID, publisher, newTransformationName, isPublic, newTransformationDescription, newTransformationKeywords, newTransformationConfiguration);
     }
   }
@@ -398,34 +413,33 @@ export class AppComponent implements OnInit {
       newTransformationKeywords,
       newTransformationConfiguration).then(
         (result) => {
-          console.log('Data uploaded');
+          this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
           if (this.selectedFile == undefined) {
             this.router.navigate([result.publisher, 'transformations', result.id]).then(() => {
               this.dispatch.getTransformationJson(result.id, result.publisher)
                 .then(
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    this.transformationSvc.changeTransformationObj(transformationObj);
-                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    this.transformationSvc.transformationObjSource.next(transformationObj);
+                    this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                   },
                   (error) => {
                     console.log(error);
                   });
             });
-          }
-          else {
+          } else {
             this.router.navigate([result.publisher, 'transformations', result.id, this.selectedFile.id, 'tabular-transformation']).then(() => {
               this.dispatch.getTransformationJson(result.id, result.publisher)
                 .then(
                   (result) => {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
-                    this.transformationSvc.changeTransformationObj(transformationObj);
+                    this.transformationSvc.transformationObjSource.next(transformationObj);
                     this.showTabularAnnotationTab = true;
                     this.showSaveButton = true;
                     this.showForkButton = true;
                     this.showDownloadButton = true;
                     this.showDeleteButton = true;
-                    this.transformationSvc.changePreviewedTransformationObj(transformationObj);
+                    this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                   },
                   (error) => {
                     console.log(error);
@@ -446,7 +460,7 @@ export class AppComponent implements OnInit {
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
     let isPublic = null;
-    this.transformationSvc.currentTransformationMetadata.subscribe((result) => {
+    this.transformationSvc.transformationMetadata.subscribe((result) => {
       newTransformationName = result.title;
       newTransformationDescription = result.description;
       newTransformationKeywords = result.keywords;
@@ -471,16 +485,28 @@ export class AppComponent implements OnInit {
     return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
       newTransformationConfiguration).then(
         (result) => {
-          console.log('New transformation created');
-          console.log(this.currentDataGraftParams.distributionId);
-          console.log(result);
           if (this.currentDataGraftParams.distributionId) {
+            // can this be reached? (we only have a distribution ID when creating a new transformation from the wizard)
+            this.dispatch.getTransformation(result.publisher, result.id).then(
+              (result) => {
+                const wizardIdRegexMatch = this.currentDataGraftParams.distributionId.match(/^upwizards--(\d+)$/);
+                if (!wizardIdRegexMatch[1]) {
+                  throw "Error creating a new transformation. Could not find wizard identifier.";
+                }
+                if (!result['internal_id']) {
+                  throw "Error creating a new transformation. Could not find internal identifier of transformation.";
+                }
+                this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/upwizards/transform_select_preview/' + wizardIdRegexMatch[1] + '?selected_id=' + result['internal_id']);
+              },
+              (error) => {
+                console.log(error);
+              });
             this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
               this.updatePreviewedData();
             });
-          }
-          else {
+          } else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
+              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
               this.progressIndicatorService.changeDataLoadingStatus(false);
             });
           }
@@ -499,21 +525,7 @@ export class AppComponent implements OnInit {
       const existingTransformationID = paramMap.get('transformationId');
       return this.dispatch.forkTransformation(existingTransformationID, publisher).then(
         (result) => {
-          console.log('Transformation forked');
-          this.router.navigate([result["foaf:publisher"], 'transformations', result.id, 'tabular-transformation']).then(() => {
-            this.dispatch.getTransformationJson(result.id, result["foaf:publisher"])
-              .then(
-                (result) => {
-                  const transformationObj = transformationDataModel.Transformation.revive(result);
-                  this.transformationSvc.changeTransformationObj(transformationObj);
-                  this.showTabularAnnotationTab = false;
-                  this.transformationSvc.changePreviewedTransformationObj(transformationObj);
-                  this.progressIndicatorService.changeDataLoadingStatus(false);
-                },
-                (error) => {
-                  console.log(error);
-                });
-          });
+          this.messageSvc.setLocationNoRedirect('/' + result["foaf:publisher"] + '/transformations/' + result.id + '/edit');
         },
         (error) => {
           console.log('Error forking transformation');
@@ -531,7 +543,8 @@ export class AppComponent implements OnInit {
       this.showConfirmDeleteDialog = false;
       return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
         (result) => {
-          console.log('Transformation deleted');
+          // console.log('Transformation deleted');
+          this.messageSvc.setLocation('/dashboard');
         },
         (error) => {
           console.log('Error deleting transformation');
@@ -630,7 +643,6 @@ export class AppComponent implements OnInit {
   downloadTriples(rdfFormat: string = 'nt') {
     this.save(false).then(
       () => {
-        console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
         if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
           const existingTransformationID = paramMap.get('transformationId');
@@ -652,7 +664,6 @@ export class AppComponent implements OnInit {
   downloadCSV() {
     this.save(false).then(
       () => {
-        console.log('Data downloads');
         const paramMap = this.route.firstChild.snapshot.paramMap;
         if (paramMap.has('transformationId') && paramMap.has('filestoreId')) {
           const existingTransformationID = paramMap.get('transformationId');

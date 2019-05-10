@@ -12,7 +12,7 @@ export class GraphMappingComponent implements OnInit {
 
   @Input() graph;
 
-  private openNodeMappingDialog = false;
+  openNodeMappingDialog = false;
   @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
 
   constructor(private viewContainer: ViewContainerRef) { }

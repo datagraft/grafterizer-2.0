@@ -25,11 +25,11 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
   private settings: any;
   private tableContainer: any;
   private vocabSvcPath: string;
-  private transformationReadOnlyView: boolean = false;
-  private showTable: boolean = true;
+  transformationReadOnlyView: boolean = false;
+  showTable: boolean = true;
 
   // Local objects/ working memory initialized oninit - removed ondestroy, content transferred to observable ondestroy
-  private transformationObj: any;
+  transformationObj: any;
   private graftwerkData: any;
 
   private transformationSubscription: Subscription;
@@ -48,7 +48,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.transformationSubscription =
-      this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
+      this.transformationSvc.transformationObjSource.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
 
@@ -77,7 +77,7 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
     };
     this.hot = new Handsontable(this.tableContainer, this.settings);
 
-    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftState.subscribe((state) => {
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
       const paramMap = this.route.snapshot.paramMap;
       if (state.mode) {
         this.currentDataGraftState = state.mode;
@@ -94,12 +94,11 @@ export class RdfMappingComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.dataLoading = true;
-      });
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.dataLoading = true;
+    });
 
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       this.displayJsEdnData(graftwerkData);
     });
   }

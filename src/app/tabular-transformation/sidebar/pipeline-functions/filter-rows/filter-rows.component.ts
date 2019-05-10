@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { CompleterService, CompleterData } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
+
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { Subscription } from 'rxjs';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'filter-rows',
@@ -8,115 +11,169 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./filter-rows.component.css']
 })
 
-export class FilterRowsComponent implements OnInit, OnChanges {
+export class FilterRowsComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() function: any;
-  @Input() defaultParams: any;
-  @Input() transformation: any;
-  @Input() columns: String[];
-  @Output() emitter = new EventEmitter();
-  private colsToFilter: String[];
-  private filterText: String;
-  private filterRegex: String;
-  private ignoreCase: Boolean;
-  private take: Boolean;
-  private grepmode: String;
-  private filterFunctionsNames: String[]; // functions to filter with
-  private functionNames: String[]; // functions to select from
-  private docstring: String;
-  protected dataService: CompleterData;
-  private renamecolumnsmode: String;
+  modalEnabled: boolean = false;
 
-  constructor(private completerService: CompleterService) { }
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any;
+
+  private previewedTransformationSubscription: Subscription;
+  private previewedDataSubscription: Subscription;
+  previewedDataColumns: any;
+
+  colsToFilter: string[] = [];
+  private filterText: string = null;
+  private filterRegex: string = null;
+  private ignoreCase: boolean = false;
+  private take: boolean = true;
+  grepmode: string = 'text';
+  private customFunctions: any[] = [];
+  private functionsToFilterWith: any[] = [];
+  private selectedCustomFunction: any;
+  docstring: string = 'Filter rows';
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-    this.modalEnabled = false;
-    this.initFunction();
-  }
 
-  initFunction() {
-    this.columns = [];
-    this.colsToFilter = [];
-    this.functionNames = [];
-    this.filterFunctionsNames = [null];
-    this.ignoreCase = false;
-    this.take = true;
-    this.grepmode = "text";
-    this.filterText = null;
-    this.function = new transformationDataModel.GrepFunction(this.take, this.grepmode, this.colsToFilter, this.filterFunctionsNames, this.filterText, this.filterRegex, this.ignoreCase, this.docstring);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.function) {
-      if (!this.function) {
-        // console.log('New function');
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      if (previewedTransformation) {
+        this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+          return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+        });
       }
-      else {
-        console.log('Edit function');
-        if (this.function.__type == 'GrepFunction') {
-          this.take = this.function.take;
-          this.grepmode = this.function.grepmode;
-          this.colsToFilter = this.function.colsToFilter.map(o => o.value);
-          this.filterFunctionsNames = this.function.functionsToFilterWith.map(o => o.name);
-          this.filterText = this.function.filterText;
-          this.filterRegex = this.function.filterRegex;
-          this.ignoreCase = this.function.ignoreCase;
-          this.docstring = this.function.docstring;
+    });
+
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit      
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'GrepFunction') {
+        this.modalEnabled = true;
+        this.take = this.currentlySelectedFunction.take;
+        this.grepmode = this.currentlySelectedFunction.grepmode;
+        this.colsToFilter = this.currentlySelectedFunction.colsToFilter.map(o => o.value);
+        this.selectedCustomFunction = this.currentlySelectedFunction.functionsToFilterWith["0"];
+        if (this.selectedCustomFunction) {
+          for (let funct of this.customFunctions) {
+            if (this.selectedCustomFunction.id === funct.id) {
+              this.customFunctions[funct.id] = this.selectedCustomFunction;
+            }
+          }
         }
+        this.filterText = this.currentlySelectedFunction.filterText;
+        this.filterRegex = this.currentlySelectedFunction.filterRegex;
+        this.ignoreCase = this.currentlySelectedFunction.ignoreCase;
+        this.docstring = this.currentlySelectedFunction.docstring;
       }
-    }
-    if (changes.transformation) {
-      if (this.transformation) {
-        for (let f of this.transformation.customFunctionDeclarations) {
-          // this.functionNames.push(f.name);
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'GrepFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
         }
-      }
-    }
-    if (this.defaultParams && changes.defaultParams) {
-      if (this.defaultParams.colsToFilter) {
-        this.colsToFilter = this.defaultParams.colsToFilter;
-      }
-    }
-  }
-
-  addFilterFunction() {
-    this.filterFunctionsNames.push(null);
-  }
-
-  removeFilterFunction(idx) {
-    this.filterFunctionsNames.splice(idx, 1);
-  }
-
-  findCustomFunctionByName(transformation, name) {
-    for (let f of transformation.customFunctionDeclarations) {
-      if (f.name == name)
-        return f;
-    }
+      });
   }
 
   accept() {
-    this.function.take = this.take;
-    this.function.grepmode = this.grepmode;
-    this.function.colsToFilter = [];
-    for (let c of this.colsToFilter) {
-      this.function.colsToFilter.push({ id: 0, value: c });
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.createFilterRowsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-    this.function.filterText = this.filterText;
-    this.function.filterRegex = this.filterRegex;
-    this.function.ignoreCase = this.ignoreCase;
-    this.function.functionsToFilterWith = [];
-    for (let filterFunctionsName of this.filterFunctionsNames) {
-      let cf = this.findCustomFunctionByName(this.transformation, filterFunctionsName);
-      this.function.functionsToFilterWith.push(cf);
+    else if (this.pipelineEvent.createNew) {
+      // create empty object
+      const newFunction = new transformationDataModel.GrepFunction(this.take, this.grepmode, this.colsToFilter, this.functionsToFilterWith, this.filterText, this.filterRegex, this.ignoreCase, this.docstring);
+
+      // apply user choices to the empty object
+      this.createFilterRowsFunction(newFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
     }
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.initFunction();
-    this.modalEnabled = false;
+    this.resetModal();
   }
 
-  cancel() { this.modalEnabled = false; }
+  private createFilterRowsFunction(instanceObj): any {
+    instanceObj.take = this.take;
+    instanceObj.grepmode = this.grepmode;
+    instanceObj.colsToFilter = [];
+    for (let c of this.colsToFilter) {
+      instanceObj.colsToFilter.push({ id: 0, value: c });
+    }
+    this.functionsToFilterWith["0"] = (this.selectedCustomFunction);
+    instanceObj.functionsToFilterWith = this.functionsToFilterWith;
+    instanceObj.filterText = this.filterText;
+    instanceObj.filterRegex = this.filterRegex;
+    instanceObj.ignoreCase = this.ignoreCase;
+    instanceObj.docstring = this.docstring;
+  }
+
+  resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
+    // resets the fields of the modal
+    this.colsToFilter = null;
+    this.filterText = null;
+    this.filterRegex = null;
+    this.ignoreCase = false;
+    this.take = true;
+    this.selectedCustomFunction = null;
+    this.grepmode = 'text';
+    this.docstring = 'Filter rows';
+  }
+
+  /*   addFilterFunction() {
+      this.functionsToFilterWith.push(null);
+    }
+  
+    removeFilterFunction(idx) {
+      this.functionsToFilterWith.splice(idx, 1);
+    }
+  
+    findCustomFunctionByName(functionName) {
+      for (let funct of this.customFunctions) {
+        if (functionName === funct.name) {
+          console.log(funct)
+          return funct;
+        }
+      }
+    } */
 
 }
-

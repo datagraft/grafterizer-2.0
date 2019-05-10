@@ -13,22 +13,22 @@ import * as transformationDataModel from 'assets/transformationdatamodel.js';
 export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
 
   // The property being edited
-  private editedProperty: any;
+  editedProperty: any;
 
   // The sibling property to add after
-  private siblingProperty: any;
+  siblingProperty: any;
 
   // The parent node of the property
-  private parentNode: any;
+  parentNode: any;
 
   // Emits an event when we close the dialog so the component can be destroyed
   close = new EventEmitter();
 
   // Opening mapping dialog is controlled using this variables
-  private openPropertyMappingDialog = true;
+  openPropertyMappingDialog = true;
 
   // The state of the node condition switch
-  private nodeConditionChecked = false;
+  nodeConditionChecked = false;
 
   // The array for column name to be used in mapping and a variable for the currently selected condition
   private columns: Array<any> = [];
@@ -71,7 +71,7 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
   private conditionOperand: any;
 
   // The value of the mapped property node
-  private propertyNodeValue: string;
+  propertyNodeValue: string;
 
   // Form controller for validation of the input for literal URIs
   propertyNameFormControl = new FormControl('', [
@@ -98,7 +98,7 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       this.transformationVocabs = rdfVocabsObj.transformationVocabs;
     });
 
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       if (graftwerkData[':column-names']) {
         this.columns = graftwerkData[':column-names'].map((columnName) => {
           if (columnName.indexOf(':') === 0) {
@@ -110,7 +110,7 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -170,17 +170,17 @@ export class PropertyNodeDialogComponent implements OnInit, OnDestroy {
       // Edit existing property
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, this.editedProperty.subElements);
       this.parentNode.replaceChild(this.editedProperty, newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     } else if (this.parentNode && this.siblingProperty) {
       // Add new property after
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, null);
       this.parentNode.addNodeAfter(this.siblingProperty, newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     } else if (this.parentNode) {
       // Add new child property
       newProperty = new transformationDataModel.Property(prefix, propertyNodeName, nodeCondition, null);
       this.parentNode.addChild(newProperty);
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
     }
   }
 

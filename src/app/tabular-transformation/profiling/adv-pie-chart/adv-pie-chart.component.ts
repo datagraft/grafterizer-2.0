@@ -11,9 +11,9 @@ export class AdvPieChartComponent implements OnInit {
 
   private valid: number;
   private missing: number;
-  private view: any[] = undefined;
-  private data;
-  private colorScheme = {
+  view: any[] = undefined;
+  data: { "name": string; "value": any; }[];
+  colorScheme = {
     domain: ['#5AA454', '#A10A28']
   };
 

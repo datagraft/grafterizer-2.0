@@ -13,12 +13,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeRowsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
-  private indexFrom: string = null;
-  private indexTo: string = null;
-  private take: boolean = true;
-  private docstring: string = 'Take or drop rows';
+  indexFrom: string = null;
+  indexTo: string = null;
+  take: boolean = true;
+  docstring: string = 'Take or drop rows';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -56,7 +56,7 @@ export class TakeRowsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editTakeRowsFunction(this.currentlySelectedFunction);
@@ -113,7 +113,7 @@ export class TakeRowsComponent implements OnInit {
     this.docstring = 'Take or drop rows';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

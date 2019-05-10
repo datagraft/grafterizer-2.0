@@ -13,11 +13,11 @@ import { TransformationService } from 'app/transformation.service';
 
 export class SplitColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
-  private colName: any;
-  private separator: string = null;
-  private docstring: string = 'Split column';
+  colName: any;
+  separator: string = null;
+  docstring: string = 'Split column';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -26,7 +26,7 @@ export class SplitColumnsComponent implements OnInit {
   private pipelineEvent: any = { startEdit: false };
 
   private previewedDataSubscription: Subscription;
-  private previewedDataColumns: any[] = [];
+  previewedDataColumns: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -56,7 +56,7 @@ export class SplitColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
@@ -72,7 +72,7 @@ export class SplitColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editSplitColumnFunction(this.currentlySelectedFunction);
@@ -93,7 +93,6 @@ export class SplitColumnsComponent implements OnInit {
       // create object with user input
       const newFunction = new transformationDataModel.SplitFunction(
         this.colName, this.separator, this.docstring);
-      console.log(newFunction)
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
         currentFunction: this.currentlySelectedFunction,
@@ -128,7 +127,7 @@ export class SplitColumnsComponent implements OnInit {
     this.docstring = null;
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

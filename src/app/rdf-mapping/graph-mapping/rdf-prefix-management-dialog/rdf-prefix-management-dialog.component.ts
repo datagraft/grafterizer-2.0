@@ -9,7 +9,7 @@ import { TransformationService } from 'app/transformation.service';
   styleUrls: ['./rdf-prefix-management-dialog.component.scss']
 })
 export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
-  private openRdfPrefixManagementDialog = true;
+  openRdfPrefixManagementDialog = true;
 
   // Emits an event when we close the dialog so the component can be destroyed
   close = new EventEmitter();
@@ -26,7 +26,7 @@ export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
 
   @ViewChild('vocabFile') vocabFileInput: any;
 
-  private isEditVocab = false;
+  isEditVocab = false;
   private vocabToEdit: any;
 
   private editedVocabPrefixName: string;
@@ -47,7 +47,7 @@ export class RdfPrefixManagementDialogComponent implements OnInit, OnDestroy {
       this.transformationVocabs = rdfVocabsObj.transformationVocabs;
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }

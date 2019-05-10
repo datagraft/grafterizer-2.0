@@ -17,7 +17,7 @@ export class ColumnLiteralNodeComponent implements OnInit, OnDestroy {
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
-  private nodeRemoveModal = false;
+  nodeRemoveModal = false;
 
   @ViewChild(RdfNodeMappingDialogAnchorDirective) dialogAnchor: RdfNodeMappingDialogAnchorDirective;
 
@@ -26,7 +26,7 @@ export class ColumnLiteralNodeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -59,7 +59,7 @@ export class ColumnLiteralNodeComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.parent.removeChild(this.node);
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.nodeRemoveModal = false;
   }
 

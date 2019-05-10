@@ -21,12 +21,12 @@ export class DeduplicateComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private modalEnabled: boolean = false;
-  private deduplicateMode: string = 'full';
-  private previewedDataColumns: any = [];
-  private colNames: any[] = [];
-  private separator: string = null;
-  private docstring: string = 'Remove duplicates';
+  modalEnabled: boolean = false;
+  deduplicateMode: string = 'full';
+  previewedDataColumns: any = [];
+  colNames: any[] = [];
+  separator: string = null;
+  docstring: string = 'Remove duplicates';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -52,7 +52,7 @@ export class DeduplicateComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
@@ -67,7 +67,7 @@ export class DeduplicateComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editDeduplicateFunction(this.currentlySelectedFunction);
@@ -124,7 +124,7 @@ export class DeduplicateComponent implements OnInit {
     this.docstring = 'Remove duplicates';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

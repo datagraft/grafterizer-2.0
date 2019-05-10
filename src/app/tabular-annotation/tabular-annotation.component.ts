@@ -12,17 +12,17 @@ import {ActivatedRoute} from '@angular/router';
 import {RoutingService} from '../routing.service';
 import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
-import {MatDialog} from '@angular/material';
-import {ConfigComponent} from './config/config.component';
-import {Subscription} from 'rxjs';
-import {EnrichmentService} from './enrichment/enrichment.service';
-import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
-import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
-import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
-import {ExtensionComponent} from './enrichment/extension/extension.component';
-import {ShiftColumnFunction} from 'assets/transformationdatamodel';
-import {ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
+import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
+import { MatDialog } from '@angular/material';
+import { ConfigComponent } from './config/config.component';
+import { Subscription } from 'rxjs';
+import { EnrichmentService } from './enrichment/enrichment.service';
+import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
+import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
+import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
+import { ExtensionComponent } from './enrichment/extension/extension.component';
+import { ShiftColumnFunction } from 'assets/transformationdatamodel';
+import { ChooseExtensionOrReconciliationDialog } from './chooseExtensionOrReconciliationDialog.component';
 
 declare var Handsontable: any;
 
@@ -33,8 +33,8 @@ declare var Handsontable: any;
 })
 export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
-  public geoNamesSources: string [];
-  public categoriesSources: string [];
+  public geoNamesSources: string[];
+  public categoriesSources: string[];
 
   private transformationObj: any;
   private graftwerkData: any;
@@ -105,11 +105,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     this.hot.updateSettings({
       beforeOnCellMouseDown: (event, coords, TD, blockCalculations) => {
         if (event.target.parentNode.id.startsWith('annotation_') || event.realTarget.id.startsWith('annotation_')) {
-          console.log('annotation');
+          // console.log('annotation');
           blockCalculations.cells = true;
           this.openAnnotationDialog(coords.col);
         } else if (event.target.parentNode.id.startsWith('enrich_') || event.realTarget.id.startsWith('enrich_')) {
-          console.log('enrichment');
+          // console.log('enrichment');
           blockCalculations.cells = true;
           this.openEnrichmentDialog(coords.col);
         }
@@ -122,14 +122,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     this.transformationSubscription =
-      this.transformationSvc.currentTransformationObj.subscribe((transformationObj) => {
+      this.transformationSvc.transformationObjSource.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.dataLoading = true;
-      });
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+      this.dataLoading = true;
+    });
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':rows']) {
         // Clean header name (remove leading ':' from the EDN response)
@@ -162,7 +161,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
         this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
         this.transformationObj.setReconciledColumns(this.enrichmentService.getReconciledColumns());
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
 
         this.hot.updateSettings({
           columns: this.getTableColumns(),
@@ -267,7 +266,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     };
     const dialogConfigReconciliation = {
       width: '800px',
-      data: {header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false}
+      data: { header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false }
     };
     /*const dialogConfigChoose = {
       width: '400px',
@@ -474,7 +473,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
     // Save the new transformation
     this.transformationObj.setAnnotations(this.annotationService.getAnnotations()); // save also warning and wrong annotations!
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.saveLoading = false;
   }
 
@@ -784,8 +783,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         currentFunction: {},
         changedFunction: newFunction
       });
-      this.transformationSvc.changeTransformationObj(this.transformationObj);
-      this.transformationSvc.changePreviewedTransformationObj(this.transformationObj.getPartialTransformation(newFunction));
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
+      this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj.getPartialTransformation(newFunction));
 
       for (let i = 0; i < this.transformationObj.pipelines[0].functions.length - 1; ++i) {
         this.transformationObj.pipelines[0].functions.isPreviewed = false;

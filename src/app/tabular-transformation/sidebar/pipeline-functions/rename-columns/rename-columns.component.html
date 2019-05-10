@@ -1,57 +1,39 @@
-<clr-modal [(clrModalOpen)]="modalEnabled">
+<clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Rename columns</h3>
   <div class="modal-body">
-
-    <form action="">
-      <div class="radio">
-        <input type="radio" [(ngModel)]="renamecolumnsmode" name="mode" value="function" id="mode_1">
-        <label for="mode_1">Transform with function</label>
-      </div>
-      <div class="radio">
-        <input type="radio" [(ngModel)]="renamecolumnsmode" name="mode" value="map" id="mode_2">
-        <label for="mode_2">Map values</label>
-      </div>
-
-    </form>
-    <br>
-    <div *ngIf="renamecolumnsmode=='function'">
-      <div *ngFor="let renameFunction of functionsToRenameWith; index as i;">
-        <div class="row ">
-          <button class="btn btn-link btn-icon-link removablePropertyButton">
-            <i class="material-icons md-dark" (click)="removeFunction(idx)">remove_circle_outline</i>
-          </button>
-
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="test[i]" [datasource]="dataService" [openOnFocus]="true"
-            [minSearchLength]="0" [autoHighlight]="true" [selectOnFocus]="true" [fillHighlighted]="false"></ng2-completer>
-        </div>
-
-      </div>
-      <button class="btn btn-primary" (click)="addRenameFunction()">Compose with</button>
-    </div>
-
-
-
-    <div *ngIf="renamecolumnsmode=='map'">
-      <div *ngFor="let idx of getmaplength()">
-        <div class="row ">
-          <button class="btn btn-link btn-icon-link removablePropertyButton" [disabled]="mappings.length === 1">
-            <mat-icon suiPopup popupText="Remove mapping" popupPlacement="left top" size="22" (click)="removeMapping(idx)">remove_circle_outline</mat-icon>
-          </button>
-
-          <ng2-completer class="removablePropertyFields" [(ngModel)]="mappings[idx]" [datasource]="columns"
-            [minSearchLength]="0" [selectOnFocus]="true" [autoHighlight]="true" [openOnClick]="true" [autoMatch]="true"></ng2-completer>
-          <div class="removablePropertyFields">
-            <label for="{{'mapping'+idx}}">New name:</label>
-            <input type="text" id="{{'mapping'+idx}}" [(ngModel)]="mappings[idx+1]" placeholder="New name" size="15">
+    <div *ngFor="let idx of getmaplength()">
+      <div fxLayout="column">
+        <div fxLayout="row" fxLayoutGap="30px">
+          <div fxFlex="5">
+            <button class="btn btn-link btn-icon-link" [disabled]="mappings.length === 2">
+              <mat-icon size="22" id="remove-icon" (click)="removeMapping(idx)">clear</mat-icon>
+            </button>
+          </div>
+          <div fxFlex>
+            <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true"
+              bindLabel="value" appendTo="body" placeholder="Select column" [(ngModel)]="mappings[idx]">
+            </ng-select>
+          </div>
+          <div fxFlex>
+            <div fxFlex id="removablePropertyFields">
+              <mat-form-field style="width: 100%;">
+                <input matInput placeholder="New name" id="{{'mapping'+idx}}" [(ngModel)]="mappings[idx+1]">
+              </mat-form-field>
+            </div>
           </div>
         </div>
-
       </div>
-      <button class="btn btn-primary" (click)="addMapping()">Add mapping pair</button>
     </div>
+    <br>
+    <button class="btn btn-primary btn-sm" (click)="addMapping()">Add mapping pair</button>
+    <br>
+    <br>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Comment" [(ngModel)]="docstring">
+    </mat-form-field>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-outline" (click)="resetModal()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
   </div>
 </clr-modal>

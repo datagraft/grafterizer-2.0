@@ -19,7 +19,7 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
-  private nodeRemoveModal = false;
+  nodeRemoveModal = false;
 
   @ViewChild(RdfNodeMappingDialogAnchorDirective) rdfNodeDialogAnchor: RdfNodeMappingDialogAnchorDirective;
   @ViewChild(PropertyNodeDialogAnchorDirective) propertyDialogAnchor: PropertyNodeDialogAnchorDirective;
@@ -29,7 +29,7 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -67,7 +67,7 @@ export class ColumnUriNodeComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.parent.removeChild(this.node);
-    this.transformationSvc.changeTransformationObj(this.transformationObj);
+    this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.nodeRemoveModal = false;
   }
 
