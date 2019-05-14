@@ -503,6 +503,7 @@ export class AppComponent implements OnInit {
               });
             this.router.navigate([result.publisher, 'transformations', result.id, this.currentDataGraftParams.distributionId, 'tabular-transformation']).then(() => {
               this.updatePreviewedData();
+              this.progressIndicatorService.changeDataLoadingStatus(false);
             });
           } else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
