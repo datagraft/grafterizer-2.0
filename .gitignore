@@ -51,3 +51,6 @@ src/assets/jot.json
 
 # Visual Studio
 .vs/*
+
+# Development environment configuration file
+src/config.development.json
