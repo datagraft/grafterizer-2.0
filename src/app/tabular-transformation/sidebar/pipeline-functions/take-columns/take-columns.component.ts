@@ -59,6 +59,7 @@ export class TakeColumnsComponent implements OnInit {
       }
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'ColumnsFunction') {
+        this.takecolumnsmode = 'colnames';
         this.modalEnabled = true;
       }
     });
@@ -94,11 +95,22 @@ export class TakeColumnsComponent implements OnInit {
         commitEdit: true,
         preview: true
       });
-    }
-    else if (this.pipelineEvent.createNew) {
+    } else if (this.pipelineEvent.createNew) {
       // create object with user input
-      const newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
-        this.indexFrom, this.indexTo, this.take, this.docstring);
+      let newFunction = {};
+      if (this.takecolumnsmode === 'colnames') {
+        newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
+          null, null, this.take, this.docstring);
+
+      } else if (this.takecolumnsmode === 'indices') {
+        newFunction = new transformationDataModel.ColumnsFunction([],
+          this.indexFrom, this.indexTo, this.take, this.docstring);
+      } else {
+        // nothing was selected - should not happen!
+        console.error("Error! No mode selected for Take Columns function!");
+        newFunction = new transformationDataModel.ColumnsFunction([],
+          null, null, this.take, this.docstring);
+      }
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -117,11 +129,24 @@ export class TakeColumnsComponent implements OnInit {
   }
 
   private editTakeColumnsFunction(instanceObj): any {
-    instanceObj.columnsArray = this.columnsArray;
-    instanceObj.indexFrom = parseInt(this.indexFrom);
-    instanceObj.indexTo = parseInt(this.indexTo);
-    instanceObj.take = this.take;
-    instanceObj.docstring = this.docstring;
+    // this check is necessary due to the badly coded ColumnsFunction in the TransformationDataModel (the mode of the function is determined by the attribute values)
+    if (this.takecolumnsmode === 'colnames') {
+      instanceObj.columnsArray = this.columnsArray;
+      instanceObj.indexFrom = null;
+      instanceObj.indexTo = null;
+      instanceObj.take = this.take;
+      instanceObj.docstring = this.docstring;
+    } else if (this.takecolumnsmode === 'indices') {
+      instanceObj.columnsArray = [];
+      instanceObj.indexFrom = parseInt(this.indexFrom);
+      instanceObj.indexTo = parseInt(this.indexTo);
+      instanceObj.take = this.take;
+      instanceObj.docstring = this.docstring;
+    } else {
+      // nothing was selected - should not happen!
+      console.error("Error! No mode selected for Take Columns function!");
+    }
+
   }
 
   private resetModal() {
