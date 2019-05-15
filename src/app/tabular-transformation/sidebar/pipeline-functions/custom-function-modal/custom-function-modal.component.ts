@@ -28,8 +28,8 @@ export class CustomFunctionModalComponent implements OnInit {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  private previewedTransformationObj: any;
-  private previewedTransformationSubscription: Subscription;
+  private transformationObjSourceSubscription: Subscription;
+  private transformationObjSource: any;
 
   selected: any;
   nameWarning: boolean = false;
@@ -47,9 +47,11 @@ export class CustomFunctionModalComponent implements OnInit {
         this.modalEnabled = true;
       }
     });
-    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
-      this.previewedTransformationObj = previewedTransformation;
+
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource.subscribe((transformationObjSource) => {
+      this.transformationObjSource = transformationObjSource;
     });
+
     this.selected = { clojureCode: '' };
   }
 
@@ -60,8 +62,8 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
+    this.transformationObjSourceSubscription.unsubscribe();
   }
 
   onCodeChange($event) {
@@ -95,7 +97,7 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   retreiveCustomFunctions() {
-    for (let cfd of this.previewedTransformationObj.customFunctionDeclarations) {
+    for (let cfd of this.transformationObjSource.customFunctionDeclarations) {
       if (cfd.group === 'UTILITY') {
         this.functions.push({ label: cfd.name, value: cfd });
         this.customFunctionDeclarations.push(cfd);
@@ -113,7 +115,7 @@ export class CustomFunctionModalComponent implements OnInit {
     let find = (funct) => { return funct.name === name; };
 
     do { name = this.randomA[Math.floor(Math.random() * this.randomA.length)] + '-' + this.randomB[Math.floor(Math.random() * this.randomB.length)] }
-    while (lodash.find(this.previewedTransformationObj.customFunctionDeclarations, find) && ++cpt < 10);
+    while (lodash.find(this.transformationObjSource.customFunctionDeclarations, find) && ++cpt < 10);
 
     let emptyCustomFunction = new transformationDataModel.CustomFunctionDeclaration(name, '(defn ' + name + ' "" [] ())', 'UTILITY', '')
     this.customFunctionDeclarations.push(emptyCustomFunction);
@@ -139,8 +141,9 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   accept() {
-    this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
-    this.transformationSvc.previewedTransformationObjSource.next(this.previewedTransformationObj);
+    this.transformationObjSource.customFunctionDeclarations = this.customFunctionDeclarations;
+    this.transformationSvc.transformationObjSource.next(this.transformationObjSource);
+    this.transformationSvc.previewedTransformationObjSource.next(this.transformationObjSource);
     this.resetModal();
   }
 
