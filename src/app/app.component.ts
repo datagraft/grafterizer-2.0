@@ -166,11 +166,10 @@ export class AppComponent implements OnInit {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.transformationObjSource.next(transformationObj);
-
+                    self.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(transformationObj);
                     if (paramMap.has('filestoreId')) {
                       this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                     } else {
-                      // this.showLoadDistributionDialog = true;
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
@@ -447,6 +446,7 @@ export class AppComponent implements OnInit {
   }
 
   createNewTransformation(distributionID?: string) {
+    this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
     const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
     let newTransformationName = null;
     let newTransformationDescription = null;

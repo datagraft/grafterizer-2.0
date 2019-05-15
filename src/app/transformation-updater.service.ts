@@ -22,10 +22,6 @@ export class TransformationUpdaterService {
         '(defn integer-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Integer/parseInt s)))',
         'CONVERT DATATYPE', 'Coerce to integer. Null and non-valid values are replaced with zero'),
       new transformationDataModel.CustomFunctionDeclaration(
-        'transform-gender',
-        '(def transform-gender {"f" (s "female") "m" (s "male")})', 'UTILITY',
-        'Maps "f" to "female" and "m" to "male"'),
-      new transformationDataModel.CustomFunctionDeclaration(
         'stringToNumeric',
         '(defn stringToNumeric    [x] (if (= "" x) nil  (if (.contains x ".") (Double/parseDouble x)(Integer/parseInt x))))',
         'CONVERT DATATYPE', 'Convert string to numeric'),
@@ -136,21 +132,18 @@ export class TransformationUpdaterService {
     var updatedTransformation = false;
     // null safety first
     if (transformation.customFunctionDeclarations) {
-      if (transformation.customFunctionDeclarations.length) {
-
-        for (let expCfd of this.allCustomFunctions) {
-          let foundCfd = false;
-          for (let cfd of transformation.customFunctionDeclarations) {
-            if (cfd.name === expCfd.name) {
-              foundCfd = true;
-              break;
-            }
+      for (let expCfd of this.allCustomFunctions) {
+        let foundCfd = false;
+        for (let cfd of transformation.customFunctionDeclarations) {
+          if (cfd.name === expCfd.name) {
+            foundCfd = true;
+            break;
           }
-          if (!foundCfd) {
-            transformation.addCustomFunctionDeclaration(expCfd.name, expCfd.clojureCode, expCfd.group, expCfd.docstring);
-            if (!updatedTransformation) {
-              updatedTransformation = true;
-            }
+        }
+        if (!foundCfd) {
+          transformation.addCustomFunctionDeclaration(expCfd.name, expCfd.clojureCode, expCfd.group, expCfd.docstring);
+          if (!updatedTransformation) {
+            updatedTransformation = true;
           }
         }
       }

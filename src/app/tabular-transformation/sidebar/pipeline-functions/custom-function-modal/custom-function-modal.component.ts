@@ -21,7 +21,7 @@ export class CustomFunctionModalComponent implements OnInit {
   @ViewChild('editor') editor: any;
 
   modalEnabled: any = false;
-  functions: any[] = [];
+  userDefinedFunctions: any[] = [];
   private customFunctionDeclarations: any[] = [];
   configurationObject: any;
 
@@ -41,7 +41,7 @@ export class CustomFunctionModalComponent implements OnInit {
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
       this.pipelineEvent = currentEvent;
       if (currentEvent.newStepType === 'CustomFunctionDeclaration') {
-        if (this.functions[0] == null) {
+        if (this.userDefinedFunctions[0] == null) {
           this.retreiveCustomFunctions();
         }
         this.modalEnabled = true;
@@ -83,12 +83,12 @@ export class CustomFunctionModalComponent implements OnInit {
         this.selected.name = name;
       } else {
         this.selected.name = name;
-        var found = lodash.find(this.customFunctionDeclarations, (customFunction) => {
+        var found = lodash.find(this.userDefinedFunctions, (customFunction) => {
           return customFunction.clojureCode !== this.selected.clojureCode && customFunction.name === name;
         });
         this.nameWarning = !!found;
       }
-      for (let funct of this.functions) {
+      for (let funct of this.userDefinedFunctions) {
         if (funct.label === label) {
           funct.label = name;
         }
@@ -99,9 +99,14 @@ export class CustomFunctionModalComponent implements OnInit {
   retreiveCustomFunctions() {
     for (let cfd of this.transformationObjSource.customFunctionDeclarations) {
       if (cfd.group === 'UTILITY') {
-        this.functions.push({ label: cfd.name, value: cfd });
+        this.userDefinedFunctions.push({ label: cfd.name, value: cfd });
+      }
+      else {
         this.customFunctionDeclarations.push(cfd);
       }
+    }
+    if (this.userDefinedFunctions.length) {
+      this.selected = this.userDefinedFunctions[0].value;
     }
   }
 
@@ -118,22 +123,22 @@ export class CustomFunctionModalComponent implements OnInit {
     while (lodash.find(this.transformationObjSource.customFunctionDeclarations, find) && ++cpt < 10);
 
     let emptyCustomFunction = new transformationDataModel.CustomFunctionDeclaration(name, '(defn ' + name + ' "" [] ())', 'UTILITY', '')
-    this.customFunctionDeclarations.push(emptyCustomFunction);
-    this.functions.push({ label: name, value: emptyCustomFunction });
-    this.selected = this.customFunctionDeclarations[this.customFunctionDeclarations.length - 1];
+    this.userDefinedFunctions.push({ label: name, value: emptyCustomFunction });
+    this.selected = this.userDefinedFunctions[this.userDefinedFunctions.length - 1].value;
   }
 
   removeFunction(i: number) {
-    this.customFunctionDeclarations.splice(i, 1);
-    this.functions.splice(i, 1);
-    this.selected = { clojureCode: '' };
+    this.userDefinedFunctions.splice(i, 1);
+    if (this.userDefinedFunctions.length) {
+      this.selected = this.userDefinedFunctions[0].value;
+    }
   }
 
   resetModal() {
     this.pipelineEventsSvc.changePipelineEvent({
       cancel: true
     });
-    this.functions = [];
+    this.userDefinedFunctions = [];
     this.customFunctionDeclarations = [];
     this.selected = { clojureCode: '' };
     this.editor.setValue('');
@@ -141,6 +146,11 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   accept() {
+    for (let cfd of this.userDefinedFunctions) {
+      if (cfd.value.group === 'UTILITY') {
+        this.customFunctionDeclarations.push(cfd.value);
+      }
+    }
     this.transformationObjSource.customFunctionDeclarations = this.customFunctionDeclarations;
     this.transformationSvc.transformationObjSource.next(this.transformationObjSource);
     this.transformationSvc.previewedTransformationObjSource.next(this.transformationObjSource);

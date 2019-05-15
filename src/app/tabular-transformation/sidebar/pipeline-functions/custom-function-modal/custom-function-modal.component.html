@@ -3,11 +3,13 @@
   <div class="modal-body container">
     <div class="row">
       <div class="listbox">
-        <p-listbox [options]="functions" [(ngModel)]="selected" [style]="{'width':'250px'}" [listStyle]="{'height':'340px'}">
+        <p-listbox [options]="userDefinedFunctions" [(ngModel)]="selected" [style]="{'width':'250px'}"
+          [listStyle]="{'height':'340px'}">
           <ng-template let-cf let-i="index" pTemplate="item">
             <div class="ui-helper-clearfix">
               <span>{{cf.label}}</span>
-              <button *ngIf="cf.value==selected" class="btn btn-link btn-icon btn-sm" style="float:right" (click)="removeFunction(i)">
+              <button *ngIf="cf.value==selected" class="btn btn-link btn-icon btn-sm" style="float:right"
+                (click)="removeFunction(i)">
                 <i class="material-icons md-light">clear</i>
               </button>
             </div>
@@ -15,9 +17,11 @@
         </p-listbox>
       </div>
       <div class="editor">
-        <ngx-codemirror #editor [(ngModel)]="selected.clojureCode" [config]="configurationObject" (ngModelChange)="onCodeChange($event)"></ngx-codemirror>
+        <ngx-codemirror #editor [(ngModel)]="selected.clojureCode" [config]="configurationObject"
+          (ngModelChange)="onCodeChange($event)"></ngx-codemirror>
       </div>
-      <clr-alert *ngIf="nameWarning" [clrAlertType]="'alert-warning'" [clrAlertClosable]="false" (clrAlertClosedChange)="onClose()">
+      <clr-alert *ngIf="nameWarning" [clrAlertType]="'alert-warning'" [clrAlertClosable]="false"
+        (clrAlertClosedChange)="onClose()">
         <div class="alert-item">
           <span class="alert-text">
             A function already exists with the same name
