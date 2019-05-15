@@ -8,7 +8,7 @@
       </div>
       <br>
       <div class="radio">
-        <input type="radio" [(ngModel)]="takecolumnsmode" name="mode" value="colnames" id="mode_1">
+        <input type="radio" [(ngModel)]="takecolumnsmode" name="mode" value="colnames" id="mode_1" checked>
         <label for="mode_1">Specify column names</label>
       </div>
       <div class="radio">
@@ -31,8 +31,8 @@
       <br>
     </div>
     <div *ngIf="takecolumnsmode=='colnames'">
-      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true" bindLabel="value" appendTo="body"
-        placeholder="Select columns to take" [(ngModel)]="columnsArray"></ng-select>
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true"
+        bindLabel="value" appendTo="body" placeholder="Select columns to take" [(ngModel)]="columnsArray"></ng-select>
       <br>
     </div>
     <br>

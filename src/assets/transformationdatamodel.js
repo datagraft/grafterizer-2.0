@@ -1310,12 +1310,10 @@ ColumnsFunction.prototype.generateClojure = function () {
 
     return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
   } else {
-
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-    new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo + 1])
+    new jsedn.List([jsedn.sym('range'), parseInt(this.indexFrom), parseInt(this.indexTo + 1)])
     ]) :
-      new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
-      this.indexFrom, this.indexTo
+      new jsedn.List([jsedn.sym('new-tabular/remove-columns'), parseInt(this.indexFrom), parseInt(this.indexTo)
       ]);
   }
 
