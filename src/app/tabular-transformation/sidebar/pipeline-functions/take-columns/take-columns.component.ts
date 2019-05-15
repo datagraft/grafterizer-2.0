@@ -99,7 +99,6 @@ export class TakeColumnsComponent implements OnInit {
       // create object with user input
       const newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
         this.indexFrom, this.indexTo, this.take, this.docstring);
-      console.log(newFunction)
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({

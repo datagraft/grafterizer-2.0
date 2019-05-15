@@ -170,7 +170,6 @@ UtilityFunction.prototype = Object.create(GenericFunction.prototype);
 UtilityFunction.prototype.generateClojure = function () {
   var elems = [jsedn.sym(this.functionName.funct.name)];
   for (var i = 0; i < this.functionName.functParams.length; ++i) {
-    //      console.log(this.functionName.functParams[i]);
     elems.push(this.functionName.functParams[i]);
   }
 
@@ -1762,7 +1761,6 @@ Property.revive = function (data) {
       }
     }
   }
-  //else console.log("No prop condition");
 
   return new Property(data.prefix, data.propertyName, conditions, data.subElements);
 };

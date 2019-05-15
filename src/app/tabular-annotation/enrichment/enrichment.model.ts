@@ -1,8 +1,14 @@
-import {XSDDatatypes} from '../annotation.model';
-import {UrlUtilsService} from '../shared/url-utils.service';
+import { XSDDatatypes } from '../annotation.model';
+import { UrlUtilsService } from '../shared/url-utils.service';
 
+/**
+ * Semantic type of the reconciled entities
+ * @param  {Object} obj - 
+ */
 export class Type {
+  // identifier of the type (URI)
   public id: string;
+  // label (human description) of the type
   public name: string;
 
   constructor(obj: Object) {
@@ -10,12 +16,16 @@ export class Type {
     this.name = obj['name'];
   }
 }
-
+/**
+ * Reconciliation result for a query to the reconciliation API.
+ * @param  {Object} obj
+ */
 export class Result {
   public id: string;
   public name: string;
   public types: Type[] = [];
   public score: number;
+  // is confidence enough
   public match: boolean;
 
   constructor(obj: Object) {
@@ -30,6 +40,9 @@ export class Result {
   }
 }
 
+/**
+ * @param  {Object} obj
+ */
 export class Property {
   public id: string;
   public name: string;

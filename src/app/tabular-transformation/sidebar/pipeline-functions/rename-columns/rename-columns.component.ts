@@ -114,7 +114,6 @@ export class RenameColumnsComponent implements OnInit {
     }
     instanceObj.functionsToRenameWith = this.functionsToRenameWith;
     instanceObj.docstring = this.docstring;
-    console.log(instanceObj);
   }
 
   resetModal() {

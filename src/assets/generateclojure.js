@@ -211,8 +211,6 @@ function addPipelineFunction(jsednFunction) {
 
 /* Constructs and returns the data transformation pipeline. */
 function constructPipeline() {
-  //      console.log($rootScope.CSVdelim);
-  //     var separator = $rootScope.CSVdelim?$rootScope.CSVdelim:'\\,';
   var readDatasetFunct = new jsedn.List([
     new jsedn.sym('read-dataset'),
     new jsedn.sym('data-file')
@@ -529,7 +527,6 @@ function constructNodeVectorEdn(node, containingGraph) {
                 var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
                 parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-                //                    console.log(parsedConditions.length);
                 if (parsedConditions.length === 1) {
                   allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
                 } else {
@@ -600,7 +597,6 @@ function constructNodeVectorEdn(node, containingGraph) {
                 var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
                 parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-                //                    console.log(parsedConditions.length);
                 if (parsedConditions.length === 1) {
                   allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
                 } else {

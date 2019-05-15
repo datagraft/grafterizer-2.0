@@ -131,8 +131,6 @@ export class ProfilingComponent implements OnInit {
   }
 
   onSelect(event) {
-    // console.log(event);
-    // console.log(event.index);
   }
 
   loadJSON(data: any) {

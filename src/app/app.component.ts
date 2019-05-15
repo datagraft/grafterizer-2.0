@@ -76,7 +76,6 @@ export class AppComponent implements OnInit {
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
     private globalErrorRepSvc: GlobalErrorReportingService, private pipelineEventsSvc: PipelineEventsService
     , private arangoGeneratorSvc: ArangoGeneratorService, private transformationUpdaterSvc: TransformationUpdaterService, private progressIndicatorService: ProgressIndicatorService, ) {
-    // console.log("this.messageSvc.isEmbeddedMode(): " + this.messageSvc.isEmbeddedMode());
     this.routingServiceSubscription = this.routingService.getMessage().subscribe(url => {
       this.grafterizerUrl = url;
     });
@@ -133,7 +132,6 @@ export class AppComponent implements OnInit {
             this.showWizardNavigation = true;
             break;
           case 'standalone':
-            console.log('APP: standalone!');
             // TODO - this block is not really functional - fix next
             // check username - if none - determine it
             // also reroute to standalone new transformation mode
@@ -168,7 +166,6 @@ export class AppComponent implements OnInit {
                   if (result !== 'Beginning OAuth Flow') {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.transformationObjSource.next(transformationObj);
-                    console.log(transformationObj)
 
                     if (paramMap.has('filestoreId')) {
                       this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
@@ -177,7 +174,6 @@ export class AppComponent implements OnInit {
                     }
                   }
                   else if (result !== 'Beginning OAuth Flow') {
-                    // console.log(result);
                   }
                 },
                 (error) => {
@@ -189,7 +185,6 @@ export class AppComponent implements OnInit {
             this.progressIndicatorService.changeDataLoadingStatus(true);
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
-                // console.log(result)
                 this.createNewTransformation();
               }
               else {
@@ -228,7 +223,6 @@ export class AppComponent implements OnInit {
           }
         });
       } else {
-        console.log('this.updatePreviewedData()')
         // the sub-components are already initialised, so we can get the route parameters as normal
         this.updatePreviewedData();
       }
@@ -251,7 +245,6 @@ export class AppComponent implements OnInit {
   }
 
   onChange($event) {
-    // console.log(this.selectedFile);
   }
 
   loadDistribution() {
@@ -323,7 +316,6 @@ export class AppComponent implements OnInit {
       this.dispatch.uploadFile(file)
         .subscribe(
           (result) => {
-            console.log('Successfully uploaded file!');
           },
           (error) => {
             console.log('Error uploading file!');
@@ -544,7 +536,6 @@ export class AppComponent implements OnInit {
       this.showConfirmDeleteDialog = false;
       return this.dispatch.deleteTransformation(existingTransformationID, publisher).then(
         (result) => {
-          // console.log('Transformation deleted');
           this.messageSvc.setLocation('/dashboard');
         },
         (error) => {

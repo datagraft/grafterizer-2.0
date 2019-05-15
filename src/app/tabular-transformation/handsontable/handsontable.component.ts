@@ -66,7 +66,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
         }, 10);
       },
       afterSelection: (r, c, r2, c2) => {
-        // console.log(r, c, r2, c2);
         const src = this.hot.getSourceData(r, c, r2, c2);
         this.selectionChanged.emit({
           row: r,
@@ -94,7 +93,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
 
     this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe(message => {
       if (typeof message[":column-names"] !== 'undefined' && message[":column-names"].length > 0) {
-        // console.log('Data Changed');
         this.displayJsEdnData(message);
       }
     });
@@ -175,7 +173,6 @@ export class HandsontableComponent implements OnInit, OnChanges, OnDestroy {
           data: data[':rows']
         });
       }
-      // console.log('removing loading bar..');
       this.progressIndicatorService.changeDataLoadingStatus(false);
     }
     else {

@@ -50,7 +50,6 @@ export class GroupDatasetComponent implements OnInit {
       }
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'GroupRowsFunction') {
-        console.log("GroupRowsFunction")
         this.modalEnabled = true;
       }
     });

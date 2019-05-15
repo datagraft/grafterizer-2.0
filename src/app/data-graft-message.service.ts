@@ -99,26 +99,18 @@ export class DataGraftMessageService {
         case 'get-state-and-params':
           switch (data.state) {
             case 'transformations.readonly':
-              // console.log('transformations.readonly');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
             case 'transformations.new':
-              // console.log('transformations.new');
               if (this.grafterizerUrl == undefined) {
-                // console.log('re-routing-from-datagraft-message-service');
                 this.router.navigate(['transformations', 'new', 'tabular-transformation']);
               }
               break;
             case 'transformations.new.preview':
             case 'transformations.new.preview.wizard':
-              // console.log(data.message);
-              // console.log(data.state);
-              // console.log('re-routing-from-datagraft-message-service');
               this.router.navigate(['transformations', 'new', 'tabular-transformation']);
               break;
             case 'transformations.transformation':
-              // console.log(data.message)
-              // console.log('transformations.transformation');
               this.router.navigate([data.toParams.publisher, 'transformations', data.toParams.id, 'tabular-transformation']);
               break;
             default:

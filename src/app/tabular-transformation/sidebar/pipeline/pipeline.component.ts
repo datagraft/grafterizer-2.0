@@ -202,7 +202,6 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEvent.startEdit = true;
         this.pipelineEvent.commitEdit = false;
         this.pipelineEvent.delete = false;
-        //        console.log(this.pipelineElement.selectedIndex);
         //        this.pipelineElement.selectedIndex++;
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;

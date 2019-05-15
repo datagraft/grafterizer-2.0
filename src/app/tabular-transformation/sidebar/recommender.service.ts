@@ -84,7 +84,6 @@ export class RecommenderService {
       this.profile.string = 1;
       for (let i = cs; i <= ce; i++) {
         if (!isNaN(Number(data[0][i]))) { //+ date checking
-          //   console.log(this.data[0][i]);
 
           this.profile.string = 0;
           break;
@@ -111,9 +110,6 @@ export class RecommenderService {
           records.push(data[i].join()); //concatenates values of a record to be able to compare them later
         }
         let count = datalib.count(records);
-        console.log(records);
-        console.log(count);
-        console.log(count.unique);
         if (count == count.unique) {
           this.profile.hasDuplicates = 0;
         } else {
