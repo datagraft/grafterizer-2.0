@@ -346,9 +346,7 @@ export function constructRDFGraphFunction(transformation) {
   // var currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), 'TODO not used']);
   for (i = 0; i < transformation.graphs.length; ++i) {
     currentGraph = transformation.graphs[i];
-    if (i === 0) {
-      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI || "http://example.com/"]);
-    }
+    currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI || "http://example.com/"]);
     // construct a vector for each of the roots and add it to the graph jsedn
     for (j = 0; j < currentGraph.graphRoots.length; ++j) {
       currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph);
