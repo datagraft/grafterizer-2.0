@@ -93,7 +93,8 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
           this.profilingComponent.loadJSON(this.graftwerkData);
           this.profilingComponent.refresh(this.handsontableSelection);
         }
-        this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
+        this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.charAt(0) == ':' ? o.substr(1) : o);
+
       }
     });
 

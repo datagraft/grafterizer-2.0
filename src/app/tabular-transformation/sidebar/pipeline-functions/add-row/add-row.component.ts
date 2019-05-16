@@ -53,7 +53,9 @@ export class AddRowComponent implements OnInit {
     this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
-          this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
+          this.previewedDataColumns = previewedData[':column-names'].map(o => {
+            return o.charAt(0) == ':' ? o.substr(1) : o;
+          });
         }
       });
   }
