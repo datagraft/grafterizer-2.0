@@ -29,9 +29,12 @@ import { ProgressIndicatorService } from 'app/progress-indicator.service';
 export class AppComponent implements OnInit {
 
   loadingNextStepMessage: string;
-  private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   fillingWizard = false;
   grafterizerUrl: any = 'url';
+
+  private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
+  private downloadingResultDialogMessage = 'The result of this transformation will be saved in DataGraft';
+  private downloadingResult = false;
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
@@ -52,7 +55,7 @@ export class AppComponent implements OnInit {
   private currentDataGraftParams: any;
 
   showWizardNavigation: boolean;
-  downloadMode: string = 'csv';
+  downloadMode: string = 'rdf';
 
   private distributionList: SelectItem[] = [];
   private selectedFile: any;
@@ -70,6 +73,8 @@ export class AppComponent implements OnInit {
   showLoading: boolean = false;
   showLogo: boolean = false;
   transformationType: string;
+  chosenRdfFormatDownloadOption: string = 'nt';
+  chosenJarFormatDownloadOption: string = 'nt';
 
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
@@ -549,14 +554,14 @@ export class AppComponent implements OnInit {
     if (this.downloadMode == 'csv') {
       this.downloadCSV();
     }
-    else if (this.downloadMode == 'n-triples') {
-      this.downloadTriples();
+    else if (this.downloadMode == 'rdf') {
+      this.downloadTriples(this.chosenRdfFormatDownloadOption);
     } else if (this.downloadMode == 'arango-json') {
       this.downloadArangoJson();
     } else if (this.downloadMode == 'grafterizer-json') {
       this.downloadGrafterizerJson();
     }
-    else if (this.downloadMode == 'JAR') {
+    else if (this.downloadMode == 'jar') {
       this.downloadJAR();
     }
     this.showDownloadDialog = false;
@@ -674,43 +679,28 @@ export class AppComponent implements OnInit {
     );
   }
 
-
   downloadJAR() {
     var form = document.createElement('form');
     form.action = '/jarfter/webresources/jarCreatorStandAlone';
     form.method = 'POST';
     form.target = '_blank';
     form.style.display = 'none';
-
     var input = document.createElement('input');
     input.type = 'text';
     input.name = 'clojure';
-    // TODO next line is a hack; we should do this on first load of service and exactly once!
-    this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
-    input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, false);
-
+    var isCsv = false;
+    if (this.chosenJarFormatDownloadOption == 'csv') {
+      isCsv = true;
+    }
+    input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, isCsv);
     var submit = document.createElement('input');
     submit.type = 'submit';
     submit.id = 'submitProject';
-
     form.appendChild(input);
     form.appendChild(submit);
     document.body.appendChild(form);
-
     document.getElementById('submitProject').click();
-
     document.body.removeChild(form);
-
-
-    // var self = this;
-    // this.jarfterSvc.getTransformationJar(this.transformationObjSource)
-    //   .then((response) => {
-    //     const blob = new Blob([response._body], { type: 'application/java-archive' });
-    //     debugger;
-    //     this.saveToFile(blob, 'transformation.jar', 'application/java-archive');
-    //   }, (error) => {
-    //     debugger;
-    //   });
   }
 
   /**

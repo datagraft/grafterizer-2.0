@@ -128,27 +128,61 @@
 </clr-modal>
 
 <clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
-  <h3 class="modal-title">Download</h3>
+  <h3 class="modal-title">Choose download option</h3>
   <div class="modal-body">
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_1">
-      <label for="mode_1">CSV</label>
-    </div>
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="n-triples" id="mode_2">
-      <label for="mode_2">N-Triples</label>
-    </div>
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="JAR" id="mode_3">
-      <label for="mode_3">JAR</label>
-    </div>
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="arango-json" id="mode_4">
-      <label for="mode_4">ArangoDB JSON collections</label>
-    </div>
-    <div class="radio">
-      <input type="radio" [(ngModel)]="downloadMode" value="grafterizer-json" id="mode_5">
-      <label for="mode_5">Grafterizer transformation as JSON</label>
+    <div fxLayout="column">
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="rdf" id="mode_1">
+        <label for="mode_1">Download result as RDF</label>
+      </div>
+      <div fxFlex *ngIf="downloadMode == 'rdf'" id="rdf">
+        <label for="rdf-format" class="clr-control-label">Choose output format:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="rdf-format" [(ngModel)]="chosenRdfFormatDownloadOption">
+            <!-- Note: Currently the Graftwerk backend only supports N-Triples. 
+            The serialiser does support other formats, but they have been hacked out in Graftwerk. -->
+            <option value="nt">N-Triples</option>
+            <!-- <option value="nq">N-Quads</option>
+            <option value="ttl">Turtle</option>
+            <option value="rdf+xml">RDF/XML</option>
+            <option value="n3">N3</option>
+            <option value="trix">TRiX</option>
+            <option value="trig">TRiG</option>
+            <option value="jsonld">JSON-LD</option> -->
+          </select>
+        </div>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_3">
+        <label for="mode_3">Download result as CSV</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="arango-json" id="mode_4">
+        <label for="mode_4">Download result as ArangoDB JSON collections</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="grafterizer-json" id="mode_5">
+        <label for="mode_5">Download transformation JSON</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="jar" id="mode_2">
+        <label for="mode_2">Download executable JAR file</label>
+      </div>
+      <div fxFlex *ngIf="downloadMode == 'jar'" id="jar">
+        <div id="container">
+          <div id=paragraph>
+            <p>Usage: java -jar transformation.jar input.csv
+              output.(nt|rdf|n3|ttl || csv)</p>
+          </div>
+        </div>
+        <label for="jar-option" class="clr-control-label">Choose JAR file output:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="jar-option" [(ngModel)]="chosenJarFormatDownloadOption">
+            <option value="nt">N-Triples</option>
+            <option value="csv">CSV</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
   <div class="modal-footer">
@@ -161,7 +195,8 @@
   <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
   <br>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="delete()">Confirm</button>
+    <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false"
+      [disabled]="downloadingResult">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="delete()" [disabled]="downloadingResult">Confirm</button>
   </div>
 </clr-modal>

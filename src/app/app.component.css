@@ -66,3 +66,28 @@ button:focus {
 
 .material-icons.md-light { color: rgba(255, 255, 255, 1); }
 .material-icons.md-22 { font-size: 22px; }
+
+#rdf {
+    padding-top: 10px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+
+#jar {
+    padding-top: 10px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+
+#container {
+    padding-bottom: 15px;
+}
+
+#paragraph {
+    border: 1px solid black;
+    border-radius: 2px;
+    background-color: #E6E6FA;
+    padding-top: 5px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+}
