@@ -130,11 +130,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.graftwerkData = graftwerkData;
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':rows']) {
         // Clean header name (remove leading ':' from the EDN response)
-        this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
+        this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => {
+          return h.charAt(0) == ':' ? h.substr(1) : h;
+        });
         this.annotationService.data = this.graftwerkData[':rows'];
 
-        this.enrichmentService.headers = this.graftwerkData[':column-names'].map((h) => h.substr(1));
-        this.enrichmentService.data = this.graftwerkData[':rows'];
+        this.enrichmentService.headers = this.annotationService.headers;
+        this.enrichmentService.data = this.annotationService.data;
 
         if (this.transformationObj['annotations']) {
           this.transformationObj['annotations'].forEach(annotationObj => {
@@ -336,7 +338,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   getTableColumns() {
     return this.graftwerkData[':column-names'].map(h => {
-      const ann = this.annotationService.getAnnotation(h.substr(1));
+      const ann = this.annotationService.getAnnotation(h.charAt(0) == ':' ? h.substr(1) : h);
       if (ann && ann.columnValuesType === ColumnTypes.URI) {
         return ({
           data: h, // don't remove leading ':' from header here!
