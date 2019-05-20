@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
 
   private nextStepDialogMessage = 'The result of this transformation will be saved in DataGraft';
   private downloadingResultDialogMessage = 'The result of this transformation will be saved in DataGraft';
-  private downloadingResult = false;
+  downloadingResult = false;
 
   private routingServiceSubscription: Subscription;
   private initRouteSubscription: Subscription;
