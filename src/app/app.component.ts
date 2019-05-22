@@ -164,24 +164,31 @@ export class AppComponent implements OnInit {
       (event) => {
         if (event instanceof NavigationEnd && self.route.firstChild != null) {
           const paramMap = self.route.firstChild.snapshot.paramMap;
+          // start loading the data
+          this.progressIndicatorService.changeDataLoadingStatus(true);
           if (paramMap.has('publisher') && paramMap.has('transformationId')) {
+            // load the transformation
             self.dispatch.getTransformationJson(paramMap.get('transformationId'), paramMap.get('publisher'))
               .then(
                 (result) => {
                   if (result !== 'Beginning OAuth Flow') {
+                    // successfully got the JSON of the transformation
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     self.transformationSvc.transformationObjSource.next(transformationObj);
                     self.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(transformationObj);
                     if (paramMap.has('filestoreId')) {
                       this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
                     } else {
+                      this.progressIndicatorService.changeDataLoadingStatus(false);
                     }
-                  }
-                  else if (result !== 'Beginning OAuth Flow') {
+                  } else {
+                    // we are beginning the OAuth flow, so we should start loading (not that it makes a huge difference)
+                    this.progressIndicatorService.changeDataLoadingStatus(true);
                   }
                 },
                 (error) => {
                   console.log(error);
+                  this.progressIndicatorService.changeDataLoadingStatus(false);
                 });
           }
           // New transformation without publisher id, start oAuth process to identify user and redirect to route that includes publisher id
@@ -190,6 +197,7 @@ export class AppComponent implements OnInit {
             this.dispatch.getAllTransformations('', false).then((result) => {
               if (result !== 'Beginning OAuth Flow') {
                 this.createNewTransformation();
+                this.progressIndicatorService.changeDataLoadingStatus(false);
               }
               else {
                 console.log('error');
@@ -370,17 +378,20 @@ export class AppComponent implements OnInit {
         newTransformationConfiguration).then(
           (result) => {
             /** If we are editing a transformation, the address/slug of it may have changed (due to name change), so we need to change the URL in the browser */
-            if (this.currentDataGraftState == 'transformations.transformation.preview') {
-              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
-            } else if (this.currentDataGraftState == 'transformations.transformation.preview.wizard') {
-              // what should happen here?
-            } else if (this.currentDataGraftState == 'transformations.new.preview.wizard') {
-              // should not happen
-              // first save - change location to /[username]/upwizards/transform_select_preview/[wizard_id]?selected_id=[transformation_id]
-            } else {
-              // should not happen
-            }
-
+            // if (this.currentDataGraftState == 'transformations.transformation.preview') {
+            //   this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            // } else if (this.currentDataGraftState == 'transformations.transformation.preview.wizard') {
+            //   this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            //   // what should happen here?
+            // } else if (this.currentDataGraftState == 'transformations.new.preview.wizard') {
+            //   this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            //   // should not happen
+            //   // first save - change location to /[username]/upwizards/transform_select_preview/[wizard_id]?selected_id=[transformation_id]
+            // } else {
+            //   // should not happen
+            //   this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+            // }
+            this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
             this.dispatch.getTransformationJson(result.id, result.publisher)
               .then(
                 (result) => {

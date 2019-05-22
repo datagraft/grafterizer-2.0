@@ -115,6 +115,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             this.showHandsonTableProfiling = false;
             break;
           case 'transformations.transformation':
+            this.showPipelineOnly = false;
             this.showHandsonTableProfiling = false;
             break;
           case 'transformations.new':
@@ -123,6 +124,11 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             break;
           case 'transformations.new.preview':
           case 'transformations.new.preview.wizard':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = true;
+            break;
+          case 'transformations.transformation.preview':
+          case 'transformations.transformation.preview.wizard':
             this.showPipelineOnly = false;
             this.showHandsonTableProfiling = true;
             break;
