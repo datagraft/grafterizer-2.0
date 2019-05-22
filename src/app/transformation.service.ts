@@ -139,38 +139,35 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs = new Observable(observer => {
-      observer.next();
-    })
-      .switchMap(() => this.http.get(statusUrl, options))
-      .map((response) => response.json());
     return new Promise((resolve, reject) => {
-      const sub = obs.subscribe(
-        (result) => {
-          if (!result.processing) {
-            sub.unsubscribe();
-            this.http.get(resultUrl, options)
-              .map((responseCache) => {
-                // if transformation is a pipe (pipeline), then we parse the response using JSEDN
-                if (transformationType === 'pipe') {
-                  return jsedn.toJS(jsedn.parse(responseCache.text()));
-                } else {
-                  // if transformation is a graft (or undefined), we pass the response as plain text
-                  // to download a csv file after the transformation has been applied, we pass the response as plain text
-                  return responseCache.text();
-                }
-              })
-              .toPromise()
-              .then(
-                (transformationResult) => {
-                  resolve(transformationResult);
-                },
-                (error) => reject(error));
+      const sub = Observable.interval(2000).startWith(1)
+        .mergeMap(() => this.http.get(statusUrl, options))
+        .map((response) => response.json())
+        .subscribe((response) => {
+          // null safety first
+          if (response) {
+            if (!response.processing) {
+              sub.unsubscribe();
+              this.http.get(resultUrl, options)
+                .map((responseCache) => {
+                  // if transformation is a pipe (pipeline), then we parse the response using JSEDN
+                  if (transformationType === 'pipe') {
+                    return jsedn.toJS(jsedn.parse(responseCache.text()));
+                  } else {
+                    // if transformation is a graft (or undefined), we pass the response as plain text
+                    // to download a csv file after the transformation has been applied, we pass the response as plain text
+                    return responseCache.text();
+                  }
+                })
+                .toPromise()
+                .then(
+                  (transformationResult) => {
+                    resolve(transformationResult);
+                  },
+                  (error) => reject(error));
+            }
           }
-        },
-        (error) => {
-          return reject(error);
-        });
+        })
     });
   }
 
