@@ -3,5 +3,12 @@
         "target": "https://grafterizer.datagraft.io",
         "secure": false,
         "changeOrigin": true
+    },
+    "/asia-backend": {
+        "target": "http://localhost:8088",
+        "secure": false,
+        "pathRewrite": {
+            "^/asia-backend": ""
+        }
     }
 }
