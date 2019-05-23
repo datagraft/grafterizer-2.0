@@ -63,9 +63,10 @@ export class AppComponent implements OnInit {
   showConfirmNextStepDialog: boolean = false;
   showDownloadDialog: boolean = false;
   showConfirmDeleteDialog: boolean = false;
-  showLoadDistributionDialog: boolean = false;
-  modalEnabled: boolean = false;
+  showLoadDistributionMenu: boolean = false;
+  showLoadExistingFileDialog: boolean = false;
   showTabularAnnotationTab: boolean = false;
+  showChangeFileActions: boolean = false;
   showSaveButton: boolean = false;
   showForkButton: boolean = false;
   showDownloadButton: boolean = false;
@@ -97,7 +98,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = true;
             this.showDownloadButton = true;
             this.showDeleteButton = true;
-            this.showLoadDistributionDialog = true;
+            this.showLoadDistributionMenu = true;
             this.showWizardNavigation = false;
             break;
           case 'transformations.transformation.preview':
@@ -107,7 +108,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = false;
             this.showDownloadButton = true;
             this.showDeleteButton = false;
-            this.showLoadDistributionDialog = false;
+            this.showLoadDistributionMenu = false;
             this.showWizardNavigation = true;
             break;
           case 'transformations.readonly':
@@ -115,7 +116,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = false;
             this.showDownloadButton = false;
             this.showDeleteButton = false;
-            this.showLoadDistributionDialog = false;
+            this.showLoadDistributionMenu = false;
             this.showWizardNavigation = false;
             break;
           case 'transformations.new':
@@ -123,7 +124,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = false;
             this.showDownloadButton = false;
             this.showDeleteButton = false;
-            this.showLoadDistributionDialog = true;
+            this.showLoadDistributionMenu = true;
             this.showWizardNavigation = false;
             break;
           case 'transformations.new.preview':
@@ -133,7 +134,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = false;
             this.showDownloadButton = false;
             this.showDeleteButton = false;
-            this.showLoadDistributionDialog = false;
+            this.showLoadDistributionMenu = false;
             this.showWizardNavigation = true;
             break;
           case 'standalone':
@@ -144,7 +145,7 @@ export class AppComponent implements OnInit {
             this.showForkButton = true;
             this.showDownloadButton = true;
             this.showDeleteButton = true;
-            this.showLoadDistributionDialog = true;
+            this.showLoadDistributionMenu = true;
             this.showWizardNavigation = false;
             this.showLogo = true;
             break;
@@ -240,11 +241,11 @@ export class AppComponent implements OnInit {
       }
     });
 
-    this.progressIndicatorSubscription = this.progressIndicatorService.currentDataLoadingStatus.subscribe((status) => {
+    this.progressIndicatorSubscription = this.progressIndicatorService.currentGrafterizerLoadingStatus.subscribe((status) => {
       if (status == true || status == false) {
         this.showLoading = status;
       }
-    })
+    });
 
     this.globalErrorSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
       this.globalErrors = globalErrors;
@@ -254,45 +255,52 @@ export class AppComponent implements OnInit {
   ngOnDestroy() {
     this.initRouteSubscription.unsubscribe();
     this.progressIndicatorSubscription.unsubscribe();
+    this.globalErrorSubscription.unsubscribe();
+    this.transformationObjSourceSubscription.unsubscribe();
+    this.previewedTransformationSubscription.unsubscribe();
+    this.currentDataGraftStateSubscription.unsubscribe();
   }
 
   onChange($event) {
   }
 
   loadDistribution() {
+    this.distributionList = [];
     this.dispatch.getAllFilestores().then((result) => {
       result.forEach((obj) => {
         this.distributionList.push({ label: obj.title, value: obj })
       });
-      this.modalEnabled = true;
+      this.showLoadExistingFileDialog = true;
+      this.showChangeFileActions = true;
     });
   }
 
   onFileChange(event) {
     let reader = new FileReader();
     if (event.target.files && event.target.files.length > 0) {
-      this.showLoadDistributionDialog = false;
+      this.progressIndicatorService.changeDataLoadingStatus(true);
+      this.showLoadDistributionMenu = false;
       let file = event.target.files[0];
       reader.readAsDataURL(file);
       reader.onload = () => {
         this.dispatch.uploadFile(file).subscribe((result) => {
           this.selectedFile = { id: result.id };
           this.save(true);
+          this.showChangeFileActions = true;
         });
       };
     }
   }
 
   accept() {
-    this.save(true);
     this.progressIndicatorService.changeDataLoadingStatus(true);
-    this.modalEnabled = false;
-    this.showLoadDistributionDialog = false;
+    this.save(true);
+    this.showLoadExistingFileDialog = false;
+    this.showLoadDistributionMenu = false;
   }
 
   cancel() {
-    this.modalEnabled = false;
-    this.distributionList = [];
+    this.showLoadExistingFileDialog = false;
     this.selectedFile = undefined;
   }
 
@@ -337,6 +345,7 @@ export class AppComponent implements OnInit {
   }
 
   save(redirect: boolean) {
+    this.progressIndicatorService.changeGrafterizerLoadingStatus(true);
     // Persist the transformation to DataGraft
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
@@ -397,12 +406,15 @@ export class AppComponent implements OnInit {
                 (result) => {
                   const transformationObj = transformationDataModel.Transformation.revive(result);
                   this.transformationSvc.transformationObjSource.next(transformationObj);
+                  this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
                 },
                 (error) => {
+                  this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
                   console.log(error);
                 });
           },
           (error) => {
+            this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
             console.log('Error updating transformation');
             console.log(error);
           });
@@ -429,8 +441,11 @@ export class AppComponent implements OnInit {
                     const transformationObj = transformationDataModel.Transformation.revive(result);
                     this.transformationSvc.transformationObjSource.next(transformationObj);
                     this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
+                    this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
+                    this.progressIndicatorService.changeDataLoadingStatus(false);
                   },
                   (error) => {
+                    this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
                     console.log(error);
                   });
             });
@@ -447,50 +462,36 @@ export class AppComponent implements OnInit {
                     this.showDownloadButton = true;
                     this.showDeleteButton = true;
                     this.transformationSvc.previewedTransformationObjSource.next(transformationObj);
+                    this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
                   },
                   (error) => {
+                    this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
                     console.log(error);
                   });
             });
           }
-          this.distributionList = [];
         },
         (error) => {
+          this.progressIndicatorService.changeGrafterizerLoadingStatus(false);
           console.log('Error updating transformation');
           console.log(error);
         });
   }
 
   createNewTransformation(distributionID?: string) {
+    this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
     const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
-    let newTransformationName = null;
-    let newTransformationDescription = null;
-    let newTransformationKeywords = null;
-    let isPublic = null;
-    this.transformationSvc.transformationMetadata.subscribe((result) => {
-      newTransformationName = result.title;
-      newTransformationDescription = result.description;
-      newTransformationKeywords = result.keywords;
-      isPublic = result.isPublic;
-    }
-    );
     let transformationType = 'graft';
     let transformationCommand = 'my-graft';
-    if (this.transformationObjSource.graphs === 0) {
-      transformationType = 'pipe';
-      transformationCommand = 'my-pipe';
-    }
-    if (!this.transformationObjSource.pipelines[0]) {
-      this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
-    }
+
     const newTransformationConfiguration = {
       type: transformationType,
       command: transformationCommand,
       code: clojureCode,
       json: JSON.stringify(this.transformationObjSource)
     };
-    return this.dispatch.newTransformation(newTransformationName, false, newTransformationDescription, newTransformationKeywords,
+    return this.dispatch.newTransformation(null, false, null, null,
       newTransformationConfiguration).then(
         (result) => {
           if (this.currentDataGraftParams.distributionId) {
@@ -504,7 +505,7 @@ export class AppComponent implements OnInit {
                 if (!result['internal_id']) {
                   throw "Error creating a new transformation. Could not find internal identifier of transformation.";
                 }
-                this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/upwizards/transform_select_preview/' + wizardIdRegexMatch[1] + '?selected_id=' + result['internal_id']);
+                this.messageSvc.setLocation('/' + result.publisher + '/upwizards/transform_select_preview/' + wizardIdRegexMatch[1] + '?selected_id=' + result['internal_id']);
               },
               (error) => {
                 console.log(error);
@@ -515,7 +516,7 @@ export class AppComponent implements OnInit {
             });
           } else {
             this.router.navigate([result.publisher, 'transformations', result.id, 'tabular-transformation']).then(() => {
-              this.messageSvc.setLocationNoRedirect('/' + result.publisher + '/transformations/' + result.id + '/edit');
+              this.messageSvc.setLocation('/' + result.publisher + '/transformations/' + result.id + '/edit');
               this.progressIndicatorService.changeDataLoadingStatus(false);
             });
           }
