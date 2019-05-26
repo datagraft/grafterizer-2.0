@@ -2,11 +2,23 @@
   <h3 class="modal-title">Map Column</h3>
   <div class="modal-body">
     <div fxLayout="column">
-      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
-        placeholder="Select column" [(ngModel)]="colToMapFrom"></ng-select>
+      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true"
+        bindLabel="value" appendTo="body" placeholder="Select column" [(ngModel)]="colToMapFrom"></ng-select>
       <br>
-      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name" appendTo="body"
-        placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"></ng-select>
+      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name"
+        appendTo="body" placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"
+        (change)="setFunction()"></ng-select>
+      <br>
+      <div *ngIf="keyFunctionPairs">
+        <h5 class="modal-subtitle" *ngIf="keyFunctionPairs.getParams().length">Function Parameters</h5>
+        <div *ngFor="let param of keyFunctionPairs.getParams(); let id = index">
+          <div fxFlex="30">
+            <mat-form-field style="width: 100%;">
+              <input matInput placeholder="{{param}}" [(ngModel)]="selectedCustomFunctionParams[id]">
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
       <br>
       <div fxLayout="column">
         <mat-form-field style="width: 100%;">

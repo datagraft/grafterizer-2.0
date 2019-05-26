@@ -21,23 +21,25 @@ export class DeriveColumnComponent implements OnInit {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
 
-  private previewedTransformationSubscription: Subscription;
+  private transformationObjSourceSubscription: Subscription;
   private previewedDataSubscription: Subscription;
 
   newColName: string;
+  functionWithArgs: any;
   selectedCustomFunction: any;
-  docstring: string = 'Derive column';
+  selectedCustomFunctionParams: any[] = [];
   previewedDataColumns: string[] = [];
   customFunctions: any[] = [];
   colsToDeriveFrom: any[] = [];
+  docstring: string = 'Derive column';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
 
-    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
-      if (previewedTransformation) {
-        this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
+      if (transformation) {
+        this.customFunctions = transformation.customFunctionDeclarations.map((v, idx) => {
           return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
         });
       }
@@ -45,6 +47,7 @@ export class DeriveColumnComponent implements OnInit {
 
     this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
       this.currentlySelectedFunction = selFunction.currentFunction;
+      console.log(this.currentlySelectedFunction);
     });
 
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
@@ -53,11 +56,14 @@ export class DeriveColumnComponent implements OnInit {
       if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'DeriveColumnFunction') {
         this.modalEnabled = true;
         this.newColName = this.currentlySelectedFunction.newColName;
+        this.functionWithArgs = this.currentlySelectedFunction.functionsToDeriveWith["0"];
         this.colsToDeriveFrom = this.currentlySelectedFunction.colsToDeriveFrom;
-        this.selectedCustomFunction = this.currentlySelectedFunction.functionsToDeriveWith["0"].funct;
+        this.selectedCustomFunction = this.functionWithArgs.funct;
+        this.selectedCustomFunctionParams = this.functionWithArgs.functParams;
         for (let funct of this.customFunctions) {
           if (this.selectedCustomFunction.id === funct.id) {
-            this.customFunctions[funct.id] = this.selectedCustomFunction;
+            this.selectedCustomFunction = funct;
+            this.functionWithArgs.funct = this.customFunctions[funct.id];
           }
         }
         this.docstring = this.currentlySelectedFunction.docstring;
@@ -65,6 +71,7 @@ export class DeriveColumnComponent implements OnInit {
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'DeriveColumnFunction') {
         this.modalEnabled = true;
+        this.functionWithArgs = new transformationDataModel.FunctionWithArgs({}, []);
       }
     });
 
@@ -79,9 +86,15 @@ export class DeriveColumnComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.previewedTransformationSubscription.unsubscribe();
+    this.transformationObjSourceSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  setFunction() {
+    if (this.functionWithArgs) {
+      this.functionWithArgs.funct = this.selectedCustomFunction;
+    }
   }
 
   accept() {
@@ -103,7 +116,9 @@ export class DeriveColumnComponent implements OnInit {
     }
     else if (this.pipelineEvent.createNew) {
       // create object with user input
-      const newFunction = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [new transformationDataModel.FunctionWithArgs(this.selectedCustomFunction, [])], this.docstring);
+      this.functionWithArgs.funct = this.selectedCustomFunction;
+      this.functionWithArgs.functParams = this.selectedCustomFunctionParams;
+      const newFunction = new transformationDataModel.DeriveColumnFunction(this.newColName, this.colsToDeriveFrom, [this.functionWithArgs], this.docstring);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -122,10 +137,18 @@ export class DeriveColumnComponent implements OnInit {
   }
 
   private editDeriveColumnsFunction(instanceObj): any {
+    console.log(instanceObj);
     instanceObj.newColName = this.newColName;
-    instanceObj.docstring = this.docstring;
     instanceObj.colsToDeriveFrom = this.colsToDeriveFrom;
-    instanceObj.functionsToDeriveWith["0"].funct = this.selectedCustomFunction;
+    let functionWithArgs = instanceObj.functionsToDeriveWith["0"];
+    functionWithArgs.funct = this.selectedCustomFunction;
+    if (functionWithArgs.getParams().length) {
+      functionWithArgs.functParams = this.selectedCustomFunctionParams;
+    }
+    else {
+      functionWithArgs.functParams = [];
+    }
+    instanceObj.docstring = this.docstring;
   }
 
   private resetModal() {
@@ -138,6 +161,7 @@ export class DeriveColumnComponent implements OnInit {
     this.newColName = null;
     this.docstring = 'Derive column';
     this.selectedCustomFunction = null;
+    this.selectedCustomFunctionParams = [];
     this.colsToDeriveFrom = null;
   }
 
