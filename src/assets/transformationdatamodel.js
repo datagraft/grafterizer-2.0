@@ -571,8 +571,11 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   if (deriveFuncts.length === 1) {
     values.push(deriveFuncts[0]);
   } else {
-    var compFuncts = ['comp'];
-    compFuncts = compFuncts.concat(deriveFuncts);
+    var i;
+    var compFuncts = [new jsedn.sym('comp')];
+    for (i = 0; i < deriveFuncts.length; ++i) {
+      compFuncts.push(new jsedn.sym(deriveFuncts[i]));
+    }
     values.push(new jsedn.List(compFuncts));
   }
   return new jsedn.List(values);

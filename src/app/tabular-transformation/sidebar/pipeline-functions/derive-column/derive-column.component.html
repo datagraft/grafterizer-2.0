@@ -9,23 +9,44 @@
       <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="true" [hideSelected]="true"
         bindLabel="value" appendTo="body" placeholder="Select column" [(ngModel)]="colsToDeriveFrom"></ng-select>
       <br>
-      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name"
-        appendTo="body" placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"
-        (change)="setFunction()">
-      </ng-select>
-      <br>
-      <div *ngIf="functionWithArgs">
-        <h5 class="modal-subtitle" *ngIf="functionWithArgs.getParams().length">Function Parameters</h5>
-        <div *ngFor="let param of functionWithArgs.getParams(); let id = index">
-          <div fxFlex="30">
-            <mat-form-field style="width: 100%;">
-              <input matInput placeholder="{{param}}" [(ngModel)]="selectedCustomFunctionParams[id]">
-            </mat-form-field>
+      <div *ngIf="functionsToDeriveWith.length">
+        <div *ngFor="let functionWithArgs of functionsToDeriveWith; let id = index">
+          <div fxLayout="column">
+            <div fxLayout="row" fxLayoutGap="20px">
+              <!--               <div fxFlex="5">
+                <button class="btn btn-link btn-icon-link" id="btn-remove"
+                  [disabled]="functionsToDeriveWith.length === 1">
+                  <mat-icon size="22" (click)="removeFunction(id)">clear</mat-icon>
+                </button>
+              </div> -->
+              <div fxFlex="50">
+                <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true"
+                  bindLabel="name" appendTo="body" placeholder="Select custom function"
+                  [(ngModel)]="functionWithArgs.funct">
+                </ng-select>
+              </div>
+            </div>
+            <div *ngIf="functionWithArgs.functParams">
+              <div fxLayout="row" id="params" fxLayoutGap="30px">
+                <div *ngFor="let param of functionWithArgs.getParams(); let idx = index">
+                  <div fxFlex>
+                    <mat-form-field style="width: 100%;">
+                      <input matInput placeholder="{{'input parameter: '+param}}"
+                        [(ngModel)]="functionWithArgs.functParams[idx]" required>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          <br>
         </div>
       </div>
-      <br>
       <div fxLayout="column">
+        <!--         <div fxFlex>
+          <button class="btn btn-primary btn-sm" (click)="addFunctionWithArgs()">Add function</button>
+        </div>
+        <br> -->
         <mat-form-field style="width: 100%;">
           <input matInput placeholder="Comments" [(ngModel)]="docstring">
         </mat-form-field>
