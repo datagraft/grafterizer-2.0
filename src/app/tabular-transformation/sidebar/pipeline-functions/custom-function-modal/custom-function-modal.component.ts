@@ -37,7 +37,7 @@ export class CustomFunctionModalComponent implements OnInit {
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService, private codeMirror: CodemirrorService) { }
 
   ngOnInit() {
-    this.configurationObject = { lineWrapping: true, lineNumbers: false, theme: "monokai", mode: 'clojure', autofocus: true, matchBrackets: true, indentWithTabs: true };
+    this.configurationObject = { lineWrapping: true, lineNumbers: false, theme: "monokai", mode: 'clojure', autofocus: true, matchBrackets: true, indentWithTabs: true, maxHighlightLength: Infinity };
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
       this.pipelineEvent = currentEvent;
       if (currentEvent.newStepType === 'CustomFunctionDeclaration') {

@@ -24,6 +24,16 @@
       </a> -->
     </div>
     <div class="header-actions">
+      <a *ngIf="showChangeFileActions" href="javascript://" (click)="loadDistribution()"
+        title="Select an existing file from your DataGraft assets" class="sin-nav-icon">
+        <i class="material-icons md-light">cloud</i>
+      </a>
+      <a *ngIf="showChangeFileActions" href="javascript://" (click)="fileInputHeader.click()"
+        title="Upload a file locally from your computer" class="sin-nav-icon">
+        <i class="material-icons md-light">folder_open</i>
+        <input hidden type="file" #fileInputHeader (change)="onFileChange($event)" />
+      </a>
+
       <a *ngIf="showSaveButton" href="javascript://" (click)="save(false)" title="Save" class="sin-nav-icon">
         <i class="material-icons md-light">save</i>
       </a>
@@ -44,6 +54,11 @@
         class="sin-datagraft-wizard-button">Next
         step</button>
     </div>
+
+  </header>
+  <header class="header-6" style="max-height: 0px">
+    <div class="progress loop" *ngIf="showLoading" style="max-height: 5px;"><progress></progress>
+    </div>
   </header>
   <clr-alerts>
     <clr-alert class="alerts" [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true"
@@ -60,15 +75,10 @@
     </clr-alert>
   </clr-alerts>
   <div class="content-container">
-    <router-outlet></router-outlet>
-    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" [hidden]="!showLoading">
-      <div class="spinner">
-        <span class="spinner spinner-lg" fxflex>
-          Loading...
-        </span>
-      </div>
+    <div class="sin-disable" [hidden]="!showLoading">
     </div>
-    <div *ngIf="showLoadDistributionDialog" class="load-distribution">
+    <router-outlet></router-outlet>
+    <div *ngIf="showLoadDistributionMenu" class="load-distribution">
       <div id="btn">
         <button mat-fab (click)="loadDistribution()" matTooltip="Select an existing file from your DataGraft assets">
           <mat-icon aria-label="Upload a file locally from your computer">cloud</mat-icon>
@@ -84,14 +94,12 @@
   </div>
 </div>
 
-<clr-modal *ngIf="showLoadDistributionDialog" [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false"
-  [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="showLoadExistingFileDialog" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Load existing file</h3>
   <div class="modal-body">
     <div fxLayout='column' fxLayoutAlign="left">
       <p-listbox [options]="distributionList" [(ngModel)]="selectedFile" (ngModelChange)="onChange($event)"
-        [styleClass]="ui-state-active"
-        [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}"
+        [styleClass]="uiStateActive" [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}"
         [listStyle]="{'height':'360px'}">
       </p-listbox>
     </div>
