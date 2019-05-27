@@ -57,8 +57,9 @@ export class AppComponent implements OnInit {
   showWizardNavigation: boolean;
   downloadMode: string = 'rdf';
 
-  private distributionList: SelectItem[] = [];
-  private selectedFile: any;
+  distributionList: SelectItem[] = [];
+  selectedFile: any;
+  uiStateActive: string = 'ui-state-active';
 
   showConfirmNextStepDialog: boolean = false;
   showDownloadDialog: boolean = false;
