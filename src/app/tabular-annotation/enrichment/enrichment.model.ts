@@ -267,16 +267,13 @@ export class WeatherConfigurator {
 
 export class WeatherObservation {
   private geonamesId: string;
-
-  private validTime: string;
-  private validityDateTime: string;
+  private date: string;
   private weatherParameters: WeatherParameter[] = [];
   private offset: number;
 
   constructor(obj) {
     this.geonamesId = obj && obj.geonamesId || '';
-    this.validTime = obj && obj.validTime || '';
-    this.validityDateTime = obj && obj.validityDateTime || '';
+    this.date = obj && obj.date || '';
     const tempParam = obj['weatherParameters'];
     for (let i = 0; i < tempParam.length; ++i) {
       this.weatherParameters.push(new WeatherParameter(tempParam[i]));
@@ -288,12 +285,8 @@ export class WeatherObservation {
     return this.geonamesId;
   }
 
-  getValidTime(): string {
-    return this.validTime;
-  }
-
-  getValidityDateTime(): string {
-    return this.validityDateTime;
+  getDate(): string {
+    return this.date;
   }
 
   getWeatherParameters(): WeatherParameter[] {
@@ -307,20 +300,59 @@ export class WeatherObservation {
 
 export class WeatherParameter {
   private id: string;
-  private value: string;
+  private minValue: number;
+  private maxValue: number;
+  private avgValue: number;
+  private cumulValue: number;
 
   constructor(obj) {
     this.id = obj && obj.id || '';
-    this.value = obj && obj.value || '';
+    this.minValue = obj && obj.minValue || null;
+    this.maxValue = obj && obj.maxValue || null;
+    this.avgValue = obj && obj.avgValue || null;
+    this.cumulValue = obj && obj.cumulValue || null;
   }
 
   getId(): string {
     return this.id;
   }
 
-  getValue(): string {
-    return this.value;
+  getMinValue(): number {
+    return this.minValue;
   }
+
+  getMaxValue(): number {
+    return this.maxValue;
+  }
+
+  getAvgValue(): number {
+    return this.avgValue;
+  }
+
+  getCumulValue(): number {
+    return this.cumulValue;
+  }
+
+  get(aggregation: string): number {
+    switch (aggregation) {
+      case 'avg': {
+        return this.avgValue;
+      }
+      case 'min': {
+        return this.minValue;
+      }
+      case 'max': {
+        return this.maxValue;
+      }
+      case 'cumul': {
+        return this.cumulValue;
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
 }
 
 export class EventConfigurator {
