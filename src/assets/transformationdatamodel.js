@@ -310,7 +310,7 @@ export function GrepFunction(take, grepmode, colsToFilter, functionsToFilterWith
   if (functionsToFilterWith !== null) {
     for (var i = 0; i < functionsToFilterWith.length; ++i) {
       filterFunc = functionsToFilterWith[i];
-      if (filterFunc !== null) {
+      if (filterFunc !== null && filterFunc !== undefined) {
         if (!(filterFunc instanceof CustomFunctionDeclaration) && filterFunc.__type ===
           'CustomFunctionDeclaration') {
           functionsToFilterWith[i] = CustomFunctionDeclaration.revive(filterFunc);

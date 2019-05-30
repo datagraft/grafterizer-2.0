@@ -136,7 +136,10 @@ export class FilterRowsComponent implements OnInit {
     for (let c of this.colsToFilter) {
       instanceObj.colsToFilter.push({ id: 0, value: c });
     }
-    this.functionsToFilterWith["0"] = (this.selectedCustomFunction);
+    if (this.selectedCustomFunction) {
+      this.functionsToFilterWith["0"] = (this.selectedCustomFunction);
+    }
+
     instanceObj.functionsToFilterWith = this.functionsToFilterWith;
     instanceObj.filterText = this.filterText;
     instanceObj.filterRegex = this.filterRegex;
