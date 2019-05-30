@@ -1,16 +1,9 @@
-import {Component, Inject, OnInit, ViewChild, ElementRef} from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatTableDataSource,
-  MatAutocompleteSelectedEvent,
-  MatChipInputEvent,
-  MatAutocomplete
-} from '@angular/material';
+import {Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {Observable} from 'rxjs';
 import {ConciliatorService, DeriveMap, EventConfigurator, Extension, Property, WeatherConfigurator} from '../enrichment.model';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {UrlUtilsService} from '../../shared/url-utils.service';
 
 @Component({
@@ -140,7 +133,7 @@ export class ExtensionComponent implements OnInit {
       'ws': 'Wind speed'
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
-    this.weatherAggregators = ['avg', 'min', 'max'];
+    this.weatherAggregators = ['avg', 'min', 'max', 'cumul'];
   }//end ngOnInit
 
   public extend() {

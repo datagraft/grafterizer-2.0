@@ -161,7 +161,6 @@ export class EnrichmentService {
     const params = new HttpParams()
       .set('ids', geoIds.join(','))
       .set('dates', dates.join(','))
-      .set('aggregators', weatherConfig.getAggregators().join(','))
       .set('weatherParams', weatherConfig.getParameters().join(','))
       .set('offsets', weatherConfig.getOffsets().join(','));
 
@@ -182,7 +181,7 @@ export class EnrichmentService {
         const properties: Map<string, any[]> = new Map();
 
         // Save dates using the original format adopted by the user
-        const date = moment(weatherObs.getValidTime()).format(originalDateFormat);
+        const date = moment(weatherObs.getDate()).format(originalDateFormat);
 
         if (on === 'date') {
           // Create extensions based on date
@@ -192,7 +191,12 @@ export class EnrichmentService {
           }
           weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
             const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getGeonamesId()}_+${weatherObs.getOffset()}`;
-            properties.set(newParamName, [{'str': `${weatherParam.getValue()}`}]);
+            for (const agg of weatherConfig.getAggregators()) {
+              const v = weatherParam.get(agg);
+              if (v) {
+                properties.set(`${newParamName}_${agg}`, [{'str': `${v}`}]);
+              }
+            }
           });
           extension.addProperties(properties);
           extensions.set(date, extension);
@@ -204,8 +208,13 @@ export class EnrichmentService {
           }
 
           weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
-            const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getValidTime()}_+${weatherObs.getOffset()}`;
-            properties.set(newParamName, [{'str': `${weatherParam.getValue()}`}]);
+            const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getDate()}_+${weatherObs.getOffset()}`;
+            for (const agg of weatherConfig.getAggregators()) {
+              const v = weatherParam.get(agg);
+              if (v) {
+                properties.set(`${newParamName}_${agg}`, [{'str': `${v}`}]);
+              }
+            }
           });
           extension.addProperties(properties);
           extensions.set(weatherObs.getGeonamesId(), extension);
