@@ -21,23 +21,21 @@ export class MapColumnsComponent implements OnInit {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
 
-  private previewedTransformationSubscription: Subscription;
+  private transformationObjSourceSubscription: Subscription;
   private previewedDataSubscription: Subscription;
 
-  selectedCustomFunction: any;
-  docstring: string = 'Derive column';
+  keyFunctionPairs: any[] = [];
   previewedDataColumns: any = [];
   customFunctions: any[] = [];
-  colToMapFrom: any;
-  private keyFunctionPairs: any = [];
+  docstring: string = 'Map column';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
 
-    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
-      if (previewedTransformation) {
-        this.customFunctions = previewedTransformation.customFunctionDeclarations.map((v, idx) => {
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
+      if (transformation) {
+        this.customFunctions = transformation.customFunctionDeclarations.map((v, idx) => {
           return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
         });
       }
@@ -52,25 +50,13 @@ export class MapColumnsComponent implements OnInit {
       // In case we clicked edit
       if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MapcFunction') {
         this.modalEnabled = true;
-        this.colToMapFrom = this.currentlySelectedFunction.keyFunctionPairs
-        ["0"].key;
-        for (let column of this.previewedDataColumns) {
-          if (this.colToMapFrom.id === column.id) {
-            this.previewedDataColumns[column.id] = this.colToMapFrom;
-          }
-        }
-        this.selectedCustomFunction = this.currentlySelectedFunction.keyFunctionPairs
-        ["0"].func;
-        for (let funct of this.customFunctions) {
-          if (this.selectedCustomFunction.id === funct.id) {
-            this.customFunctions[funct.id] = this.selectedCustomFunction;
-          }
-        }
+        this.keyFunctionPairs = this.currentlySelectedFunction.keyFunctionPairs;
         this.docstring = this.currentlySelectedFunction.docstring;
       }
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'MapcFunction') {
         this.modalEnabled = true;
+        this.addMapping();
       }
     });
 
@@ -85,9 +71,24 @@ export class MapColumnsComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.previewedTransformationSubscription.unsubscribe();
+    this.transformationObjSourceSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
     this.currentlySelectedFunctionSubscription.unsubscribe();
+  }
+
+  addMapping() {
+    let keyFunctionPair = new transformationDataModel.KeyFunctionPair({}, {}, []);
+    this.keyFunctionPairs.push(keyFunctionPair);
+  }
+
+  removeMapping(id: number) {
+    if (this.keyFunctionPairs.length > 1) {
+      this.keyFunctionPairs.splice(id, 1);
+    }
+  }
+
+  incrementMapping(id) {
+    return id += 1;
   }
 
   accept() {
@@ -108,8 +109,6 @@ export class MapColumnsComponent implements OnInit {
       });
     }
     else if (this.pipelineEvent.createNew) {
-      // create object with user input
-      this.keyFunctionPairs = [new transformationDataModel.KeyFunctionPair(this.colToMapFrom, this.selectedCustomFunction, [])];
       const newFunction = new transformationDataModel.MapcFunction(this.keyFunctionPairs, this.docstring);
 
       // notify of change in selected function
@@ -129,8 +128,14 @@ export class MapColumnsComponent implements OnInit {
   }
 
   private editMapColumnsFunction(instanceObj): any {
-    instanceObj.keyFunctionPairs["0"].key = this.colToMapFrom;
-    instanceObj.keyFunctionPairs["0"].func = this.selectedCustomFunction;
+    for (let keyFunctionPair of this.keyFunctionPairs) {
+      if (keyFunctionPair.getParams().length === 0) {
+        keyFunctionPair.funcParams = [];
+      }
+    }
+    instanceObj.keyFunctionPairs = this.keyFunctionPairs.filter((value, index, arr) => {
+      return value.func.id !== undefined && value.key.id !== undefined;
+    })
     instanceObj.docstring = this.docstring;
   }
 
@@ -139,10 +144,8 @@ export class MapColumnsComponent implements OnInit {
     this.pipelineEventsSvc.changePipelineEvent({
       cancel: true
     });
+    this.keyFunctionPairs = [];
     this.modalEnabled = false;
-    // resets the fields of the modal
-    this.colToMapFrom = null;
-    this.selectedCustomFunction = null;
     this.docstring = 'Map column';
   }
 

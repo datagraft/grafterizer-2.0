@@ -1,0 +1,17 @@
+.modal-body {
+    padding-right: 20px;
+}
+
+.modal-subtitle {
+    padding-bottom: 15px;
+}
+
+#btn-remove {
+    padding-top: 10px;
+    margin-left: -20px;
+    margin-right: -20px;
+}
+
+#params {
+    padding-left: 70px;
+}

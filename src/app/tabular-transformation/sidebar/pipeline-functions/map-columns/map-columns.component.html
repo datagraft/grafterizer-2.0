@@ -1,18 +1,52 @@
 <clr-modal [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
   <h3 class="modal-title">Map Column</h3>
   <div class="modal-body">
-    <div fxLayout="column">
-      <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true" bindLabel="value" appendTo="body"
-        placeholder="Select column" [(ngModel)]="colToMapFrom"></ng-select>
-      <br>
-      <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true" bindLabel="name" appendTo="body"
-        placeholder="Select custom function" [(ngModel)]="selectedCustomFunction"></ng-select>
-      <br>
-      <div fxLayout="column">
-        <mat-form-field style="width: 100%;">
-          <input matInput placeholder="Comments" [(ngModel)]="docstring">
-        </mat-form-field>
+    <div *ngIf="keyFunctionPairs">
+      <div *ngFor="let keyFunctionPair of keyFunctionPairs; let id = index">
+        <div fxLayout="column">
+          <h5 class="modal-subtitle">{{'Map column #'+incrementMapping(id)}}</h5>
+          <div fxLayout="row" fxLayoutGap="30px">
+            <div fxFlex="5">
+              <button class="btn btn-link btn-icon-link" id="btn-remove" [disabled]="keyFunctionPairs.length === 1">
+                <mat-icon size="22" (click)="removeMapping(id)">clear</mat-icon>
+              </button>
+            </div>
+            <div fxFlex="50">
+              <ng-select class="ng-select" [items]="previewedDataColumns" [multiple]="false" [hideSelected]="true"
+                bindLabel="value" appendTo="body" placeholder="Select column" [(ngModel)]="keyFunctionPair.key">
+              </ng-select>
+            </div>
+            <div fxFlex="45">
+              <ng-select class="ng-select" [items]="customFunctions" [multiple]="false" [hideSelected]="true"
+                bindLabel="name" appendTo="body" placeholder="Select custom function"
+                [(ngModel)]="keyFunctionPair.func">
+              </ng-select>
+            </div>
+          </div>
+          <div *ngIf="keyFunctionPair.funcParams">
+            <div fxLayout="row" id="params" fxLayoutGap="20px">
+              <div *ngFor="let param of keyFunctionPair.getParams(); let idx = index">
+                <div fxFlex>
+                  <mat-form-field style="width: 100%;">
+                    <input matInput placeholder="{{'input parameter: '+param}}"
+                      [(ngModel)]="keyFunctionPair.funcParams[idx]">
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br>
       </div>
+    </div>
+    <div fxLayout="column">
+      <div fxFlex>
+        <button class="btn btn-primary btn-sm" (click)="addMapping()">Add more mapping pairs</button>
+      </div>
+      <br>
+      <mat-form-field style="width: 100%;">
+        <input matInput placeholder="Comments" [(ngModel)]="docstring">
+      </mat-form-field>
     </div>
   </div>
   <div class="modal-footer">

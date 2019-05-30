@@ -563,7 +563,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
     else {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
-      deriveFuncts.push(new jsedn.List([new jsedn.parse('fn [arg]'),
+      deriveFuncts.push(new jsedn.List([new jsedn.sym('fn'), new jsedn.Vector([new jsedn.sym('arg')]),
       new jsedn.List(functWithParams)
       ]));
     }
@@ -571,8 +571,11 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   if (deriveFuncts.length === 1) {
     values.push(deriveFuncts[0]);
   } else {
-    var compFuncts = ['comp'];
-    compFuncts = compFuncts.concat(deriveFuncts);
+    var i;
+    var compFuncts = [new jsedn.sym('comp')];
+    for (i = 0; i < deriveFuncts.length; ++i) {
+      compFuncts.push(new jsedn.sym(deriveFuncts[i]));
+    }
     values.push(new jsedn.List(compFuncts));
   }
   return new jsedn.List(values);
@@ -930,7 +933,7 @@ MapcFunction.prototype.generateClojure = function () {
       if (this.keyFunctionPairs[i].funcParams.length > 0) {
         var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
         funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-        var mapcFunc = new jsedn.List([new jsedn.parse('fn [arg]'),
+        var mapcFunc = new jsedn.List([new jsedn.sym('fn'), new jsedn.Vector([new jsedn.sym('arg')]),
         new jsedn.List(funcWithParams)
         ]);
         mkeyFunctionPairsClj.set(
