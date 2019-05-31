@@ -264,6 +264,8 @@ export class ExtensionComponent implements OnInit {
       let newColName = `${this.header}_`;
       if (prop.startsWith('http')) {
         newColName +=  prop.replace(UrlUtilsService.getNamespaceFromURL(new URL(prop)), '');
+      } else if (prop.startsWith('WF')) { // do not concatenate weather column names
+        newColName = prop;
       } else {
         newColName += prop;
       }
