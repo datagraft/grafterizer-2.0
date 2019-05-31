@@ -1,42 +1,31 @@
-import
-{
-  Component,
-  Input,
-  HostBinding,
-  Inject
- } from '@angular/core';
- import {FormControl, Validators} from '@angular/forms';
- import {MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import {Component, Inject} from '@angular/core';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 
- export interface dialog_add_entity_data
- {
-   name: string;
-   link : string;
- }
+@Component({
+  selector: 'app-add-entity-dialog',
+  templateUrl: './addEntityDialog.component.html',
+  styleUrls: ['./addEntityDialog.component.css']
+})
+export class AddEntityDialogComponent {
 
- export interface DialogData
- {
-   dialog_data: dialog_add_entity_data;
- }
+  addEntityForm: FormGroup;
+  identifierSpace: string;
 
- @Component({
-   selector: 'addEntityDialog',
-   templateUrl: './addEntityDialog.component.html',
-   styleUrls: ['./addEntityDialog.component.css']
- })
-export class AddEntityDialog  {
-  constructor(public dialogRef: MatDialogRef<AddEntityDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+  constructor(public dialogRef: MatDialogRef<AddEntityDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: {'identifierSpace': string}) {
+    this.addEntityForm = new FormGroup({
+      name: new FormControl('', Validators.required),
+      id: new FormControl('', Validators.required)
+    });
+    this.identifierSpace = data.identifierSpace;
+  }
 
-  public myreg = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
-
-  nameFormControl = new FormControl('', [
-    Validators.required,
-    ]);
-
-  linkFormControl = new FormControl('', [
-    Validators.required,
-    Validators.pattern(this.myreg),
-    ]);
+  submit() {
+    this.dialogRef.close({
+      'name': this.addEntityForm.get('name').value.toString(),
+      'id': this.addEntityForm.get('id').value.toString()
+    });
+  }
 
 }

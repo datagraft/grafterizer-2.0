@@ -26,7 +26,7 @@ import {
 import {ConfigComponent} from './config/config.component';
 import {TagInputModule} from 'ngx-chips';
 import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
-import {AddEntityDialog} from './enrichment/reconciliation/addEntityDialog.component';
+import {AddEntityDialogComponent} from './enrichment/reconciliation/addEntityDialog.component';
 import {ChooseExtensionOrReconciliationDialog} from './chooseExtensionOrReconciliationDialog.component';
 import {ExtensionComponent} from './enrichment/extension/extension.component';
 import {SharedModule} from './shared/shared.module';
@@ -59,7 +59,7 @@ import {SharedModule} from './shared/shared.module';
   ],
   entryComponents: [AnnotationFormComponent,
     ChooseExtensionOrReconciliationDialog,
-    AddEntityDialog,
+    AddEntityDialogComponent,
     ConfigComponent,
     ExtensionComponent,
     ReconciliationComponent],
@@ -67,7 +67,7 @@ import {SharedModule} from './shared/shared.module';
     TabularAnnotationComponent,
     AnnotationFormComponent,
     ConfigComponent,
-    AddEntityDialog,
+    AddEntityDialogComponent,
     ChooseExtensionOrReconciliationDialog,
     ReconciliationComponent,
     ExtensionComponent
