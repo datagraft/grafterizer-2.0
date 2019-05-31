@@ -1,31 +1,29 @@
 <h1 mat-dialog-title>Add entity</h1>
 <div mat-dialog-content>
 
-  <form class="addEntityDialog-form">
-    <mat-form-field class="full-width">
-      <input matInput placeholder="Entity name:" [(ngModel)]="data.dialog_data.name" name="name" [formControl]="nameFormControl"  >
-      <mat-error *ngIf="nameFormControl.hasError('required')">
-      name is required
-    </mat-error>
-    </mat-form-field>
-
-    <p> </p>
+  <form class="addEntityDialog-form" [formGroup]="addEntityForm">
 
     <mat-form-field class="full-width">
-        <input matInput placeholder="Entity url:" [(ngModel)]="data.dialog_data.link" name="link" [formControl]="linkFormControl">
-        <mat-error *ngIf="linkFormControl.hasError('pattern')">
-          enter valid url
-        </mat-error>
-        <mat-error *ngIf="linkFormControl.hasError('required')">
-          url is required
-        </mat-error>
-
+      <input matInput placeholder="Entity Identifier" formControlName="id">
+      <span matPrefix>{{identifierSpace}}&nbsp;</span>
+      <mat-error *ngIf="addEntityForm.get('id').hasError('required')">
+        Id is required
+      </mat-error>
     </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Entity name (label)" formControlName="name">
+      <mat-error *ngIf="addEntityForm.get('name').hasError('required')">
+        Name is required
+      </mat-error>
+    </mat-form-field>
+
   </form>
-    <br>
-    <button mat-button class="btn btn-sm btn-link" [mat-dialog-close]="0"><span class="red"> Discard </span></button>
-
-    <button mat-button class="btn btn-sm btn-link" [disabled]="!nameFormControl.valid || !linkFormControl.valid" [mat-dialog-close]="data.dialog_data">
-      Apply
-    </button>
 </div>
+<div mat-dialog-actions>
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="addEntityForm.invalid" (click)="submit()">
+    Apply
+  </button>
+</div>
+
