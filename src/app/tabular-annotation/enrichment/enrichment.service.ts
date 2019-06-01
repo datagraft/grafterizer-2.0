@@ -143,7 +143,7 @@ export class EnrichmentService {
     let dates = [];
     let originalDateFormat;
     if (weatherConfig.getReadDatesFromCol()) {
-      dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
+      dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()] + '');
       dates = Array.from(new Set(dates)).filter(function (e) {
         return e === 0 || e;
       });  // remove empty strings
