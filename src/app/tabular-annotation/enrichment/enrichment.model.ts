@@ -278,32 +278,6 @@ export class WeatherConfigurator {
   }
 }
 
-export class WeatherQuery {
-  private geonamesId: string;
-  private date: string;
-
-  constructor(geonamesId: string, date: string) {
-    this.geonamesId = geonamesId;
-    this.date = date;
-  }
-
-  getDate(): string {
-    return this.date;
-  }
-
-  getGeonamesId(): string {
-    return this.geonamesId;
-  }
-
-  setDate(date: string): void {
-    this.date = date;
-  }
-
-  setGeonamesId(geonamesId: string): void {
-    this.geonamesId = geonamesId;
-  }
-}
-
 export class WeatherObservation {
   private geonamesId: string;
   private date: string;

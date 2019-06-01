@@ -2,20 +2,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-  ConciliatorService,
-  Event,
-  EventConfigurator,
+  ConciliatorService, EventConfigurator,
   Extension,
   Mapping,
   Property,
   ReconciledColumn,
-  WeatherConfigurator,
-  WeatherObservation,
-  WeatherParameter, WeatherQuery
+  WeatherConfigurator, WeatherObservation,
+  WeatherParameter,
+  Event
 } from './enrichment.model';
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
+import {TabularAnnotationComponent} from '../tabular-annotation.component';
 import {UrlUtilsService} from '../shared/url-utils.service';
 
 @Injectable()
@@ -74,6 +73,12 @@ export class EnrichmentService {
       requests.push(this.http.post(requestURL, null, httpOptions));
     });
 
+    // // TODO: remove after solving CORS issue
+    // mappings.forEach((mapping: Mapping) => {
+    //   mapping.setResultsFromService(this.constResponse[mapping.queryId]['result']);
+    // });
+    // return Observable.of(mappings);
+
     return forkJoin(requests).map((results: any) => {
       results.forEach(res => {
         Object.keys(res).forEach(queryId => {
@@ -125,62 +130,54 @@ export class EnrichmentService {
   }
 
   weatherData(on: string, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
-
-    const weatherQueries = new Set();
-
-    let originalDateFormat = null;
-
-    if (weatherConfig.getPlace() && weatherConfig.getDate()) { // it should never be the case...
-      weatherQueries.add(new WeatherQuery(weatherConfig.getPlace(), weatherConfig.getDate()));
-      originalDateFormat = moment(weatherConfig.getDate()).creationData().format;
+    let geoIds = [];
+    if (weatherConfig.getReadPlacesFromCol()) {
+      geoIds = this.data.map(row => row[':' + weatherConfig.getReadPlacesFromCol()]);
+      geoIds = Array.from(new Set(geoIds)).filter(function (e) {
+        return e === 0 || e;
+      });  // remove empty strings
     } else {
-      this.data.map((row) => {
-        const wq = new WeatherQuery(weatherConfig.getPlace(), weatherConfig.getDate());
-        if (weatherConfig.getReadDatesFromCol() && row[':' + weatherConfig.getReadDatesFromCol()]) { // avoid changing format of empty dates
-          if (originalDateFormat === null) { // store the original date format
-            // casting to string is needed because some date formats look like numbers (e.g., yyyyMMdd)
-            originalDateFormat = moment(row[':' + weatherConfig.getReadDatesFromCol()] + '').creationData().format;
-          }
-          wq.setDate(moment(row[':' + weatherConfig.getReadDatesFromCol()] + '').format()); // convert date to ISO
-        }
-        if (weatherConfig.getReadPlacesFromCol()) {
-          wq.setGeonamesId(row[':' + weatherConfig.getReadPlacesFromCol()]);
-        }
-        if (wq.getGeonamesId() && wq.getDate()) {
-          weatherQueries.add(wq);
-        }
-      });
+      geoIds.push(weatherConfig.getPlace());
     }
 
-    const requestURL = `${this.asiaURL}/weather`;
-    const requests = [];
+    let dates = [];
+    let originalDateFormat;
+    if (weatherConfig.getReadDatesFromCol()) {
+      dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()]);
+      dates = Array.from(new Set(dates)).filter(function (e) {
+        return e === 0 || e;
+      });  // remove empty strings
+      if (dates.length > 0) {
+        originalDateFormat = moment(dates[0]).creationData().format; // assuming a date column uses the same format for each date
+      }
+      dates = dates.map(date => moment(date + '').format());
+    } else {
+      dates.push(moment(weatherConfig.getDate()).toISOString(true));
+      originalDateFormat = moment(dates[0]).creationData().format;
+    }
 
-    weatherQueries.forEach((wq: WeatherQuery) => {
-      const params = new HttpParams()
-        .set('ids', wq.getGeonamesId())
-        .set('dates', wq.getDate())
-        .set('weatherParams', weatherConfig.getParameters().join(','))
-        .set('offsets', weatherConfig.getOffsets().join(','));
+    const requestURL = this.asiaURL + '/weather';
 
-      const httpOptions = {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }),
-        params: params
-      };
+    const params = new HttpParams()
+      .set('ids', geoIds.join(','))
+      .set('dates', dates.join(','))
+      .set('weatherParams', weatherConfig.getParameters().join(','))
+      .set('offsets', weatherConfig.getOffsets().join(','));
 
-      requests.push(this.http.post(requestURL, null, httpOptions));
-    });
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
 
-
-    return forkJoin(requests).map((results: any) => {
-      // console.log(results);
-      // results.sort(function (a, b) {
-      //   return a.offset - b.offset;
-      // }); // sort results by offset
+    return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+      results.sort(function (a, b) {
+        return a.offset - b.offset;
+      }); // sort results by offset
       const extensions: Map<string, Extension> = new Map();
       results.forEach(obs => {
-        const weatherObs = new WeatherObservation(obs[0]); // results are returned as arrays
+        const weatherObs = new WeatherObservation(obs);
         const properties: Map<string, any[]> = new Map();
 
         // Save dates using the original format adopted by the user
@@ -225,7 +222,7 @@ export class EnrichmentService {
       });
       return Array.from(extensions.values());
     });
-  } // end weatherData
+  }//end weatherData
 
   eventData(on: string, eventConfig: EventConfigurator): Observable<Extension[]> {
     let geoIds = [];
@@ -241,7 +238,7 @@ export class EnrichmentService {
     let dates = [];
     let originalDateFormat;
     if (eventConfig.getReadDatesFromCol()) {
-      dates = this.data.map(row => row[':' + eventConfig.getReadDatesFromCol()]);
+      dates = this.data.map(row => row[':' + eventConfig.getReadDatesFromCol()] + '');
       dates = Array.from(new Set(dates)).filter(function (e) {
         return e === 0 || e;
       });  // remove empty strings
