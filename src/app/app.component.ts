@@ -694,7 +694,8 @@ export class AppComponent implements OnInit {
 
   downloadJAR() {
     var form = document.createElement('form');
-    form.action = '/jarfter/webresources/jarCreatorStandAlone';
+
+    form.action = this.jarfterSvc.getJarCreatorStandAloneEndpoint();
     form.method = 'POST';
     form.target = '_blank';
     form.style.display = 'none';

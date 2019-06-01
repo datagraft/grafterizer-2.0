@@ -16,12 +16,11 @@ export class JarfterService {
   }
 
   getJarCreatorStandAloneEndpoint() {
-    return `${this.jarfterPath}/webresources/jarCreatorStandAlone`;
-    // return this.jarfterPath + '/jarfter/webresources/jarCreatorStandAlone';
+    return `${this.jarfterPath}/jarfter/webresources/jarCreatorStandAlone`;
   };
 
   getTransformStandAloneEndpoint() {
-    return this.jarfterPath + '/webresources/transformStandAlone';
+    return this.jarfterPath + '/jarfter/webresources/transformStandAlone';
   };
 
   generateClojure(transformation, isCsv) {
