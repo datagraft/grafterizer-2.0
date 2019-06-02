@@ -47,8 +47,8 @@ export class ProfilingComponent implements OnInit {
   //chart 03
   showXAxis = true;
   showYAxis = true;
-  showXAxisLabel = true;
-  showYAxisLabel = true;
+  showXAxisLabel = false;
+  showYAxisLabel = false;
   xAxisLabel = 'Values (displaying at most 14 bins)';
   yAxisLabel = 'Number of values';
 
@@ -115,7 +115,7 @@ export class ProfilingComponent implements OnInit {
     this.dataBarChart = this.barChart_init;
     this.dataAdvancedPieChart = this.advancedPieChart_init;
     this.dataBoxplot = [0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25];
-    this.getOptionsBoxplot();
+    this.getOptionsBoxplot(true, true, true);
     Plotly.newPlot('boxplot', this.outliersData, this.outliersLayout, { displayModeBar: false });
     Plotly.redraw('boxplot');
     this.dataStatisticsTable = [
@@ -145,6 +145,12 @@ export class ProfilingComponent implements OnInit {
         this.dataBarChart = this.statisticService.profile[2];
         this.dataAdvancedPieChart = this.statisticService.profile[3];
         this.dataBoxplot = this.statisticService.profile[5];
+        if (this.statisticService.profile[5].length) {
+          this.getOptionsBoxplot(true, true, true);
+        } else {
+          this.getOptionsBoxplot(false, false, false);
+          Plotly.deleteTraces('boxplot', 0);
+        }
         this.dataStatisticsTable = this.statisticService.statData;
         this.refreshPlotly();
       },
@@ -153,12 +159,11 @@ export class ProfilingComponent implements OnInit {
   };
 
   refreshPlotly() {
-    this.getOptionsBoxplot();
     Plotly.newPlot('boxplot', this.outliersData, this.outliersLayout, { displayModeBar: false });
     Plotly.redraw('boxplot');
   }
 
-  getOptionsBoxplot() {
+  getOptionsBoxplot(showgrid, zeroline, yAxisVisible) {
     this.outliersTrace = {
       y: this.dataBoxplot,
       type: 'box',
@@ -190,8 +195,14 @@ export class ProfilingComponent implements OnInit {
         b: 0
       },
       yaxis: {
-        showgrid: true,
-        zerolinecolor: '#C4BBB8'
+        visible: yAxisVisible,
+        showgrid: showgrid,
+        zeroline: zeroline,
+        zerolinecolor: '#C4BBB8',
+        fixedrange: true
+      },
+      xaxis: {
+        fixedrange: true
       }
     };
   }

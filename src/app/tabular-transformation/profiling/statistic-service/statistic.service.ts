@@ -11,7 +11,7 @@ export class StatisticService {
   public columnSelected: any;
   public typesInferred: any;
   public typeInferred: any;
-  public stdev: number;
+  public stdev: any;
   public outlierExample: any;
 
   constructor() {
@@ -50,99 +50,77 @@ export class StatisticService {
     );
 
     const profileSummary = (columnData) => {
-      let data = columnData;
+      let data;
+      let dataType = datalib.type.infer(columnData);
       // if single cell is selected in handsontable --> data eaquals that cell only
       if (handsontableSelection.row == handsontableSelection.row2) {
         data = [columnData[handsontableSelection.row]];
+      } else {
+        data = columnData;
       }
-      let profile = [];
-      let countTotal = datalib.count(data);
-      let distinct = datalib.count.distinct(data);
+      let min;
+      let max;
+      let mean;
+      let quartiles;
       let valid = datalib.count.valid(data);
       let missing = datalib.count.missing(data);
-      let min = datalib.min(data);
-      let max = datalib.max(data);
-      let mean = datalib.mean(data);
-      this.stdev = datalib.stdev(data);
-      let quartiles;
-      let first_quartile;
-      let third_quartile;
-      let histogram_data = [];
-      let chartLabels01 = [];
-      let chartData_03 = [];
-
-      // if column is selected in handsontable --> compute data distribution and quartiles      
-      if (handsontableSelection.row !== handsontableSelection.row2) {
-        // outlier detection
-        quartiles = datalib.quartile(data);
-        let outliers = 0;
-        first_quartile = quartiles[0];
-        let median = quartiles[1];
-        third_quartile = quartiles[2];
-        let IQR_below = first_quartile - (1.5 * (third_quartile - first_quartile));
-        let IQR_above = third_quartile + (1.5 * (third_quartile - first_quartile));
-
-        for (let i = 0; i < data.length; i++) {
-          if (data[i] < IQR_below || data[i] > IQR_above && data[i] != null) {
-            this.outlierExample = data[i];
-            outliers++;
-            valid--;
-          }
+      let profile = [];
+      let histogramData = [];
+      let boxPlotLabels = [];
+      let chartQuartiles = [];
+      if (dataType === 'integer' || dataType === 'number') {
+        min = datalib.min(data);
+        max = datalib.max(data);
+        mean = datalib.mean(data);
+        this.stdev = datalib.stdev(data);
+        // if column is selected in handsontable --> compute data distribution and quartiles      
+        if (handsontableSelection.row !== handsontableSelection.row2) {
+          // outlier detection
+          quartiles = datalib.quartile(data);
+          chartQuartiles.push({ data: [quartiles.slice(0, 3), this.stdev] });
         }
-        // data distribution, quartiles
-        let tempArray = [];
-        tempArray.push(quartiles[0]);
-        tempArray.push(quartiles[1]);
-        tempArray.push(quartiles[2]);
-        tempArray.push(this.stdev);
-        let obj2 = { data: [] };
-        obj2.data = tempArray;
-        chartData_03.push(obj2);
+      } else if (dataType === 'string' || dataType === 'boolean' || dataType === 'date') {
+        quartiles = ['NaN', 'NaN', 'NaN'];
+        this.stdev = 'NaN';
       }
 
       // histogram or distinct map
+      let distinct = datalib.count.distinct(data);
       if (distinct <= 13) {
         let distinctMap = datalib.count.map(data);
+        var autoFormat = datalib.format.auto.number('s');
         let counter = 0;
         for (let key in distinctMap) {
           let obj = { name: "", value: 0, index: 0 };
-          obj.name = key ? key : 'null';
-          obj.value = distinctMap[key];
+          obj.name = key;
+          obj.value = autoFormat(distinctMap[key]);
           obj.index = counter;
           counter++;
-          chartLabels01.push(key);
-          histogram_data.push(obj);
+          if (dataType === 'number' || dataType === 'integer') {
+            boxPlotLabels.push(key);
+          }
+          histogramData.push(obj);
         }
       }
-      else if (distinct > 13) {
-        let histogram = datalib.histogram(data);
-        for (let i = 0; i < histogram.length; i++) {
-          let obj = { name: "null", value: 0, index: 0 };
-          for (let key in histogram[i]) {
-            if (key == 'count') {
-              obj.value = histogram[i][key];
+      else if (distinct > 13 && dataType === 'number' || dataType === 'integer') {
+        let histogram = datalib.histogram(data, { min: min, max: max, maxbins: 14 });
+        var autoFormat = datalib.format.auto.number('s');
+        let counter = 0;
+        for (let key in histogram) {
+          if (key !== 'bins') {
+            let obj = { name: "", value: 0, index: 0 };
+            obj.name = autoFormat(histogram[key].value);
+            obj.value = histogram[key].count;
+            obj.index = counter;
+            if (obj.index < histogram.length - 1) {
+              let increment = counter + 1;
+              obj.name = obj.name.toString().concat('-', autoFormat(histogram[increment.toString()].value).toString());
+              boxPlotLabels.push(obj.name);
             }
-            if (key == 'value') {
-              if (i == 0) {
-                if (histogram[i][key] == null) {
-                  obj.name = "null";
-                } else {
-                  obj.name = histogram[i][key];
-                }
-              }
-              else {
-                if (histogram[i - 1][key] && histogram[i][key]) {
-                  let str = histogram[i - 1][key] + ' - ' + histogram[i][key];
-                  obj.name = str;
-                }
-              }
-              chartLabels01.push(histogram[i][key] ? histogram[i][key] : 'null');
+            counter++;
+            if (obj.value > 0) {
+              histogramData.push(obj);
             }
-            obj.index = i;
-          }
-          histogram_data.push(obj);
-          if (i === 14) {
-            break; /// TODO FIXME!!! I am a dirty hack
           }
         }
       }
@@ -150,17 +128,18 @@ export class StatisticService {
       let validity_chartData = [];
       validity_chartData.push(valid);
       validity_chartData.push(missing);
-      let chartLabels02 = ['Valid', 'Missing'];
-      let validity_data = [];
+      let validityLabels = ['Valid', 'Missing'];
+      let validityData = [];
       for (let i = 0; i < 2; i++) {
         let obj1 = { name: "", value: 0, index: 0 };
-        obj1.name = chartLabels02[i];
+        obj1.name = validityLabels[i];
         obj1.value = validity_chartData[i];
         obj1.index = i;
-        validity_data.push(obj1);
+        validityData.push(obj1);
       }
 
-      // if single cell is selected in handsontable --> information about data distribution is not available, i.e., 'NA'      
+      // if single cell is selected in handsontable --> information about data distribution is not available, i.e., 'NaN'      
+      let countTotal = datalib.count(data);
       if (handsontableSelection.row == handsontableSelection.row2) {
         this.statData[0].value = countTotal;
         this.statData[1].value = distinct;
@@ -170,13 +149,14 @@ export class StatisticService {
         this.statData[5].value = 'NA';
         this.statData[6].value = 'NA';
         this.statData[7].value = 'NA';
+        boxPlotLabels = [];
       } else {
         // if column is selected in handsontable --> information about data distribution is available              
         this.statData[0].value = countTotal;
         this.statData[1].value = distinct;
-        this.statData[2].value = Math.round(first_quartile);
+        this.statData[2].value = Math.round(quartiles[0]);
         this.statData[3].value = Math.round(mean);
-        this.statData[4].value = Math.round(third_quartile);
+        this.statData[4].value = Math.round(quartiles[2]);
         this.statData[5].value = Math.round(this.stdev);
         this.statData[6].value = Math.round(min);
         this.statData[7].value = Math.round(max);
@@ -184,11 +164,11 @@ export class StatisticService {
 
       profile.push(countTotal);
       profile.push(distinct);
-      profile.push(histogram_data);
-      profile.push(validity_data);
-      profile.push(chartData_03);
-      profile.push(chartLabels01);
-      profile.push(chartLabels02);
+      profile.push(histogramData);
+      profile.push(validityData);
+      profile.push(chartQuartiles);
+      profile.push(boxPlotLabels);
+      profile.push(validityLabels);
 
       return Promise.resolve(profile);
     }

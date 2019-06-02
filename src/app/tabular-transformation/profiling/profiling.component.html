@@ -1,13 +1,14 @@
 <div fxLayout='row' fxLayoutAlign="start center" class="profiling">
   <mat-progress-bar class="progressbar" mode="indeterminate" *ngIf="progressbar"></mat-progress-bar>
   <div id="advancedPieChart">
-    <ngx-charts-advanced-pie-chart [view]="dimensionsAdvancedPieChart" [scheme]="colorSchemeAdvancedPieChart" [results]="dataAdvancedPieChart"
-      [gradient]="gradient" (select)="advancedPieChartClicked($event)">
+    <ngx-charts-advanced-pie-chart [view]="dimensionsAdvancedPieChart" [scheme]="colorSchemeAdvancedPieChart"
+      [results]="dataAdvancedPieChart" [gradient]="gradient" (select)="advancedPieChartClicked($event)">
     </ngx-charts-advanced-pie-chart>
   </div>
-  <table ngl-datatable id="datatable" [data]="dataStatisticsTable" [striped]="datatableStriped" [bordered]="datatableBordered"
-    style="background-color:rgb(250, 250, 250); border: 1px solid #fafafa; width: 220px; height: 200px;" trackByKey="rank"
-    class="slds-max-medium-table--stacked-horizontal">
+  <table ngl-datatable id="datatable" [data]="dataStatisticsTable" [striped]="datatableStriped"
+    [bordered]="datatableBordered"
+    style="background-color:rgb(250, 250, 250); border: 1px solid #fafafa; width: 220px; height: 200px;"
+    trackByKey="rank" class="slds-max-medium-table--stacked-horizontal">
     <ngl-datatable-column heading="" key="stat"></ngl-datatable-column>
     <ngl-datatable-column heading="" key="value" cellClass="slds-text-align--center">
       <ng-template nglDatatableCell let-row="row">
@@ -15,9 +16,10 @@
       </ng-template>
     </ngl-datatable-column>
   </table>
-  <ngx-charts-bar-vertical id="barChart" [view]="dimensionsBarChart" [scheme]="colorSchemeBarChart" [results]="dataBarChart"
-    [legend]="showLegend" [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
-    [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" [gradient]="gradient" (select)="barChartClicked($event)">
+  <ngx-charts-bar-vertical id="barChart" [view]="dimensionsBarChart" [scheme]="colorSchemeBarChart"
+    [results]="dataBarChart" [legend]="showLegend" [xAxis]="showXAxis" [yAxis]="showYAxis"
+    [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel"
+    [yAxisLabel]="yAxisLabel" [gradient]="gradient" (select)="barChartClicked($event)">
   </ngx-charts-bar-vertical>
   <div id="plotly-boxplot">
     <div id="boxplot"></div>
