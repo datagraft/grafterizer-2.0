@@ -164,14 +164,7 @@ export class EnrichmentService {
       .set('weatherParams', weatherConfig.getParameters().join(','))
       .set('offsets', weatherConfig.getOffsets().join(','));
 
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }),
-      params: params
-    };
-
-    return this.http.post(requestURL, null, httpOptions).map((results: any) => {
+    return this.http.post(requestURL, params).map((results: any) => {
       results.sort(function (a, b) {
         return a.offset - b.offset;
       }); // sort results by offset
