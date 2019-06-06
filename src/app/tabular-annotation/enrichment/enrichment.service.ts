@@ -33,8 +33,39 @@ export class EnrichmentService {
     this.asiaURL = this.config.getConfig('asia-backend');
   }
 
-  reconcileColumn(header: string, service: ConciliatorService): Observable<Mapping[]> {
-    const colData = this.data.map(row => row[':' + header]);
+  reconcileColumn(header: string, selectedPropertys: string[] , selectedColumns: string[], service: ConciliatorService): Observable<Mapping[]> {
+    let selectedColumn = [];
+    selectedColumn.push(header);
+    if (selectedColumns) {
+      let x = 0;
+      while (x < selectedColumns.length) {
+      selectedColumn.push(selectedColumns[x]);
+      x++;
+      }
+    }
+    let colData = [];
+    let y = 0;
+    let box;
+    while (y < selectedColumn.length) {
+      box = this.data.map(row => row[':' + selectedColumn[y]]);
+      if (typeof box[0] == 'string') {
+        if ( !isNaN(Number(box[0]))) {
+          let x = 0;
+          let dat;
+          dat = [];
+          while (x < box.length) {
+            dat.push(Number(box[x]));
+            x++;
+          }
+            colData.push(dat);
+        } else {
+          colData.push(box);
+        }
+      } else {
+        colData.push(box);
+      }
+      y++;
+    }
     let values = Array.from(new Set(colData));
 
     values = values.filter(function (e) {
@@ -43,14 +74,52 @@ export class EnrichmentService {
 
     const mappings = new Map<string, Mapping>();
     const queries = [];
-    values.forEach((value: string, index: number) => {
-      const m = new Mapping(index, value);
-      mappings.set(m.queryId, m);
-      queries.push(m.getServiceQuery());
-    });
+    let v ;
+    let sourceValues: any;
+    sourceValues = [];
+    let sourceValuesArray: any;
+    sourceValuesArray = [];
+    let f = 0;
+    let t = 0;
+
+    if (values.length > 1) {
+      while (t < values[0].length) {
+        f = 0;
+        sourceValues = [];
+          while ( f < values.length) {
+              if (f > 0) {
+                v = values[f][t];
+               sourceValues[f - 1] = v;
+            }
+             f++;
+          }
+        sourceValuesArray[t] = sourceValues;
+        t++;
+      }
+    }
+    let reconciled = [];
+    let z = 0;
+
+      while (z < selectedColumns.length) {
+        if (this.getReconciledColumn(selectedColumns[z]) !== undefined ) {
+          if (this.getReconciledColumn(selectedColumns[z]).getConciliator().getId() == service.getId()) {
+            reconciled[z] = true;
+          } else {
+            reconciled[z] = false;
+          }
+        }
+            z++;
+        }
+
+        values[0].forEach((value: string, index: number) => {
+          const m = new Mapping(index, value, sourceValuesArray[index], selectedColumn, selectedPropertys, reconciled);
+          mappings.set(m.queryId, m);
+          queries.push(m.getServiceQuery());
+        });
+      console.log('queries[0]');
+      console.log(queries[0]);
 
     const requestURL = `${this.asiaURL}/reconcile`;
-
     const chunks = [];
 
     while (queries.length) {

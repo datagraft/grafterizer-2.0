@@ -3,6 +3,90 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSour
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, DeriveMap, Mapping, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidatorFn} from '@angular/forms';
+import {AnnotationService} from '../../annotation.service';
+import {Annotation} from '../../annotation.model';
+import {AbstatService} from '../../abstat.service';
+import { Observable } from 'rxjs';
+
+export class CustomValidators {
+
+  /**
+   * Check if subject and property are both filled or empty
+   * @param {string} subject
+   * @param {string} property
+   * @param {string} colValuesType
+   * @returns {ValidatorFn}
+   */
+  static subjectPropertyValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const subjectControl = control.get('sourceColumn');
+      const propertyControl = control.get('property');
+
+      if (subjectControl && propertyControl) {
+        const subjectValue = subjectControl.value;
+        const propertyValue = propertyControl.value;
+
+        if (subjectValue !== '' && propertyValue === '') {
+          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
+        }
+        if (propertyValue !== '' && subjectValue === '') {
+          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
+        }
+        return null;
+      }
+    };
+  }
+
+  /**
+   * Check if the selected source is contained in the array of allowed sources
+   * @returns {ValidatorFn}
+   */
+  static subjectValidator(allowedSources: string[]): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      if (control.value === '') {
+        return null;
+      }
+      if (( control.parent.parent as FormArray).controls.filter(s => s.get('sourceColumn').value === control.value).length > 1) {
+        return {'invalidSubject': {errorMessage: 'Subject already used'}};
+      }
+      if (!allowedSources.includes(control.value)) {
+        return {'invalidSubject': {errorMessage: 'This subject is not allowed'}};
+      }
+      return null;
+    };
+  }
+
+  /**
+   * Check if the selected URL is valid
+   * @returns {ValidatorFn}
+   */
+  static URLValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      try {
+        if (control.value !== '') {
+          const url = new URL(control.value);
+          if (url.host === '') {
+            return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+          }
+        }
+        return null;
+      } catch (error) {
+        return {'invalidURL': {errorMessage: 'This URL is not valid'}};
+      }
+    };
+  }
+
+
+}
+
+
+export interface dialog_add_entity_data {
+   name: string;
+   link: string;
+
+}
+
 
 @Component({
   selector: 'app-reconciliation',
@@ -11,6 +95,16 @@ import {AddEntityDialogComponent} from './addEntityDialog.component';
 })
 export class ReconciliationComponent implements OnInit {
 
+
+  constructor(private fb: FormBuilder, public dialogRef: MatDialogRef<ReconciliationComponent>,
+              @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog, public annotationService: AnnotationService,
+              private enrichmentService: EnrichmentService,
+              private abstat: AbstatService) {
+  }
+
+  public annotation: Annotation;
+  public data_for_add_entity_dialog: dialog_add_entity_data =
+    {name: '', link: ''};
   public close = false;
   public colIndex: any;
   public filter_column = 0;
@@ -45,20 +139,29 @@ export class ReconciliationComponent implements OnInit {
   public notReconciledCount: number;
   public shiftColumn = false;
   public manualMatched: any[] = [];
+  public reconciliationForm: FormGroup;
+  public items: FormArray;
+  public property: string;
+  public value: string;
+  public propertyArray: string[];
+  public sourceArray: string[];
+
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  public available: string[];
+  public headers: string[];
+  public index: number;
+  public openedSource: string;
+  filteredOptions: string[];
 
-  constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog,
-              private enrichmentService: EnrichmentService) {
-  }
 
   ngOnInit() {
-
     this.header = this.dialogInputData.header;
+    this.annotation = this.dialogInputData.annotation;
     this.colIndex = this.dialogInputData.indexCol;
     this.services = new Map();
     this.servicesGroups = [];
+    this.openedSource = '';
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
@@ -67,6 +170,9 @@ export class ReconciliationComponent implements OnInit {
         this.servicesGroups.push(serviceCategory);
       });
     });
+    this.headers = [];
+    this.fillAllowedSourcesArray();
+    this.index = 0;
     this.showPreview = false;
     this.dataLoading = false;
     this.reconciledData = [];
@@ -75,17 +181,65 @@ export class ReconciliationComponent implements OnInit {
     this.matchedCount = 0;
     this.maxThresholdCount = 0;
     this.notReconciledCount = 0;
-
+    this.annotationsSuggestion();
+    this.reconciliationForm = this.fb.group({
+      selectedGroup: new FormControl(''),
+      selectedService: new FormControl(''),
+      items: this.fb.array([this.createNewItem()]),
+      newColumnName: new FormControl(''),
+      shiftColumn: new FormControl('')
+    });
   }
 
+  createNewItem(): FormGroup {
+    return new FormGroup({
+      sourceColumn: new FormControl('', CustomValidators.subjectValidator(this.available)),
+      property: new FormControl('', CustomValidators.URLValidator())
+    }, CustomValidators.subjectPropertyValidator());
+  }
+
+  addItem(): void {
+    (this.reconciliationForm.get('items') as FormArray).push(this.createNewItem());
+  }
+
+  deleteItem(index: number): void {
+    (this.reconciliationForm.get('items')as FormArray).removeAt(index);
+  }
+
+  fillAllowedSourcesArray() {
+    this.available = this.annotationService.headers.filter(s => s !== this.header);
+    this.filteredOptions = this.available;
+  }
+  filterEmptySelect() {
+    let x = 0;
+    while ( x < (this.reconciliationForm.get('items') as FormArray).controls.length) {
+      if ((this.reconciliationForm.get('items') as FormArray).controls[x].get('sourceColumn').value === ''
+        && (this.reconciliationForm.get('items') as FormArray).controls[x].get('property').value === '' && x !== 0) {
+      this.deleteItem(x);
+      }
+      if ((this.reconciliationForm.get('items') as FormArray).controls[x].get('sourceColumn').value !== ('' && undefined && null)
+        && (this.reconciliationForm.get('items') as FormArray).controls[x].get('property').value !== ('' && undefined && null)) {
+
+        this.sourceArray[x] = (this.reconciliationForm.get('items') as FormArray).controls[x].get('sourceColumn').value;
+        this.propertyArray[x] = (this.reconciliationForm.get('items') as FormArray).controls[x].get('property').value;
+      }
+  x++;
+}
+}
+
   public reconcile() {
+    this.propertyArray = [];
+    this.sourceArray = [];
+    if ( (this.reconciliationForm.get('items') as FormArray).controls.length > 0) {
+    this.filterEmptySelect();
+}
     this.skippedCount = 0;
     this.matchedCount = 0;
     this.maxThresholdCount = 0;
     this.notReconciledCount = 0;
     this.dataLoading = true;
     this.showPreview = true;
-    this.enrichmentService.reconcileColumn(this.header, this.services.get(this.selectedService)).subscribe((data) => {
+    this.enrichmentService.reconcileColumn(this.header, this.propertyArray, this.sourceArray, this.services.get(this.reconciliationForm.get('selectedService').value)).subscribe((data) => {
       this.reconciledData = data;
       this.dataSource = new MatTableDataSource(this.reconciledData); // to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
@@ -97,6 +251,7 @@ export class ReconciliationComponent implements OnInit {
           .filter((result: Result) => result.types
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
       });
+
       this.updateThreshold();
       this.dataLoading = false;
 
@@ -104,20 +259,21 @@ export class ReconciliationComponent implements OnInit {
   }
 
   public submit() {
+
     const deriveMaps = [];
 
-    if (!this.newColumnName || this.newColumnName.trim().length === 0) {
-      this.newColumnName = this.header + '_' + this.selectedService;
+    if (!this.reconciliationForm.get('newColumnName').value || this.reconciliationForm.get('newColumnName').value.trim().length === 0) {
+      this.reconciliationForm.get('newColumnName').setValue(this.header + '_' + this.reconciliationForm.get('selectedService').value);
     }
 
-    this.newColumnName = this.newColumnName.replace(/\s/g, '_');
+    this.reconciliationForm.get('newColumnName').setValue(this.reconciliationForm.get('newColumnName').value.replace(/\s/g, '_'));
     deriveMaps.push(
-      new DeriveMap(this.newColumnName, null)
+      new DeriveMap(this.reconciliationForm.get('newColumnName').value, null)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': this.services.get(this.selectedService),
-      'shift': this.shiftColumn,
+      'conciliator': this.services.get(this.reconciliationForm.get('selectedService').value),
+      'shift': this.reconciliationForm.get('shiftColumn').value,
       'header': this.header,
       'indexCol': this.colIndex
     });
@@ -125,8 +281,9 @@ export class ReconciliationComponent implements OnInit {
   }
 
   updateServicesForSelectedGroup(): void {
-    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup);
-    this.selectedService = this.servicesForSelectedGroup[0].getId();
+    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(
+      s => s.getGroup() === this.reconciliationForm.get('selectedGroup').value);
+    this.reconciliationForm.get('selectedGroup').setValue(this.servicesForSelectedGroup[0].getGroup());
     this.showPreview = false;
   }
 
@@ -419,4 +576,48 @@ export class ReconciliationComponent implements OnInit {
 
   }
 
-} // end export class
+
+
+  annotationsSuggestion() {
+    // Set first ABSTAT property suggestion as initial value
+    this.abstat.propertySuggestions(this.header).subscribe(suggestions => {
+      if (suggestions.length > 0) {
+        (this.reconciliationForm.get('items') as FormArray).controls[0].get('property').setValue(suggestions[0].suggestion);
+      }
+    });
+  }
+
+  /**
+   * Search for property suggestions
+   * @param keyword
+   * @returns {Observable<any[]>}
+   */
+  propertyAutocomplete = (keyword: any): Observable<any[]> => {
+    return this.abstat.propertySuggestions(keyword);
+  }
+
+  /**
+   * Custom rendering of autocomplete list
+   * @param data
+   * @returns {string}
+   */
+  autocompleteListFormatter = (data: any) => {
+    return `<p class="p6 no-margin-top">${data.suggestion}</p>
+                <p class="p7 no-margin-top">${data.occurrence} occurrences</p>
+                <p class="p7 no-margin-top">from: ${data.dataset}</p>`;
+  }
+
+  filter(i: number) {
+    this.filteredOptions =  this.filterAvailable((this.reconciliationForm.get('items') as FormArray).controls[i].get('sourceColumn').value);
+  }
+
+  private filterAvailable(text: string): string[] {
+    if (text !== undefined) {
+      const filterValue = text.toLowerCase();
+      return this.available.filter(
+        option => option.toLowerCase().includes(filterValue));
+    }
+    return [];
+  }
+
+}// end export class

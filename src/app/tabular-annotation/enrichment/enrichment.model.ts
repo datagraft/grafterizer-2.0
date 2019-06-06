@@ -58,17 +58,87 @@ export class Property {
 export class Mapping {
   public queryId: string;
   public originalQuery: string;
+  public sourcesV: any[];
+  public propertiesV: string[];
+  public reconciledColumn: boolean[];
+   public selectedColumns: string[];
   public results: Result[];
 
-  constructor(queryId: number, query: string) {
+  constructor(queryId: number, query: string, sourcesValue: any[], columnsSelected: string[] , propertiesValue: string[], reconciled: boolean[]) {
     this.queryId = 'q' + queryId;
     this.originalQuery = query;
+    this.sourcesV = [];
+    this.propertiesV = [];
+    this.selectedColumns = [];
+    this.reconciledColumn = [];
+    if (sourcesValue) {
+      let x = 0;
+      while ( x < sourcesValue.length) {
+        this.sourcesV[x] = sourcesValue[x];
+        x++;
+      }
+    }
+    if (reconciled) {
+      let x = 0;
+      while (x < reconciled.length) {
+        this.reconciledColumn[x] = reconciled[x];
+        x++;
+      }
+    }
+    if (columnsSelected) {
+    let z = 0;
+    while ( z < columnsSelected.length) {
+      this.selectedColumns[z] = columnsSelected[z];
+      z++;
+    }
+  }
+    if (propertiesValue) {
+      let y = 0;
+      while ( y < propertiesValue.length) {
+        this.propertiesV[y] = propertiesValue[y];
+        y++;
+      }
+    }
+
     this.results = [];
   }
 
   public getServiceQuery(): string {
-    return '"' + this.queryId + '": {"query": "' + this.originalQuery + '"}';
-  }
+    let y = 0;
+    let box = '';
+
+    if (this.sourcesV && this.propertiesV) {
+      while (y < this.sourcesV.length - 1) {
+        if (this.reconciledColumn[y] === true) {
+          box = box + '{"pid": "' + this.propertiesV[y] + '", "v" : { "id": "' + this.sourcesV[y] + '" } },';
+        } else {
+          if (typeof this.sourcesV[y] !== 'number') {
+            box = box + '{"p": "' + this.propertiesV[y] + '", "v": "' + this.sourcesV[y] + '"},';
+          } else {
+            box = box + '{"p": "' + this.propertiesV[y] + '", "v": ' + this.sourcesV[y] + '},';
+          }
+        }
+        y++;
+      }
+
+      if (y == this.sourcesV.length - 1) {
+        if (this.reconciledColumn[y] === true) {
+
+          box = box + '{"pid": "' + this.propertiesV[y] + '", "v" : { "id": "' + this.sourcesV[y] + '" } }';
+          return  '"' + this.queryId + '": {"query": "' + this.originalQuery + '", "properties": [' + box + ']} ';
+        } else {
+          if (typeof this.sourcesV[y] !== 'number') {
+            box = box + '{"p": "' + this.propertiesV[y] + '", "v": "' + this.sourcesV[y] + '"}';
+            return '"' + this.queryId + '": {"query": "' + this.originalQuery + '", "properties": [' + box + ']} ';
+          } else {
+            box = box + '{"p": "' + this.propertiesV[y] + '", "v": ' + this.sourcesV[y] + '}';
+            return '"' + this.queryId + '": {"query": "' + this.originalQuery + '", "properties": [' + box + ']} ';
+          }
+        }
+      }
+    }
+        return '"' + this.queryId + '": {"query": "' + this.originalQuery + '"}';
+      }
 
   public addResult(res: Result) {
     this.results.push(res);
