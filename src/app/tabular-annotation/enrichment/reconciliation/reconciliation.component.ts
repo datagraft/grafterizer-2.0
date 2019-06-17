@@ -91,7 +91,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledData; // to update reconciledData
       this.dataSource.paginator = this.paginator;
       this.reconciledDataFiltered = Object.assign([], this.reconciledData);
-      this.guessedType = this.guessType();
+      this.guessedType = this.enrichmentService.getMostFrequentType(this.reconciledData);
       this.reconciledData.forEach((mapping: Mapping) => {
         mapping.results = mapping.results
           .filter((result: Result) => result.types
@@ -128,52 +128,6 @@ export class ReconciliationComponent implements OnInit {
     this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup);
     this.selectedService = this.servicesForSelectedGroup[0].getId();
     this.showPreview = false;
-  }
-
-  guessType(): Type {
-    const cumulators = {};
-    const counters = {};
-    const appearances = {};
-    const types = {};
-
-    let noResultsCounter = 0;
-
-    this.reconciledData.forEach((mapping: Mapping) => {
-      if (mapping.results.length === 0) {
-        noResultsCounter += 1;
-      }
-
-      mapping.results.forEach((result: Result) => {
-        result.types.forEach((type: Type) => {
-          if (!cumulators[type.id]) {
-            cumulators[type.id] = 0;
-            counters[type.id] = 0;
-            appearances[type.id] = new Set();
-          }
-          cumulators[type.id] += result.score;
-          counters[type.id] += 1;
-          appearances[type.id].add(mapping.queryId);
-
-          types[type.id] = type;
-        });
-      });
-    });
-
-    const scores = {};
-
-    Object.keys(appearances).forEach((property: string) => {
-      scores[property] = (cumulators[property] / counters[property]) *
-        (appearances[property].size / (this.reconciledData.length - noResultsCounter));
-    });
-
-    if (Object.keys(scores).length > 0) {
-      const bestTypeId = Object.keys(scores).reduce(function (a, b) {
-        return scores[a] > scores[b] ? a : b;
-      });
-      return types[bestTypeId];
-    }
-
-    return null;
   }
 
   updateThreshold() {

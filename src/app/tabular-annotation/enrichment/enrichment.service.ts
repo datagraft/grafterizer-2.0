@@ -2,19 +2,22 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-  ConciliatorService, EventConfigurator,
+  ConciliatorService,
+  Event,
+  EventConfigurator,
   Extension,
   Mapping,
   Property,
   ReconciledColumn,
-  WeatherConfigurator, WeatherObservation,
-  WeatherParameter,
-  Event
+  Result,
+  Type,
+  WeatherConfigurator,
+  WeatherObservation,
+  WeatherParameter
 } from './enrichment.model';
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
-import {TabularAnnotationComponent} from '../tabular-annotation.component';
 import {UrlUtilsService} from '../shared/url-utils.service';
 
 @Injectable()
@@ -23,7 +26,6 @@ export class EnrichmentService {
   public headers: string[];
   public data;
   private reconciledColumns: {};
-
   private asiaURL;
 
   constructor(private http: HttpClient, private config: AppConfig) {
@@ -33,7 +35,82 @@ export class EnrichmentService {
     this.asiaURL = this.config.getConfig('asia-backend');
   }
 
-  reconcileColumn(header: string, service: ConciliatorService): Observable<Mapping[]> {
+  /**
+   * Return the most frequent type of matched entities.
+   * Return null only if no candidates have been found for all mentions
+   * @param mappings
+   */
+  getMostFrequentType(mappings: Mapping[]): Type {
+    const cumulators = {};
+    const counters = {};
+    const appearances = {};
+    const types = {};
+
+    let noResultsCounter = 0;
+
+    mappings.forEach((mapping: Mapping) => {
+      if (mapping.results.length === 0) {
+        noResultsCounter += 1;
+      }
+
+      mapping.results.forEach((result: Result) => {
+        result.types.forEach((type: Type) => {
+          if (!cumulators[type.id]) {
+            cumulators[type.id] = 0;
+            counters[type.id] = 0;
+            appearances[type.id] = new Set();
+          }
+          cumulators[type.id] += result.score;
+          counters[type.id] += 1;
+          appearances[type.id].add(mapping.queryId);
+
+          types[type.id] = type;
+        });
+      });
+    });
+
+    const scores = {};
+
+    Object.keys(appearances).forEach((property: string) => {
+      scores[property] = (cumulators[property] / counters[property]) *
+        (appearances[property].size / (mappings.length - noResultsCounter));
+    });
+
+    if (Object.keys(scores).length > 0) {
+      const bestTypeId = Object.keys(scores).reduce(function (a, b) {
+        return scores[a] > scores[b] ? a : b;
+      });
+      return types[bestTypeId];
+    }
+
+    return null;
+  }
+
+  private getAsiaReconciliationRequest(queries: string[], type: Type = null, conciliator: ConciliatorService) {
+    const requestURL = `${this.asiaURL}/reconcile`;
+
+    const params = new HttpParams()
+      .set('queries', `{${queries.join(',')}}`)
+      .set('conciliator', conciliator.getId());
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions);
+  }
+
+  /**
+   * Reconcile the selected column (header), using the reconciliation service passed as parameter.
+   * This method uses the most frequent types computed on a sample of size sampleSize as the columnType.
+   * @param header the header of the column to reconcile
+   * @param service the reconciliation service to use
+   * @param sampleSize number of rows to use for determining the most frequent entity type (default is 10).
+   */
+  reconcileColumn(header: string, service: ConciliatorService, sampleSize: number = 10): Observable<Mapping[]> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
@@ -49,35 +126,10 @@ export class EnrichmentService {
       queries.push(m.getServiceQuery());
     });
 
-    const requestURL = `${this.asiaURL}/reconcile`;
-
-    const chunks = [];
-
-    while (queries.length) {
-      chunks.push(queries.splice(0, 10));
-    }
-
     const requests = [];
-    chunks.forEach(chunk => {
-      const params = new HttpParams()
-        .set('queries', `{${chunk.join(',')}}`)
-        .set('conciliator', service.getId());
-
-      const httpOptions = {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }),
-        params: params
-      };
-
-      requests.push(this.http.post(requestURL, null, httpOptions));
-    });
-
-    // // TODO: remove after solving CORS issue
-    // mappings.forEach((mapping: Mapping) => {
-    //   mapping.setResultsFromService(this.constResponse[mapping.queryId]['result']);
-    // });
-    // return Observable.of(mappings);
+    while (queries.length) {
+      requests.push(this.getAsiaReconciliationRequest(queries.splice(0, 10), null, service));
+    }
 
     return forkJoin(requests).map((results: any) => {
       results.forEach(res => {
@@ -215,7 +267,7 @@ export class EnrichmentService {
       });
       return Array.from(extensions.values());
     });
-  }//end weatherData
+  } // end weatherData
 
   eventData(on: string, eventConfig: EventConfigurator): Observable<Extension[]> {
     let geoIds = [];
@@ -294,7 +346,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension(event.getGeonamesId(), []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(event.getGeonamesId(), extension);
         } else if (on === 'category') {
@@ -306,14 +358,14 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension(event.getCategories()[0], []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}])
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(event.getCategories()[0], extension);
         }
       });
       return Array.from(extensions.values());
     });
-  }//end weatherData
+  } // end weatherData
 
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
     this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
@@ -324,10 +376,7 @@ export class EnrichmentService {
   }
 
   isColumnDate(header: string): boolean {
-    if (header.toLowerCase().search('date') !== -1)
-      return true;
-    else
-      return false;
+    return header.toLowerCase().search('date') !== -1;
   }
 
 
