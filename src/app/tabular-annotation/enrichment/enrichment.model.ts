@@ -55,7 +55,7 @@ export class Property {
   }
 }
 
-enum TypeStrict {
+export enum TypeStrict {
   ANY = 'any',
   ALL = 'all',
   SHOULD = 'should'
@@ -83,11 +83,11 @@ export class ReconciliationQueryMap {
 export class ReconciliationQuery {
   private query: string;
   private limit: number;
-  private type: string[];
+  private type: Type[];
   private type_strict: TypeStrict;
   // TODO: consider also properties here
 
-  constructor(query, limit = 5, type = null, typeStrict = TypeStrict.ANY) {
+  constructor(query, limit = 5, type: Type[] = null, typeStrict = TypeStrict.ANY) {
     this.query = query;
     this.limit = limit;
     this.type = type;
@@ -110,11 +110,11 @@ export class ReconciliationQuery {
     this.limit = limit;
   }
 
-  getType(): string[] {
+  getType(): Type[] {
     return this.type;
   }
 
-  setType(type: string[]) {
+  setType(type: Type[]) {
     this.type = type;
   }
 
@@ -128,7 +128,7 @@ export class ReconciliationQuery {
 
 }
 
-export class Mapping {
+export class QueryResult {
   public reconciliationQuery: ReconciliationQuery;
   public results: Result[];
 
@@ -181,7 +181,7 @@ export class DeriveMap {
     this.newColName = newColName;
   }
 
-  buildFromMapping(mapping: Mapping[], threshold: number, types: Type[]) {
+  buildFromMapping(mapping: QueryResult[], threshold: number, types: Type[]) {
     this.deriveMap = {};
     this.newColTypes = types;
     mapping.forEach(m => {

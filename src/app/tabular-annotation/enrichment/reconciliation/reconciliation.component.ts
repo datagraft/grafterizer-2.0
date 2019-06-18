@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSource, Sort} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
-import {ConciliatorService, DeriveMap, Mapping, Result, Type} from '../enrichment.model';
+import {ConciliatorService, DeriveMap, QueryResult, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
 
 @Component({
@@ -92,7 +92,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource.paginator = this.paginator;
       this.reconciledDataFiltered = Object.assign([], this.reconciledData);
       this.guessedType = this.enrichmentService.getMostFrequentType(this.reconciledData);
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         mapping.results = mapping.results
           .filter((result: Result) => result.types
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
@@ -148,7 +148,7 @@ export class ReconciliationComponent implements OnInit {
     this.threshold = parseFloat(this.threshold.toFixed(2));
 
 
-    this.reconciledData.forEach((mapping: Mapping) => {
+    this.reconciledData.forEach((mapping: QueryResult) => {
       if (mapping.results.length > 0) {
         if (mapping.results[0].match && this.manualMatched.indexOf(mapping.results[0].id) === -1) {
           this.matchedCount += 1;
@@ -235,7 +235,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledData; // to update reconciledData
       this.dataSource.paginator = this.paginator;
     } else if (filter == 1) { // filter by matched
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 &&
           (!mapping.results[0].match || this.manualMatched.indexOf(mapping.results[0].id) !== -1)) || mapping.results.length == 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
@@ -248,7 +248,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
     } else if (filter == 2) { // filter by >= threshold
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 &&
           (mapping.results[0].match || mapping.results[0].score < this.threshold)) || mapping.results.length == 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
@@ -260,7 +260,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
     } else if (filter == 3) { // filter by < threshold
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 && mapping.results[0].score >= this.threshold) || mapping.results.length == 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
@@ -271,7 +271,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
     } else if (filter == 4) { // filter by not reconciled
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         if (mapping.results.length > 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
@@ -282,7 +282,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
     } else if (filter == 5) { // filter by matched by user
-      this.reconciledData.forEach((mapping: Mapping) => {
+      this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 && this.manualMatched.indexOf(mapping.results[0].id) === -1) || mapping.results.length == 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
@@ -332,7 +332,7 @@ export class ReconciliationComponent implements OnInit {
   }
 
   setAllMaxThresholdAsMAtched() {
-    this.reconciledData.forEach((mapping: Mapping) => {
+    this.reconciledData.forEach((mapping: QueryResult) => {
       if (mapping.results.length > 0 && mapping.results[0].score >= this.threshold) {
         mapping.results[0].match = true;
       }

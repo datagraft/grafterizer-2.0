@@ -6,11 +6,14 @@ import {
   Event,
   EventConfigurator,
   Extension,
-  Mapping,
+  QueryResult,
   Property,
-  ReconciledColumn, ReconciliationQuery, ReconciliationQueryMap,
+  ReconciledColumn,
+  ReconciliationQuery,
+  ReconciliationQueryMap,
   Result,
   Type,
+  TypeStrict,
   WeatherConfigurator,
   WeatherObservation,
   WeatherParameter
@@ -19,6 +22,7 @@ import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
 import {UrlUtilsService} from '../shared/url-utils.service';
+import {query} from '@angular/animations';
 
 @Injectable()
 export class EnrichmentService {
@@ -40,7 +44,7 @@ export class EnrichmentService {
    * Return null only if no candidates have been found for all mentions
    * @param mappings
    */
-  getMostFrequentType(mappings: Mapping[]): Type {
+  getMostFrequentType(mappings: QueryResult[]): Type {
     const cumulators = {};
     const counters = {};
     const appearances = {};
@@ -48,7 +52,7 @@ export class EnrichmentService {
 
     let noResultsCounter = 0;
 
-    mappings.forEach((mapping: Mapping) => {
+    mappings.forEach((mapping: QueryResult) => {
       if (mapping.results.length === 0) {
         noResultsCounter += 1;
       }
@@ -86,13 +90,11 @@ export class EnrichmentService {
     return null;
   }
 
-  private getAsiaReconciliationRequest(queries: ReconciliationQueryMap[], conciliator: ConciliatorService) {
+  private getAsiaReconciliationRequest(queries: Map<string, ReconciliationQuery>, conciliator: ConciliatorService) {
     const requestURL = `${this.asiaURL}/reconcile`;
 
     const queriesObj = {};
-    for (const q of queries) {
-      queriesObj[q.getQueryId()] = q.getReconciliationQuery();
-    }
+    Array.from(queries.entries()).forEach(x => queriesObj[x[0]] = x[1]);
 
     const params = new HttpParams()
       .set('queries', JSON.stringify(queriesObj))
@@ -108,6 +110,30 @@ export class EnrichmentService {
     return this.http.post(requestURL, null, httpOptions);
   }
 
+  private execQueries(qResults: QueryResult[], service: ConciliatorService) {
+    const requests = [];
+
+    const resultsMap = new Map<string, QueryResult>();
+
+    for (let index = 0; index < qResults.length; index += 10) {
+      const queriesMap = new Map<string, ReconciliationQuery>();
+      qResults.slice(index, index + 10).forEach((qr, idx) => {
+        resultsMap.set(`q${index + idx}`, qr);
+        queriesMap.set(`q${index + idx}`, qr.reconciliationQuery);
+      });
+      requests.push(this.getAsiaReconciliationRequest(queriesMap, service));
+    }
+
+    return forkJoin(requests).map((results: any) => {
+      results.forEach(res => {
+        Object.keys(res).forEach(queryId => {
+          resultsMap.get(queryId).setResultsFromService(res[queryId]['result']);
+        });
+      });
+      return Array.from(resultsMap.values());
+    });
+  }
+
   /**
    * Reconcile the selected column (header), using the reconciliation service passed as parameter.
    * This method uses the most frequent types computed on a sample of size sampleSize as the columnType.
@@ -115,37 +141,14 @@ export class EnrichmentService {
    * @param service the reconciliation service to use
    * @param sampleSize number of rows to use for determining the most frequent entity type (default is 10).
    */
-  reconcileColumn(header: string, service: ConciliatorService, sampleSize: number = 10): Observable<Mapping[]> {
+  reconcileColumn(header: string, service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
-
     values = values.filter(function (e) {
       return e === 0 || e;
     });  // remove empty strings
 
-    const mappings = new Map<string, Mapping>();
-    const queries = [];
-    values.forEach((value: string, index: number) => {
-      const recQuery = new ReconciliationQuery(value);
-      const m = new Mapping(recQuery);
-      const queryId = `q${index}`;
-      mappings.set(queryId, m);
-      queries.push(new ReconciliationQueryMap(queryId, recQuery));
-    });
-
-    const requests = [];
-    while (queries.length) {
-      requests.push(this.getAsiaReconciliationRequest(queries.splice(0, 10), service));
-    }
-
-    return forkJoin(requests).map((results: any) => {
-      results.forEach(res => {
-        Object.keys(res).forEach(queryId => {
-          mappings.get(queryId).setResultsFromService(res[queryId]['result']);
-        });
-      });
-      return Array.from(mappings.values());
-    });
+    return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v))), service);
   }
 
   extendColumn(header: string, properties: string[]): Observable<{ ext: Extension[], props: Property[] }> {
