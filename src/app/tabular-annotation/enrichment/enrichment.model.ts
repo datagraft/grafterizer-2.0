@@ -3,7 +3,7 @@ import { UrlUtilsService } from '../shared/url-utils.service';
 
 /**
  * Semantic type of the reconciled entities
- * @param  {Object} obj - 
+ * @param  {Object} obj -
  */
 export class Type {
   // identifier of the type (URI)
@@ -55,19 +55,86 @@ export class Property {
   }
 }
 
-export class Mapping {
-  public queryId: string;
-  public originalQuery: string;
-  public results: Result[];
+enum TypeStrict {
+  ANY = 'any',
+  ALL = 'all',
+  SHOULD = 'should'
+}
 
-  constructor(queryId: number, query: string) {
-    this.queryId = 'q' + queryId;
-    this.originalQuery = query;
-    this.results = [];
+export class ReconciliationQueryMap {
+  private queryId: string;
+  private reconciliationQuery: ReconciliationQuery;
+
+  constructor(queryId: string, reconciliationQuery: ReconciliationQuery) {
+    this.queryId = queryId;
+    this.reconciliationQuery = reconciliationQuery;
   }
 
-  public getServiceQuery(): string {
-    return '"' + this.queryId + '": {"query": "' + this.originalQuery + '"}';
+  getQueryId(): string {
+    return this.queryId;
+  }
+
+  getReconciliationQuery(): ReconciliationQuery {
+    return this.reconciliationQuery;
+  }
+
+}
+
+export class ReconciliationQuery {
+  private query: string;
+  private limit: number;
+  private type: string[];
+  private type_strict: TypeStrict;
+  // TODO: consider also properties here
+
+  constructor(query, limit = 5, type = null, typeStrict = TypeStrict.ANY) {
+    this.query = query;
+    this.limit = limit;
+    this.type = type;
+    this.type_strict = typeStrict;
+  }
+
+  getQuery(): string {
+    return this.query;
+  }
+
+  setQuery(query: string) {
+    this.query = query;
+  }
+
+  getLimit(): number {
+    return this.limit;
+  }
+
+  setLimit(limit: number) {
+    this.limit = limit;
+  }
+
+  getType(): string[] {
+    return this.type;
+  }
+
+  setType(type: string[]) {
+    this.type = type;
+  }
+
+  getTypeStrict(): TypeStrict {
+    return this.type_strict;
+  }
+
+  setTypeStrict(typeStrict: TypeStrict) {
+    this.type_strict = typeStrict;
+  }
+
+}
+
+export class Mapping {
+  public reconciliationQuery: ReconciliationQuery;
+  public results: Result[];
+
+  constructor(reconciliationQuery: ReconciliationQuery) {
+    this.reconciliationQuery = reconciliationQuery;
+    this.results = [];
   }
 
   public addResult(res: Result) {
@@ -119,7 +186,7 @@ export class DeriveMap {
     this.newColTypes = types;
     mapping.forEach(m => {
       if (m.results.length > 0 && m.results[0].match) {
-        this.deriveMap[m.originalQuery] = m.results[0].id; // TODO: iterate over results!
+        this.deriveMap[m.reconciliationQuery.getQuery()] = m.results[0].id; // TODO: iterate over results!
       }
     });
     return this;

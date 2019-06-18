@@ -8,7 +8,7 @@ import {
   Extension,
   Mapping,
   Property,
-  ReconciledColumn,
+  ReconciledColumn, ReconciliationQuery, ReconciliationQueryMap,
   Result,
   Type,
   WeatherConfigurator,
@@ -62,7 +62,7 @@ export class EnrichmentService {
           }
           cumulators[type.id] += result.score;
           counters[type.id] += 1;
-          appearances[type.id].add(mapping.queryId);
+          appearances[type.id].add(mapping.reconciliationQuery.getQuery());
 
           types[type.id] = type;
         });
@@ -86,11 +86,16 @@ export class EnrichmentService {
     return null;
   }
 
-  private getAsiaReconciliationRequest(queries: string[], type: Type = null, conciliator: ConciliatorService) {
+  private getAsiaReconciliationRequest(queries: ReconciliationQueryMap[], conciliator: ConciliatorService) {
     const requestURL = `${this.asiaURL}/reconcile`;
 
+    const queriesObj = {};
+    for (const q of queries) {
+      queriesObj[q.getQueryId()] = q.getReconciliationQuery();
+    }
+
     const params = new HttpParams()
-      .set('queries', `{${queries.join(',')}}`)
+      .set('queries', JSON.stringify(queriesObj))
       .set('conciliator', conciliator.getId());
 
     const httpOptions = {
@@ -121,14 +126,16 @@ export class EnrichmentService {
     const mappings = new Map<string, Mapping>();
     const queries = [];
     values.forEach((value: string, index: number) => {
-      const m = new Mapping(index, value);
-      mappings.set(m.queryId, m);
-      queries.push(m.getServiceQuery());
+      const recQuery = new ReconciliationQuery(value);
+      const m = new Mapping(recQuery);
+      const queryId = `q${index}`;
+      mappings.set(queryId, m);
+      queries.push(new ReconciliationQueryMap(queryId, recQuery));
     });
 
     const requests = [];
     while (queries.length) {
-      requests.push(this.getAsiaReconciliationRequest(queries.splice(0, 10), null, service));
+      requests.push(this.getAsiaReconciliationRequest(queries.splice(0, 10), service));
     }
 
     return forkJoin(requests).map((results: any) => {
