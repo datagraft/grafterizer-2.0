@@ -368,8 +368,13 @@
             {{extension.properties.get(prop)[0]['str']}}
           </span>
           <a
-            *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
+            *ngIf="!reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
             href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
+            target="_blank">{{extension.properties.get(prop)[0]['name']}}
+          </a>
+          <a
+            *ngIf="reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
+            href="{{reconciledToService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
             target="_blank">{{extension.properties.get(prop)[0]['name']}}
           </a>
         </clr-dg-cell>

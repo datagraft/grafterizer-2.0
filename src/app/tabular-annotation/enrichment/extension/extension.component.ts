@@ -56,11 +56,12 @@ export class ExtensionComponent implements OnInit {
   public categoryChoice: any;
   public dataLoading: boolean;
   public reconciledFromService: ConciliatorService;
+  public reconciledToService: ConciliatorService; // useful for sameAs extensions
   public shiftColumn = false;
   public selectedChipsPlaces: any = [];
   public selectedChipsCategories: any = [];
 
-  public kgServices: any;
+  public kgServices: ConciliatorService[];
 
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
@@ -137,7 +138,7 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max', 'cumul'];
-    this.getKGServices().subscribe((data) => {
+    this.getKGServices().subscribe((data: ConciliatorService[]) => {
       this.kgServices = data;
     });
   } // end ngOnInit
@@ -145,10 +146,10 @@ export class ExtensionComponent implements OnInit {
   // Stub: send list of observable to template
   getKGServices = (): Observable<Object> => {
     const kgServices = [
-      { 'id': 'lau', 'name': 'LAU' },
-      { 'id': 'dbpedia', 'name': 'DBpedia' },
-      { 'id': 'wikidata', 'name': 'Wikidata' },
-      { 'id': 'geonames', 'name': 'GeoNames' },
+      new ConciliatorService({ 'id': 'lau', 'name': 'LAU', 'identifierSpace': 'http://data.businessgraph.io/lau/' }),
+      new ConciliatorService({ 'id': 'dbpedia', 'name': 'DBpedia', 'identifierSpace': 'http://dbpedia.org/resource/' }),
+      new ConciliatorService({ 'id': 'wikidata', 'name': 'Wikidata', 'identifierSpace': 'http://www.wikidata.org/entity/' }),
+      new ConciliatorService({ 'id': 'geonames', 'name': 'GeoNames', 'identifierSpace': 'http://sws.geonames.org/' })
     ];
     return Observable.of(kgServices);
   }
@@ -233,9 +234,10 @@ export class ExtensionComponent implements OnInit {
 
     // get KB source and KB target parameters
     const sameAsSource = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
+    this.reconciledToService = this.kgServices.find((svc: ConciliatorService) => svc.getId() === this.selectedKGService);
 
     // pass parameters to enrichment service through Extension object
-    this.enrichmentService.sameasData(this.header, sameAsSource.getId(), this.selectedKGService).subscribe((data) => {
+    this.enrichmentService.sameasData(this.header, sameAsSource, this.reconciledToService).subscribe((data) => {
       this.extensionData = data;
       if (this.extensionData.length > 0) {
         this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -312,6 +314,7 @@ export class ExtensionComponent implements OnInit {
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.reconciledFromService,
+      'conciliatorTo': this.reconciledToService,
       'shift': this.shiftColumn,
       'header': this.previewHeader,
       'indexCol': this.colIndex

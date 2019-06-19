@@ -324,7 +324,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         }
         else */
       if (result && result['deriveMaps']) {
-        this.deriveColumnsFromEnrichment(result['indexCol'], result['header'], result['deriveMaps'], result['conciliator'], result['shift']);
+        this.deriveColumnsFromEnrichment(
+          result['indexCol'],
+          result['header'],
+          result['deriveMaps'],
+          result['conciliator'],
+          result['conciliatorTo'],
+          result['shift']);
 
       }
       // Update headers (some columns might have been annotated)
@@ -706,10 +712,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
    * @param colsToDeriveFrom
    * @param deriveMaps
    * @param conciliator
+   * @param conciliatorTo
    * @param shift
    */
   deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
-    conciliator: ConciliatorService, shift: boolean) {
+    conciliator: ConciliatorService, conciliatorTo: ConciliatorService, shift: boolean) {
     let newFunction: any = null;
 
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
@@ -742,6 +749,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // Annotate the derived column, if
       // - the DeriveMap comes with a property defined (extension with property)
       // - the DeriveMap contains types (reconciled entity)
+      // TODO: annotate columns extended by the sameAs service
       if (deriveMap.withProperty || deriveMap.newColTypes.length > 0) {
         const annotation = new Annotation({
           columnHeader: deriveMap.newColName

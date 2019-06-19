@@ -208,7 +208,7 @@ export class EnrichmentService {
     });
   }
 
-  sameasData(header: string, sameAsSource: string, sameAsDestination: string): Observable<Extension[]> {
+  sameasData(header: string, sameAsSource: ConciliatorService, sameAsDestination: ConciliatorService): Observable<Extension[]> {
     // taken all values of the column without duplicates and empty values
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
@@ -223,8 +223,8 @@ export class EnrichmentService {
     // create query params
     const params = new HttpParams()
       .set('ids', values.join(','))
-      .set('source', sameAsSource)
-      .set('target', sameAsDestination);
+      .set('source', sameAsSource.getId())
+      .set('target', sameAsDestination.getId());
 
     const httpOptions = {
       headers: new HttpHeaders({
