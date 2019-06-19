@@ -6,11 +6,10 @@ import {
   Event,
   EventConfigurator,
   Extension,
-  QueryResult,
   Property,
+  QueryResult,
   ReconciledColumn,
   ReconciliationQuery,
-  ReconciliationQueryMap,
   Result,
   Type,
   TypeStrict,
@@ -22,7 +21,6 @@ import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
 import {UrlUtilsService} from '../shared/url-utils.service';
-import {query} from '@angular/animations';
 
 @Injectable()
 export class EnrichmentService {
@@ -90,6 +88,11 @@ export class EnrichmentService {
     return null;
   }
 
+  /**
+   * Helper method to generate the reconciliation HTTP post request, given a list of queries
+   * @param queries
+   * @param conciliator
+   */
   private getAsiaReconciliationRequest(queries: Map<string, ReconciliationQuery>, conciliator: ConciliatorService) {
     const requestURL = `${this.asiaURL}/reconcile`;
 
@@ -110,7 +113,12 @@ export class EnrichmentService {
     return this.http.post(requestURL, null, httpOptions);
   }
 
-  private execQueries(qResults: QueryResult[], service: ConciliatorService) {
+  /**
+   * Exec the reconciliation query and return a list of QueryResult objects
+   * @param qResults
+   * @param service
+   */
+  private execQueries(qResults: QueryResult[], service: ConciliatorService): Observable<QueryResult[]> {
     const requests = [];
 
     const resultsMap = new Map<string, QueryResult>();
@@ -148,7 +156,16 @@ export class EnrichmentService {
       return e === 0 || e;
     });  // remove empty strings
 
-    return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v))), service);
+    // reconcile #sampleSize values for guessing the column type
+    return this.execQueries(values.slice(0, sampleSize).map(v => new QueryResult(new ReconciliationQuery(v))), service).flatMap(
+      results => {
+          const type: Type = this.getMostFrequentType(results);
+          if (type) {
+            return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v, type.id, TypeStrict.SHOULD))), service);
+          } else {
+            return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v))), service);
+          }
+      });
   }
 
   extendColumn(header: string, properties: string[]): Observable<{ ext: Extension[], props: Property[] }> {

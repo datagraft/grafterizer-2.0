@@ -61,33 +61,14 @@ export enum TypeStrict {
   SHOULD = 'should'
 }
 
-export class ReconciliationQueryMap {
-  private queryId: string;
-  private reconciliationQuery: ReconciliationQuery;
-
-  constructor(queryId: string, reconciliationQuery: ReconciliationQuery) {
-    this.queryId = queryId;
-    this.reconciliationQuery = reconciliationQuery;
-  }
-
-  getQueryId(): string {
-    return this.queryId;
-  }
-
-  getReconciliationQuery(): ReconciliationQuery {
-    return this.reconciliationQuery;
-  }
-
-}
-
 export class ReconciliationQuery {
   private query: string;
   private limit: number;
-  private type: Type[];
+  private type: string; // TODO: allow array of strings
   private type_strict: TypeStrict;
   // TODO: consider also properties here
 
-  constructor(query, limit = 5, type: Type[] = null, typeStrict = TypeStrict.ANY) {
+  constructor(query, type: string = null, typeStrict = TypeStrict.ANY, limit = 5) {
     this.query = query;
     this.limit = limit;
     this.type = type;
@@ -110,11 +91,11 @@ export class ReconciliationQuery {
     this.limit = limit;
   }
 
-  getType(): Type[] {
+  getType(): string {
     return this.type;
   }
 
-  setType(type: Type[]) {
+  setType(type: string) {
     this.type = type;
   }
 
