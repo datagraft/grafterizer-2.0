@@ -181,8 +181,8 @@ export class EnrichmentService {
       extensions.push(new Extension(value, properties));
     });
 
-    const queryProperties = properties.map(prop => ({'id': prop}));
-    const extendQuery = {ids: values, properties: queryProperties};
+    const queryProperties = properties.map(prop => ({ 'id': prop }));
+    const extendQuery = { ids: values, properties: queryProperties };
 
     const requestURL = this.asiaURL + '/extend';
 
@@ -204,7 +204,47 @@ export class EnrichmentService {
       const propDescriptions: Property[] = [];
       res['meta'].forEach(p => propDescriptions.push(new Property(p)));
 
-      return {ext: extensions, props: propDescriptions};
+      return { ext: extensions, props: propDescriptions };
+    });
+  }
+
+  sameasData(header: string, sameAsSource: string, sameAsDestination: string): Observable<Extension[]> {
+    // taken all values of the column without duplicates and empty values
+    const colData = this.data.map(row => row[':' + header]);
+    let values = Array.from(new Set(colData));
+
+    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
+
+    // create objects {id:..., properties:{prop1:[], prp2:[],...}}
+    const extensions: Extension[] = [];
+
+    const requestURL = this.asiaURL + '/exactMatch';
+
+    // create query params
+    const params = new HttpParams()
+      .set('ids', values.join(','))
+      .set('source', sameAsSource)
+      .set('target', sameAsDestination);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map(res => {
+      const results = res['rows'];
+      const property = res['meta']['name'];
+
+      Object.keys(results).forEach((row) => {
+        // const rowId = results[row][property][0];
+        const currExt = new Extension(row, [property]);
+        currExt.setResultsFromService(results[row]);
+        extensions.push(currExt);
+      });
+
+      return extensions;
     });
   }
 
@@ -444,13 +484,13 @@ export class EnrichmentService {
           return prop;
         });
       });
-  };
+  }
 
   public listServices = (): Observable<Object> => {
     const url = this.asiaURL + '/services';
     return this.http
       .get(url);
-  };
+  }
 
   getReconciliationServiceOfColumn(header: string) {
     return new ConciliatorService(this.getReconciledColumn(header).getConciliator());

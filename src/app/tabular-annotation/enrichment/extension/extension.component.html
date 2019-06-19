@@ -17,10 +17,7 @@
         </div>
       </div>
     </section>
-    <clr-checkbox
-      name="shiftColumn"
-      id="shiftColumn"
-      [(ngModel)]="shiftColumn">
+    <clr-checkbox name="shiftColumn" id="shiftColumn" [(ngModel)]="shiftColumn">
       New column(s) next to <i>{{header}}</i>
     </clr-checkbox>
 
@@ -174,6 +171,17 @@
                   [(ngModel)]="selectedWeatherAggregators"
                   multiple style="z-index: 0">
             <option *ngFor="let p of weatherAggregators" [value]="p">{{p}}</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="selectedService === 'sameas'">
+      <div class="form-group">
+        <label class="required" for="kgService">Target KB: </label>
+        <div class="select">
+          <select id="kgService" name="kgService" [(ngModel)]="selectedKGService" (change)="showPreview = false;">
+            <option *ngFor="let kgService of kgServices" [value]="kgService.id">{{kgService.name}}</option>
           </select>
         </div>
       </div>
@@ -385,6 +393,11 @@
             mat-button class="btn btn-sm btn-link"
             [disabled]="selectedProperties.length === 0 || dataLoading"
             (click)="extend()" cdkFocusInitial>Extend
+    </button>
+    <button *ngIf="selectedService === 'sameas'"
+            mat-button class="btn btn-sm btn-link"
+            [disabled]="!selectedKGService || dataLoading"
+            (click)="sameas()" cdkFocusInitial>Extend
     </button>
   </ng-container>
 

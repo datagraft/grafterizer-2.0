@@ -62,7 +62,7 @@ export class ReconciliationComponent implements OnInit {
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
-          this.services.set(service['id'], new ConciliatorService({...service, ...{'group': serviceCategory}}));
+          this.services.set(service['id'], new ConciliatorService({ ...service, ...{ 'group': serviceCategory } }));
         });
         this.servicesGroups.push(serviceCategory);
       });
