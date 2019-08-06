@@ -1,23 +1,41 @@
-import {Injectable} from '@angular/core';
-import {AppConfig} from '../app.config';
+import { Injectable } from '@angular/core';
+import {AppConfig} from '../../app.config';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import 'rxjs/add/operator/map';
-import {UrlUtils} from './shared/url-utils';
-import {StringUtils} from './shared/string-utils';
+import {Observable} from 'rxjs/Observable';
+import {UrlUtils} from '../shared/url-utils';
+import {StringUtils} from '../shared/string-utils';
+import {Column, Header} from './asia-mas.model';
 
-@Injectable()
-export class AnnotationSuggesterService {
+@Injectable({
+  providedIn: 'root'
+})
+export class AsiaMasService {
 
   private suggester: string;
-  private readonly suggesterEndpoint: string;
+  private readonly masEndpoint: string;
   private readonly abstatAutocompleteEndpoint: string;
   private preferredSummaries: string[];
 
   constructor(private config: AppConfig, private http: HttpClient) {
-    this.suggesterEndpoint = this.config.getConfig('asia-mas');
+    this.masEndpoint = this.config.getConfig('asia-mas');
     this.abstatAutocompleteEndpoint = this.config.getConfig('abstat-path') + '/api/v1/SolrSuggestions';
     this.preferredSummaries = [];
+  }
+
+  /**
+   * Multilingual annotation suggestions (column-based)
+   * @param keyword
+   */
+
+  masSuggestion(keyword): Observable<Column> {
+    const col = new Column(
+      new Header(keyword, null, null, null, null,
+        null, null, null, null, null),
+      null);
+    const params = new HttpParams()
+      .set('suggester', this.suggester)
+      .set('preferredSummaries', this.preferredSummaries.join(','));
+    return this.http.put<Column>(this.masEndpoint, col, {params: params});
   }
 
   /**
@@ -49,7 +67,7 @@ export class AnnotationSuggesterService {
   }
 
   public getSummaries = (suggester: string): Observable<Object> => {
-    const url = this.suggesterEndpoint + '/suggester/api/summaries';
+    const url = this.masEndpoint + '/suggester/api/summaries';
     const params = new HttpParams().set('suggester', suggester);
     return this.http.get(url, { params: params });
   }
@@ -69,5 +87,4 @@ export class AnnotationSuggesterService {
   public getSuggester(): string {
     return this.suggester;
   }
-
 }

@@ -10,8 +10,8 @@ import {
 } from '@angular/forms';
 import { Annotation, ColumnTypes, XSDDatatypes } from '../annotation.model';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import { AnnotationSuggesterService } from '../annotation-suggester.service';
 import { Observable } from 'rxjs';
+import {AsiaMasService} from '../asia-mas/asia-mas.service';
 
 class CustomValidators {
 
@@ -212,7 +212,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   annotationForm: FormGroup;
 
   constructor(public annotationService: AnnotationService,
-    private suggesterSvc: AnnotationSuggesterService,
+    private suggesterSvc: AsiaMasService,
     public dialogRef: MatDialogRef<AnnotationFormComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
   }

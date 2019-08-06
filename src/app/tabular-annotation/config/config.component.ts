@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
-import {AnnotationSuggesterService} from '../annotation-suggester.service';
+import {AsiaMasService} from '../asia-mas/asia-mas.service';
 
 @Component({
   selector: 'app-config',
@@ -15,7 +15,7 @@ export class ConfigComponent implements OnInit {
   public suggester: string;
   public suggesters = ['abstat', 'lov'];
 
-  constructor(private suggesterSvc: AnnotationSuggesterService) { }
+  constructor(private suggesterSvc: AsiaMasService) { }
 
   ngOnInit() {
     this.suggester = this.suggesterSvc.getSuggester();

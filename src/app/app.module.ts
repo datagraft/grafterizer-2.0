@@ -1,41 +1,40 @@
-import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
-import { AppConfig } from './app.config';
-import { HttpModule } from '@angular/http';
-import { HttpClientModule } from '@angular/common/http';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { SuiModule } from 'ng2-semantic-ui';
-import { ListboxModule } from 'primeng/primeng';
+import {APP_INITIALIZER, ErrorHandler, NgModule} from '@angular/core';
+import {AppConfig} from './app.config';
+import {HttpModule} from '@angular/http';
+import {HttpClientModule} from '@angular/common/http';
+import {BrowserModule} from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {ClarityModule} from '@clr/angular';
+import {SuiModule} from 'ng2-semantic-ui';
+import {ListboxModule} from 'primeng/primeng';
 
-import { AppRoutingModule } from './app-routing.module';
-import { RdfMappingModule } from './rdf-mapping/rdf-mapping.module';
-import { TabularAnnotationModule } from './tabular-annotation/tabular-annotation.module';
-import { TabularTransformationModule } from './tabular-transformation/tabular-transformation.module';
+import {AppRoutingModule} from './app-routing.module';
+import {RdfMappingModule} from './rdf-mapping/rdf-mapping.module';
+import {TabularAnnotationModule} from './tabular-annotation/tabular-annotation.module';
+import {TabularTransformationModule} from './tabular-transformation/tabular-transformation.module';
 
-import { AppComponent } from './app.component';
-import { FormsModule } from '@angular/forms';
-import { DataExplorationComponent } from './data-exploration/data-exploration.component';
+import {AppComponent} from './app.component';
+import {FormsModule} from '@angular/forms';
+import {DataExplorationComponent} from './data-exploration/data-exploration.component';
 
-import { TransformationService } from 'app/transformation.service';
-import { AnnotationService } from './tabular-annotation/annotation.service';
-import { RoutingService } from './routing.service';
-import { JarfterService } from './jarfter.service';
+import {TransformationService} from 'app/transformation.service';
+import {AnnotationService} from './tabular-annotation/annotation.service';
+import {RoutingService} from './routing.service';
+import {JarfterService} from './jarfter.service';
 
-import { GlobalErrorHandler } from 'app/global-error-handler';
-import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
-import { AnnotationSuggesterService } from './tabular-annotation/annotation-suggester.service';
+import {GlobalErrorHandler} from 'app/global-error-handler';
+import {GlobalErrorReportingService} from 'app/global-error-reporting.service';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { DataGraftMessageService } from 'app/data-graft-message.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { EnrichmentService } from './tabular-annotation/enrichment/enrichment.service';
-import { ArangoGeneratorService } from 'app/arango-generator.service';
-import { TransformationUpdaterService } from 'app/transformation-updater.service';
-import { ProgressIndicatorService } from 'app/progress-indicator.service';
-
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {DataGraftMessageService} from 'app/data-graft-message.service';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {EnrichmentService} from './tabular-annotation/enrichment/enrichment.service';
+import {ArangoGeneratorService} from 'app/arango-generator.service';
+import {TransformationUpdaterService} from 'app/transformation-updater.service';
+import {ProgressIndicatorService} from 'app/progress-indicator.service';
+import {AsiaMasService} from './tabular-annotation/asia-mas/asia-mas.service';
 
 
 export function initConfig(config: AppConfig) {
@@ -72,7 +71,7 @@ export function initConfig(config: AppConfig) {
     GlobalErrorReportingService,
     TransformationService,
     AnnotationService,
-    AnnotationSuggesterService,
+    AsiaMasService,
     EnrichmentService,
     ArangoGeneratorService,
     TransformationUpdaterService,
