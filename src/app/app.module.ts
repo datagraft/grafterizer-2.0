@@ -24,7 +24,7 @@ import { JarfterService } from './jarfter.service';
 
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
-import { AbstatService } from './tabular-annotation/abstat.service';
+import { AnnotationSuggesterService } from './tabular-annotation/annotation-suggester.service';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -72,7 +72,7 @@ export function initConfig(config: AppConfig) {
     GlobalErrorReportingService,
     TransformationService,
     AnnotationService,
-    AbstatService,
+    AnnotationSuggesterService,
     EnrichmentService,
     ArangoGeneratorService,
     TransformationUpdaterService,

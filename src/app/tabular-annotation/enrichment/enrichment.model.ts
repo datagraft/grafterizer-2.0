@@ -1,5 +1,4 @@
-import { XSDDatatypes } from '../annotation.model';
-import { UrlUtilsService } from '../shared/url-utils.service';
+import {XSDDatatypes} from '../annotation.model';
 
 /**
  * Semantic type of the reconciled entities

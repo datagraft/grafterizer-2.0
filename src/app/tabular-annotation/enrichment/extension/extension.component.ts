@@ -3,7 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, DeriveMap, EventConfigurator, Extension, Property, WeatherConfigurator} from '../enrichment.model';
 import {HttpClient} from '@angular/common/http';
-import {UrlUtilsService} from '../../shared/url-utils.service';
+import {UrlUtils} from '../../shared/url-utils';
 import {Observable} from 'rxjs';
 
 @Component({
@@ -300,7 +300,7 @@ export class ExtensionComponent implements OnInit {
       // Column name can be a URI -> clean it and get the suffix
       let newColName = `${this.header}_`;
       if (prop.startsWith('http')) {
-        newColName +=  prop.replace(UrlUtilsService.getNamespaceFromURL(new URL(prop)), '');
+        newColName +=  prop.replace(UrlUtils.getNamespaceFromURL(new URL(prop)), '');
       } else if (prop.startsWith('WF')) { // do not concatenate weather column names
         newColName = prop;
       } else {

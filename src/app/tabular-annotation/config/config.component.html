@@ -1,35 +1,28 @@
 <h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
 <div mat-dialog-content>
-  <p>Which summaries do you prefer?</p>
+  <form #configForm="ngForm">
+    <label for="endpoint">Suggester: </label>
+    <div class="select">
+      <select id="endpoint"
+              name="endpoint"
+              [(ngModel)]="suggester"
+              (change)="update()">
+        <option *ngFor="let sugg of suggesters" [value]="sugg">{{sugg | uppercase}}</option>
+      </select>
+    </div>
+
+  </form>
+  <p>Select your preferred summaries</p>
   <div class="form-group">
-  <tag-input [(ngModel)]="summaries"
+  <tag-input [(ngModel)]="preferredSummaries"
              [onlyFromAutocomplete]="true"
              [placeholder]="'+ Summary'"
              [secondaryPlaceholder]="'Summary'">
-    <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
-                        [zIndex]="9999"
-                        [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
+    <tag-input-dropdown [autocompleteObservable]='getSummaries' [zIndex]="9999"></tag-input-dropdown>
   </tag-input>
   </div>
 
-  <form #configForm="ngForm">
 
-    <div class="toggle-switch">
-      <input [(ngModel)]="advancedSettings" [ngModelOptions]="{standalone: true}" type="checkbox" id="advancedSettings">
-      <label for="advancedSettings">Advanced settings</label>
-    </div>
-
-    <div class="form-group" *ngIf="advancedSettings">
-      <label for="endpoint">ABSTAT endpoint: </label>
-      <div class="select">
-        <select id="endpoint"
-                name="endpoint"
-                [(ngModel)]="selectedEndpoint">
-          <option *ngFor="let endpoint of abstatEndpointsNames" [value]="endpoint">{{endpoint}}</option>
-        </select>
-      </div>
-    </div>
-  </form>
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>

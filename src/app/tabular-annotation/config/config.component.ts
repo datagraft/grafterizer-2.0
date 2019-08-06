@@ -1,7 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { AbstatService } from '../abstat.service';
-import { AppConfig } from '../../app.config';
+import {Component, OnInit} from '@angular/core';
+import {Observable} from 'rxjs';
+import {AnnotationSuggesterService} from '../annotation-suggester.service';
 
 @Component({
   selector: 'app-config',
@@ -10,42 +9,39 @@ import { AppConfig } from '../../app.config';
 })
 export class ConfigComponent implements OnInit {
 
-  public summaries: any;
-  public selectedEndpoint: any;
-  public abstatEndpointsNames: string[];
-  public abstatEndpoints: Map<string, string>;
-  public advancedSettings: boolean;
+  private summaries: any;
 
-  constructor(private abstat: AbstatService, private config: AppConfig) {
-  }
+  public preferredSummaries: any;
+  public suggester: string;
+  public suggesters = ['abstat', 'lov'];
+
+  constructor(private suggesterSvc: AnnotationSuggesterService) { }
 
   ngOnInit() {
-    this.advancedSettings = false;
-    this.abstatEndpoints = new Map<string, string>();
-    this.abstatEndpoints.set('ABSTAT-UNIMIB', this.config.getConfig('abstat-path'));
-    this.abstatEndpoints.set('ABSTAT-POLIBA', this.config.getConfig('abstat-path-ba'));
-    this.abstatEndpointsNames = Array.from(this.abstatEndpoints.keys());
-    this.abstatEndpoints.forEach((value, key) => {
-      if (value === this.abstat.getCurrentEndpoint()) {
-        this.selectedEndpoint = key;
-      }
+    this.suggester = this.suggesterSvc.getSuggester();
+    this.preferredSummaries = this.suggesterSvc.getPreferredSummaries().map(summary => ({ display: summary, value: summary }));
+    this.fetchSummaries();
+  }
+
+  private fetchSummaries() {
+    this.suggesterSvc.getSummaries(this.suggester).subscribe((data) => {
+      this.summaries = data;
     });
-    this.summaries = [];
-    const existingSummaries = this.abstat.getPreferredSummaries();
-    if (existingSummaries) {
-      existingSummaries.forEach(summary => this.summaries.push({ summary_name: summary, display: summary, value: summary }));
-    }
   }
 
-  public abstatAvailableSummaries = (): Observable<Response> => {
-    return this.abstat.listSummaries();
+  private update() {
+    this.preferredSummaries = [];
+    this.fetchSummaries();
   }
 
-  // Data format: [0: {URI: "http://ld-summaries.org/sdati-3", summary_name: "sdati-3", display: "sdati-3", value: "sdati-3"}, ...]
+  public getSummaries = (): Observable<Object> => {
+    return Observable.of(this.summaries);
+  }
+
+  // Data format: [0: {display: "sdati-3", value: "sdati-3"}, ...]
   public save() {
-    const summariesList = [];
-    this.summaries.forEach(tag => summariesList.push(tag.summary_name));
-    this.abstat.updatePreferredSummaries(summariesList);
-    this.abstat.updateEndpoint(this.abstatEndpoints.get(this.selectedEndpoint));
+    this.suggesterSvc.setSuggester(this.suggester);
+    console.log(this.preferredSummaries);
+    this.suggesterSvc.setPreferredSummaries(this.preferredSummaries.map(tag => tag.value));
   }
 }

@@ -3,8 +3,9 @@
   "dispatch-path": "http://10.80.1.8:8082",
   "graftwerk-cache-path": "http://10.80.1.8:8083",
   "abstat-path": "http://abstat.disco.unimib.it",
-  "abstat-path-ba": "http://193.204.59.21",
+  "annotation-suggester": "http://10.80.1.8:8085",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "http://10.80.1.8:8088",
+  "asia-mas": "http://10.80.1.8:8085",
   "arango-generator": "http://10.80.1.8:3030"
 }

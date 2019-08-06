@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { Annotation, ColumnTypes, XSDDatatypes } from '../annotation.model';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import { AbstatService } from '../abstat.service';
+import { AnnotationSuggesterService } from '../annotation-suggester.service';
 import { Observable } from 'rxjs';
 
 class CustomValidators {
@@ -212,7 +212,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   annotationForm: FormGroup;
 
   constructor(public annotationService: AnnotationService,
-    private abstat: AbstatService,
+    private suggesterSvc: AnnotationSuggesterService,
     public dialogRef: MatDialogRef<AnnotationFormComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
   }
@@ -551,14 +551,14 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
   annotationsSuggestion() {
     // Set first ABSTAT type suggestion as initial value
-    this.abstat.typeSuggestions(this.header).subscribe(suggestions => {
+    this.suggesterSvc.abstatAutocomplete(this.header, 'subj').subscribe(suggestions => {
       if (suggestions.length > 0) {
         (this.annotationForm.get('columnInfo.columnTypes') as FormArray).controls[0].get('columnType').setValue(suggestions[0].suggestion);
       }
     });
 
     // Set first ABSTAT property suggestion as initial value
-    this.abstat.propertySuggestions(this.header).subscribe(suggestions => {
+    this.suggesterSvc.abstatAutocomplete(this.header, 'pred').subscribe(suggestions => {
       if (suggestions.length > 0) {
         this.annotationForm.get('relationship.property').setValue(suggestions[0].suggestion);
       }
@@ -589,7 +589,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @returns {Observable<any[]>}
    */
   typeAutocomplete = (keyword: any): Observable<any[]> => {
-    return this.abstat.typeSuggestions(keyword);
+    return this.suggesterSvc.abstatAutocomplete(keyword, 'subj');
   }
 
   /**
@@ -598,7 +598,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @returns {Observable<any[]>}
    */
   propertyAutocomplete = (keyword: any): Observable<any[]> => {
-    return this.abstat.propertySuggestions(keyword);
+    return this.suggesterSvc.abstatAutocomplete(keyword, 'pred');
   }
 
   /**

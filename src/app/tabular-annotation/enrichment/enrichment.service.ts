@@ -20,7 +20,7 @@ import {
 import {AppConfig} from '../../app.config';
 import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
-import {UrlUtilsService} from '../shared/url-utils.service';
+import {UrlUtils} from '../shared/url-utils';
 
 @Injectable()
 export class EnrichmentService {
@@ -479,7 +479,7 @@ export class EnrichmentService {
         return results['properties'].map(prop => {
           // Sometimes an URI is received as prop name (when a "name" is not available) -> use the suffix as name
           if (prop.name.startsWith('http://') || prop.name.startsWith('https://')) {
-            prop.name = prop.name.replace(UrlUtilsService.getNamespaceFromURL(new URL(prop.name)), '');
+            prop.name = prop.name.replace(UrlUtils.getNamespaceFromURL(new URL(prop.name)), '');
           }
           return prop;
         });

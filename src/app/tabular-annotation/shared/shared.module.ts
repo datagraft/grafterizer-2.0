@@ -1,9 +1,11 @@
 import {NgModule} from '@angular/core';
-import {UrlUtilsService} from './url-utils.service';
+import {UrlUtils} from './url-utils';
+import {StringUtils} from './string-utils';
 
 @NgModule({
   providers: [
-    UrlUtilsService,
+    UrlUtils,
+    StringUtils
   ]
 })
 export class SharedModule { }
