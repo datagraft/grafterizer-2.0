@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {AsiaMasService} from '../asia-mas/asia-mas.service';
+import {Suggester} from '../asia-mas/asia-mas.model';
 
 @Component({
   selector: 'app-config',
@@ -12,8 +13,8 @@ export class ConfigComponent implements OnInit {
   private summaries: any;
 
   public preferredSummaries: any;
-  public suggester: string;
-  public suggesters = ['abstat', 'lov'];
+  public suggester: Suggester;
+  public suggesters = Object.keys(Suggester);
 
   constructor(private suggesterSvc: AsiaMasService) { }
 

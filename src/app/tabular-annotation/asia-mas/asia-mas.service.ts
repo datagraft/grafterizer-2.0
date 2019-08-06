@@ -1,17 +1,17 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {AppConfig} from '../../app.config';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {UrlUtils} from '../shared/url-utils';
 import {StringUtils} from '../shared/string-utils';
-import {Column, Header} from './asia-mas.model';
+import {Column, Header, Suggester} from './asia-mas.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AsiaMasService {
 
-  private suggester: string;
+  private suggester: Suggester;
   private readonly masEndpoint: string;
   private readonly abstatAutocompleteEndpoint: string;
   private preferredSummaries: string[];
@@ -28,14 +28,28 @@ export class AsiaMasService {
    */
 
   masSuggestion(keyword): Observable<Column> {
-    const col = new Column(
-      new Header(keyword, null, null, null, null,
-        null, null, null, null, null),
-      null);
+    const col: Column = {
+      header: {
+        originalWord: keyword,
+        processedWord: null,
+        subjectSuggestions: null,
+        language: null,
+        manipulatedTranslatedPhrases: null,
+        objectSuggestions: null,
+        propertySuggestions: null,
+        splitTerms: null,
+        translatedPhrases: null,
+        translatedWords: null
+      },
+      dataType: null
+    };
     const params = new HttpParams()
       .set('suggester', this.suggester)
       .set('preferredSummaries', this.preferredSummaries.join(','));
-    return this.http.put<Column>(this.masEndpoint, col, {params: params});
+    return this.http.put<Column>(
+      this.masEndpoint + '/suggester/api/column/translate',
+      col,
+      {params: params});
   }
 
   /**
@@ -80,11 +94,11 @@ export class AsiaMasService {
     this.preferredSummaries = preferredSummaries;
   }
 
-  public setSuggester(suggester: string) {
+  public setSuggester(suggester: Suggester) {
     this.suggester = suggester;
   }
 
-  public getSuggester(): string {
+  public getSuggester(): Suggester {
     return this.suggester;
   }
 }

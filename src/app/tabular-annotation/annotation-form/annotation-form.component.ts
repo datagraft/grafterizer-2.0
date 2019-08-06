@@ -549,18 +549,18 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.dialogRef.close(this.annotation);
   }
 
+  // Push initial suggestions to the user using ASIA MAS
   annotationsSuggestion() {
-    // Set first ABSTAT type suggestion as initial value
-    this.suggesterSvc.abstatAutocomplete(this.header, 'subj').subscribe(suggestions => {
-      if (suggestions.length > 0) {
-        (this.annotationForm.get('columnInfo.columnTypes') as FormArray).controls[0].get('columnType').setValue(suggestions[0].suggestion);
+    this.suggesterSvc.masSuggestion(this.header).subscribe(column => {
+      if (column.header.subjectSuggestions.length > 0) {
+        (this.annotationForm
+          .get('columnInfo.columnTypes') as FormArray)
+          .controls[0]
+          .get('columnType')
+          .setValue(column.header.subjectSuggestions[0].suggestion);
       }
-    });
-
-    // Set first ABSTAT property suggestion as initial value
-    this.suggesterSvc.abstatAutocomplete(this.header, 'pred').subscribe(suggestions => {
-      if (suggestions.length > 0) {
-        this.annotationForm.get('relationship.property').setValue(suggestions[0].suggestion);
+      if (column.header.propertySuggestions.length > 0) {
+        this.annotationForm.get('relationship.property').setValue(column.header.propertySuggestions[0].suggestion);
       }
     });
   }
