@@ -4,20 +4,21 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {UrlUtils} from '../shared/url-utils';
 import {StringUtils} from '../shared/string-utils';
-import {Column, Header, Suggester} from './asia-mas.model';
+import {Column} from './asia-mas.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AsiaMasService {
 
-  private suggester: Suggester;
+  private suggester: string;
+  private language: string;
   private readonly masEndpoint: string;
   private readonly abstatAutocompleteEndpoint: string;
   private preferredSummaries: string[];
 
   constructor(private config: AppConfig, private http: HttpClient) {
-    this.masEndpoint = this.config.getConfig('asia-mas');
+    this.masEndpoint = this.config.getConfig('asia-mas') + '/suggester/api';
     this.abstatAutocompleteEndpoint = this.config.getConfig('abstat-path') + '/api/v1/SolrSuggestions';
     this.preferredSummaries = [];
   }
@@ -33,7 +34,7 @@ export class AsiaMasService {
         originalWord: keyword,
         processedWord: null,
         subjectSuggestions: null,
-        language: null,
+        language: this.language,
         manipulatedTranslatedPhrases: null,
         objectSuggestions: null,
         propertySuggestions: null,
@@ -43,11 +44,12 @@ export class AsiaMasService {
       },
       dataType: null
     };
+
     const params = new HttpParams()
       .set('suggester', this.suggester)
       .set('preferredSummaries', this.preferredSummaries.join(','));
     return this.http.put<Column>(
-      this.masEndpoint + '/suggester/api/column/translate',
+      this.masEndpoint + '/column/translate',
       col,
       {params: params});
   }
@@ -70,7 +72,7 @@ export class AsiaMasService {
         .set('qPosition', position)
         .set('rows', '15')
         .set('start', '0');
-      if (this.preferredSummaries.length > 0 && this.suggester === 'abstat') {
+      if (this.preferredSummaries.length > 0 && this.suggester.toLowerCase() === 'abstat') {
         params = params.set('dataset', this.preferredSummaries.join(','));
       }
 
@@ -80,10 +82,20 @@ export class AsiaMasService {
     return Observable.of([]);
   }
 
-  public getSummaries = (suggester: string): Observable<Object> => {
-    const url = this.masEndpoint + '/suggester/api/summaries';
-    const params = new HttpParams().set('suggester', suggester);
+  public getSummariesList = (suggester: string): Observable<Object> => {
+    const url = this.masEndpoint + '/summaries';
+    const params = new HttpParams().set('suggester',  suggester);
     return this.http.get(url, { params: params });
+  }
+
+  public getSuggestersList = (): Observable<Object> => {
+    const url = this.masEndpoint + '/suggesters';
+    return this.http.get(url);
+  }
+
+  public getLanguagesList = (): Observable<Object> => {
+    const url = this.masEndpoint + '/languages';
+    return this.http.get(url);
   }
 
   public getPreferredSummaries(): string[] {
@@ -94,11 +106,19 @@ export class AsiaMasService {
     this.preferredSummaries = preferredSummaries;
   }
 
-  public setSuggester(suggester: Suggester) {
+  public setSuggester(suggester: string) {
     this.suggester = suggester;
   }
 
-  public getSuggester(): Suggester {
+  public getSuggester(): string {
     return this.suggester;
+  }
+
+  public getLanguage(): string {
+    return this.language;
+  }
+
+  public setLanguage(language: string) {
+    this.language = language;
   }
 }

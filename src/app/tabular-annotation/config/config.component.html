@@ -1,27 +1,49 @@
 <h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
 <div mat-dialog-content>
-  <form #configForm="ngForm">
-    <label for="endpoint">Suggester: </label>
-    <div class="select">
-      <select id="endpoint"
-              name="endpoint"
-              [(ngModel)]="suggester"
-              (change)="update()">
-        <option *ngFor="let sugg of suggesters" [value]="sugg">{{sugg | uppercase}}</option>
-      </select>
-    </div>
+  <mat-form-field>
+    <mat-label>Suggester</mat-label>
+    <mat-select [(value)]="suggester" (selectionChange)="update()">
+      <mat-option *ngFor="let sugg of suggesters" [value]="sugg">
+        {{sugg  | uppercase}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
-  </form>
-  <p>Select your preferred summaries</p>
-  <div class="form-group">
-  <tag-input [(ngModel)]="preferredSummaries"
-             [onlyFromAutocomplete]="true"
-             [placeholder]="'+ Summary'"
-             [secondaryPlaceholder]="'Summary'">
-    <tag-input-dropdown [autocompleteObservable]='getSummaries' [zIndex]="9999"></tag-input-dropdown>
-  </tag-input>
-  </div>
+  <mat-form-field>
+    <mat-label>Dataset language</mat-label>
+    <mat-select [(value)]="language">
+      <mat-option *ngFor="let lang of languages" [value]="lang">
+        {{lang | uppercase}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
+  <mat-form-field class="chip-list">
+    <mat-chip-list #chipList aria-label="Preferred summaries">
+      <mat-chip
+        *ngFor="let prefSummary of preferredSummaries"
+        [selectable]="selectable"
+        [removable]="removable"
+        (removed)="remove(prefSummary)">
+        {{prefSummary}}
+        <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+      </mat-chip>
+      <input
+        placeholder="Preferred summaries"
+        #summaryInput
+        [formControl]="summaryCtrl"
+        [matAutocomplete]="auto"
+        [matChipInputFor]="chipList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addOnBlur"
+        (matChipInputTokenEnd)="add($event)">
+    </mat-chip-list>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+      <mat-option *ngFor="let summ of filteredSummaries | async" [value]="summ">
+        {{summ}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
 
 </div>
 <div mat-dialog-actions>

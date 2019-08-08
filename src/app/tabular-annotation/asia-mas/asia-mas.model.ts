@@ -5,7 +5,7 @@ export class Header {
   translatedPhrases: TranslatedWord[];
   translatedWords: TranslatedWord[];
   manipulatedTranslatedPhrases: TranslatedWord[];
-  language: LanguageType;
+  language: string;
   propertySuggestions: Suggestion[];
   objectSuggestions: Suggestion[];
   subjectSuggestions: Suggestion[];
@@ -26,24 +26,9 @@ export class Suggestion {
   distances: number[];
 }
 
-export enum LanguageType {
-  EN = 'en',
-  FR = 'fr',
-  IT = 'it',
-  DE = 'de',
-  ES = 'es',
-  SI = 'si',
-  UNKNOWN = 'unknown'
-}
-
-export enum Suggester {
-  ABSTAT = 'abstat',
-  LOV = 'lov'
-}
-
 export class TableSchema {
   columnList: Column[];
-  Language: LanguageType;
+  language: string;
   forceSingleLanguage = true;
   languageWithStatsList: LanguageWithStats[];
 }
@@ -55,7 +40,7 @@ export class TranslatedWord {
 }
 
 export class LanguageWithStats {
-  languageType: LanguageType;
+  languageType: string;
   frequency: number;
 }
 
