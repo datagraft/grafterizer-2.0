@@ -1,7 +1,5 @@
-import {Injectable} from '@angular/core';
 import * as nlp from 'wink-nlp-utils';
 
-@Injectable()
 export class StringUtils {
 
   static stringPreprocessing(string) {

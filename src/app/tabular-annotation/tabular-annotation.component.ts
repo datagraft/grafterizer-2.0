@@ -23,6 +23,7 @@ import { ReconciliationComponent } from './enrichment/reconciliation/reconciliat
 import { ExtensionComponent } from './enrichment/extension/extension.component';
 import { ShiftColumnFunction } from 'assets/transformationdatamodel';
 import { ChooseExtensionOrReconciliationDialog } from './chooseExtensionOrReconciliationDialog.component';
+import {UrlUtils} from './shared/url-utils';
 
 declare var Handsontable: any;
 
@@ -54,21 +55,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   public saveButtonDisabled: boolean;
   public rdfButtonDisabled: boolean;
-
-  /**
-   * Return the namespace of a URL
-   * @param {URL} url
-   * @returns {string} the namespace for the given URL
-   */
-  static getNamespaceFromURL(url: URL) {
-    let suffix = '';
-    if (url.hash.length > 0) {
-      suffix = url.hash.substring(1); // remove '#' char
-    } else {
-      suffix = url.pathname.substring(url.pathname.lastIndexOf('/') + 1);
-    }
-    return url.href.substring(0, url.href.indexOf(suffix));
-  }
 
   constructor(public dispatch: DispatchService, public transformationSvc: TransformationService,
     public annotationService: AnnotationService, public enrichmentService: EnrichmentService,
@@ -281,7 +267,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         } else {
 
           const type = annotation.columnDatatype;
-          const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+          const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
           if (shortType === 'dateTime') { // it's a dateColumn --> open dialogConfigDateCOlumn
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
           } else {
@@ -301,7 +287,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       } else {
 
         const type = annotation.columnDatatype;
-        const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+        const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
         if (shortType === 'dateTime') {// it's a dateColumn --> open dialogConfigDateCOlumn
           dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateCOlumn);
         } else {// it's not a dateColumn --> open a normal ReconciliationComponent
@@ -419,13 +405,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         annInfoTypes = '';
         for (let i = 0; i < annotation.columnTypes.length; ++i) {
           const type = annotation.columnTypes[i];
-          const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+          const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
           annInfoTypes += '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
         }
       } else {
         annInfoLabel = '<p class="p7 ann-info-label">Datatype:</p>';
         const type = annotation.columnDatatype;
-        const shortType = type.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(type)).length);
+        const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
 
         annInfoTypes = '<span class="p7 ann-info-types" title="' + type + '">' + shortType + '</span>';
       }
@@ -436,7 +422,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         // PROPERTY
         annInfoLabel = '<p class="p7 ann-info-label">Prop:</p>';
         const prop = annotation.property;
-        const shortProp = prop.substr(TabularAnnotationComponent.getNamespaceFromURL(new URL(prop)).length);
+        const shortProp = prop.substr(UrlUtils.getNamespaceFromURL(new URL(prop)).length);
         const annInfoProp = '<span class="p7 ann-info-prop" title="' + prop + '">' + shortProp + '</span>';
         annInfoValues = '<div class="ann-info-values">' + annInfoProp + '</div>';
         HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
@@ -528,17 +514,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
 
       for (let i = 0; i < annotation.columnTypes.length; ++i) {
-        annotation.columnTypesNamespace.push(TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnTypes[i])));
+        annotation.columnTypesNamespace.push(UrlUtils.getNamespaceFromURL(new URL(annotation.columnTypes[i])));
         annotation.columnTypesPrefix.push(this.getPrefixForNamespace(annotation.columnTypesNamespace[i]));
       }
 
       if (annotation.columnDatatype !== '') {
-        annotation.columnDatatypeNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.columnDatatype));
+        annotation.columnDatatypeNamespace = UrlUtils.getNamespaceFromURL(new URL(annotation.columnDatatype));
         annotation.columnDatatypePrefix = this.getPrefixForNamespace(annotation.columnDatatypeNamespace);
       }
 
       if (annotation.property !== '') {
-        annotation.propertyNamespace = TabularAnnotationComponent.getNamespaceFromURL(new URL(annotation.property));
+        annotation.propertyNamespace = UrlUtils.getNamespaceFromURL(new URL(annotation.property));
         annotation.propertyPrefix = this.getPrefixForNamespace(annotation.propertyNamespace);
       }
     });
