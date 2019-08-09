@@ -1,5 +1,14 @@
-<h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
+<h1 mat-dialog-title>ASIA Configuration</h1>
 <div mat-dialog-content>
+  <h3 class="mat-h3"> Annotation properties </h3>
+  <mat-form-field class="full-width">
+    <input matInput placeholder="Default URIfy prefix" [formControl]="urifyURLFormControl">
+    <mat-error *ngIf="urifyURLFormControl.hasError('invalidURL')">
+      {{urifyURLFormControl.errors['invalidURL']['errorMessage']}}
+    </mat-error>
+  </mat-form-field>
+
+  <h3 class="mat-h3"> Vocabulary Suggestions</h3>
   <mat-form-field>
     <mat-label>Suggester</mat-label>
     <mat-select [(value)]="suggester" (selectionChange)="update()">
@@ -48,5 +57,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="urifyURLFormControl.invalid" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
 </div>

@@ -8,12 +8,21 @@ export class AnnotationService {
   public headers: string[];
   public data;
   public subjects;
+  private urifyDefault = '';
 
   constructor() {
     this.annotations = {};
     this.headers = [];
     this.data = [];
     this.subjects = new Map<string, string>();
+  }
+
+  setUrifyDefault(urifyDefault: string) {
+    this.urifyDefault = urifyDefault;
+  }
+
+  getUrifyDefault() {
+    return this.urifyDefault;
   }
 
   setAnnotation(columnHeader: string, annotation: Annotation) {

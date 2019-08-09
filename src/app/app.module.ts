@@ -35,6 +35,7 @@ import {ArangoGeneratorService} from 'app/arango-generator.service';
 import {TransformationUpdaterService} from 'app/transformation-updater.service';
 import {ProgressIndicatorService} from 'app/progress-indicator.service';
 import {AsiaMasService} from './tabular-annotation/asia-mas/asia-mas.service';
+import {ErrorStateMatcher, ShowOnDirtyErrorStateMatcher} from '@angular/material';
 
 
 export function initConfig(config: AppConfig) {
@@ -88,6 +89,10 @@ export function initConfig(config: AppConfig) {
       provide: ErrorHandler,
       useClass: GlobalErrorHandler,
       deps: [GlobalErrorReportingService]
+    },
+    {
+      provide: ErrorStateMatcher,
+      useClass: ShowOnDirtyErrorStateMatcher
     },
     DataGraftMessageService
   ],

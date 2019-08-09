@@ -5,3 +5,7 @@ mat-form-field {
 .chip-list {
   display: block;
 }
+
+.full-width {
+  width: 100%;
+}

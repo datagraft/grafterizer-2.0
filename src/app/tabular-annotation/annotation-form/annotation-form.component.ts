@@ -78,7 +78,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       columnInfo: new FormGroup({
         columnTypes: new FormArray([this.createColType()]),
         columnValuesType: new FormControl('', this.subjectValuesTypeValidator()),
-        urifyNamespace: new FormControl('', CustomValidators.URLValidator()),
+        urifyNamespace: new FormControl(this.annotationService.getUrifyDefault(), CustomValidators.URLValidator()),
         columnDatatype: new FormControl('string'),
         customDatatype: new FormControl('', CustomValidators.URLValidator()),
         langTag: new FormControl('en'),

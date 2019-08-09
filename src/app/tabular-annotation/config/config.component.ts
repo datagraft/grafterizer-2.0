@@ -6,6 +6,8 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {MatAutocomplete, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {FormControl} from '@angular/forms';
 import {map, startWith} from 'rxjs/operators';
+import {CustomValidators} from '../shared/custom-validators';
+import {AnnotationService} from '../annotation.service';
 
 @Component({
   selector: 'app-config',
@@ -32,7 +34,11 @@ export class ConfigComponent implements OnInit {
   public language: string;
   public languages: any = [];
 
-  constructor(private suggesterSvc: AsiaMasService) {
+  urifyURLFormControl = new FormControl('', [
+    CustomValidators.URLValidator()
+  ]);
+
+  constructor(private suggesterSvc: AsiaMasService, private annotationSvc: AnnotationService) {
     this.filteredSummaries = this.summaryCtrl.valueChanges.pipe(
       startWith(null),
       map((summary: string | null) => summary ? this._filter(summary) : this._availableSummaries.slice()));
@@ -49,6 +55,8 @@ export class ConfigComponent implements OnInit {
       this.languages = data;
       this.language = this.suggesterSvc.getLanguage() || this.languages[0];
     });
+
+    this.urifyURLFormControl.setValue(this.annotationSvc.getUrifyDefault());
   }
 
   private fetchSummaries() {
@@ -66,6 +74,7 @@ export class ConfigComponent implements OnInit {
     this.suggesterSvc.setSuggester(this.suggester);
     this.suggesterSvc.setLanguage(this.language);
     this.suggesterSvc.setPreferredSummaries(Array.from(this.preferredSummaries));
+    this.annotationSvc.setUrifyDefault(this.urifyURLFormControl.value.trim());
   }
 
   remove(summary: string): void {
@@ -113,5 +122,6 @@ export class ConfigComponent implements OnInit {
   get _availableSummaries(): string[] {
     return this.summaries.filter(summary => this.preferredSummaries.indexOf(summary) === -1);
   }
+
 }
 
