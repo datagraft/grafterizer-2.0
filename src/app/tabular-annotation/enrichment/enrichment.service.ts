@@ -223,7 +223,7 @@ export class EnrichmentService {
     // create query params
     const params = new HttpParams()
       .set('ids', values.join(','))
-      .set('source', sameAsSource.getId())
+      .set('source', sameAsSource.getId() === 'wikifier' ? 'dbpedia' : sameAsSource.getId()) // TODO: allow to change the conciliator
       .set('target', sameAsDestination.getId());
 
     const httpOptions = {

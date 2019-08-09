@@ -181,7 +181,7 @@
         <label class="required" for="kgService">Target KB: </label>
         <div class="select">
           <select id="kgService" name="kgService" [(ngModel)]="selectedKGService" (change)="showPreview = false;">
-            <option *ngFor="let kgService of kgServices" [value]="kgService.id">{{kgService.name}}</option>
+            <option *ngFor="let kgService of kgServices" [value]="kgService.getId()">{{kgService.getName()}}</option>
           </select>
         </div>
       </div>
