@@ -2,8 +2,6 @@
   "jarfter-path": "/jarfter",
   "dispatch-path": "/grafterizer-dispatch",
   "graftwerk-cache-path": "/graftwerk-cache",
-  "abstat-path": "/abstat",
-  "abstat-path-ba": "/abstat-ba",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "/asia",
   "arango-generator": "/arango-generator"

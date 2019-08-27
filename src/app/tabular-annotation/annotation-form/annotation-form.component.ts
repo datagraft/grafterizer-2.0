@@ -418,8 +418,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  typeAutocomplete = (keyword: any): Observable<any[]> => {
-    return this.suggesterSvc.abstatAutocomplete(keyword, 'subj');
+  typeAutocomplete = (keyword: any): Observable<Object> => {
+    return this.suggesterSvc.abstatAutocomplete(keyword, 'SUBJ');
   }
 
   /**
@@ -427,8 +427,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    * @param keyword
    * @returns {Observable<any[]>}
    */
-  propertyAutocomplete = (keyword: any): Observable<any[]> => {
-    return this.suggesterSvc.abstatAutocomplete(keyword, 'pred');
+  propertyAutocomplete = (keyword: any): Observable<Object> => {
+    return this.suggesterSvc.abstatAutocomplete(keyword, 'PRED');
   }
 
   /**

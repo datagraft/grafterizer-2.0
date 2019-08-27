@@ -14,12 +14,10 @@ export class AsiaMasService {
   private suggester: string;
   private language: string;
   private readonly masEndpoint: string;
-  private readonly abstatAutocompleteEndpoint: string;
   private preferredSummaries: string[];
 
   constructor(private config: AppConfig, private http: HttpClient) {
     this.masEndpoint = this.config.getConfig('asia-mas') + '/suggester/api';
-    this.abstatAutocompleteEndpoint = this.config.getConfig('abstat-path') + '/api/v1/SolrSuggestions';
     this.preferredSummaries = [];
   }
 
@@ -61,23 +59,20 @@ export class AsiaMasService {
    * @param {boolean} filter
    * @returns {Observable<any[]>}
    */
-  public abstatAutocomplete(keyword, position, filter = true): Observable<any[]> {
+  public abstatAutocomplete(keyword, position, filter = true): Observable<Object> {
     if (keyword && position) {
       keyword = UrlUtils.filterURI(keyword);
       if (filter) {
         keyword = StringUtils.stringPreprocessing(keyword);
       }
       let params = new HttpParams()
-        .set('qString', keyword)
-        .set('qPosition', position)
-        .set('rows', '15')
-        .set('start', '0');
+        .set('keyword', keyword)
+        .set('position', position);
       if (this.preferredSummaries.length > 0 && this.suggester.toLowerCase() === 'abstat') {
-        params = params.set('dataset', this.preferredSummaries.join(','));
+        params = params.set('preferredSummaries', this.preferredSummaries.join(','));
       }
 
-      return this.http.get(this.abstatAutocompleteEndpoint, { params: params })
-        .map(res => res['suggestions']);
+      return this.http.get(this.masEndpoint + '/autocomplete/en', { params: params });
     }
     return Observable.of([]);
   }
