@@ -674,13 +674,16 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // first 2 letter of the URL pathname
       prefix += url.pathname.split('/')[1]
         .substr(0, 2);
-      prefix = prefix.toLowerCase();
+      // to lowercase and remove all digits (if any - e.g., w3 vocabs
+      prefix = prefix.toLowerCase().replace(/\d+/g, '');
+      // append a number in case the prefix is not available (already in use)
       let i = 1;
-      while (!this.isPrefixAvailable(prefix)) {
-        const idx = prefix.lastIndexOf(String(i - 1));
-        prefix = idx > 0 ? prefix + i : prefix.substr(0, idx) + i;
+      let tmpPrefix = prefix;
+      while (!this.isPrefixAvailable(tmpPrefix)) {
+        tmpPrefix = prefix + i;
         ++i;
       }
+      prefix = tmpPrefix;
     }
     // TODO: create a new RDFVocabulary instance
     this.transformationObj.rdfVocabs.push({ name: prefix, namespace: namespace, fromServer: false });
