@@ -86,38 +86,42 @@ export class EnrichmentService {
       while (t < values[0].length) {
         f = 0;
         sourceValues = [];
-          while ( f < values.length) {
-              if (f > 0) {
-                v = values[f][t];
-               sourceValues[f - 1] = v;
-            }
-             f++;
+        while (f < values.length) {
+          if (f > 0) {
+            v = values[f][t];
+            sourceValues[f - 1] = v;
           }
+          f++;
+        }
         sourceValuesArray[t] = sourceValues;
         t++;
       }
     }
     let reconciled = [];
     let z = 0;
+    while (z < selectedColumn.length) {
 
-      while (z < selectedColumns.length) {
-        if (this.getReconciledColumn(selectedColumns[z]) !== undefined ) {
-          if (this.getReconciledColumn(selectedColumns[z]).getConciliator().getId() == service.getId()) {
+      if (this.getReconciledColumn(selectedColumns[z]) !== undefined && this.getReconciledColumn(selectedColumns[z]) !== null) {
+        let serviceC = this.getReconciliationServiceOfColumn(selectedColumns[z]);
+        if (serviceC !== null && serviceC !== undefined) {
+
+          if (serviceC.getId().localeCompare(service.getId()) === 0) {
             reconciled[z] = true;
           } else {
             reconciled[z] = false;
           }
         }
-            z++;
-        }
+      }
+      z++;
+    }
 
-        values[0].forEach((value: string, index: number) => {
-          const m = new Mapping(index, value, sourceValuesArray[index], selectedColumn, selectedPropertys, reconciled);
-          mappings.set(m.queryId, m);
-          queries.push(m.getServiceQuery());
-        });
-      console.log('queries[0]');
-      console.log(queries[0]);
+    values[0].forEach((value: string, index: number) => {
+      const m = new Mapping(index, value, sourceValuesArray[index], selectedColumn, selectedPropertys, reconciled);
+      mappings.set(m.queryId, m);
+      queries.push(m.getServiceQuery());
+    });
+    console.log('queries[0]');
+    console.log(queries[0]);
 
     const requestURL = `${this.asiaURL}/reconcile`;
     const chunks = [];
