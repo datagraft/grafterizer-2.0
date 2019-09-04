@@ -60,18 +60,90 @@ export enum TypeStrict {
   SHOULD = 'should'
 }
 
+export abstract class PropertyValue { }
+
+export class Id {
+  private id: string;
+
+  constructor(id: string) {
+    this.id = id;
+  }
+
+  getId() {
+    return this.id;
+  }
+}
+
+export class PropertyValueNumber extends PropertyValue {
+  private readonly p: string;
+  private readonly v: number;
+
+  constructor(property: string, value: number) {
+    super();
+    this.p = property;
+    this.v = value;
+  }
+
+  getProperty(): string {
+    return this.p;
+  }
+
+  getValue(): number {
+    return this.v;
+  }
+}
+
+export class PropertyValueString extends PropertyValue {
+  private readonly p: string;
+  private readonly v: string;
+
+  constructor(property: string, value: string) {
+    super();
+    this.p = property;
+    this.v = value;
+  }
+
+  getProperty(): string {
+    return this.p;
+  }
+
+  getValue(): string {
+    return this.v;
+  }
+}
+
+export class PropertyValueId extends PropertyValue {
+  private readonly pid: string;
+  private readonly v: Id;
+
+  constructor(property: string, value: Id) {
+    super();
+    this.pid = property;
+    this.v = value;
+  }
+
+  getProperty(): string {
+    return this.pid;
+  }
+
+  getValue(): Id {
+    return this.v;
+  }
+}
+
 export class ReconciliationQuery {
   private query: string;
   private limit: number;
   private type: string; // TODO: allow array of strings
   private type_strict: TypeStrict;
-  // TODO: consider also properties here
+  private properties: PropertyValue[];
 
-  constructor(query, type: string = null, typeStrict = TypeStrict.ANY, limit = 5) {
+  constructor(query, type = null, typeStrict = TypeStrict.ANY, limit = 5, properties = []) {
     this.query = query;
     this.limit = limit;
     this.type = type;
     this.type_strict = typeStrict;
+    this.properties = properties;
   }
 
   getQuery(): string {
@@ -106,6 +178,13 @@ export class ReconciliationQuery {
     this.type_strict = typeStrict;
   }
 
+  getPropertyValues(): PropertyValue[] {
+    return this.properties;
+  }
+
+  setPropertyValues(properties: PropertyValue[]) {
+    this.properties = properties;
+  }
 }
 
 export class QueryResult {

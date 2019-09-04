@@ -6,7 +6,12 @@ import {
   Event,
   EventConfigurator,
   Extension,
+  Id,
   Property,
+  PropertyValue,
+  PropertyValueId,
+  PropertyValueNumber,
+  PropertyValueString,
   QueryResult,
   ReconciledColumn,
   ReconciliationQuery,
@@ -43,28 +48,25 @@ export class EnrichmentService {
    * @param mappings
    */
   getMostFrequentType(mappings: QueryResult[]): Type {
-    const cumulators = {};
-    const counters = {};
-    const appearances = {};
+    const totalScore = {};
+    const numCandidates = {};
+    const numQueries = {};
     const types = {};
 
-    let noResultsCounter = 0;
+    // Filter responses with no results and all results with score = 0 (which are "false positive" that should not be returned from server)
+    mappings = mappings.filter(x => x.results.length > 0 && x.results.filter(y => y.score > 0).length > 0);
 
     mappings.forEach((mapping: QueryResult) => {
-      if (mapping.results.length === 0) {
-        noResultsCounter += 1;
-      }
-
       mapping.results.forEach((result: Result) => {
         result.types.forEach((type: Type) => {
-          if (!cumulators[type.id]) {
-            cumulators[type.id] = 0;
-            counters[type.id] = 0;
-            appearances[type.id] = new Set();
+          if (!totalScore[type.id]) {
+            totalScore[type.id] = 0;
+            numCandidates[type.id] = 0;
+            numQueries[type.id] = new Set();
           }
-          cumulators[type.id] += result.score;
-          counters[type.id] += 1;
-          appearances[type.id].add(mapping.reconciliationQuery.getQuery());
+          totalScore[type.id] += result.score;
+          numCandidates[type.id] += 1;
+          numQueries[type.id].add(mapping.reconciliationQuery.getQuery());
 
           types[type.id] = type;
         });
@@ -73,9 +75,18 @@ export class EnrichmentService {
 
     const scores = {};
 
-    Object.keys(appearances).forEach((property: string) => {
-      scores[property] = (cumulators[property] / counters[property]) *
-        (appearances[property].size / (mappings.length - noResultsCounter));
+    /* Score computation for type X
+     * totalScore(X): sum of scores given to all candidates of type X
+     * numCandidates(X): number of candidates of type X (across all results)
+     * numQueries(X): number of queries answered with at least one candidate of type X
+     * QR: number of queries answered with at least one candidate
+     *
+     * score(X) = totalScore(X) * (numQueries(X) / QR) * (numQueries(X) / numCandidates(X))
+     */
+    Object.keys(numQueries).forEach((property: string) => {
+      scores[property] = totalScore[property] *
+        (numQueries[property].size * numQueries[property].size) /
+        (mappings.length * numCandidates[property]);
     });
 
     if (Object.keys(scores).length > 0) {
@@ -146,26 +157,68 @@ export class EnrichmentService {
    * Reconcile the selected column (header), using the reconciliation service passed as parameter.
    * This method uses the most frequent types computed on a sample of size sampleSize as the columnType.
    * @param header the header of the column to reconcile
+   * @param selectedProperties
+   * @param selectedColumns
    * @param service the reconciliation service to use
    * @param sampleSize number of rows to use for determining the most frequent entity type (default is 10).
    */
-  reconcileColumn(header: string, service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
-    const colData = this.data.map(row => row[':' + header]);
-    let values = Array.from(new Set(colData));
-    values = values.filter(function (e) {
-      return e === 0 || e;
-    });  // remove empty strings
+  reconcileColumn(header: string, selectedProperties: string[],
+                  selectedColumns: string[], service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
+
+    const colData = this.data.filter(function (row) { // remove empty strings
+      return row[':' + header] === 0 || row[':' + header];  // Consider the trailing ':' char from EDN response
+    }).map(row => { // remove unused fields from rows
+      return [header].concat(selectedColumns).reduce((o, k) => {
+        o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
+        return o;
+      }, {});
+    }).reduce((arr, item) => { // remove duplicates
+      const exists = !!arr.find(x => {
+        let ex = true;
+        [header].concat(selectedColumns).forEach(col => {
+          ex = ex && x[col] === item[col];
+        });
+        return ex;
+      });
+      if (!exists) {
+        arr.push(item);
+      }
+      return arr;
+    }, []).map(item => {
+      // Create the object needed for the reconciliation (value to reconcile + propertyValues)
+      return {value: item[header], properties: this.getPropertyValues(item, selectedColumns, selectedProperties, service)};
+    });
 
     // reconcile #sampleSize values for guessing the column type
-    return this.execQueries(values.slice(0, sampleSize).map(v => new QueryResult(new ReconciliationQuery(v))), service).flatMap(
+    return this.execQueries(colData.slice(0, sampleSize).map((v: {value, properties}) => new QueryResult(
+      new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties))),
+      service).flatMap(
       results => {
+        // reconcile all rows against the most frequent type
           const type: Type = this.getMostFrequentType(results);
           if (type) {
-            return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v, type.id, TypeStrict.SHOULD))), service);
+            return this.execQueries(colData.map((v: {value, properties}) => new QueryResult(
+              new ReconciliationQuery(v.value, type.id, TypeStrict.SHOULD, undefined, v.properties))), service);
           } else {
-            return this.execQueries(values.map(v => new QueryResult(new ReconciliationQuery(v))), service);
+            return this.execQueries(colData.map((v: {value, properties}) => new QueryResult(
+              new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties))), service);
           }
       });
+  }
+
+  private getPropertyValues(row: [string], selectedColumn, selectedProperties, conciliator: ConciliatorService): PropertyValue[] {
+    return selectedColumn.map((col, index) => {
+      if (this.isColumnReconciled(col) && this.getReconciliationServiceOfColumn(col).getId() === conciliator.getId()) {
+        // Column reconciled against the same service used for this reconciliation -> return value as ID
+        return new PropertyValueId(selectedProperties[index], new Id(row[col]));
+      } else if (!isNaN(Number(row[col]))) {
+        // The column contains numbers -> return value as Number
+        return new PropertyValueNumber(selectedProperties[index], Number(row[col]));
+      } else {
+        // The column contains just strings -> return value as String
+        return new PropertyValueString(selectedProperties[index], row[col]);
+      }
+    });
   }
 
   extendColumn(header: string, properties: string[]): Observable<{ ext: Extension[], props: Property[] }> {

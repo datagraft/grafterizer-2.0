@@ -150,7 +150,7 @@
                         || annotationForm.hasError('invalidSubject')"
             auto-complete [source]="allowedSources" (valueChanged)="changeSourceColumn($event)">
             <input id="subject" type="text" formControlName="subject" placeholder="Choose a source column" size="45">
-            <span *ngIf="annotationForm.get('relationship.subject').hasError('invalidSubject')" class="tooltip-content">{{annotationForm.get('relationship.subject').errors['invalidSubject'].errorMessage}}</span>
+            <span *ngIf="annotationForm.get('relationship.subject').hasError('invalidColumn')" class="tooltip-content">{{annotationForm.get('relationship.subject').errors['invalidColumn'].errorMessage}}</span>
             <span *ngIf="annotationForm.hasError('invalidSubject')" class="tooltip-content">{{annotationForm.errors['invalidSubject'].errorMessage}}</span>
           </label>
         </div>

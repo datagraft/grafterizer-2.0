@@ -117,7 +117,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       if (this.graftwerkData[':column-names'] && this.graftwerkData[':rows']) {
         // Clean header name (remove leading ':' from the EDN response)
         this.annotationService.headers = this.graftwerkData[':column-names'].map((h) => {
-          return h.charAt(0) == ':' ? h.substr(1) : h;
+          return h.charAt(0) === ':' ? h.substr(1) : h;
         });
         this.annotationService.data = this.graftwerkData[':rows'];
 

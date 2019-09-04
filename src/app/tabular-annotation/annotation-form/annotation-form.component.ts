@@ -84,7 +84,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         langTag: new FormControl('en'),
       }),
       relationship: new FormGroup({
-        subject: new FormControl('', CustomValidators.subjectValidator(this.allowedSources)),
+        subject: new FormControl('', CustomValidators.columnValidator(this.allowedSources)),
         property: new FormControl('', CustomValidators.URLValidator()),
       }),
     }, Validators.compose([

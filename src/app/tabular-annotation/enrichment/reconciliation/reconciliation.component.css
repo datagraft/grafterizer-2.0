@@ -1,3 +1,40 @@
+.tooltip.tooltip-validation.invalid > input:focus ~ .tooltip-content {
+  background: #c92100;
+  visibility: visible;
+  opacity: 1; }
+
+.tooltip.tooltip-validation.invalid > input:focus ~ .tooltip-content,
+.tooltip.tooltip-validation.invalid.tooltip-top-right > input:focus ~ .tooltip-content,
+.tooltip.tooltip-validation.invalid.tooltip-bottom-right > input:focus ~ .tooltip-content {
+  left: 100%;
+  right: auto;
+  margin-left: -0.58333rem; }
+
+.tooltip.tooltip-validation.invalid.tooltip-top-left > input:focus ~ .tooltip-content,
+.tooltip.tooltip-validation.invalid.tooltip-bottom-left > input:focus ~ .tooltip-content {
+  right: 0;
+  left: auto;
+  margin-right: 0.58333rem; }
+
+.tooltip.tooltip-validation.invalid.tooltip-left > input:focus ~ .tooltip-content {
+  right: 100%;
+  left: auto;
+  margin: 0 0.58333rem 0 0; }
+.tooltip.tooltip-validation.invalid.tooltip-left > input:focus ~ .tooltip-content::before {
+  border-top-color: #c92100;
+  border-left-color: #c92100;
+  border-bottom-color: transparent;
+  border-right-color: transparent; }
+
+.tooltip.tooltip-validation.invalid.tooltip-right > input:focus ~ .tooltip-content {
+  left: 100%;
+  right: auto;
+  margin: 0 0 0 0.58333rem; }
+.tooltip.tooltip-validation.invalid.tooltip-right > input:focus ~ .tooltip-content::before {
+  border-top-color: #c92100;
+  border-right-color: #c92100;
+  border-bottom-color: transparent;
+  border-left-color: transparent; }
 
 .mat-expansion-panel:not([class*='mat-elevation-z']) {
   box-shadow: 0px 0px 0px -2px rgba(0, 0, 0, 0.2), 0px 0px 0px 0px rgba(0, 0, 0, 0.14), 0px 0px 0px 0px rgba(0, 0, 0, 0.12);

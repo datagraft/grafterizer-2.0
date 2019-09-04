@@ -3,6 +3,12 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSour
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, DeriveMap, QueryResult, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
+import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {AnnotationService} from '../../annotation.service';
+import {Annotation} from '../../annotation.model';
+import {Observable} from 'rxjs';
+import {AsiaMasService} from '../../asia-mas/asia-mas.service';
+import {CustomValidators} from '../../shared/custom-validators';
 
 @Component({
   selector: 'app-reconciliation',
@@ -11,6 +17,14 @@ import {AddEntityDialogComponent} from './addEntityDialog.component';
 })
 export class ReconciliationComponent implements OnInit {
 
+
+  constructor(private fb: FormBuilder, public dialogRef: MatDialogRef<ReconciliationComponent>,
+              @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog, public annotationService: AnnotationService,
+              private enrichmentService: EnrichmentService,
+              private suggesterSvc: AsiaMasService) {
+  }
+
+  public annotation: Annotation;
   public close = false;
   public colIndex: any;
   public filter_column = 0;
@@ -45,28 +59,41 @@ export class ReconciliationComponent implements OnInit {
   public notReconciledCount: number;
   public shiftColumn = false;
   public manualMatched: any[] = [];
+  public reconciliationForm: FormGroup;
+  public items: FormArray;
+  public property: string;
+  public value: string;
+  public propertyArray: string[];
+  public sourceArray: string[];
+  public reconcileWithProperties = false;
+
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  public available: string[];
+  public headers: string[];
+  public index: number;
+  public openedSource: string;
+  filteredOptions: string[];
 
-  constructor(public dialogRef: MatDialogRef<ReconciliationComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any, public dialog: MatDialog,
-              private enrichmentService: EnrichmentService) {
-  }
 
   ngOnInit() {
-
     this.header = this.dialogInputData.header;
+    this.annotation = this.dialogInputData.annotation;
     this.colIndex = this.dialogInputData.indexCol;
     this.services = new Map();
     this.servicesGroups = [];
+    this.openedSource = '';
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
         data[serviceCategory].forEach((service) => {
-          this.services.set(service['id'], new ConciliatorService({ ...service, ...{ 'group': serviceCategory } }));
+          this.services.set(service['id'], new ConciliatorService({...service, ...{'group': serviceCategory}}));
         });
         this.servicesGroups.push(serviceCategory);
       });
     });
+    this.headers = [];
+    this.fillAllowedSourcesArray();
+    this.index = 0;
     this.showPreview = false;
     this.dataLoading = false;
     this.reconciledData = [];
@@ -75,17 +102,70 @@ export class ReconciliationComponent implements OnInit {
     this.matchedCount = 0;
     this.maxThresholdCount = 0;
     this.notReconciledCount = 0;
+    this.reconciliationForm = this.fb.group({
+      selectedGroup: new FormControl(''),
+      selectedService: new FormControl(''),
+      items: this.fb.array([this.createNewItem()]),
+      newColumnName: new FormControl(''),
+      shiftColumn: new FormControl('')
+    });
+  }
 
+  createNewItem(): FormGroup {
+    return new FormGroup({
+      sourceColumn: new FormControl('', [
+        CustomValidators.columnValidator(this.available),
+        CustomValidators.uniqueSourceValidator('sourceColumn')
+      ]),
+      property: new FormControl('', CustomValidators.URLValidator())
+    }, CustomValidators.subjectPropertyValidator('sourceColumn', 'property', undefined));
+  }
+
+  addItem(index: number): void {
+    (this.reconciliationForm.get('items') as FormArray).insert(index + 1, this.createNewItem());
+  }
+
+  deleteItem(index: number): void {
+    (this.reconciliationForm.get('items') as FormArray).removeAt(index);
+  }
+
+  fillAllowedSourcesArray() {
+    this.available = this.annotationService.headers.filter(s => s !== this.header);
+    this.filteredOptions = this.available;
+  }
+
+  filterEmptySelect() {
+    const formArray = (this.reconciliationForm.get('items') as FormArray);
+
+    // Remove empty/wrong groups from the array while filling the source and property arrays
+    formArray.controls = formArray.controls.filter((ctrl: FormGroup) => {
+      if (ctrl.get('sourceColumn').value !== '' && ctrl.get('property').value !== '') {
+        this.sourceArray.push(ctrl.get('sourceColumn').value);
+        this.propertyArray.push(ctrl.get('property').value);
+        return true;
+      }
+      return false;
+    });
+
+    if (formArray.controls.length === 0) {
+      formArray.controls = [this.createNewItem()];
+    }
   }
 
   public reconcile() {
+    this.propertyArray = [];
+    this.sourceArray = [];
+    if ((this.reconciliationForm.get('items') as FormArray).controls.length > 0 && this.reconcileWithProperties) {
+      this.filterEmptySelect();
+    }
     this.skippedCount = 0;
     this.matchedCount = 0;
     this.maxThresholdCount = 0;
     this.notReconciledCount = 0;
     this.dataLoading = true;
     this.showPreview = true;
-    this.enrichmentService.reconcileColumn(this.header, this.services.get(this.selectedService)).subscribe((data) => {
+    this.enrichmentService.reconcileColumn(this.header, this.propertyArray, this.sourceArray,
+      this.services.get(this.reconciliationForm.get('selectedService').value)).subscribe((data) => {
       this.reconciledData = data;
       this.dataSource = new MatTableDataSource(this.reconciledData); // to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
@@ -97,6 +177,7 @@ export class ReconciliationComponent implements OnInit {
           .filter((result: Result) => result.types
             .filter((type: Type) => type.id === this.guessedType.id).length > 0);
       });
+
       this.updateThreshold();
       this.dataLoading = false;
 
@@ -104,20 +185,21 @@ export class ReconciliationComponent implements OnInit {
   }
 
   public submit() {
+
     const deriveMaps = [];
 
-    if (!this.newColumnName || this.newColumnName.trim().length === 0) {
-      this.newColumnName = this.header + '_' + this.selectedService;
+    if (!this.reconciliationForm.get('newColumnName').value || this.reconciliationForm.get('newColumnName').value.trim().length === 0) {
+      this.reconciliationForm.get('newColumnName').setValue(this.header + '_' + this.reconciliationForm.get('selectedService').value);
     }
 
-    this.newColumnName = this.newColumnName.replace(/\s/g, '_');
+    this.reconciliationForm.get('newColumnName').setValue(this.reconciliationForm.get('newColumnName').value.replace(/\s/g, '_'));
     deriveMaps.push(
-      new DeriveMap(this.newColumnName, null)
+      new DeriveMap(this.reconciliationForm.get('newColumnName').value, null)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
-      'conciliator': this.services.get(this.selectedService),
-      'shift': this.shiftColumn,
+      'conciliator': this.services.get(this.reconciliationForm.get('selectedService').value),
+      'shift': this.reconciliationForm.get('shiftColumn').value,
       'header': this.header,
       'indexCol': this.colIndex
     });
@@ -125,8 +207,9 @@ export class ReconciliationComponent implements OnInit {
   }
 
   updateServicesForSelectedGroup(): void {
-    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(s => s.getGroup() === this.selectedGroup);
-    this.selectedService = this.servicesForSelectedGroup[0].getId();
+    this.servicesForSelectedGroup = Array.from(this.services.values()).filter(
+      s => s.getGroup() === this.reconciliationForm.get('selectedGroup').value);
+    this.reconciliationForm.get('selectedGroup').setValue(this.servicesForSelectedGroup[0].getGroup());
     this.showPreview = false;
   }
 
@@ -157,7 +240,7 @@ export class ReconciliationComponent implements OnInit {
         } else if (!mapping.results[0].match && mapping.results[0].score >= this.threshold) {
           this.maxThresholdCount += 1;
         }
-      } else if (mapping.results.length == 0) {
+      } else if (mapping.results.length === 0) {
         this.notReconciledCount += 1;
       }
     });
@@ -165,7 +248,7 @@ export class ReconciliationComponent implements OnInit {
 
   set_reconciled(index, select) {
 
-    if (select != 0) {
+    if (select !== 0) {
       this.manualMatched.push(this.dataSource_2[index].results[select].id);
       this.temp_option = this.dataSource_2[index].results[0].name;
       this.temp_score = this.dataSource_2[index].results[0].score;
@@ -208,7 +291,7 @@ export class ReconciliationComponent implements OnInit {
   openAddEntityDialog(row_index: number): void {
     const dialogRef = this.dialog.open(AddEntityDialogComponent, {
       width: '600px',
-      data: {'identifierSpace': this.services.get(this.selectedService).getIdentifierSpace()}
+      data: {'identifierSpace': this.services.get(this.reconciliationForm.get('selectedService').value).getIdentifierSpace()}
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result && result['id'] && result['name']) {
@@ -230,14 +313,14 @@ export class ReconciliationComponent implements OnInit {
     this.index_filtered_reconciled = 0;
     this.reconciledDataFiltered = Object.assign([], this.reconciledData);
 
-    if (filter == 0) { // no filter
+    if (filter === 0) { // no filter
       this.dataSource = new MatTableDataSource(this.reconciledData); // to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
       this.dataSource.paginator = this.paginator;
-    } else if (filter == 1) { // filter by matched
+    } else if (filter === 1) { // filter by matched
       this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 &&
-          (!mapping.results[0].match || this.manualMatched.indexOf(mapping.results[0].id) !== -1)) || mapping.results.length == 0) {
+          (!mapping.results[0].match || this.manualMatched.indexOf(mapping.results[0].id) !== -1)) || mapping.results.length === 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
         }
@@ -247,10 +330,10 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered); // to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
-    } else if (filter == 2) { // filter by >= threshold
+    } else if (filter === 2) { // filter by >= threshold
       this.reconciledData.forEach((mapping: QueryResult) => {
         if ((mapping.results.length > 0 &&
-          (mapping.results[0].match || mapping.results[0].score < this.threshold)) || mapping.results.length == 0) {
+          (mapping.results[0].match || mapping.results[0].score < this.threshold)) || mapping.results.length === 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
         }
@@ -259,9 +342,9 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered); // to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
-    } else if (filter == 3) { // filter by < threshold
+    } else if (filter === 3) { // filter by < threshold
       this.reconciledData.forEach((mapping: QueryResult) => {
-        if ((mapping.results.length > 0 && mapping.results[0].score >= this.threshold) || mapping.results.length == 0) {
+        if ((mapping.results.length > 0 && mapping.results[0].score >= this.threshold) || mapping.results.length === 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
         }
@@ -270,7 +353,7 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered); // to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
-    } else if (filter == 4) { // filter by not reconciled
+    } else if (filter === 4) { // filter by not reconciled
       this.reconciledData.forEach((mapping: QueryResult) => {
         if (mapping.results.length > 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
@@ -281,9 +364,9 @@ export class ReconciliationComponent implements OnInit {
       this.dataSource = new MatTableDataSource(this.reconciledDataFiltered); // to use material filter
       this.dataSource_2 = this.reconciledDataFiltered;
       this.dataSource.paginator = this.paginator;
-    } else if (filter == 5) { // filter by matched by user
+    } else if (filter === 5) { // filter by matched by user
       this.reconciledData.forEach((mapping: QueryResult) => {
-        if ((mapping.results.length > 0 && this.manualMatched.indexOf(mapping.results[0].id) === -1) || mapping.results.length == 0) {
+        if ((mapping.results.length > 0 && this.manualMatched.indexOf(mapping.results[0].id) === -1) || mapping.results.length === 0) {
           this.reconciledDataFiltered.splice(this.index_filtered_reconciled, 1);
           this.index_filtered_reconciled--;
         }
@@ -307,14 +390,14 @@ export class ReconciliationComponent implements OnInit {
       if (a.results.length > 0 && b.results.length > 0) {
         return this.compare(a.results[0].score, b.results[0].score, isAsc);
 
-      } else if (a.results.length > 0 && b.results.length == 0) {
+      } else if (a.results.length > 0 && b.results.length === 0) {
 
         return this.compare(a.results[0].score, 0, isAsc);
 
-      } else if (a.results.length == 0 && b.results.length > 0) {
+      } else if (a.results.length === 0 && b.results.length > 0) {
         return this.compare(0, b.results[0].score, isAsc);
 
-      } else if (a.results.length == 0 && b.results.length == 0) {
+      } else if (a.results.length === 0 && b.results.length === 0) {
         return this.compare(0, 0, isAsc);
 
       }
@@ -369,8 +452,38 @@ export class ReconciliationComponent implements OnInit {
     } else {
       this.skippedCount--;
     }
-
-
   }
 
-} // end export class
+  /**
+   * Search for property suggestions
+   * @param keyword
+   * @returns {Observable<any[]>}
+   */
+  propertyAutocomplete = (keyword: any): Observable<Object> => {
+    return this.suggesterSvc.abstatAutocomplete(keyword, 'PRED');
+  };
+
+  /**
+   * Custom rendering of autocomplete list
+   * @param data
+   * @returns {string}
+   */
+  autocompleteListFormatter = (data: any) => {
+    return `<p class="p6 no-margin-top">${data.suggestion}</p>
+                <p class="p7 no-margin-top">${data.occurrence} occurrences</p>
+                <p class="p7 no-margin-top">from: ${data.dataset}</p>`;
+  };
+
+  filter(i: number) {
+    this.filteredOptions = this.filterAvailable((this.reconciliationForm.get('items') as FormArray).controls[i].get('sourceColumn').value);
+  }
+
+  private filterAvailable(text: string): string[] {
+    if (text !== undefined) {
+      const filterValue = text.toLowerCase();
+      return this.available.filter(
+        option => option.toLowerCase().includes(filterValue));
+    }
+    return [];
+  }
+}// end export class

@@ -1,27 +1,27 @@
-import {AbstractControl, FormArray, FormGroup, ValidatorFn} from '@angular/forms';
+import {AbstractControl, FormArray, ValidatorFn} from '@angular/forms';
 import {ColumnTypes} from '../annotation.model';
 
 export class CustomValidators {
 
   /**
    * Check if the langTag is valid, only if the datatype is equal to string.
-   * @param {string} columnDatatype
-   * @param {string} langTag
+   * @param {string} columnDatatypeCtrlName
+   * @param {string} langTagCtrlName
    * @returns {ValidatorFn}
    */
-  static langTagValidator(columnDatatype: string, langTag: string): ValidatorFn {
-    return (group: FormGroup): { [key: string]: any } => {
-      const dataTypeControl = group.get(columnDatatype);
-      const langTagControl = group.get(langTag);
+  static langTagValidator(columnDatatypeCtrlName: string, langTagCtrlName: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const dataTypeControl = control.get(columnDatatypeCtrlName);
+      const langTagControl = control.get(langTagCtrlName);
 
       if (dataTypeControl && langTagControl) {
         const datatypeValue = dataTypeControl.value;
         const langTagValue = langTagControl.value;
         if (datatypeValue === 'string') {
           if (langTagValue.length === 0) {
-            return { 'invalidLangTag': { errorMessage: 'Language tag is required for strings' } };
+            return {'invalidLangTag': {errorMessage: 'Language tag is required for strings'}};
           } else if (langTagValue.length !== 2) {
-            return { 'invalidLangTag': { errorMessage: 'Language tag must be of 2 chars' } };
+            return {'invalidLangTag': {errorMessage: 'Language tag must be of 2 chars'}};
           }
         }
         return null;
@@ -31,47 +31,68 @@ export class CustomValidators {
 
   /**
    * Check if subject and property are both filled or empty
-   * @param {string} subject
-   * @param {string} property
-   * @param {string} colValuesType
+   * @param {string} subjectCtrlName
+   * @param {string} propertyCtrlName
+   * @param {string} colValuesTypeCtrlName
    * @returns {ValidatorFn}
    */
-  static subjectPropertyValidator(subject: string, property: string, colValuesType: string): ValidatorFn {
-    return (group: FormGroup): { [key: string]: any } => {
-      const subjectControl = group.get(subject);
-      const propertyControl = group.get(property);
-      const columnValuesTypeControl = group.get(colValuesType);
+  static subjectPropertyValidator(subjectCtrlName: string, propertyCtrlName: string, colValuesTypeCtrlName: string = null): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const subjectControl = control.get(subjectCtrlName);
+      const propertyControl = control.get(propertyCtrlName);
+      const columnValuesTypeControl = control.get(colValuesTypeCtrlName);
 
-      if (subjectControl && propertyControl && columnValuesTypeControl) {
+      if (subjectControl && propertyControl) {
         const subjectValue = subjectControl.value;
         const propertyValue = propertyControl.value;
-        const valuesTypeValue = columnValuesTypeControl.value;
 
         if (subjectValue !== '' && propertyValue === '') {
-          return { 'invalidProperty': { errorMessage: 'A source requires a property' } };
+          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
         }
+
         if (propertyValue !== '' && subjectValue === '') {
-          return { 'invalidSubject': { errorMessage: 'A property requires a source' } };
+          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
         }
-        if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
-          return {
-            'invalidSubject': { errorMessage: 'Literal columns require a source' },
-            'invalidProperty': { errorMessage: 'Literal columns require a property' }
-          };
+
+        if (columnValuesTypeControl) {
+          const valuesTypeValue = columnValuesTypeControl.value;
+          if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
+            return {
+              'invalidSubject': {errorMessage: 'Literal columns require a source'},
+              'invalidProperty': {errorMessage: 'Literal columns require a property'}
+            };
+          }
         }
+
         return null;
       }
     };
   }
 
   /**
-   * Check if the selected source is contained in the array of allowed sources
+   * Check if the selected column is contained in the array of allowed columns
    * @returns {ValidatorFn}
    */
-  static subjectValidator(allowedSources: string[]): ValidatorFn {
+  static columnValidator(allowedColumns: string[]): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
-      if (control.value !== '' && allowedSources && allowedSources.indexOf(control.value) === -1) {
-        return { 'invalidSubject': { errorMessage: 'This subject is not allowed' } };
+      if (control.value !== '' && allowedColumns && !allowedColumns.includes(control.value)) {
+        return {'invalidColumn': {errorMessage: 'This column is not allowed'}};
+      }
+      return null;
+    };
+  }
+
+  /**
+   * Check if the given source column is unique within its array
+   * @returns {ValidatorFn}
+   */
+  static uniqueSourceValidator(sourceCtrlName: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      if (control.value !== '' && control.parent &&
+        control.parent.parent instanceof FormArray &&
+        (control.parent.parent as FormArray).controls
+          .filter(s => s.get(sourceCtrlName).value === control.value).length > 1) {
+        return {'invalidSource': {errorMessage: 'This source is already used'}};
       }
       return null;
     };
@@ -87,32 +108,32 @@ export class CustomValidators {
         if (control.value !== '') {
           const url = new URL(control.value);
           if (url.host === '') {
-            return { 'invalidURL': { errorMessage: 'This URL is not valid' } };
+            return {'invalidURL': {errorMessage: 'This URL is not valid'}};
           }
         }
         return null;
       } catch (error) {
-        return { 'invalidURL': { errorMessage: 'This URL is not valid' } };
+        return {'invalidURL': {errorMessage: 'This URL is not valid'}};
       }
     };
   }
 
   /**
    * Requires a custom datatype to be set whene the columnDatatype is 'custom'
-   * @param {string} columnDatatype
-   * @param {string} customDatatype
+   * @param {string} columnDatatypeCtrlName
+   * @param {string} customDatatypeCtrlName
    * @returns {ValidatorFn}
    */
-  static customDatatypeValidator(columnDatatype: string, customDatatype: string): ValidatorFn {
-    return (group: FormGroup): { [key: string]: any } => {
-      const dataTypeControl = group.get(columnDatatype);
-      const customTypeControl = group.get(customDatatype);
+  static customDatatypeValidator(columnDatatypeCtrlName: string, customDatatypeCtrlName: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const dataTypeControl = control.get(columnDatatypeCtrlName);
+      const customTypeControl = control.get(customDatatypeCtrlName);
 
       if (dataTypeControl && customTypeControl) {
         const datatypeValue = dataTypeControl.value;
         const customTypeValue = customTypeControl.value;
         if (datatypeValue === 'custom' && customTypeValue === '') {
-          return { 'invalidCustomDatatype': { errorMessage: 'A custom datatype must be specified' } };
+          return {'invalidCustomDatatype': {errorMessage: 'A custom datatype must be specified'}};
         }
         return null;
       }
@@ -121,14 +142,14 @@ export class CustomValidators {
 
   /**
    * Requires at least one column type to be set when the columnValuesType is 'URI'
-   * @param {string} columnTypes
-   * @param {string} columnValuesType
+   * @param {string} columnTypesCtrlName
+   * @param {string} columnValuesTypeCtrlName
    * @returns {ValidatorFn}
    */
-  static columnTypesValidator(columnTypes: string, columnValuesType: string): ValidatorFn {
-    return (group: FormGroup): { [key: string]: any } => {
-      const typesControls = (group.get(columnTypes) as FormArray).controls;
-      const valuesTypeControl = group.get(columnValuesType);
+  static columnTypesValidator(columnTypesCtrlName: string, columnValuesTypeCtrlName: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const typesControls = (control.get(columnTypesCtrlName) as FormArray).controls;
+      const valuesTypeControl = control.get(columnValuesTypeCtrlName);
       if (typesControls && valuesTypeControl) {
         const valuesTypeValue = valuesTypeControl.value;
         if (valuesTypeValue === ColumnTypes.URI) {
@@ -141,7 +162,7 @@ export class CustomValidators {
             }
           }
           if (error) {
-            return { 'invalidColumnTypes': { errorMessage: 'At least one column type is required' } };
+            return {'invalidColumnTypes': {errorMessage: 'At least one column type is required'}};
           }
         }
       }
@@ -151,20 +172,20 @@ export class CustomValidators {
 
   /**
    * Requires the URIfy prefix to be set when the columnValuesType is 'URI'
-   * @param {string} urifyNamespace
-   * @param {string} columnValuesType
+   * @param {string} urifyNamespaceCtrlName
+   * @param {string} columnValuesTypeCtrlName
    * @returns {ValidatorFn}
    */
-  static urifyNamespaceValidator(urifyNamespace: string, columnValuesType: string): ValidatorFn {
-    return (group: FormGroup): { [key: string]: any } => {
-      const urifyNamespaceControl = group.get(urifyNamespace);
-      const valuesTypeControl = group.get(columnValuesType);
+  static urifyNamespaceValidator(urifyNamespaceCtrlName: string, columnValuesTypeCtrlName: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const urifyNamespaceControl = control.get(urifyNamespaceCtrlName);
+      const valuesTypeControl = control.get(columnValuesTypeCtrlName);
 
       if (urifyNamespaceControl && valuesTypeControl) {
         const urifyNamespaceValue = urifyNamespaceControl.value;
         const valuesTypeValue = valuesTypeControl.value;
         if (valuesTypeValue === ColumnTypes.URI && urifyNamespaceValue === '') {
-          return { 'invalidUrifyNamespace': { errorMessage: 'An URIfy namespace is required' } };
+          return {'invalidUrifyNamespace': {errorMessage: 'An URIfy namespace is required'}};
         }
         return null;
       }
