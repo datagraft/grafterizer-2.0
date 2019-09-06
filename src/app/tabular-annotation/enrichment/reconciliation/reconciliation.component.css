@@ -49,32 +49,27 @@ span.red{
 table {
   width: 100%;
  }
-div.c1{
+div.table-container{
   width: 100%;
-    padding: 0;
-    overflow-y: scroll;
-    max-height:360px;
+  overflow: auto;
 }
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 56px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 p.ridge {
   border-style: ridge;
 }
-
- td.third_td {
-  width:45%;
-  padding:0;
-  margin:0;
- }
-
- td.second_td {
-  width:30%;
- }
-
-td.first_td {
-  width:10%;
- }
- td.fourth_td {
-   width:15%;
-  }
 
  mat-accordion{
    width: 600px;
@@ -88,6 +83,11 @@ td.first_td {
 mat-icon{
   padding:0;
   margin:0;
+}
+
+.mat-table {
+  min-width: 100%;
+  width: max-content;
 }
 
 .mat-header-row{
@@ -149,6 +149,10 @@ div.preview_settings{
   width: 100%;
 }
 
+.preview {
+  margin: 0.25rem 0;
+}
+
 
 div.threshold{
   width: 100%;
@@ -162,19 +166,14 @@ div.action_table{
 }
 
 div.entity_reconciled_name{
-  float:left;
-  display: inline;
-  width:220px;
-  margin:0px;
-  padding:0px;
+  padding-right: 10px;
 }
+
 div.entity_reconciled_icon{
   float:left;
   display: inline;
-  width:15px;
-  margin:0px;
-  padding:0px;
 }
+
 mat-panel-title{
   margin:0px;
   padding:0px;
@@ -190,8 +189,7 @@ span.left_margin{
 
 div.icons{
   width: 100%;
-  margin-right: 17%;
-  margin-left: 12%;
+  padding-left: 15%;
 }
 div.specific_icon{
   margin-right: 6%;
@@ -200,7 +198,7 @@ div.specific_icon{
 }
 span.setMatchingHeader{
   margin-left: 15px;
-  
+
 }
 span.setMatching{
   margin-left: 20px;

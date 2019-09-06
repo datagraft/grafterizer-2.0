@@ -1,12 +1,10 @@
-<div style="text-align: center" [hidden]="!dataLoading">
-  <span class="spinner spinner-lg">
-    Loading...
-  </span>
+<div *ngIf="dataLoading" class="loading-shade">
+  <mat-spinner *ngIf="dataLoading"></mat-spinner>
 </div>
 <div class="options" [hidden]="dataLoading">
   <div class="btn-group pull-right" style="padding: .5em">
     <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
-      Update RDF Mappings 
+      Update RDF Mappings
 
     </button>
     <!--<clr-dropdown *ngIf="false">-->

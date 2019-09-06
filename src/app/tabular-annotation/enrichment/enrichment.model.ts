@@ -60,26 +60,28 @@ export enum TypeStrict {
   SHOULD = 'should'
 }
 
-export abstract class PropertyValue { }
+export interface PropertyValue {
+  getProperty(): string;
+  getValue(): string;
+}
 
 export class Id {
-  private id: string;
+  private readonly id: string;
 
   constructor(id: string) {
     this.id = id;
   }
 
-  getId() {
+  getId(): string {
     return this.id;
   }
 }
 
-export class PropertyValueNumber extends PropertyValue {
+export class PropertyValueNumber implements PropertyValue {
   private readonly p: string;
   private readonly v: number;
 
   constructor(property: string, value: number) {
-    super();
     this.p = property;
     this.v = value;
   }
@@ -88,17 +90,16 @@ export class PropertyValueNumber extends PropertyValue {
     return this.p;
   }
 
-  getValue(): number {
-    return this.v;
+  getValue(): string {
+    return this.v.toString();
   }
 }
 
-export class PropertyValueString extends PropertyValue {
+export class PropertyValueString implements PropertyValue {
   private readonly p: string;
   private readonly v: string;
 
   constructor(property: string, value: string) {
-    super();
     this.p = property;
     this.v = value;
   }
@@ -112,12 +113,11 @@ export class PropertyValueString extends PropertyValue {
   }
 }
 
-export class PropertyValueId extends PropertyValue {
+export class PropertyValueId implements PropertyValue {
   private readonly pid: string;
   private readonly v: Id;
 
   constructor(property: string, value: Id) {
-    super();
     this.pid = property;
     this.v = value;
   }
@@ -126,8 +126,8 @@ export class PropertyValueId extends PropertyValue {
     return this.pid;
   }
 
-  getValue(): Id {
-    return this.v;
+  getValue(): string {
+    return this.v.getId();
   }
 }
 
@@ -227,52 +227,56 @@ export class Extension {
 }
 
 export class DeriveMap {
-  private deriveMap: {};
+  private readonly deriveMap: Map<string[], string>;
+  public fromCols: string[];
   public newColName: string;
   public newColTypes: Type[];
   public withProperty: string;
   public newColDatatype: string = null;
 
-  constructor(newColName: string, withProperty: string) {
-    this.deriveMap = {};
+  constructor(newColName: string, fromCols: string[], withProperty: string) {
+    this.deriveMap = new Map();
+    this.fromCols = fromCols;
     this.newColTypes = [];
     this.withProperty = withProperty;
     this.newColName = newColName;
   }
 
   buildFromMapping(mapping: QueryResult[], threshold: number, types: Type[]) {
-    this.deriveMap = {};
+    this.deriveMap.clear();
     this.newColTypes = types;
     mapping.forEach(m => {
       if (m.results.length > 0 && m.results[0].match) {
-        this.deriveMap[m.reconciliationQuery.getQuery()] = m.results[0].id; // TODO: iterate over results!
+        const key = [m.reconciliationQuery.getQuery()]
+          .concat(m.reconciliationQuery.getPropertyValues().map((value: PropertyValue) => value.getValue()));
+        this.deriveMap.set(key, m.results[0].id); // TODO: iterate over results!
       }
     });
     return this;
   }
 
   buildFromExtension(selectedProperty: string, extensions: Extension[], types: Type[]) {
-    this.deriveMap = {};
+    this.deriveMap.clear();
     this.newColTypes = types;
     extensions.forEach(e => {
       if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
         const firstRes = e.properties.get(selectedProperty)[0];
         if (firstRes['id']) {
-          this.deriveMap[e.id] = firstRes['id'];
+          this.deriveMap.set([e.id], firstRes['id']);
         } else if (firstRes['str']) {
-          this.deriveMap[e.id] = firstRes['str'];
+          this.deriveMap.set([e.id], firstRes['str']);
           this.newColDatatype = XSDDatatypes.string;
         } else if (firstRes['date']) {
-          this.deriveMap[e.id] = firstRes['date'];
+          this.deriveMap.set([e.id], firstRes['date']);
           this.newColDatatype = XSDDatatypes.date;
         } else if (firstRes['float']) {
-          this.deriveMap[e.id] = firstRes['float'];
+          this.deriveMap.set([e.id], firstRes['float']);
           this.newColDatatype = XSDDatatypes.float;
         } else if (firstRes['int']) {
-          this.deriveMap[e.id] = firstRes['int'];
+          this.deriveMap.set([e.id], firstRes['int']);
           this.newColDatatype = XSDDatatypes.integer;
         } else if (firstRes['bool']) {
-          this.deriveMap[e.id] = firstRes['bool'];
+          this.deriveMap.set([e.id], firstRes['bool']);
           this.newColDatatype = XSDDatatypes.boolean;
         }
       }
@@ -281,19 +285,26 @@ export class DeriveMap {
   }
 
   /**
-   * Return the mapping as Clojure map -> {"key1" "value1" "key2" "value2" ... "keyN" "valueN"}
-   * All whitespaces in key values are replaced with underscores
+   * Return the mapping as a Clojure map with multi-value keys
+   * -> {[key1.v1, key1.v2] "value1" [key2.v1, key2.v2] "value2" ... [keyN.v1, keyN.v2] "valueN"}
    * @returns {string}
    */
   toClojureMap(): string {
     let map = '{';
-    Object.keys(this.deriveMap).forEach((key) => {
-      map += `"${key}" "${this.deriveMap[key]}" `;
+    this.deriveMap.forEach((value: string, key: string[]) => {
+      map += `["${key.join('" "')}"] "${value}" `;
     });
     map += '}';
     return map;
   }
 
+  /**
+   * Return the size of the array used as the Map key
+   * Helper method to understand on how many columns (vars) is the deriveCol function based
+   */
+  deriveKeySize(): number {
+    return this.deriveMap.keys().next().value.length;
+  }
 }
 
 export class ConciliatorService {

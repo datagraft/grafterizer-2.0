@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSource, Sort} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
-import {ConciliatorService, DeriveMap, QueryResult, Result, Type} from '../enrichment.model';
+import {ConciliatorService, DeriveMap, PropertyValue, QueryResult, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
 import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {AnnotationService} from '../../annotation.service';
@@ -37,11 +37,11 @@ export class ReconciliationComponent implements OnInit {
   public temp_match: boolean;
   public form_hidden = false;
   public selected = -1;
-  public displayedColumns: string[] = ['position', 'original_value', 'reconciled_entity', 'set matching'];
+  public displayedColumns: string[];
   public dataSource = null;
   public dataSource_2 = null;
   public header: any;
-  public reconciledData: any;
+  public reconciledData: QueryResult[];
   public reconciledDataFiltered = null;
   public selectedGroup: any;
   public selectedService: string;
@@ -165,8 +165,9 @@ export class ReconciliationComponent implements OnInit {
     this.dataLoading = true;
     this.showPreview = true;
     this.enrichmentService.reconcileColumn(this.header, this.propertyArray, this.sourceArray,
-      this.services.get(this.reconciliationForm.get('selectedService').value)).subscribe((data) => {
+      this.services.get(this.reconciliationForm.get('selectedService').value)).subscribe((data: QueryResult[]) => {
       this.reconciledData = data;
+      this.displayedColumns = [this.header].concat(this.sourceArray).concat(['reconciled_entity', 'set matching']);
       this.dataSource = new MatTableDataSource(this.reconciledData); // to use material filter
       this.dataSource_2 = this.reconciledData; // to update reconciledData
       this.dataSource.paginator = this.paginator;
@@ -194,7 +195,7 @@ export class ReconciliationComponent implements OnInit {
 
     this.reconciliationForm.get('newColumnName').setValue(this.reconciliationForm.get('newColumnName').value.replace(/\s/g, '_'));
     deriveMaps.push(
-      new DeriveMap(this.reconciliationForm.get('newColumnName').value, null)
+      new DeriveMap(this.reconciliationForm.get('newColumnName').value, this.sourceArray, null)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,

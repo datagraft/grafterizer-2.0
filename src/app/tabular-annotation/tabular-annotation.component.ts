@@ -1,28 +1,26 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AnnotationService } from './annotation.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AnnotationService} from './annotation.service';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
-import { TransformationService } from '../transformation.service';
-import { DispatchService } from '../dispatch.service';
-import { ActivatedRoute } from '@angular/router';
-import { RoutingService } from '../routing.service';
-import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
+import {TransformationService} from '../transformation.service';
+import {DispatchService} from '../dispatch.service';
+import {ActivatedRoute} from '@angular/router';
+import {RoutingService} from '../routing.service';
+import {Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes} from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
-import { MatDialog } from '@angular/material';
-import { ConfigComponent } from './config/config.component';
-import { Subscription } from 'rxjs';
-import { EnrichmentService } from './enrichment/enrichment.service';
-import { ConciliatorService, DeriveMap, ReconciledColumn, Type } from './enrichment/enrichment.model';
-import { PipelineEventsService } from '../tabular-transformation/pipeline-events.service';
-import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
-import { ExtensionComponent } from './enrichment/extension/extension.component';
-import { ShiftColumnFunction } from 'assets/transformationdatamodel';
-import { ChooseExtensionOrReconciliationDialog } from './chooseExtensionOrReconciliationDialog.component';
+import {AnnotationFormComponent} from './annotation-form/annotation-form.component';
+import {MatDialog} from '@angular/material';
+import {ConfigComponent} from './config/config.component';
+import {Subscription} from 'rxjs';
+import {EnrichmentService} from './enrichment/enrichment.service';
+import {ConciliatorService, DeriveMap, ReconciledColumn, Type} from './enrichment/enrichment.model';
+import {PipelineEventsService} from '../tabular-transformation/pipeline-events.service';
+import {ReconciliationComponent} from './enrichment/reconciliation/reconciliation.component';
+import {ExtensionComponent} from './enrichment/extension/extension.component';
 import {UrlUtils} from './shared/url-utils';
 
 declare var Handsontable: any;
@@ -193,7 +191,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     const currentHeader = this.annotationService.headers[headerIdx];
     const annotation = this.annotationService.getAnnotation(currentHeader);
     const isReconciled = this.enrichmentService.isColumnReconciled(currentHeader);
-    const isDateColumn = this.enrichmentService.isColumnDate(currentHeader);
 
     this.geoNamesSources = [];
     this.categoriesSources = [];
@@ -205,31 +202,15 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           this.categoriesSources.push(header);
         }
       }
-      /*
-      const annotation =this.annotationService.getAnnotation(geo);
-        if (annotation)
-        {
-          if (annotation.columnValuesType === ColumnTypes.URI)
-          {
-            for (let i = 0; i < annotation.columnTypes.length; ++i)
-            {
-              const type = annotation.columnTypes[i];
-              if(type.search("geonames.org") !== -1 ) //http://sws.geonames.org/
-              {
-                this.geoNamesSources.push(geo);
-              }
-            }//end for
-          }// end uri
-        }//end if annotation*/
     });
 
     let dialogRef;
     const dialogConfig = {
-      width: '750px',
+      width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false }
     };
     const dialogConfigExtension = {
-      width: '750px',
+      width: '900px',
       data: {
         header: currentHeader,
         indexCol: headerIdx,
@@ -240,7 +221,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     };
     const dialogConfigDateCOlumn = {
-      width: '750px',
+      width: '900px',
       data: {
         header: currentHeader,
         indexCol: headerIdx,
@@ -251,14 +232,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     };
     const dialogConfigReconciliation = {
-      width: '800px',
+      width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colReconciled: isReconciled, colDate: false }
     };
-    /*const dialogConfigChoose = {
-      width: '400px',
-      disableClose: true,
-      data: {indexCol : headerIdx}
-    };*/
 
     if (isReconciled) {
       if (annotation) { // to check if it's a dateCOlumn
@@ -311,7 +287,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         else */
       if (result && result['deriveMaps']) {
         this.deriveColumnsFromEnrichment(
-          result['indexCol'],
           result['header'],
           result['deriveMaps'],
           result['conciliator'],
@@ -697,29 +672,32 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Create new columns using the existing deriveColumn function
-   * @param colsToDeriveFromIdx
    * @param colsToDeriveFrom
    * @param deriveMaps
    * @param conciliator
    * @param conciliatorTo
    * @param shift
    */
-  deriveColumnsFromEnrichment(colsToDeriveFromIdx: number, colsToDeriveFrom: string, deriveMaps: DeriveMap[],
+  deriveColumnsFromEnrichment(colsToDeriveFrom: string, deriveMaps: DeriveMap[],
     conciliator: ConciliatorService, conciliatorTo: ConciliatorService, shift: boolean) {
     let newFunction: any = null;
+
+    const colsToDeriveFromIdx = this.enrichmentService.headers.indexOf(colsToDeriveFrom);
 
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
       // Create a new custom function
       const fName = this.createFunctionName(String(colsToDeriveFromIdx), deriveMap.newColName);
       const fMap = deriveMap.toClojureMap();
       const fDescription = `Enrichment - ${colsToDeriveFrom} to ${deriveMap.newColName}}`;
-      const clojureFunction = `(defn ${fName} "${fDescription}" [v] (get ${fMap} v ""))`;
+      const fParams = Array(deriveMap.deriveKeySize()).fill('x').map((x, idx) => x + idx).join(' ');
+      const clojureFunction = `(defn ${fName} "${fDescription}" [${fParams}] (get ${fMap} [${fParams}] ""))`;
       const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
       this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
       // Create the derive column step
       newFunction = new transformationDataModel.DeriveColumnFunction(deriveMap.newColName,
-        [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }],
+        [{ id: colsToDeriveFromIdx, value: colsToDeriveFrom }]
+          .concat(deriveMap.fromCols.map(col => ({id: this.enrichmentService.headers.indexOf(col), value: col}))),
         [new transformationDataModel.FunctionWithArgs(enrichmentFunction, [])], '');
 
       // Pipeline update

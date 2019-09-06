@@ -307,7 +307,7 @@ export class ExtensionComponent implements OnInit {
         newColName += prop;
       }
 
-      deriveMaps.push(new DeriveMap(newColName, propDescr ? propDescr.id : null)
+      deriveMaps.push(new DeriveMap(newColName, [], propDescr ? propDescr.id : null)
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });
