@@ -32,7 +32,8 @@
                  placeholder="{{header}}_{{reconciliationForm.get('selectedService').value}}" size="45"
                  formControlName="newColumnName"
                  name="newColumnName">
-          <clr-checkbox name="shiftColumn" id="shiftColumn" formControlName="shiftColumn">
+          <clr-checkbox *ngIf="colIndex < annotationService.headers.length - 1"
+                        name="shiftColumn" id="shiftColumn" formControlName="shiftColumn">
             New column next to <i>{{header}}</i>
           </clr-checkbox>
         </div>

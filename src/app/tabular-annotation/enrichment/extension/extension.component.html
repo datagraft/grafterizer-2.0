@@ -17,7 +17,8 @@
         </div>
       </div>
     </section>
-    <clr-checkbox name="shiftColumn" id="shiftColumn" [(ngModel)]="shiftColumn">
+    <clr-checkbox *ngIf="colIndex < enrichmentService.headers.length - 1"
+                  name="shiftColumn" id="shiftColumn" [(ngModel)]="shiftColumn">
       New column(s) next to <i>{{header}}</i>
     </clr-checkbox>
 
