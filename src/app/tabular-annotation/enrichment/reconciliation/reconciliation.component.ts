@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSource, Sort} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
-import {ConciliatorService, DeriveMap, PropertyValue, QueryResult, Result, Type} from '../enrichment.model';
+import {ConciliatorService, QueryResult, ReconciliationDeriveMap, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
 import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {AnnotationService} from '../../annotation.service';
@@ -70,7 +70,6 @@ export class ReconciliationComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   public available: string[];
-  public headers: string[];
   public index: number;
   public openedSource: string;
   filteredOptions: string[];
@@ -91,7 +90,6 @@ export class ReconciliationComponent implements OnInit {
         this.servicesGroups.push(serviceCategory);
       });
     });
-    this.headers = [];
     this.fillAllowedSourcesArray();
     this.index = 0;
     this.showPreview = false;
@@ -195,7 +193,7 @@ export class ReconciliationComponent implements OnInit {
 
     this.reconciliationForm.get('newColumnName').setValue(this.reconciliationForm.get('newColumnName').value.replace(/\s/g, '_'));
     deriveMaps.push(
-      new DeriveMap(this.reconciliationForm.get('newColumnName').value, this.sourceArray, null)
+      new ReconciliationDeriveMap(this.reconciliationForm.get('newColumnName').value, this.sourceArray)
         .buildFromMapping(this.reconciledData, this.threshold, [this.guessedType].filter(p => p != null)));
     this.dialogRef.close({
       'deriveMaps': deriveMaps,

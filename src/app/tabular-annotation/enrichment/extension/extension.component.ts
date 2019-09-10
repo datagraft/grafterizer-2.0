@@ -1,7 +1,7 @@
 import {Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {EnrichmentService} from '../enrichment.service';
-import {ConciliatorService, DeriveMap, EventConfigurator, Extension, Property, WeatherConfigurator} from '../enrichment.model';
+import {ConciliatorService, EventConfigurator, Extension, ExtensionDeriveMap, Property, WeatherConfigurator} from '../enrichment.model';
 import {HttpClient} from '@angular/common/http';
 import {UrlUtils} from '../../shared/url-utils';
 import {Observable} from 'rxjs';
@@ -307,7 +307,7 @@ export class ExtensionComponent implements OnInit {
         newColName += prop;
       }
 
-      deriveMaps.push(new DeriveMap(newColName, [], propDescr ? propDescr.id : null)
+      deriveMaps.push(new ExtensionDeriveMap(newColName, propDescr ? propDescr.id : null)
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });

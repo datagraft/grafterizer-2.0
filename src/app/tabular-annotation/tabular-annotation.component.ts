@@ -107,7 +107,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       this.transformationSvc.transformationObjSource.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
       });
-    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource.subscribe((previewedTransformation) => {
+    this.previewedTransformationSubscription = this.transformationSvc.previewedTransformationObjSource
+      .subscribe((previewedTransformation) => {
       this.dataLoading = true;
     });
     this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
@@ -305,7 +306,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   getTableColumns() {
     return this.graftwerkData[':column-names'].map(h => {
-      const ann = this.annotationService.getAnnotation(h.charAt(0) == ':' ? h.substr(1) : h);
+      const ann = this.annotationService.getAnnotation(h.charAt(0) === ':' ? h.substr(1) : h);
       if (ann && ann.columnValuesType === ColumnTypes.URI) {
         return ({
           data: h, // don't remove leading ':' from header here!
@@ -687,10 +688,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     deriveMaps.forEach((deriveMap: DeriveMap, index) => {
       // Create a new custom function
       const fName = this.createFunctionName(String(colsToDeriveFromIdx), deriveMap.newColName);
-      const fMap = deriveMap.toClojureMap();
       const fDescription = `Enrichment - ${colsToDeriveFrom} to ${deriveMap.newColName}}`;
-      const fParams = Array(deriveMap.deriveKeySize()).fill('x').map((x, idx) => x + idx).join(' ');
-      const clojureFunction = `(defn ${fName} "${fDescription}" [${fParams}] (get ${fMap} [${fParams}] ""))`;
+      const clojureFunction = deriveMap.asClojureDeriveFunction(fName, fDescription, '');
       const enrichmentFunction = new transformationDataModel.CustomFunctionDeclaration(fName, clojureFunction, 'UTILITY', '');
       this.transformationObj.customFunctionDeclarations.push(enrichmentFunction);
 
