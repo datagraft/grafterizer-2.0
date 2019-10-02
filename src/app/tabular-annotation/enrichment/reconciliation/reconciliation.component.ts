@@ -3,18 +3,30 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSour
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, QueryResult, ReconciliationDeriveMap, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
-import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {FormArray, FormBuilder, FormControl, FormGroup, Validator, Validators} from '@angular/forms';
 import {AnnotationService} from '../../annotation.service';
 import {Annotation} from '../../annotation.model';
 import {Observable} from 'rxjs';
 import {AsiaMasService} from '../../asia-mas/asia-mas.service';
 import {CustomValidators} from '../../shared/custom-validators';
 
+export interface FilterMatch {
+  value: string;
+  viewValue: string;
+}
+
+export interface FilterMatchGroup {
+  disabled?: boolean;
+  name: string;
+  filterMatch: FilterMatch[];
+}
+
 @Component({
   selector: 'app-reconciliation',
   templateUrl: './reconciliation.component.html',
   styleUrls: ['./reconciliation.component.css']
 })
+
 export class ReconciliationComponent implements OnInit {
 
 
@@ -66,6 +78,9 @@ export class ReconciliationComponent implements OnInit {
   public propertyArray: string[];
   public sourceArray: string[];
   public reconcileWithProperties = false;
+  public filterMatchGroups: FilterMatchGroup[];
+  public thresholdOfProperty: String;
+  public operator: FilterMatch[];
 
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -81,6 +96,19 @@ export class ReconciliationComponent implements OnInit {
     this.colIndex = this.dialogInputData.indexCol;
     this.services = new Map();
     this.servicesGroups = [];
+    this.thresholdOfProperty = '';
+    this.filterMatchGroups = [{
+      name: 'String',
+      filterMatch: [{value: 'jaro', viewValue: 'jaro'},
+        {value: 'levenshtein', viewValue: 'levenshtein'}],
+    }, {
+      name: 'Numeric',
+      filterMatch: [{value: 'absolute_difference', viewValue: 'absolute_difference'}],
+    }
+    ];
+    this.operator = [{value: '<', viewValue: '<'},
+      {value: '>', viewValue: '>'},
+      {value: '=', viewValue: '='}];
     this.openedSource = '';
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
@@ -115,8 +143,11 @@ export class ReconciliationComponent implements OnInit {
         CustomValidators.columnValidator(this.available),
         CustomValidators.uniqueSourceValidator('sourceColumn')
       ]),
-      property: new FormControl('', CustomValidators.URLValidator())
-    }, CustomValidators.subjectPropertyValidator('sourceColumn', 'property', undefined));
+      property: new FormControl('', CustomValidators.URLValidator()),
+      filterMatch: new FormControl('', ),
+      operator: new FormControl('', ),
+      thresholdP: new FormControl('', ),
+    }, CustomValidators.subjectPropertyValidators('sourceColumn', 'property', 'filterMatch', 'operator', 'thresholdP', undefined));
   }
 
   addItem(index: number): void {

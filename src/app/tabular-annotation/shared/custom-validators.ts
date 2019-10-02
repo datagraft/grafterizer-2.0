@@ -36,22 +36,38 @@ export class CustomValidators {
    * @param {string} colValuesTypeCtrlName
    * @returns {ValidatorFn}
    */
-  static subjectPropertyValidator(subjectCtrlName: string, propertyCtrlName: string, colValuesTypeCtrlName: string = null): ValidatorFn {
+  static subjectPropertyValidators(subjectCtrlName: string, propertyCtrlName: string, filterMatchCtrlName: string,
+                                   operatorCtrlName: string, thresholdPCtrlName: string,
+                                   colValuesTypeCtrlName: string = null): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
       const subjectControl = control.get(subjectCtrlName);
       const propertyControl = control.get(propertyCtrlName);
+      const filterMatchControl = control.get(filterMatchCtrlName);
+      const operatorControl = control.get(operatorCtrlName);
+      const thresholdPControl = control.get(thresholdPCtrlName);
       const columnValuesTypeControl = control.get(colValuesTypeCtrlName);
-
-      if (subjectControl && propertyControl) {
+      if (subjectControl && propertyControl && filterMatchControl && operatorControl && thresholdPControl) {
         const subjectValue = subjectControl.value;
         const propertyValue = propertyControl.value;
-
-        if (subjectValue !== '' && propertyValue === '') {
-          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
+        const filterMatchValue = filterMatchControl.value;
+        const operatorValue = operatorControl.value;
+        const thresholdPValue = thresholdPControl.value;
+        console.log('subjectValue: ' + subjectValue + ' propertyValue: ' + propertyValue + ' filterMatchValue: ' + filterMatchValue + ' operatorValue: ' + operatorValue + ' thresholdPValue: ' + thresholdPValue);
+        if ((subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '') && propertyValue === '') {
+          return {'invalidProperty': {errorMessage: 'Requires a property'}};
         }
 
-        if (propertyValue !== '' && subjectValue === '') {
-          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
+        if ((propertyValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '') && subjectValue === '') {
+          return {'invalidSubject': {errorMessage: 'Required a source'}};
+        }
+        if ((propertyValue !== '' || subjectValue !== '' || operatorValue !== '' || thresholdPValue !== '') && filterMatchValue === '') {
+          return {'invalidfilterMatch': {errorMessage: 'filterMatch required'}};
+        }
+        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || thresholdPValue !== '') && operatorValue === '') {
+          return {'invalidoperator': {errorMessage: 'operator required'}};
+        }
+        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '') && thresholdPValue === '') {
+          return {invalidthresholdP: {errorMessage: 'thresholdP requires a value'}};
         }
 
         if (columnValuesTypeControl) {
@@ -68,6 +84,40 @@ export class CustomValidators {
       }
     };
   }
+
+  static subjectPropertyValidator(subjectCtrlName: string, propertyCtrlName: string,
+                                  colValuesTypeCtrlName: string = null): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const subjectControl = control.get(subjectCtrlName);
+      const propertyControl = control.get(propertyCtrlName);
+      const columnValuesTypeControl = control.get(colValuesTypeCtrlName);
+
+      if (subjectControl && propertyControl) {
+        const subjectValue = subjectControl.value;
+        const propertyValue = propertyControl.value;
+
+        if ((subjectValue !== '') && propertyValue === '') {
+          return {'invalidProperty': {errorMessage: 'A source requires a property'}};
+        }
+
+        if ((propertyValue !== '') && subjectValue === '') {
+          return {'invalidSubject': {errorMessage: 'A property requires a source'}};
+        }
+        if (columnValuesTypeControl) {
+          const valuesTypeValue = columnValuesTypeControl.value;
+          if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
+            return {
+              'invalidSubject': {errorMessage: 'Literal columns require a source'},
+              'invalidProperty': {errorMessage: 'Literal columns require a property'}
+            };
+          }
+        }
+
+        return null;
+      }
+    };
+  }
+
 
   /**
    * Check if the selected column is contained in the array of allowed columns

@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>Column Reconciliation </h1>
+<h1 mat-dialog-title xmlns="http://www.w3.org/1999/html">Column Reconciliation </h1>
 
 
 <div mat-dialog-content>
@@ -75,7 +75,6 @@
                 </label>
               </div>
               <div class="input">
-                <div class="input">
                 <label for="property_{{i}}">Property</label>
                 <label for="property_{{i}}"
                        aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
@@ -96,25 +95,77 @@
                     {{ctrl.errors['invalidProperty'].errorMessage}}
                   </span>
                 </label>
-                </div>
+              </div>
               <div>
-                <mat-select>
-                <mat-option> similaritymatch </mat-option>
-                  <mat-option> exactMatch</mat-option>
-                </mat-select>
-                <input type="radio" name="filterRestrict" value="default" checked> Select a filterRestrict
+                <div class="input">
+                  <label for="filterMatch_{{i}}" class="required" aria-haspopup="true" role="tooltip"
+                         class="tooltip tooltip-validation tooltip-sm"
+                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                         [class.invalid]="ctrl.hasError('invalidfilterMatch')">
+                    FilterMatch:
+                    <mat-form-field>
+                      <mat-label>Select Filter</mat-label>
+                      <mat-select id="filterMatch_{{i}}" formControlName="filterMatch" style="size: 20px">
+                        <mat-optgroup *ngFor="let group of filterMatchGroups" [label]="group.name">
+                          <mat-option *ngFor="let filter of group.filterMatch" [value]="filter.value">
+                            {{filter.viewValue}}
+                          </mat-option>
+                        </mat-optgroup>
+                      </mat-select>
+                      <span *ngIf="ctrl.hasError('invalidfilterMatch')" class="tooltip-content">
+                    {{ctrl.errors['invalidfilterMatch'].errorMessage}}
+                  </span>
+                    </mat-form-field>
 
-                <input type="radio" name="filterRestrict" value="soft" > soft
-                <input type="radio" name="filterRestrict" value="hard"> Hard<br>
+                  </label></div>
+                <div class="input">
+                  <label for="operator_{{i}}" class="required" aria-haspopup="true" role="tooltip"
+                         class="tooltip tooltip-validation tooltip-sm"
+                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                         [class.invalid]="ctrl.hasError('invalidoperator')"
+                  >Operator:
+                    <mat-form-field>
+                      <mat-label>Select Operator</mat-label>
+                      <mat-select id="operator_{{i}}" formControlName="operator" style="size: 20px">
+                        <mat-option *ngFor="let filter of operator" [value]="filter.value">
+                          {{filter.viewValue}}
+                        </mat-option>
+                      </mat-select>
+                      <span *ngIf="ctrl.hasError('invalidoperator')" class="tooltip-content">
+                    {{ctrl.errors['invalidoperator'].errorMessage}}
+                  </span>
+                    </mat-form-field>
+                  </label>
+                  <label for="thresholdP_{{i}}" class="required" aria-haspopup="true" role="tooltip"
+                         class="tooltip tooltip-validation tooltip-sm"
+                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                         [class.invalid]="ctrl.hasError('invalidthresholdP')">
+                    ThresholdOfProperty:
+                    <input id="thresholdP_{{i}}" formControlName="thresholdP" type="number" name="thresholdOfProperty"
+                           placeholder="Insert Threshhold" size="20">
+                    <span *ngIf="ctrl.hasError('invalidthresholdP')" class="tooltip-content">
+                    {{ctrl.errors['invalidthresholdP'].errorMessage}}
+                  </span>
+                  </label>
+                </div>
+                <br>
+                <div class="input">
+                  <label class="required" aria-haspopup="true" role="tooltip"
+                         class="tooltip tooltip-validation tooltip-sm"
+                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm">
+                    RestrictType:
+                    <input type="radio" name="filterRestrict" value="soft" checked> soft
+                    <input type="radio" name="filterRestrict" value="hard"> Hard<br>
+                  </label>
+                </div>
               </div>
-              </div>
-              <div class="mat-icon">
-                <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
-                <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
-                          (click)="deleteItem(i)">remove_circle_outline
-                </mat-icon>
-              </div>
-            </div>
+          <div class="mat-icon">
+            <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
+            <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
+                      (click)="deleteItem(i)">remove_circle_outline
+            </mat-icon>
+          </div>
+          </div>
           </div>
         </div>
       </section>
