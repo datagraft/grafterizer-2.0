@@ -106,6 +106,9 @@ export class CustomValidators {
     return (control: AbstractControl): { [key: string]: any } => {
       try {
         if (control.value !== '') {
+          if (control.value.toString().includes('/http://')) {
+            return {'invalidURL': {errorMessage: 'Property is a path separe with |'}};
+          }
           const url = new URL(control.value);
           if (url.host === '') {
             return {'invalidURL': {errorMessage: 'This URL is not valid'}};

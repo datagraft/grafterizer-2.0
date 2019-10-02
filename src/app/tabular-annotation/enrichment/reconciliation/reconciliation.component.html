@@ -75,6 +75,7 @@
                 </label>
               </div>
               <div class="input">
+                <div class="input">
                 <label for="property_{{i}}">Property</label>
                 <label for="property_{{i}}"
                        aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
@@ -95,8 +96,18 @@
                     {{ctrl.errors['invalidProperty'].errorMessage}}
                   </span>
                 </label>
-              </div>
+                </div>
+              <div>
+                <mat-select>
+                <mat-option> similaritymatch </mat-option>
+                  <mat-option> exactMatch</mat-option>
+                </mat-select>
+                <input type="radio" name="filterRestrict" value="default" checked> Select a filterRestrict
 
+                <input type="radio" name="filterRestrict" value="soft" > soft
+                <input type="radio" name="filterRestrict" value="hard"> Hard<br>
+              </div>
+              </div>
               <div class="mat-icon">
                 <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
                 <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
