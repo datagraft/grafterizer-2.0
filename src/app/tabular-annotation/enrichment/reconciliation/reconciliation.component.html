@@ -103,69 +103,76 @@
                          aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
                          [class.invalid]="ctrl.hasError('invalidfilterMatch')">
                     FilterMatch:
-                    <mat-form-field>
-                      <mat-label>Select Filter</mat-label>
-                      <mat-select id="filterMatch_{{i}}" formControlName="filterMatch" style="size: 20px">
-                        <mat-optgroup *ngFor="let group of filterMatchGroups" [label]="group.name">
-                          <mat-option *ngFor="let filter of group.filterMatch" [value]="filter.value">
-                            {{filter.viewValue}}
-                          </mat-option>
-                        </mat-optgroup>
-                      </mat-select>
-                      <span *ngIf="ctrl.hasError('invalidfilterMatch')" class="tooltip-content">
+                    <mat-select id="filterMatch_{{i}}" formControlName="filterMatch" placeholder="Select Filter"
+                                style="size: 25px">
+                      <mat-optgroup *ngFor="let group of filterMatchGroups" [label]="group.name">
+                        <mat-option *ngFor="let filter of group.filterMatch" [value]="filter.value">
+                          {{filter.viewValue}}
+                        </mat-option>
+                      </mat-optgroup>
+                    </mat-select>
+                    <span *ngIf="ctrl.hasError('invalidfilterMatch')" class="tooltip-content">
                     {{ctrl.errors['invalidfilterMatch'].errorMessage}}
                   </span>
-                    </mat-form-field>
-
-                  </label></div>
+                  </label>
+                </div>
                 <div class="input">
                   <label for="operator_{{i}}" class="required" aria-haspopup="true" role="tooltip"
                          class="tooltip tooltip-validation tooltip-sm"
                          aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
                          [class.invalid]="ctrl.hasError('invalidoperator')"
                   >Operator:
-                    <mat-form-field>
-                      <mat-label>Select Operator</mat-label>
-                      <mat-select id="operator_{{i}}" formControlName="operator" style="size: 20px">
-                        <mat-option *ngFor="let filter of operator" [value]="filter.value">
-                          {{filter.viewValue}}
-                        </mat-option>
-                      </mat-select>
-                      <span *ngIf="ctrl.hasError('invalidoperator')" class="tooltip-content">
+                    <mat-select id="operator_{{i}}" formControlName="operator" style="size: 5px"
+                                placeholder="Select Operator">
+                      <mat-option *ngFor="let filter of operator" [value]="filter.value">
+                        {{filter.viewValue}}
+                      </mat-option>
+                    </mat-select>
+                    <span *ngIf="ctrl.hasError('invalidoperator')" class="tooltip-content">
                     {{ctrl.errors['invalidoperator'].errorMessage}}
                   </span>
-                    </mat-form-field>
                   </label>
                   <label for="thresholdP_{{i}}" class="required" aria-haspopup="true" role="tooltip"
                          class="tooltip tooltip-validation tooltip-sm"
                          aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
-                         [class.invalid]="ctrl.hasError('invalidthresholdP')">
+                         [class.invalid]="ctrl.hasError('invalidthresholdP')||ctrl.get('thresholdP').hasError('invalidthresholdPValue')">
                     ThresholdOfProperty:
                     <input id="thresholdP_{{i}}" formControlName="thresholdP" type="number" name="thresholdOfProperty"
                            placeholder="Insert Threshhold" size="20">
                     <span *ngIf="ctrl.hasError('invalidthresholdP')" class="tooltip-content">
                     {{ctrl.errors['invalidthresholdP'].errorMessage}}
                   </span>
+                    <span *ngIf="ctrl.hasError('invalidthresholdPValue')" class="tooltip-content">
+                    {{ctrl.errors['invalidthresholdPValue'].errorMessage}}
+                  </span>
                   </label>
                 </div>
                 <br>
                 <div class="input">
-                  <label class="required" aria-haspopup="true" role="tooltip"
+                  <label for="Restrict_{{i}}" class="required" aria-haspopup="true" role="tooltip"
                          class="tooltip tooltip-validation tooltip-sm"
-                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm">
-                    RestrictType:
-                    <input type="radio" name="filterRestrict" value="soft" checked> soft
-                    <input type="radio" name="filterRestrict" value="hard"> Hard<br>
+                         aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
+                         [class.invalid]="ctrl.hasError('invalidrestrict')">
+                    Restriction:
+                    <mat-select id="Restrict_{{i}}" formControlName="restrict" style="size: 8px"
+                                placeholder="Select Restrict">
+                      <mat-option *ngFor="let filter of restrict" [value]="filter.value">
+                        {{filter.viewValue}}
+                      </mat-option>
+                    </mat-select>
+                    <span *ngIf="ctrl.hasError('invalidrestrict')" class="tooltip-content">
+                    {{ctrl.errors['invalidrestrict'].errorMessage}}
+                  </span>
                   </label>
                 </div>
               </div>
-          <div class="mat-icon">
-            <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
-            <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
-                      (click)="deleteItem(i)">remove_circle_outline
-            </mat-icon>
-          </div>
-          </div>
+              <div class="mat-icon">
+                <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
+                <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
+                          (click)="deleteItem(i)">remove_circle_outline
+                </mat-icon>
+              </div>
+            </div>
           </div>
         </div>
       </section>

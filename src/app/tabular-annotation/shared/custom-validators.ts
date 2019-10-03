@@ -37,7 +37,7 @@ export class CustomValidators {
    * @returns {ValidatorFn}
    */
   static subjectPropertyValidators(subjectCtrlName: string, propertyCtrlName: string, filterMatchCtrlName: string,
-                                   operatorCtrlName: string, thresholdPCtrlName: string,
+                                   operatorCtrlName: string, thresholdPCtrlName: string, restrictCtrlName: string,
                                    colValuesTypeCtrlName: string = null): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
       const subjectControl = control.get(subjectCtrlName);
@@ -45,31 +45,42 @@ export class CustomValidators {
       const filterMatchControl = control.get(filterMatchCtrlName);
       const operatorControl = control.get(operatorCtrlName);
       const thresholdPControl = control.get(thresholdPCtrlName);
+      const restrictControl = control.get(restrictCtrlName);
       const columnValuesTypeControl = control.get(colValuesTypeCtrlName);
-      if (subjectControl && propertyControl && filterMatchControl && operatorControl && thresholdPControl) {
+
+      if (subjectControl && propertyControl && filterMatchControl && operatorControl && thresholdPControl && restrictControl) {
         const subjectValue = subjectControl.value;
         const propertyValue = propertyControl.value;
         const filterMatchValue = filterMatchControl.value;
         const operatorValue = operatorControl.value;
         const thresholdPValue = thresholdPControl.value;
-        console.log('subjectValue: ' + subjectValue + ' propertyValue: ' + propertyValue + ' filterMatchValue: ' + filterMatchValue + ' operatorValue: ' + operatorValue + ' thresholdPValue: ' + thresholdPValue);
-        if ((subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '') && propertyValue === '') {
-          return {'invalidProperty': {errorMessage: 'Requires a property'}};
+        const restrictValue = restrictControl.value;
+
+        if ((subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '' || restrictValue !== '')
+          && propertyValue === '') {
+          return {'invalidProperty': {errorMessage: 'Select a property'}};
         }
 
-        if ((propertyValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '') && subjectValue === '') {
-          return {'invalidSubject': {errorMessage: 'Required a source'}};
+        if ((propertyValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '' || restrictValue !== '')
+          && subjectValue === '') {
+          return {'invalidSubject': {errorMessage: 'Select a source'}};
         }
-        if ((propertyValue !== '' || subjectValue !== '' || operatorValue !== '' || thresholdPValue !== '') && filterMatchValue === '') {
-          return {'invalidfilterMatch': {errorMessage: 'filterMatch required'}};
+        if ((propertyValue !== '' || subjectValue !== '' || operatorValue !== '' || thresholdPValue !== '' || restrictValue !== '')
+          && filterMatchValue === '') {
+          return {'invalidfilterMatch': {errorMessage: 'Select a filterMatch'}};
         }
-        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || thresholdPValue !== '') && operatorValue === '') {
-          return {'invalidoperator': {errorMessage: 'operator required'}};
+        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || thresholdPValue !== '' || restrictValue !== '')
+          && operatorValue === '') {
+          return {'invalidoperator': {errorMessage: 'Select a operator'}};
         }
-        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '') && thresholdPValue === '') {
-          return {invalidthresholdP: {errorMessage: 'thresholdP requires a value'}};
+        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '' || restrictValue !== '')
+          && thresholdPValue === '') {
+          return {'invalidthresholdP': {errorMessage: 'thresholdP requires a value'}};
         }
-
+        if ((propertyValue !== '' || subjectValue !== '' || filterMatchValue !== '' || operatorValue !== '' || thresholdPValue !== '')
+          && restrictValue === '') {
+          return {'invalidrestrict': {errorMessage: 'Select a restrict'}};
+        }
         if (columnValuesTypeControl) {
           const valuesTypeValue = columnValuesTypeControl.value;
           if (propertyValue === '' && subjectValue === '' && valuesTypeValue === ColumnTypes.Literal) {
@@ -79,9 +90,22 @@ export class CustomValidators {
             };
           }
         }
-
         return null;
       }
+    };
+  }
+
+  static thresholdValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      try {
+        if (control.value === null) {
+          return {'invalidthresholdPValue': {errorMessage: 'thresholdP requires a value'}};
+        }
+        return null;
+      } catch (e) {
+        console.log(e);
+      }
+
     };
   }
 
@@ -112,7 +136,6 @@ export class CustomValidators {
             };
           }
         }
-
         return null;
       }
     };

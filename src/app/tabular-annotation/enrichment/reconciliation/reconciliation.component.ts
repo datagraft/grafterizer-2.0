@@ -3,7 +3,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSour
 import {EnrichmentService} from '../enrichment.service';
 import {ConciliatorService, QueryResult, ReconciliationDeriveMap, Result, Type} from '../enrichment.model';
 import {AddEntityDialogComponent} from './addEntityDialog.component';
-import {FormArray, FormBuilder, FormControl, FormGroup, Validator, Validators} from '@angular/forms';
+import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {AnnotationService} from '../../annotation.service';
 import {Annotation} from '../../annotation.model';
 import {Observable} from 'rxjs';
@@ -81,6 +81,7 @@ export class ReconciliationComponent implements OnInit {
   public filterMatchGroups: FilterMatchGroup[];
   public thresholdOfProperty: String;
   public operator: FilterMatch[];
+  public restrict: FilterMatch[];
 
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -109,6 +110,8 @@ export class ReconciliationComponent implements OnInit {
     this.operator = [{value: '<', viewValue: '<'},
       {value: '>', viewValue: '>'},
       {value: '=', viewValue: '='}];
+    this.restrict = [{value: 'soft', viewValue: 'Soft'},
+      {value: 'hard', viewValue: 'Hard'}];
     this.openedSource = '';
     this.enrichmentService.listServices().subscribe((data) => {
       Object.keys(data).forEach((serviceCategory) => {
@@ -144,10 +147,12 @@ export class ReconciliationComponent implements OnInit {
         CustomValidators.uniqueSourceValidator('sourceColumn')
       ]),
       property: new FormControl('', CustomValidators.URLValidator()),
-      filterMatch: new FormControl('', ),
-      operator: new FormControl('', ),
-      thresholdP: new FormControl('', ),
-    }, CustomValidators.subjectPropertyValidators('sourceColumn', 'property', 'filterMatch', 'operator', 'thresholdP', undefined));
+      filterMatch: new FormControl('',),
+      operator: new FormControl('',),
+      thresholdP: new FormControl('', CustomValidators.thresholdValidator()),
+      restrict: new FormControl('',),
+    }, CustomValidators.subjectPropertyValidators('sourceColumn', 'property', 'filterMatch',
+      'operator', 'thresholdP', 'restrict', undefined));
   }
 
   addItem(index: number): void {
