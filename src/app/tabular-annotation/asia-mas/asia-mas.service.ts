@@ -12,7 +12,7 @@ import {Column} from './asia-mas.model';
 export class AsiaMasService {
 
   private suggester: string;
-  private language: string;
+  private language = 'EN';  // TODO: var init should be removed
   private readonly masEndpoint: string;
   private preferredSummaries: string[];
 
