@@ -208,11 +208,11 @@ export class QueryResult {
 }
 
 export class Extension {
-  public id: string;
+  public key: string[];
   public properties: Map<string, any[]>;
 
-  constructor(id: string, properties: string[]) {
-    this.id = id;
+  constructor(key: string[], properties: string[]) {
+    this.key = key;
     this.properties = new Map();
     properties.forEach(prop => this.properties.set(prop, []));
   }
@@ -314,12 +314,12 @@ export class ReconciliationDeriveMap extends DeriveMapImpl<ReconciliationQuery> 
 
 }
 
-export class ExtensionDeriveMap extends DeriveMapImpl<string> {
+export class ExtensionDeriveMap extends DeriveMapImpl<string[]> {
 
-  deriveMap: Map<string, string>;
+  deriveMap: Map<string[], string>;
 
-  constructor(newColName: string, withProperty: string) {
-    super(newColName, [], withProperty);
+  constructor(newColName: string, fromCols: string[], withProperty: string) {
+    super(newColName, fromCols, withProperty);
   }
 
   buildFromExtension(selectedProperty: string, extensions: Extension[], types: Type[]) {
@@ -329,21 +329,21 @@ export class ExtensionDeriveMap extends DeriveMapImpl<string> {
       if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
         const firstRes = e.properties.get(selectedProperty)[0];
         if (firstRes['id']) {
-          this.deriveMap.set(e.id, firstRes['id']);
+          this.deriveMap.set(e.key, firstRes['id']);
         } else if (firstRes['str']) {
-          this.deriveMap.set(e.id, firstRes['str']);
+          this.deriveMap.set(e.key, firstRes['str']);
           this.newColDatatype = XSDDatatypes.string;
         } else if (firstRes['date']) {
-          this.deriveMap.set(e.id, firstRes['date']);
+          this.deriveMap.set(e.key, firstRes['date']);
           this.newColDatatype = XSDDatatypes.date;
         } else if (firstRes['float']) {
-          this.deriveMap.set(e.id, firstRes['float']);
+          this.deriveMap.set(e.key, firstRes['float']);
           this.newColDatatype = XSDDatatypes.float;
         } else if (firstRes['int']) {
-          this.deriveMap.set(e.id, firstRes['int']);
+          this.deriveMap.set(e.key, firstRes['int']);
           this.newColDatatype = XSDDatatypes.integer;
         } else if (firstRes['bool']) {
-          this.deriveMap.set(e.id, firstRes['bool']);
+          this.deriveMap.set(e.key, firstRes['bool']);
           this.newColDatatype = XSDDatatypes.boolean;
         }
       }
@@ -352,15 +352,18 @@ export class ExtensionDeriveMap extends DeriveMapImpl<string> {
   }
 
   protected getClojureElements(): {params: string, searchKey: string, map: string, elseFunc: string} {
+    const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
+    const searchKey = `[${params.join(' ')}]`;
+
     let map = '{';
-    this.deriveMap.forEach((value: string, key: string) => {
-      map += `"${key}" "${value}" `;
+    this.deriveMap.forEach((value: string, key: string[]) => {
+      map += `["${key.join('" "')}"] "${value}" `;
     });
     map += '}';
 
     const elseFunc = `asiaClient.extend() `; // TODO complete this func when available
 
-    return {params: '[q]', searchKey: 'q', map: map, elseFunc: elseFunc};
+    return {params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc};
   }
 
 }

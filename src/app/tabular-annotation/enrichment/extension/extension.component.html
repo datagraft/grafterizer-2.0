@@ -350,7 +350,7 @@
 
     <h3> Preview </h3>
     <clr-datagrid [clrDgLoading]="dataLoading" class="datagrid-compact">
-      <clr-dg-column>{{previewHeader}}</clr-dg-column>
+      <clr-dg-column> {{[previewHeader].concat(extendOnCols).join(',')}} </clr-dg-column>
       <clr-dg-column *ngFor="let prop of previewProperties">
         {{prop}}
         <a *ngIf="propertyDescriptions.get(prop) && propertyDescriptions.get(prop).type"
@@ -362,7 +362,7 @@
       </clr-dg-column>
 
       <clr-dg-row *clrDgItems="let extension of extensionData">
-        <clr-dg-cell>{{extension.id}}</clr-dg-cell>
+        <clr-dg-cell>{{extension.key}}</clr-dg-cell>
         <clr-dg-cell *ngFor="let prop of previewProperties">
           <span
             *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['str']">
@@ -459,7 +459,7 @@
     </button>
 
   </ng-container>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0"
+  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0"
           (click)="submit()" *ngIf="showPreview">Apply
   </button>
 </div>

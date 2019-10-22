@@ -17,7 +17,6 @@ export class ExtensionComponent implements OnInit {
   public dataSource: any;
   public categorySuggestions: any;
   public displayedColumns: string[] = ['placeSuggestions'];
-  public geo_answer: any;
   public header: any;
   public previewHeader: any;
   public colIndex: any;
@@ -62,6 +61,7 @@ export class ExtensionComponent implements OnInit {
   public selectedChipsCategories: any = [];
 
   public kgServices: ConciliatorService[];
+  public extendOnCols: string[];
 
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
@@ -158,6 +158,8 @@ export class ExtensionComponent implements OnInit {
     this.dataLoading = true;
     this.showPreview = true;
 
+    this.extendOnCols = []; // KB-based extension is always based on a single column - no additional cols
+
     const properties = this.selectedProperties
       .filter(prop => !this.alreadyExtendedProperties.includes(prop.value))
       .map(prop => prop.value);
@@ -165,7 +167,7 @@ export class ExtensionComponent implements OnInit {
       this.enrichmentService.extendColumn(this.header, properties).subscribe((data) => {
         if (this.extensionData.length > 0) { // join data
           data['ext'].forEach((ext: Extension) => {
-            this.extensionData.find((extension: Extension) => extension.id === ext.id).addProperties(ext.properties);
+            this.extensionData.find((extension: Extension) => extension.key.toString() === ext.key.toString()).addProperties(ext.properties);
           });
         } else {
           this.extensionData = data['ext']; // overwrite
@@ -190,6 +192,9 @@ export class ExtensionComponent implements OnInit {
   public weather() {
     this.dataLoading = true;
     this.showPreview = true;
+
+    this.extendOnCols = [];
+
     const wcObj = {
       parameters: this.selectedWeatherParameters,
       aggregators: this.selectedWeatherAggregators,
@@ -203,6 +208,7 @@ export class ExtensionComponent implements OnInit {
       dateConfig = {readDatesFromCol: this.header};
     } else if (this.dateChoice === 'fromCol') {
       dateConfig = {readDatesFromCol: this.readDatesFromCol};
+      this.extendOnCols.push(this.readDatesFromCol); // weather extension is based also on the column "date"
     } else {
       dateConfig = {date: this.selectedDate};
     }
@@ -211,6 +217,7 @@ export class ExtensionComponent implements OnInit {
       placeConfig = {readPlacesFromCol: this.header};
     } else if (this.placeChoice === 'fromCol') {
       placeConfig = {readPlacesFromCol: this.readPlacesFromCol};
+      this.extendOnCols.push(this.readPlacesFromCol); // weather extension is based also on the column "place"
     } else {
       placeConfig = {place: this.selectedPlace};
     }
@@ -232,6 +239,8 @@ export class ExtensionComponent implements OnInit {
     this.dataLoading = true;
     this.showPreview = true;
 
+    this.extendOnCols = []; // sameas extension is always based on a single column - no additional cols
+
     // get KB source and KB target parameters
     const sameAsSource = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
     this.reconciledToService = this.kgServices.find((svc: ConciliatorService) => svc.getId() === this.selectedKGService);
@@ -250,6 +259,8 @@ export class ExtensionComponent implements OnInit {
     this.dataLoading = true;
     this.showPreview = true;
 
+    this.extendOnCols = [];
+
     let dateConfig = {};
     let placeConfig = {};
     let categoryConfig = {};
@@ -258,6 +269,7 @@ export class ExtensionComponent implements OnInit {
       dateConfig = {readDatesFromCol: this.header};
     } else if (this.dateChoice === 'fromCol') {
       dateConfig = {readDatesFromCol: this.readDatesFromCol};
+      // this.extendOnCols.push(this.readDatesFromCol); // event extension is based also on the column "date" TODO: multi-col ext
     } else {
       dateConfig = {date: this.selectedDate};
     }
@@ -266,6 +278,7 @@ export class ExtensionComponent implements OnInit {
       placeConfig = {readPlacesFromCol: this.header};
     } else if (this.placeChoice === 'fromCol') {
       placeConfig = {readPlacesFromCol: this.readPlacesFromCol};
+      // this.extendOnCols.push(this.readPlacesFromCol); // event extension is based also on the column "place" TODO: multi-col ext
     } else {
       placeConfig = {places: this.selectedChipsPlaces};
     }
@@ -274,6 +287,7 @@ export class ExtensionComponent implements OnInit {
       categoryConfig = {readCategoriesFromCol: this.header};
     } else if (this.categoryChoice === 'fromCol') {
       categoryConfig = {readCategoriesFromCol: this.readCategoriesFromCol};
+      // this.extendOnCols.push(this.readPlacesFromCol); // event extension is based also on the column "category" TODO: multi-col ext
     } else {
       categoryConfig = {categories: this.selectedChipsCategories};
     }
@@ -307,7 +321,7 @@ export class ExtensionComponent implements OnInit {
         newColName += prop;
       }
 
-      deriveMaps.push(new ExtensionDeriveMap(newColName, propDescr ? propDescr.id : null)
+      deriveMaps.push(new ExtensionDeriveMap(newColName, this.extendOnCols, propDescr ? propDescr.id : null)
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });

@@ -231,7 +231,7 @@ export class EnrichmentService {
 
     const extensions: Extension[] = [];
     values.forEach((value: string) => {
-      extensions.push(new Extension(value, properties));
+      extensions.push(new Extension([value], properties));
     });
 
     const queryProperties = properties.map(prop => ({ 'id': prop }));
@@ -252,7 +252,7 @@ export class EnrichmentService {
 
     return this.http.post(requestURL, null, httpOptions).map(res => {
       extensions.forEach((extension: Extension) => {
-        extension.setResultsFromService(res['rows'][extension.id]);
+        extension.setResultsFromService(res['rows'][extension.key[0]]);
       });
       const propDescriptions: Property[] = [];
       res['meta'].forEach(p => propDescriptions.push(new Property(p)));
@@ -292,7 +292,7 @@ export class EnrichmentService {
 
       Object.keys(results).forEach((row) => {
         // const rowId = results[row][property][0];
-        const currExt = new Extension(row, [property]);
+        const currExt = new Extension([row], [property]);
         currExt.setResultsFromService(results[row]);
         extensions.push(currExt);
       });
@@ -302,90 +302,134 @@ export class EnrichmentService {
   }
 
   weatherData(on: string, weatherConfig: WeatherConfigurator): Observable<Extension[]> {
-    let geoIds = [];
-    if (weatherConfig.getReadPlacesFromCol()) {
-      geoIds = this.data.map(row => row[':' + weatherConfig.getReadPlacesFromCol()]);
-      geoIds = Array.from(new Set(geoIds)).filter(function (e) {
-        return e === 0 || e;
-      });  // remove empty strings
+
+    let header;
+    let auxCol;
+    if (on === 'place') {
+      header = weatherConfig.getReadPlacesFromCol();
+      auxCol = weatherConfig.getReadDatesFromCol();
     } else {
-      geoIds.push(weatherConfig.getPlace());
+      header = weatherConfig.getReadDatesFromCol();
+      auxCol = weatherConfig.getReadPlacesFromCol();
     }
 
-    let dates = [];
-    let originalDateFormat;
-    if (weatherConfig.getReadDatesFromCol()) {
-      dates = this.data.map(row => row[':' + weatherConfig.getReadDatesFromCol()] + '');
-      dates = Array.from(new Set(dates)).filter(function (e) {
-        return e === 0 || e;
-      });  // remove empty strings
-      if (dates.length > 0) {
-        originalDateFormat = moment(dates[0]).creationData().format; // assuming a date column uses the same format for each date
-      }
-      dates = dates.map(date => moment(date + '').format());
-    } else {
-      dates.push(moment(weatherConfig.getDate()).toISOString(true));
-      originalDateFormat = moment(dates[0]).creationData().format;
-    }
+    const cols = auxCol ? [header, auxCol] : [header];
+
+    const colData = this.data.filter((row) => { // remove empty strings
+        let notEmpty = true;
+        for (let i = 0; i < cols.length; i++) {
+          notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
+        }
+        return notEmpty;
+      }).map(row => { // remove unused fields from rows
+        return cols.reduce((o, k) => {
+          o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
+          return o;
+        }, {});
+      }).reduce((arr, item) => { // remove duplicates
+        const exists = !!arr.find(x => {
+          let ex = true;
+          cols.forEach(col => {
+            ex = ex && x[col] === item[col];
+          });
+          return ex;
+        });
+        if (!exists) {
+          arr.push(item);
+        }
+        return arr;
+      }, []).map(item => {
+        let date;
+        let isoDate;
+        let originalDateFormat;
+        // Create the object needed for the weather extension (value to reconcile + propertyValues)
+        if (on === 'place') {
+          if (auxCol) {
+            date = `${item[auxCol]}`;
+            isoDate = moment(date).format();
+            originalDateFormat =  moment(date).creationData().format;
+          } else {
+            date = `${weatherConfig.getDate()}`;
+            isoDate = moment(weatherConfig.getDate(), 'MM/DD/YYYY').toISOString(true);
+            originalDateFormat = 'MM/DD/YYYY';
+          }
+          return {place: `${item[header]}`, date: date, isoDate: isoDate, originalDateFormat: originalDateFormat };
+        } else {
+          date = `${item[header]}`;
+          isoDate =  moment(date).format();
+          originalDateFormat =  moment(date).creationData().format;
+          if (auxCol) {
+            return {date: date, place: `${item[auxCol]}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
+          } else {
+            return {date: date, place: `${weatherConfig.getPlace()}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
+          }
+        }
+    });
 
     const requestURL = this.asiaURL + '/weather';
 
     const params = new HttpParams()
-      .set('ids', geoIds.join(','))
-      .set('dates', dates.join(','))
+      .set('ids', Array.from(new Set(colData.map(row => row.place))).join(','))
+      .set('dates',  Array.from(new Set(colData.map(row => row.isoDate))).join(','))
       .set('weatherParams', weatherConfig.getParameters().join(','))
       .set('offsets', weatherConfig.getOffsets().join(','));
 
     return this.http.post(requestURL, params).map((results: any) => {
       results.sort(function (a, b) {
-        return a.offset - b.offset;
-      }); // sort results by offset
-      const extensions: Map<string, Extension> = new Map();
-      results.forEach(obs => {
-        const weatherObs = new WeatherObservation(obs);
+        return a.offset - b.offset; // sort results by offset
+      });
+
+      const extensions: Extension[] = [];
+
+      colData.forEach(row => {
+
+        const key = [];
         const properties: Map<string, any[]> = new Map();
 
-        // Save dates using the original format adopted by the user
-        const date = moment(weatherObs.getDate()).format(originalDateFormat);
-
-        if (on === 'date') {
-          // Create extensions based on date
-          let extension = extensions.get(date);
-          if (!extension) {
-            extension = new Extension(date, []);
+        if (on === 'place') {
+          key.push(row.place);
+          if (auxCol) {
+            key.push(row.date);
           }
-          weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
-            const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getGeonamesId()}_+${weatherObs.getOffset()}`;
-            for (const agg of weatherConfig.getAggregators()) {
-              const v = weatherParam.get(agg);
-              if (v) {
-                properties.set(`${newParamName}_${agg}`, [{'str': `${v}`}]);
-              }
-            }
-          });
-          extension.addProperties(properties);
-          extensions.set(date, extension);
-        } else if (on === 'place') {
-          // Create extensions based on place
-          let extension = extensions.get(weatherObs.getGeonamesId());
-          if (!extension) {
-            extension = new Extension(weatherObs.getGeonamesId(), []);
+        } else {
+          key.push(row.date);
+          if (auxCol) {
+            key.push(row.place);
           }
-
-          weatherObs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
-            const newParamName = `WF_${weatherParam.getId()}_${weatherObs.getDate()}_+${weatherObs.getOffset()}`;
-            for (const agg of weatherConfig.getAggregators()) {
-              const v = weatherParam.get(agg);
-              if (v) {
-                properties.set(`${newParamName}_${agg}`, [{'str': `${v}`}]);
-              }
-            }
-          });
-          extension.addProperties(properties);
-          extensions.set(weatherObs.getGeonamesId(), extension);
         }
+
+        const e = new Extension(key, []);
+
+        // Many weather obs, one for each offset
+        const weatherObs = results.filter((res) => {
+          const obs = new WeatherObservation(res);
+          return obs.getGeonamesId() === row.place && moment(obs.getDate()).format(row.originalDateFormat) === row.date;
+        });
+
+        weatherObs.forEach(res => {
+          const obs = new WeatherObservation(res);
+          obs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
+            let propName = `WF_${weatherParam.getId()}_+${obs.getOffset()}`;
+            if (weatherConfig.getPlace()) {
+              propName += `_${obs.getGeonamesId()}`;
+            }
+            if (weatherConfig.getDate()) {
+              propName += `_${obs.getDate()}`;
+            }
+            for (const agg of weatherConfig.getAggregators()) {
+              const v = weatherParam.get(agg);
+              if (v) {
+                properties.set(`${propName}_${agg}`, [{'str': `${v}`}]);
+              }
+            }
+          });
+        });
+
+        e.addProperties(properties);
+        extensions.push(e);
       });
-      return Array.from(extensions.values());
+
+      return extensions;
     });
   } // end weatherData
 
@@ -455,7 +499,7 @@ export class EnrichmentService {
           // Create extensions based on date
           let extension = extensions.get(date);
           if (!extension) {
-            extension = new Extension(date, []);
+            extension = new Extension([date], []);
           }
           properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
@@ -464,7 +508,7 @@ export class EnrichmentService {
           // Create extensions based on place
           let extension = extensions.get(event.getGeonamesId());
           if (!extension) {
-            extension = new Extension(event.getGeonamesId(), []);
+            extension = new Extension([event.getGeonamesId()], []);
           }
           properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
@@ -476,7 +520,7 @@ export class EnrichmentService {
           // If any result exists, a category must be set (only one)
           let extension = extensions.get(event.getCategories()[0]);
           if (!extension) {
-            extension = new Extension(event.getCategories()[0], []);
+            extension = new Extension([event.getCategories()[0]], []);
           }
           properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
