@@ -1,13 +1,13 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Observable} from 'rxjs';
-import {AsiaMasService} from '../asia-mas/asia-mas.service';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {MatChipInputEvent} from '@angular/material/chips';
-import {MatAutocomplete, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
-import {FormControl} from '@angular/forms';
-import {map, startWith} from 'rxjs/operators';
-import {CustomValidators} from '../shared/custom-validators';
-import {AnnotationService} from '../annotation.service';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AsiaMasService } from '../asia-mas/asia-mas.service';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { FormControl } from '@angular/forms';
+import { map, startWith } from 'rxjs/operators';
+import { CustomValidators } from '../shared/custom-validators';
+import { AnnotationService } from '../annotation.service';
 
 @Component({
   selector: 'app-config',
@@ -65,7 +65,7 @@ export class ConfigComponent implements OnInit {
     });
   }
 
-  private update() {
+  update() {
     this.preferredSummaries = [];
     this.fetchSummaries();
   }
