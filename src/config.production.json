@@ -4,5 +4,6 @@
   "graftwerk-cache-path": "/graftwerk-cache",
   "vocabulary-service-path": "/vocabularies/ManageVocabulary/api/vocabulary",
   "asia-backend": "/asia",
+  "asia-mas": "/asia-mas",
   "arango-generator": "/arango-generator"
 }
