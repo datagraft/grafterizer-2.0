@@ -112,7 +112,7 @@ export class ExtensionComponent implements OnInit {
         this.isGeonamesColumn = true;
         this.services.push(new ConciliatorService({'id': 'ecmwf', 'name': 'ECMWF', group: 'weather'}));
         this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
-      } else if (this.reconciledFromService.getId() === 'productsservices') {
+      } else if (this.reconciledFromService.getId() === 'productsservices' || this.reconciledFromService.getId() === 'keywordsmatcher') {
         this.isCategoriesColumn = true;
         this.services.push(new ConciliatorService({'id': 'er', 'name': 'EventRegistry', group: 'events'}));
       }
