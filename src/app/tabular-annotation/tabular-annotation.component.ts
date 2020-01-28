@@ -206,7 +206,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       if (this.enrichmentService.isColumnReconciled(header)) {
         if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'geonames') {
           this.geoNamesSources.push(header);
-        } else if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'productsservices') {
+        } else if (this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'productsservices'
+          || this.enrichmentService.getReconciliationServiceOfColumn(header).getId() === 'keywordsmatcher') {
           this.categoriesSources.push(header);
         }
       }
