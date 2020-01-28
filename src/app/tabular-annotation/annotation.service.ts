@@ -1,20 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Annotation, AnnotationStatuses, ColumnTypes } from './annotation.model';
+import * as transformationDataModel from 'assets/transformationdatamodel.js';
 
 @Injectable()
 export class AnnotationService {
 
-  private annotations;
-  public headers: string[];
-  public data;
-  public subjects;
   private urifyDefault = '';
+  public headers: string[] = [];
 
   constructor() {
-    this.annotations = {};
-    this.headers = [];
-    this.data = [];
-    this.subjects = new Map<string, string>();
   }
 
   setUrifyDefault(urifyDefault: string) {
@@ -25,86 +19,65 @@ export class AnnotationService {
     return this.urifyDefault;
   }
 
-  setAnnotation(columnHeader: string, annotation: Annotation) {
-    if (annotation.subject !== '') {
-      this.subjects.set(columnHeader, annotation.subject);
-    }
-    this.annotations[columnHeader] = annotation;
-    this.updateSubjects();
-    this.updateStatuses();
-  }
-
-  removeAnnotation(columnHeader: string) {
-    this.subjects.delete(columnHeader);
-    delete this.annotations[columnHeader];
-    this.updateSubjects();
-    this.updateStatuses();
-  }
-
-  getAnnotation(columnHeader: string): Annotation {
-    return this.annotations[columnHeader];
-  }
-
   /**
-   * Get all annotations (also those annotations related to deleted columns!)
-   * @returns {Annotation[]}
+   * Given a namespace, this method return a valid prefix. The prefix is kept from the rdfVocab
+   * if the namespace is known; alternatively, a new prefix is generated and inserted into the
+   * rdfVocab array.
+   * @param {string} namespace
+   * @returns {string} a valid prefix
    */
-  getAnnotations(): Annotation[] {
-    const annotations = [];
-    Object.keys(this.annotations).forEach(key => annotations.push(this.annotations[key]));
-    return annotations;
-  }
+  getPrefixForNamespace(namespace: string, transformation: any) {
+    let prefix = transformation.getExistingPrefixForURI(namespace);
 
-  /**
-   * Get all annotations that are valid (not related to deleted columns or to a subject column that is not annotated)
-   * @returns {Annotation[]}
-   */
-  getValidAnnotations(): Annotation[] {
-    const annotations = [];
-    Object.keys(this.annotations).forEach(key => {
-      const currentAnnotation = this.annotations[key];
-      if (currentAnnotation.status === AnnotationStatuses.valid) {
-        annotations.push(currentAnnotation);
+    if (!prefix) {
+      const url = new URL(namespace);
+      // first 2 letter of the URL domain
+      prefix = url.host.replace('www.', '')
+        .split('.')[0]
+        .substr(0, 2);
+      // first 2 letter of the URL pathname
+      prefix += url.pathname.split('/')[1]
+        .substr(0, 2);
+      // to lowercase and remove all digits (if any - e.g., w3 vocabs
+      prefix = prefix.toLowerCase().replace(/\d+/g, '');
+      // append a number in case the prefix is not available (already in use)
+      let i = 1;
+      let tmpPrefix = prefix;
+      while (transformation.getURIForPrefix(tmpPrefix)) {
+        tmpPrefix = prefix + i;
+        ++i;
       }
-    });
-    return annotations;
+      prefix = tmpPrefix;
+      // create a new RDFVocabulary instance
+      transformation.rdfVocabs.push(new transformationDataModel.RDFVocabulary(prefix, namespace, [], []));
+    }
+    return prefix;
   }
 
-  private updateSubjects() {
-    Object.values(this.annotations).forEach((ann: Annotation) => {
-      this.annotations[ann.columnHeader].isSubject = Array.from(this.subjects.values()).includes(ann.columnHeader);
-    });
-  }
-  private updateStatuses() {
-    Object.values(this.annotations).forEach((ann: Annotation) => {
-      this.annotations[ann.columnHeader].status = this.getAnnotationStatus(ann);
-    });
-  }
+  // private getAnnotationStatus(annotation, stopRecursion = false) {
+  //   // If I'm not valid, return my status
+  //   if (!this.headers.includes(annotation.columnName)) {
+  //     return AnnotationStatuses.wrong; // the annotation is related to a column that does not exist
+  //   }
 
-  private getAnnotationStatus(annotation, stopRecursion = false) {
-    // If I'm not valid, return my status
-    if (!this.headers.includes(annotation.columnHeader)) {
-      return AnnotationStatuses.wrong; // the annotation is related to a column that does not exist
-    }
-
-    if (annotation.isSubject && annotation.columnValuesType !== ColumnTypes.URI) {
-      return AnnotationStatuses.wrong; // a subject column must be of type URI (checked also by form validators)
-    }
-    // If I have a subject, my status depends on my subject's status
-    let parentStatus = null;
-    if (annotation.subject !== '' && !stopRecursion) {
-      const parentAnnotation = this.annotations[annotation.subject];
-      if (!parentAnnotation) {
-        return AnnotationStatuses.warning; // subject is set, but its column is not annotated yet -> potential error
-      } else {
-        stopRecursion = parentAnnotation.subject === annotation.columnHeader; // I'm the subject of my subject -> avoid infinite loop!
-        parentStatus = this.getAnnotationStatus(parentAnnotation, stopRecursion);
-        if (parentStatus !== AnnotationStatuses.valid) {
-          return AnnotationStatuses.warning; // if my subject is wrong or warning, I'm warning
-        }
-      }
-    }
-    // If I have not a subject or if my subject is valid, I'm valid
-    return AnnotationStatuses.valid;
-  }
+  //   if (annotation.isSubject && annotation instanceof transformationDataModel.URINodeAnnotation) {
+  //     return AnnotationStatuses.wrong; // a subject column must be of type URI (checked also by form validators)
+  //   }
+  //   // If I have a subject, my status depends on my subject's status
+  //   let parentStatus = null;
+  //   if (annotation.subjectAnnotationId && !stopRecursion) {
+  //     const parentAnnotation = this.transformationObj.getAnnotationById(annotation.subjectAnnotationId);
+  //     if (!parentAnnotation) {
+  //       return AnnotationStatuses.warning; // subject is set, but its column is not annotated yet -> potential error
+  //     } else {
+  //       stopRecursion = parentAnnotation.columnName === annotation.columnName; // I'm the subject of my subject -> avoid infinite loop!
+  //       parentStatus = this.getAnnotationStatus(parentAnnotation, stopRecursion);
+  //       if (parentStatus !== AnnotationStatuses.valid) {
+  //         return AnnotationStatuses.warning; // if my subject is wrong or warning, I'm warning
+  //       }
+  //     }
+  //   }
+  //   // If I have not a subject or if my subject is valid, I'm valid
+  //   return AnnotationStatuses.valid;
+  // }
 }

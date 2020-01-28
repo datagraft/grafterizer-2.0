@@ -3,7 +3,8 @@
 </div>
 <div class="options" [hidden]="dataLoading">
   <div class="btn-group pull-right" style="padding: .5em">
-    <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="saveAnnotation()" [disabled]="saveButtonDisabled">
+    <button [clrLoading]="saveLoading" class="btn btn-info-outline" (click)="updateRDFMappings()"
+      [disabled]="saveButtonDisabled">
       Update RDF Mappings
 
     </button>
@@ -20,7 +21,8 @@
     <!--<button type="button" clrDropdownItem (click)="retrieveRDF('rdf')">.rdf</button>-->
     <!--</clr-dropdown-menu>-->
     <!--</clr-dropdown>-->
-    <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()" style="display: flex; justify-content: center;">
+    <button type="button" class="btn btn-info-outline" (click)="openConfigDialog()"
+      style="display: flex; justify-content: center;">
       <i class="material-icons">
         settings
       </i>

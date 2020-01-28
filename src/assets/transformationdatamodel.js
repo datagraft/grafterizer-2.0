@@ -2848,12 +2848,15 @@ Transformation.prototype.getColumnAnnotations = function (columnName) {
   return colAnnotations;
 };
 Transformation.prototype.getAnnotationById = function (id) {
-  var i;
-  for (i = 0; i < this.annotations.length; ++i) {
-    if (this.annotations[i].id === id) {
-      return this.annotations[i];
+  if (id) {
+    var i;
+    for (i = 0; i < this.annotations.length; ++i) {
+      if (this.annotations[i].id === id) {
+        return this.annotations[i];
+      }
     }
   }
+
   return null;
 };
 
