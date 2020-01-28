@@ -2,6 +2,20 @@ import * as jsedn from 'jsedn';
 
 var _this = this || {};
 
+
+/**
+ * Object that can be referenced by other objects
+ * @param {number} id identifier of the referencable object; should be unique for the transformation
+ */
+export function ReferencableObject(id) {
+  if (parseInt(id)) {
+    this.id = id;
+  } else {
+    this.id = 0;
+  }
+
+}
+
 export function Prefixer(name, uri, parentPrefix) {
   this.name = name;
   this.uri = uri;
@@ -359,12 +373,10 @@ GrepFunction.revive = function (data) {
 GrepFunction.prototype = Object.create(GenericFunction.prototype);
 GrepFunction.prototype.generateClojure = function () {
   var colsToFilter = new jsedn.Vector([]);
-  var flag = false;
   var filterFunc;
   var i;
   for (i = 0; i < this.colsToFilter.length; ++i) {
     colsToFilter.val.push(new jsedn.kw(':' + this.colsToFilter[i].value));
-    flag = true;
   }
 
   var values = [jsedn.sym('grep')];
@@ -543,13 +555,10 @@ DeriveColumnFunction.revive = function (data) {
 DeriveColumnFunction.prototype = Object.create(GenericFunction.prototype);
 DeriveColumnFunction.prototype.generateClojure = function () {
   var colsToDeriveFromClj = new jsedn.Vector([]);
-  var flag = false;
-  var deriveFunc;
   var functWithParams = [];
   var i;
   for (i = 0; i < this.colsToDeriveFrom.length; ++i) {
     colsToDeriveFromClj.val.push(new jsedn.kw(':' + this.colsToDeriveFrom[i].value));
-    flag = true;
   }
 
   var values = [jsedn.sym('derive-column'),
@@ -1455,6 +1464,494 @@ MeltFunction.prototype.generateClojure = function () {
 };
 _this.MeltFunction = MeltFunction;
 
+//////////////////// Annotations, extensions and reconciliations ////////////////////
+
+
+export function MatchPair(valuesToMatch, match) {
+  if (valuesToMatch) {
+    if (valuesToMatch.length) {
+      this.valuesToMatch = valuesToMatch;
+    } else {
+      this.valuesToMatch = '';
+    }
+  } else {
+    this.valuesToMatch = '';
+  }
+  this.match = match || '';
+  this.__type = 'MatchPair';
+}
+_this.MatchPair = MatchPair;
+
+/**
+ * Generic ASIA extension class
+ * @param {Array<string>} derivedColumns column names of the columns that were derived using the extension
+ * @param {Array} manualMatches manually matched pairs of values (value in source column is directly matched to a value of the target column)
+ */
+export function Extension(derivedColumns, manualMatches) {
+  if (derivedColumns) {
+    if (derivedColumns.length) {
+      this.derivedColumns = derivedColumns;
+    } else {
+      this.derivedColumns = [];
+    }
+  } else {
+    this.derivedColumns = [];
+  }
+
+  if (manualMatches) {
+    if (manualMatches.length) {
+      this.manualMatches = manualMatches;
+    } else {
+      this.manualMatches = [];
+    }
+  } else {
+    this.manualMatches = [];
+  }
+
+  this.__type = 'Extension';
+}
+_this.Extension = Extension;
+
+export function WeatherExtensionDate() {
+  this.__type = 'WeatherExtensionDate';
+}
+_this.WeatherExtensionDate = WeatherExtensionDate;
+
+export function WeatherExtensionDateFromColumn(columnName) {
+  this.columnName = columnName;
+  this.__type = 'WeatherExtensionDateFromColumn';
+}
+WeatherExtensionDateFromColumn.prototype = Object.create(WeatherExtensionDate.prototype);
+_this.WeatherExtensionDateFromColumn = WeatherExtensionDateFromColumn;
+
+export function WeatherExtensionDateFromString(dateString) {
+  this.dateString = dateString;
+  this.__type = 'WeatherExtensionDateFromString';
+}
+WeatherExtensionDateFromString.prototype = Object.create(WeatherExtensionDate.prototype);
+_this.WeatherExtensionDateFromString = WeatherExtensionDateFromString;
+
+export function WeatherExtensionLocation() {
+  this.__type = 'WeatherExtensionLocation';
+}
+_this.WeatherExtensionLocation = WeatherExtensionLocation;
+
+export function WeatherExtensionLocationString(locationString) {
+  this.locationString = locationString || '';
+  this.__type = 'WeatherExtensionLocationString';
+}
+_this.WeatherExtensionLocationString = WeatherExtensionLocationString;
+
+export function WeatherExtensionLocationColumn(columnName) {
+  this.columnName = columnName || '';
+  this.__type = 'WeatherExtensionLocationColumn';
+}
+_this.WeatherExtensionLocationColumn = WeatherExtensionLocationColumn;
+
+/**
+ * 
+ * @param {Array<string>} derivedColumns column names of the columns that were derived using the extension
+ * @param {Array} manualMatches manually matched pairs of values (value in source column is directly matched to a value of the target column)
+ * @param {WeatherExtensionLocation} location location for which we add weather data, either from string (WeatherExtensionLocationString) or column value (WeatherExtensionLocationColumn)
+ * @param {WeatherExtensionDate} date base date for which we add weather data, either from string (WeatherExtensionDateFromString) or column value (WeatherExtensionDateFromColumn)
+ * @param {Array<string>} weatherFeatures chosen weather features to extend with
+ * @param {Array<number>} offsetDays array of integer numbers of days for the offset from the base date
+ * @param {Array<string>} aggregations aggregation function for fetching the weather data for the chosen date and offset
+ */
+export function ECMWFWeatherExtension(derivedColumns, manualMatches, location, date, weatherFeatures, offsetDays, aggregations) {
+  Extension.call(this, derivedColumns, manualMatches);
+
+  this.location = location || '';
+  this.date = date || '';
+
+  if (weatherFeatures instanceof Array) {
+    this.weatherFeatures = weatherFeatures;
+  } else {
+    this.weatherFeatures = [];
+  }
+
+  if (offsetDays instanceof Array) {
+    this.offsetDays = offsetDays;
+  } else {
+    this.offsetDays = [];
+  }
+
+  if (aggregations instanceof Array) {
+    this.aggregations = aggregations;
+  } else {
+    this.aggregations = [];
+  }
+
+  this.__type = 'WeatherExtension';
+}
+ECMWFWeatherExtension.prototype = Object.create(Extension.prototype);
+_this.WeatherExtension = ECMWFWeatherExtension;
+
+
+/**
+ * @TODO WIP: define this extension type - perhaps give as parameter the class of the sameAs object?
+ * @param {Array<string>} derivedColumns column names of the columns that were derived using the extension
+ * @param {Array} manualMatches manually matched pairs of values (value in source column is directly matched to a value of the target column)
+ */
+export function SameAsExtension(derivedColumns, manualMatches) {
+  Extension.call(this, derivedColumns, manualMatches);
+  this.__type = 'SameAsExtension';
+}
+SameAsExtension.prototype = Object.create(Extension.prototype);
+_this.SameAsExtension = SameAsExtension;
+
+/**
+ * @TODO WIP: define this extension type
+ * @param {Array<string>} derivedColumns column names of the columns that were derived using the extension
+ * @param {Array} manualMatches manually matched pairs of values (value in source column is directly matched to a value of the target column)
+ * @param {string} fromDate start date for fetching event data
+ * @param {string} toDate end date for fetching event data
+ */
+export function EventExtension(derivedColumns, manualMatches, fromDate, toDate) {
+  this.fromDate = fromDate || '';
+  this.toDate = toDate || '';
+  Extension.call(this, derivedColumns, manualMatches);
+  this.__type = 'EventExtension';
+}
+EventExtension.prototype = Object.create(Extension.prototype);
+_this.EventExtension = EventExtension;
+
+/**
+ * @TODO WIP: define this extension type (should have an additional attribute about the class of entity from the KB). Extension from a knowledge base.
+ * @param {*} derivedColumns 
+ * @param {*} manualMatches 
+ */
+export function KnowledgeBaseExtension(derivedColumns, manualMatches) {
+  Extension.call(this, derivedColumns, manualMatches);
+  this.__type = 'KnowledgeBaseExtension';
+}
+KnowledgeBaseExtension.prototype = Object.create(Extension.prototype);
+_this.KnowledgeBaseExtension = KnowledgeBaseExtension;
+
+// @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+/**
+ * Defines an annotation using the Tabular Annotation UI. Annotations with specific conciliators can be used to extend data from knowledge graphs or other services.
+ * @param {string} columnName name of the column to annotate
+ * @param {number} subjectAnnotationId subject column of the triple
+ * @param {Array<Property>} properties property of the triple
+ * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
+ * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+ */
+export function Annotation(columnName, subjectAnnotationId, properties, status, id) {
+  if (!this.generateClojure) {
+    this.generateClojure = function () {
+      return new jsedn.List([jsedn.sym(this.name)]);
+    };
+  }
+
+  ReferencableObject.call(this, id);
+
+  this.subjectAnnotationId = subjectAnnotationId || 0; // zero if not specified
+  this.columnName = columnName || '';
+  this.properties = properties || [];
+  this.status = status || '';
+
+  this.__type = 'Annotation';
+}
+Annotation.prototype = Object.create(ReferencableObject.prototype);
+_this.Annotation = Annotation;
+
+/**
+ * Annotation of a URI node
+ * @param {string} columnName name of the column that is annotated as a URI node
+ * @param {number} subjectAnnotationId subject column of the triple
+ * @param {Array<Property>} properties one or properties of the triple; instance of TDM Property
+ * @param {Array<ConstantURI>} columnTypes one or more types of the column contents; 
+ * @param {string} urifyPrefix prefix of the namespace to use to create a URI from the column annotated
+ * @param {boolean} isSubject whether or not this is a subject column
+ * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
+ * @param {string} consiliatorServiceName name of the conciliator service used to generate the annotation (in case the annotation is a result of a reconciliation)
+ * @param {Array<Extension>} extensions extensions of the annotated columns
+ * @param {Object} reconciliation reconciliation object in case the annotation has resulted from a reconciliation
+ * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+ */
+export function URINodeAnnotation(columnName, subjectAnnotationId,
+  properties,
+  columnTypes,
+  urifyPrefix,
+  isSubject, status, id, consiliatorServiceName, extensions, reconciliation) {
+
+  this.columnName = ''; this.id = 0; // HACK - Typescript is an asshole...
+  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id);
+
+  // in case it is a URI node annotation
+  this.columnTypes = columnTypes || [];
+  this.urifyPrefix = urifyPrefix || '';
+
+  // helper 
+  this.isSubject = isSubject || '';
+  this.status = status || '';
+
+  // the name of the conciliator service used to annotate the column (defined in case it was reconciled)
+  this.conciliatorServiceName = consiliatorServiceName || '';
+
+  if (extensions) {
+    if (extensions.length) {
+      this.extensions = extensions;
+    } else {
+      this.extensions = [];
+    }
+  } else {
+    this.extensions = [];
+  }
+
+  if (reconciliation) {
+    if (reconciliation.__type == 'Reconciliation') {
+      this.reconciliation = reconciliation;
+    } else {
+      this.reconciliation = null
+    }
+  } else {
+    this.reconciliation = null;
+  }
+  this.__type = 'URINodeAnnotation';
+}
+URINodeAnnotation.prototype = Object.create(Annotation.prototype);
+URINodeAnnotation.prototype.getGraphNode = function () {
+  var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
+  return new ColumnURI(this.urifyPrefix, this.columnName, notEmptyCondition, []);
+};
+URINodeAnnotation.revive = function (data) {
+
+  var i;
+  // revive properties
+  var props = [];
+  if (data.properties) {
+    if (data.properties.length) {
+      for (i = 0; i < data.properties.length; ++i) {
+        if (data.properties[i].__type === 'Property') {
+          props.push(Property.revive(data.properties[i]));
+        }
+      }
+    }
+  }
+
+  // revive column types
+  var colTypes = [];
+  if (data.columnTypes) {
+    if (data.columnTypes.length) {
+      for (i = 0; i < data.columnTypes.length; ++i) {
+        if (data.columnTypes[i].__type === 'ConstantURI') {
+          colTypes.push(ConstantURI.revive(data.columnTypes[i]));
+        }
+      }
+    }
+  }
+
+  // revive extensions
+  var extensions = [];
+  if (data.extensions) {
+    if (data.extensions.length) {
+      for (i = 0; i < data.extensions.length; ++i) {
+        if (data.extensions[i].__type === 'KnowledgeBaseExtension') {
+          extensions.push(KnowledgeBaseExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'EventExtension') {
+          extensions.push(EventExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'SameAsExtension') {
+          extensions.push(SameAsExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'ECMWFWeatherExtension') {
+          extensions.push(ECMWFWeatherExtension.revive(data.extensions[i]));
+        }
+      }
+    }
+  }
+
+  // revive reconciliation
+  var rec = {};
+  if (data.reconciliation) {
+    if (data.reconciliation.__type === 'SingleColumnReconciliation') {
+      rec = SingleColumnReconciliation.revive(data.reconciliation);
+    } else if (data.reconciliation.__type === 'MultiColumnReconciliation') {
+      rec = MultiColumnReconciliation.revive(data.reconciliation);
+    }
+  }
+  return new URINodeAnnotation(data.columnName, data.subjectAnnotationId, props, colTypes, data.urifyPrefix, data.isSubject, data.status, data.id, data.conciliatorServiceName, extensions, rec);
+}
+_this.URINodeAnnotation = URINodeAnnotation;
+
+/**
+ * Annotation of a literal node
+ * @param {string} columnName name of the column that is annotated as a literal
+ * @param {number} subjectAnnotationId subject column of the triple
+ * @param {Array<Property>} properties property of the triple
+ * @param {string} columnDatatype datatype URI of the literal values in the column
+ * @param {string} langTag language tag of the resulting literal
+ * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
+ * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+ */
+export function LiteralNodeAnnotation(columnName, subjectAnnotationId,
+  properties,
+  columnDatatype,
+  langTag, status, id) {
+
+
+  this.id = 0; // HACK - Typescript is an asshole...
+  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id);
+
+  this.columnDatatype = columnDatatype || '';
+  this.langTag = langTag || '';
+
+  this.__type = 'LiteralNodeAnnotation';
+}
+LiteralNodeAnnotation.prototype = Object.create(Annotation.prototype);
+LiteralNodeAnnotation.prototype.getGraphNode = function () {
+
+  var codDt = 'unknown';
+  if (this.columnDatatype) {
+    switch (this.columnDatatype.trim()) {
+      case 'http://www.w3.org/2001/XMLSchema#byte':
+        codDt = 'byte';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#short':
+        codDt = 'short';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#int':
+      case 'http://www.w3.org/2001/XMLSchema#integer':
+        codDt = 'integer';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#long':
+        codDt = 'long';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#decimal':
+        codDt = 'decimal';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#float':
+        codDt = 'float';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#double':
+        codDt = 'double';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#boolean':
+        codDt = 'boolean';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#dateTime':
+        codDt = 'date';
+        break;
+      case 'http://www.w3.org/2001/XMLSchema#string':
+        codDt = 'string';
+        break;
+      default:
+        codDt = 'custom'
+        break;
+    }
+  } else {
+    codDt = 'unspecified'
+  }
+
+  var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
+
+  return new ColumnLiteral(this.columnName, this.codDt, null, null, this.langTag, this.columnDatatype, notEmptyCondition);
+}
+LiteralNodeAnnotation.revive = function (data) {
+  var i;
+  // revive properties
+  var props = [];
+  if (data.properties) {
+    if (data.properties.length) {
+      for (i = 0; i < data.properties.length; ++i) {
+        if (data.properties[i].__type === 'Property') {
+          props.push(Property.revive(data.properties[i]));
+        }
+      }
+    }
+  }
+  return new LiteralNodeAnnotation(data.columnName, data.subjectAnnotationId, props, data.columnDatatype, data.langTag, data.status, data.id);
+}
+_this.LiteralNodeAnnotation = LiteralNodeAnnotation;
+
+/**
+ * Generic reconciliation class.
+ * @param {string} columnName name of the column to reconcile
+ * @param {number} threshold confidence threshold (float between 0-1)
+ * @param {Array<string>} inferredTypes array of inferred types
+ * @param {Array} automaticMatches automatically matched entities (array of MatchPair-s)
+ * @param {Array} manualMatches manually matched entities (array of MatchPair-s)
+ */
+export function Reconciliation(columnName, threshold, inferredTypes, automaticMatches, manualMatches) {
+  this.columnName = columnName || '';
+  this.threshold = parseFloat(threshold) || 0.0;
+
+  if (inferredTypes instanceof Array) {
+    this.inferredTypes = inferredTypes;
+  } else {
+    this.inferredTypes = [];
+  }
+
+  if (automaticMatches instanceof Array) {
+    this.automaticMatches = automaticMatches;
+  } else {
+    this.automaticMatches = [];
+  }
+
+  if (manualMatches instanceof Array) {
+    this.manualMatches = manualMatches;
+  } else {
+    this.manualMatches = [];
+  }
+
+  this.__type = 'Reconciliation';
+}
+_this.Reconciliation = Reconciliation;
+
+/**
+ * Describes a single column reconciliation using the ASIA service
+ * @param {string} columnName name of the column to reconcile
+ * @param {number} threshold confidence threshold (float between 0-1)
+ * @param {Array<string>} inferredTypes array of inferred types
+ * @param {Array} automaticMatches automatically matched entities (array of MatchPair-s)
+ * @param {Array} manualMatches manually matched entities (array of MatchPair-s)
+ */
+export function SingleColumnReconciliation(columnName, threshold, inferredTypes, automaticMatches, manualMatches) {
+  Reconciliation.call(this, columnName, threshold, inferredTypes, automaticMatches, manualMatches);
+
+  this.__type = 'SingleColumnReconciliation';
+}
+SingleColumnReconciliation.prototype = Object.create(Reconciliation.prototype);
+_this.SingleColumnReconciliation = SingleColumnReconciliation;
+
+/**
+ * Describes settings for column data for multi-column reconciliations. 
+ * @param {string} columnName name of column to be matched
+ * @param {string} property property name to reconcile the values of the column against
+ * @param {string} similarityMeasure name of the similarity measure used for reconciliation
+ * @param {number} threshold confidence threshold for matching
+ */
+export function ReconciliationSupportColumnSetting(columnName, property, similarityMeasure, threshold) {
+  this.property = property || '';
+  this.similarityMeasure = similarityMeasure || '';
+  this.threshold = parseFloat(threshold) || 0.0;
+  this.columnName = columnName || null;
+
+  this.__type = 'ReconciliationSupportColumnSetting';
+}
+_this.ReconciliationSupportColumnSetting = ReconciliationSupportColumnSetting;
+
+/**
+ * Describes a reconciliation with more than one column
+ * @param {string} columnName name of the column to reconcile
+ * @param {number} threshold confidence threshold (float between 0-1)
+ * @param {Array<string>} inferredTypes array of inferred types
+ * @param {Array} automaticMatches automatically matched entities (array of MatchPair-s)
+ * @param {Array} manualMatches manually matched entities (array of MatchPair-s)
+ * @param {Array} reconciliationSupportColumnSettings settings for additional columns to be used for reconciliation (array of ReconciliationSupportColumnSetting-s)
+ */
+export function MultiColumnReconciliation(columnName, threshold, inferredTypes, automaticMatches, manualMatches, reconciliationSupportColumnSettings) {
+  Reconciliation.call(this, columnName, threshold, inferredTypes, automaticMatches, manualMatches);
+  if (reconciliationSupportColumnSettings instanceof Array) {
+    this.reconciliationSupportColumnSettings = reconciliationSupportColumnSettings;
+  } else {
+    this.reconciliationSupportColumnSettings = [];
+  }
+  this.__type = 'MultiColumnReconciliation';
+}
+MultiColumnReconciliation.prototype = Object.create(Reconciliation.prototype);
+_this.MultiColumnReconciliation = MultiColumnReconciliation;
+
 export function Pipeline(functions) {
   // functions that make up the pipeline
   // TODO: revive!
@@ -1599,7 +2096,7 @@ export function RDFElement(subElements) {
 
 export function URINode(prefix, subElements) {
   RDFElement.call(this, subElements);
-  this.prefix = prefix;
+  this.prefix = prefix || '';
 };
 URINode.prototype = Object.create(RDFElement.prototype);
 URINode.revive = function (data) {
@@ -1641,6 +2138,7 @@ URINode.prototype.replaceChild = function (child, nodeToReplaceWith) {
 _this.URINode = URINode;
 
 export function ConstantURI(prefix, constantURIText, nodeCondition, subElements) {
+  this.subElements = [];
   URINode.call(this, prefix, subElements);
   this.constant = constantURIText;
   this.nodeCondition = nodeCondition;
@@ -1661,6 +2159,7 @@ ConstantURI.revive = function (data) {
 _this.ConstantURI = ConstantURI;
 
 export function ColumnURI(prefix, columnName, nodeCondition, subElements) {
+  this.subElements = [];
   URINode.call(this, typeof prefix === 'object' ? prefix.value : prefix, subElements);
   this.column = columnName;
   this.nodeCondition = nodeCondition;
@@ -1767,9 +2266,9 @@ Property.revive = function (data) {
 };
 _this.Property = Property;
 
-export function ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
+export function ColumnLiteral(columnName, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
   RDFElement.call(this, []);
-  this.literalValue = literalText;
+  this.literalValue = columnName;
   this.datatype = datatype;
   this.onEmpty = onEmpty;
   this.onError = onError;
@@ -1915,20 +2414,29 @@ Graph.revive = function (data) {
 };
 _this.Graph = Graph;
 
-export function Transformation(customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs) {
+export function Transformation(customFunctionDeclarations, prefixers, pipelines, graphs, rdfVocabs, annotations, identifierSequence) {
 
   // validate that inputs are revived
   var i, cfd, prefixer, pipeline, graph, rdfVocab;
-  if (!customFunctionDeclarations)
+  if (!customFunctionDeclarations) {
     customFunctionDeclarations = [];
-  if (!prefixers)
+  }
+  if (!prefixers) {
     prefixers = [];
-  if (!pipelines)
+  }
+  if (!pipelines) {
     pipelines = [];
-  if (!graphs)
+  }
+  if (!graphs) {
     graphs = [];
-  if (!rdfVocabs)
+  }
+  if (!rdfVocabs) {
     rdfVocabs = [];
+  }
+  if (!annotations) {
+    annotations = [];
+  }
+
 
   for (i = 0; i < customFunctionDeclarations.length; ++i) {
     cfd = customFunctionDeclarations[i];
@@ -1973,6 +2481,31 @@ export function Transformation(customFunctionDeclarations, prefixers, pipelines,
   this.pipelines = pipelines;
   this.graphs = graphs;
   this.rdfVocabs = rdfVocabs; //TODO fill this
+
+  if (annotations instanceof Array) {
+    for (i = 0; i < annotations.length; ++i) {
+      var annotation = annotations[i];
+      if (!(annotation instanceof Annotation) || !(annotation instanceof LiteralNodeAnnotation) || !(annotation instanceof URINodeAnnotation)) {
+        if (annotation.__type === 'LiteralNodeAnnotation') {
+          annotations[i] = LiteralNodeAnnotation.revive(annotations[i]);
+        }
+        if (annotation.__type === 'URINodeAnnotation') {
+          annotations[i] = URINodeAnnotation.revive(annotations[i]);
+        }
+        if (annotation.__type === 'Annotation') {
+          // what do we do with those??
+          annotations[i] = Annotation.revive(annotations[i]);
+        }
+
+      }
+    }
+    this.annotations = annotations;
+  } else {
+    this.annotations = [];
+  }
+
+  this.identifierSequence = parseInt(identifierSequence) || 0;
+
   this.__type = 'Transformation';
 
 };
@@ -2014,24 +2547,25 @@ Transformation.revive = function (data) {
     currPipeline.functions = functions;
     pipelines.push(currPipeline);
   }
-  var transformation = new Transformation(data.customFunctionDeclarations, data.prefixers, pipelines, data.graphs, data.rdfVocabs);
-  // Utilities for ASIA
-  if (data.annotations) { // TODO: remove this member function when ASIA will be fully compatible with the Graph model
-    transformation.setAnnotations(data.annotations);
-  }
-  if (data.reconciledColumns) {
-    transformation.setReconciledColumns(data.reconciledColumns);
-  }
+  var transformation = new Transformation(data.customFunctionDeclarations, data.prefixers, pipelines,
+    data.graphs, data.rdfVocabs, data.annotations, data.identifierSequence);
+  // // Utilities for ASIA
+  // if (data.annotations) { // TODO: remove this member function when ASIA will be fully compatible with the Graph model
+  //   transformation.setAnnotations(data.annotations);
+  // }
+  // if (data.reconciledColumns) {
+  //   transformation.setReconciledColumns(data.reconciledColumns);
+  // }
   return transformation;
 };
 // Utilities for ASIA
 // TODO: remove this member function when ASIA will be fully compatible with the Graph model
-Transformation.prototype.setAnnotations = function (annotations) {
-  this.annotations = annotations;
-};
-Transformation.prototype.setReconciledColumns = function (reconciledColumns) {
-  this.reconciledColumns = reconciledColumns;
-};
+// Transformation.prototype.setAnnotations = function (annotations) {
+//   this.annotations = annotations;
+// };
+// Transformation.prototype.setReconciledColumns = function (reconciledColumns) {
+//   this.reconciledColumns = reconciledColumns;
+// };
 Transformation.prototype.addGraphAfter = function (graph, graphToAdd) {
 
   var index = this.graphs.indexOf(graph);
@@ -2231,6 +2765,158 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
     return this;
   }
 };
+/**
+ * Get the prefix of an existing vocabulary by its URI. Empty if it does not exist.
+ * @param  {string} uri URI to match
+ */
+Transformation.prototype.getExistingPrefixForURI = function (uri) {
+  var i = 0;
+  for (i = 0; i < this.rdfVocabs.length; ++i) {
+    if (this.rdfVocabs[i].namespace === uri) {
+      return this.rdfVocabs[i].name;
+    }
+  }
+  return "";
+};
+
+/**
+ * @param {ConstantURI} constantUriNode constant URI node
+ * @returns fully qualified name of the constant URI node
+ */
+Transformation.prototype.getConstantURINodeFullyQualifiedName = function (constantUriNode) {
+  if (constantUriNode.prefix.trim()) {
+    // prefix is not empty string - need to expand the prefix
+    var i;
+    for (i = 0; i < this.rdfVocabs.length; ++i) {
+      if (this.rdfVocabs[i].prefixName === constantUriNode.prefix) {
+        return this.rdfVocabs[i].namespaceURI + constantUriNode.constant;
+      }
+    }
+  } else {
+    // prefix is empty string
+    return constantUriNode.constant;
+  }
+  return '';
+}
+
+/**
+ * @param {Property} propertyNode constant URI node
+ * @returns fully qualified name of the property node
+ */
+Transformation.prototype.getPropertyNodeFullyQualifiedName = function (propertyNode) {
+  if (propertyNode.prefix.trim()) {
+    // prefix is not empty string - need to expand the prefix
+    var i;
+    for (i = 0; i < this.rdfVocabs.length; ++i) {
+      if (this.rdfVocabs[i].prefixName === propertyNode.prefix) {
+        return this.rdfVocabs[i].namespaceURI + propertyNode.propertyName;
+      }
+    }
+  } else {
+    // prefix is empty string
+    return propertyNode.propertyName;
+  }
+  return '';
+}
+
+Transformation.prototype.getValidAnnotations = function () {
+  var validAnnotations = [];
+  var i;
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].status === 'valid') {
+      validAnnotations.push(this.annotations[i]);
+    }
+  }
+  return validAnnotations;
+}
+
+Transformation.prototype.getUniqueId = function () {
+  if (!parseInt(this.identifierSequence)) {
+    this.identifierSequence = 0;
+  }
+  this.identifierSequence = parseInt(this.identifierSequence) + 1;
+  return this.identifierSequence;
+};
+Transformation.prototype.getColumnAnnotations = function (columnName) {
+  var i;
+  var colAnnotations = [];
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].columnName === columnName) {
+      colAnnotations.push(this.annotations[i]);
+    }
+  }
+  return colAnnotations;
+};
+Transformation.prototype.getAnnotationById = function (id) {
+  var i;
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].id === id) {
+      return this.annotations[i];
+    }
+  }
+  return null;
+};
+
+Transformation.prototype.addOrReplaceAnnotation = function (annotation) {
+  if (!(annotation instanceof Annotation)) {
+    return false;
+  } else {
+    // check ID if exists and overwrite the annotation
+    var i;
+    for (i = 0; i < this.annotations.length; ++i) {
+      if (this.annotations[i].id === annotation.id) {
+        this.annotations[i] = annotation;
+        return true;
+      }
+    }
+    // ID does not exist so we add it at the end
+    this.annotations.push(annotation);
+    return true;
+  }
+};
+Transformation.prototype.isSubjectAnnotation = function (annotation) {
+  var i;
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].subjectAnnotationId === annotation.id) {
+      return true;
+    }
+  }
+  return false;
+};
+Transformation.prototype.getURIForPrefix = function (prefix) {
+  var i;
+  for (i = 0; i < this.rdfVocabs.length; ++i) {
+    if (prefix === this.rdfVocabs[i].name) {
+      return this.rdfVocabs[i].namespace;
+    }
+  }
+  return '';
+};
+Transformation.prototype.removeAnnotationById = function (annotationId) {
+  for (var i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].id === annotationId) {
+      this.annotations.splice(i, 1);
+      return true;
+    }
+  }
+  return false;
+};
+/**
+ * Finds all annotations that are objects for a given (subject) annotation. 
+ * @param  {number} annotationId ID of annotation to match with
+ * @returns all object annotations for the given annotation IDs
+ */
+Transformation.prototype.getAllObjectAnnotationsForSubject = function (annotationId) {
+  var i;
+  var objectAnnotations = [];
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].subjectAnnotationId === annotationId) {
+      objectAnnotations.push(this.annotations[i]);
+    }
+  }
+  return objectAnnotations;
+};
+
 _this.Transformation = Transformation;
 
 // TODO should this just be a prototype function of every RDFElement?
