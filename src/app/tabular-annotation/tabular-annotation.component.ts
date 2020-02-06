@@ -41,6 +41,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
   private transformationSubscription: Subscription;
   private previewedTransformationSubscription: Subscription;
   private dataSubscription: Subscription;
+  private enrichmentServicesListSubscription: Subscription;
 
   private container: any;
   private settings: any;
@@ -123,8 +124,11 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         });
         // this.annotationService.data = this.graftwerkData[':rows'];
 
-        // this.enrichmentService.headers = this.annotationService.headers;
-        // this.enrichmentService.data = this.annotationService.data;
+        // TODO we copy the entire loaded data and headers twice here - could this be optimised?
+        this.enrichmentService.headers = this.graftwerkData[':column-names'].map((h) => {
+          return h.charAt(0) === ':' ? h.substr(1) : h;
+        });
+        this.enrichmentService.data = this.graftwerkData[':rows'];
 
         // if (this.transformationObj['annotations']) {
         //   this.transformationObj['annotations'].forEach(annotationObj => {
@@ -159,12 +163,25 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.enrichmentServicesListSubscription = this.enrichmentService.listServices().subscribe((data) => {
+      let tmpServices = new Map<string, ConciliatorService>();
+
+      Object.keys(data).forEach((serviceCategory) => {
+        data[serviceCategory].forEach((service) => {
+          tmpServices.set(service['id'], new ConciliatorService({ ...service, ...{ 'group': serviceCategory } }));
+        });
+      });
+      // update the behavior object containing services
+      this.enrichmentService.reconciliationServicesMapSource.next(tmpServices);
+    });
+
   }
 
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
     this.dataSubscription.unsubscribe();
     this.previewedTransformationSubscription.unsubscribe();
+    this.enrichmentServicesListSubscription.unsubscribe();
   }
 
   openAnnotationDialog(headerIdx): void {
@@ -377,11 +394,19 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         '    <span class="tooltip-content">' + tooltipContent + '</span>' +
         '</label>';
     }
+    let reconciledColumnAnnotation = this.transformationObj.getAnnotationForReconciledColumn(headerName);
 
-    // ENRICHMENT BUTTON
-    HTMLHeader += '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' +
-      '<i class="material-icons top-margin" > view_column </i>' +
-      '</button>';
+    if (reconciledColumnAnnotation) {
+      HTMLHeader += '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' +
+        '<i class="material-icons top-margin" style="color:green;"> view_column </i>' +
+        '</button>';
+    } else {
+      // ENRICHMENT BUTTON
+      HTMLHeader += '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' +
+        '<i class="material-icons top-margin" > view_column </i>' +
+        '</button>';
+    }
+
 
     if (annotation) {
       HTMLHeader += '<br>';
@@ -427,6 +452,17 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         annInfoValues = '<div class="ann-info-values">' + annInfoSource + '</div>';
         HTMLHeader += '<div class="header-ann-info">' + annInfoLabel + annInfoValues + '</div>';
       }
+    }
+
+
+    if (reconciledColumnAnnotation) {
+      // reconciled column
+      HTMLHeader += '<br>';
+      let annInfoReconciledInColumn: string;
+      annInfoReconciledInColumn = '<p class="p7 ann-info-label">Reconciled:</p>';
+      annInfoReconciledInColumn += '<div class="ann-info-values"><span class="p7 ann-info-reconciliations">' + reconciledColumnAnnotation.columnName + '</span></div>';
+      // annInfoReconciledInColumn += '<div class="ann-info-values">' + reconciledColumnAnnotation.columnName + '</div>';
+      HTMLHeader += '<div class="header-ann-info">' + annInfoReconciledInColumn + '</div>';
     }
     return HTMLHeader;
   }

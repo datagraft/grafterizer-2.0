@@ -1,4 +1,4 @@
-import {XSDDatatypes} from '../annotation.model';
+import { XSDDatatypes } from '../annotation.model';
 
 /**
  * Semantic type of the reconciled entities
@@ -27,13 +27,22 @@ export class Result {
   // is confidence enough
   public match: boolean;
 
+  // TODO: not sure if this constructor is best practice...
   constructor(obj: Object) {
     this.id = obj['id'];
     this.name = obj['name'];
-    const tempTypes = obj['type'];
-    for (let i = 0; i < tempTypes.length; ++i) {
-      this.types.push(new Type(tempTypes[i]));
+    let tempTypes = obj['type'];
+    if (!tempTypes) {
+      tempTypes = obj['types'];
     }
+    if (tempTypes) {
+      for (let i = 0; i < tempTypes.length; ++i) {
+        this.types.push(new Type(tempTypes[i]));
+      }
+    } else {
+      console.error("Error parsing Result object: " + obj);
+    }
+
     this.score = parseFloat(obj['score'].toFixed(2));
     this.match = obj['match'];
   }
@@ -191,9 +200,9 @@ export class QueryResult {
   public reconciliationQuery: ReconciliationQuery;
   public results: Result[];
 
-  constructor(reconciliationQuery: ReconciliationQuery) {
+  constructor(reconciliationQuery: ReconciliationQuery, queryResults: Result[]) {
     this.reconciliationQuery = reconciliationQuery;
-    this.results = [];
+    this.results = queryResults || [];
   }
 
   public addResult(res: Result) {
@@ -253,7 +262,7 @@ abstract class DeriveMapImpl<T> implements DeriveMap {
     this.newColName = newColName;
   }
 
-  protected abstract getClojureElements(): {params: string, searchKey: string, map: string, elseFunc: string};
+  protected abstract getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string };
 
   /**
    * Return the deriveMap as a Clojure function to use in a Derive Column step
@@ -309,7 +318,7 @@ export class ReconciliationDeriveMap extends DeriveMapImpl<ReconciliationQuery> 
     });
     const elseFunc = `asiaClient.reconcile(q, [${propertiesArray.join(', ')}], null, null) `; // TODO test this func when available
 
-    return {params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc};
+    return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
   }
 
 }
@@ -351,7 +360,7 @@ export class ExtensionDeriveMap extends DeriveMapImpl<string[]> {
     return this;
   }
 
-  protected getClojureElements(): {params: string, searchKey: string, map: string, elseFunc: string} {
+  protected getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string } {
     const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
     const searchKey = `[${params.join(' ')}]`;
 
@@ -363,7 +372,7 @@ export class ExtensionDeriveMap extends DeriveMapImpl<string[]> {
 
     const elseFunc = `asiaClient.extend() `; // TODO complete this func when available
 
-    return {params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc};
+    return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
   }
 
 }

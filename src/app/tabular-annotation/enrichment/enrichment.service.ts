@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
 import {
   ConciliatorService,
   Event,
@@ -22,10 +22,10 @@ import {
   WeatherObservation,
   WeatherParameter
 } from './enrichment.model';
-import {AppConfig} from '../../app.config';
-import {forkJoin} from 'rxjs/observable/forkJoin';
+import { AppConfig } from '../../app.config';
+import { forkJoin } from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
-import {UrlUtils} from '../shared/url-utils';
+import { UrlUtils } from '../shared/url-utils';
 
 @Injectable()
 export class EnrichmentService {
@@ -35,11 +35,15 @@ export class EnrichmentService {
   private reconciledColumns: {};
   private asiaURL;
 
+  public reconciliationServicesMapSource: BehaviorSubject<Map<string, ConciliatorService>>;
+
   constructor(private http: HttpClient, private config: AppConfig) {
     this.headers = [];
     this.data = [];
     this.reconciledColumns = {};
     this.asiaURL = this.config.getConfig('asia-backend');
+    let emptyServiceMap = new Map<string, ConciliatorService>();
+    this.reconciliationServicesMapSource = new BehaviorSubject<Map<string, ConciliatorService>>(emptyServiceMap);
   }
 
   /**
@@ -163,7 +167,7 @@ export class EnrichmentService {
    * @param sampleSize number of rows to use for determining the most frequent entity type (default is 10).
    */
   reconcileColumn(header: string, selectedProperties: string[],
-                  selectedColumns: string[], service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
+    selectedColumns: string[], service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
 
     const colData = this.data.filter(function (row) { // remove empty strings
       return row[':' + header] === 0 || row[':' + header];  // Consider the trailing ':' char from EDN response
@@ -186,24 +190,24 @@ export class EnrichmentService {
       return arr;
     }, []).map(item => {
       // Create the object needed for the reconciliation (value to reconcile + propertyValues)
-      return {value: item[header], properties: this.getPropertyValues(item, selectedColumns, selectedProperties, service)};
+      return { value: item[header], properties: this.getPropertyValues(item, selectedColumns, selectedProperties, service) };
     });
 
     // reconcile #sampleSize values for guessing the column type
-    return this.execQueries(colData.slice(0, sampleSize).map((v: {value, properties}) => new QueryResult(
-      new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties))),
+    return this.execQueries(colData.slice(0, sampleSize).map((v: { value, properties }) => new QueryResult(
+      new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties), [])),
       service).flatMap(
-      results => {
-        // reconcile all rows against the most frequent type
+        results => {
+          // reconcile all rows against the most frequent type
           const type: Type = this.getMostFrequentType(results);
           if (type) {
-            return this.execQueries(colData.map((v: {value, properties}) => new QueryResult(
-              new ReconciliationQuery(v.value, type.id, TypeStrict.SHOULD, undefined, v.properties))), service);
+            return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
+              new ReconciliationQuery(v.value, type.id, TypeStrict.SHOULD, undefined, v.properties), [])), service);
           } else {
-            return this.execQueries(colData.map((v: {value, properties}) => new QueryResult(
-              new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties))), service);
+            return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
+              new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties), [])), service);
           }
-      });
+        });
   }
 
   private getPropertyValues(row: [string], selectedColumn, selectedProperties, conciliator: ConciliatorService): PropertyValue[] {
@@ -316,61 +320,61 @@ export class EnrichmentService {
     const cols = auxCol ? [header, auxCol] : [header];
 
     const colData = this.data.filter((row) => { // remove empty strings
-        let notEmpty = true;
-        for (let i = 0; i < cols.length; i++) {
-          notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
-        }
-        return notEmpty;
-      }).map(row => { // remove unused fields from rows
-        return cols.reduce((o, k) => {
-          o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
-          return o;
-        }, {});
-      }).reduce((arr, item) => { // remove duplicates
-        const exists = !!arr.find(x => {
-          let ex = true;
-          cols.forEach(col => {
-            ex = ex && x[col] === item[col];
-          });
-          return ex;
+      let notEmpty = true;
+      for (let i = 0; i < cols.length; i++) {
+        notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
+      }
+      return notEmpty;
+    }).map(row => { // remove unused fields from rows
+      return cols.reduce((o, k) => {
+        o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
+        return o;
+      }, {});
+    }).reduce((arr, item) => { // remove duplicates
+      const exists = !!arr.find(x => {
+        let ex = true;
+        cols.forEach(col => {
+          ex = ex && x[col] === item[col];
         });
-        if (!exists) {
-          arr.push(item);
-        }
-        return arr;
-      }, []).map(item => {
-        let date;
-        let isoDate;
-        let originalDateFormat;
-        // Create the object needed for the weather extension (value to reconcile + propertyValues)
-        if (on === 'place') {
-          if (auxCol) {
-            date = `${item[auxCol]}`;
-            isoDate = moment(date).format();
-            originalDateFormat =  moment(date).creationData().format;
-          } else {
-            date = `${weatherConfig.getDate()}`;
-            isoDate = moment(weatherConfig.getDate(), 'MM/DD/YYYY').toISOString(true);
-            originalDateFormat = 'MM/DD/YYYY';
-          }
-          return {place: `${item[header]}`, date: date, isoDate: isoDate, originalDateFormat: originalDateFormat };
+        return ex;
+      });
+      if (!exists) {
+        arr.push(item);
+      }
+      return arr;
+    }, []).map(item => {
+      let date;
+      let isoDate;
+      let originalDateFormat;
+      // Create the object needed for the weather extension (value to reconcile + propertyValues)
+      if (on === 'place') {
+        if (auxCol) {
+          date = `${item[auxCol]}`;
+          isoDate = moment(date).format();
+          originalDateFormat = moment(date).creationData().format;
         } else {
-          date = `${item[header]}`;
-          isoDate =  moment(date).format();
-          originalDateFormat =  moment(date).creationData().format;
-          if (auxCol) {
-            return {date: date, place: `${item[auxCol]}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
-          } else {
-            return {date: date, place: `${weatherConfig.getPlace()}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
-          }
+          date = `${weatherConfig.getDate()}`;
+          isoDate = moment(weatherConfig.getDate(), 'MM/DD/YYYY').toISOString(true);
+          originalDateFormat = 'MM/DD/YYYY';
         }
+        return { place: `${item[header]}`, date: date, isoDate: isoDate, originalDateFormat: originalDateFormat };
+      } else {
+        date = `${item[header]}`;
+        isoDate = moment(date).format();
+        originalDateFormat = moment(date).creationData().format;
+        if (auxCol) {
+          return { date: date, place: `${item[auxCol]}`, isoDate: isoDate, originalDateFormat: originalDateFormat };
+        } else {
+          return { date: date, place: `${weatherConfig.getPlace()}`, isoDate: isoDate, originalDateFormat: originalDateFormat };
+        }
+      }
     });
 
     const requestURL = this.asiaURL + '/weather';
 
     const params = new HttpParams()
       .set('ids', Array.from(new Set(colData.map(row => row.place))).join(','))
-      .set('dates',  Array.from(new Set(colData.map(row => row.isoDate))).join(','))
+      .set('dates', Array.from(new Set(colData.map(row => row.isoDate))).join(','))
       .set('weatherParams', weatherConfig.getParameters().join(','))
       .set('offsets', weatherConfig.getOffsets().join(','));
 
@@ -419,7 +423,7 @@ export class EnrichmentService {
             for (const agg of weatherConfig.getAggregators()) {
               const v = weatherParam.get(agg);
               if (v) {
-                properties.set(`${propName}_${agg}`, [{'str': `${v}`}]);
+                properties.set(`${propName}_${agg}`, [{ 'str': `${v}` }]);
               }
             }
           });
@@ -501,7 +505,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([date], []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
+          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
           extension.addProperties(properties);
           extensions.set(date, extension);
         } else if (on === 'place') {
@@ -510,7 +514,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([event.getGeonamesId()], []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
+          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
           extension.addProperties(properties);
           extensions.set(event.getGeonamesId(), extension);
         } else if (on === 'category') {
@@ -522,7 +526,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([event.getCategories()[0]], []);
           }
-          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
+          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
           extension.addProperties(properties);
           extensions.set(event.getCategories()[0], extension);
         }
@@ -573,14 +577,14 @@ export class EnrichmentService {
     };
 
     return this.http.post(requestURL, null, httpOptions).map((results: any) => {
-        return results['properties'].map(prop => {
-          // Sometimes an URI is received as prop name (when a "name" is not available) -> use the suffix as name
-          if (prop.name.startsWith('http://') || prop.name.startsWith('https://')) {
-            prop.name = prop.name.replace(UrlUtils.getNamespaceFromURL(new URL(prop.name)), '');
-          }
-          return prop;
-        });
+      return results['properties'].map(prop => {
+        // Sometimes an URI is received as prop name (when a "name" is not available) -> use the suffix as name
+        if (prop.name.startsWith('http://') || prop.name.startsWith('https://')) {
+          prop.name = prop.name.replace(UrlUtils.getNamespaceFromURL(new URL(prop.name)), '');
+        }
+        return prop;
       });
+    });
   }
 
   public listServices = (): Observable<Object> => {
@@ -594,7 +598,7 @@ export class EnrichmentService {
   }
 
   geoNamesAutocomplete(keyword) {
-    if (keyword && keyword.length > 1 ) {
+    if (keyword && keyword.length > 1) {
       const params = new HttpParams()
         .set('q', keyword)
         .set('maxRows', '50')
@@ -611,7 +615,7 @@ export class EnrichmentService {
   }
 
   googleCategoriesAutocomplete(keyword) {
-    if (keyword && keyword.length > 1 ) {
+    if (keyword && keyword.length > 1) {
 
       const params = new HttpParams()
         .set('queries', '{"q0": {"query": "' + keyword + '"}}')
