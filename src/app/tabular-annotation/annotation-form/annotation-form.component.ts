@@ -91,6 +91,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.transformationSubscription.unsubscribe();
     // Don't save anything since each valid annotation is already stored into the service
   }
 
@@ -235,7 +236,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
    */
   onChanges(): void {
     this.annotationForm.valueChanges.subscribe(valuesObj => {
-      this.submitted = false;
+      if (this.dialogRef) {
+        this.submitted = false;
+      }
       // We do not need to listen for the specific change - 
       // we always change after "Annotate" has been clicked (and save the change in the transformation); 
       // if not - we do nothing
@@ -423,14 +426,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.isSubject = this.transformationObj.isSubjectAnnotation(this.currentAnnotation);
       this.currentAnnotation.isSubject = this.isSubject;
       this.transformationObj.addOrReplaceAnnotation(this.currentAnnotation);
-      // this.transformationSvc.transformationObjSource.next(this.transformationObj);
     }
 
     this.transformationSvc.transformationObjSource.next(this.transformationObj);
 
-    this.annotationForm.markAsPristine();
     this.submitted = true;
     this.dialogRef.close(this.currentAnnotation);
+    this.dialogRef = null;
   }
 
   // Push initial suggestions to the user using ASIA MAS

@@ -132,7 +132,6 @@ export class ReconciliationComponent implements OnInit {
       this.transformationSvc.transformationObjSource.subscribe((transformationObj) => {
         this.transformationObj = transformationObj;
         if (!this.dialogRef) return;
-        console.log('dialog is open!')
 
         // Note: we assume a single annotation is associated with a reconciled column (although multiple are supported by the TransformationDataModel)
         this.currentAnnotation = this.transformationObj.getAnnotationForReconciledColumn(this.header);
