@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatPaginator, MatTableDataSource, Sort } from '@angular/material';
 import { EnrichmentService } from '../enrichment.service';
-import { ConciliatorService, QueryResult, ReconciliationDeriveMap, Result, Type } from '../enrichment.model';
+import { ConciliatorService, QueryResult, Result, Type } from '../enrichment.model';
 import { AddEntityDialogComponent } from './addEntityDialog.component';
 import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { AnnotationService } from '../../annotation.service';
@@ -111,7 +111,7 @@ export class ReconciliationComponent implements OnInit {
         }
       });
 
-    // only invoked once to initialise the list of services
+    // only invoke listing once to initialise the list of services - this should never happen as the list would normally already be initialized from the Tabular Annotation component
     if (!this.services.size) {
       // retrieve services using request
       this.enrichmentServicesListSubscription = this.enrichmentService.listServices().subscribe((data) => {
@@ -146,12 +146,12 @@ export class ReconciliationComponent implements OnInit {
             let i = 0;
             // load automatic and manual matches
             for (i = 0; i < this.currentReconciliation.automaticMatches.length; ++i) {
-              this.automaticMatches.set(this.currentReconciliation.automaticMatches[i].valuesToMatch, this.currentReconciliation.automaticMatches[i].match);
+              this.automaticMatches.set(this.currentReconciliation.automaticMatches[i].valuesToMatch[0], this.currentReconciliation.automaticMatches[i].match[0]);
 
             }
 
             for (i = 0; i < this.currentReconciliation.manualMatches.length; ++i) {
-              this.manualMatches.set(this.currentReconciliation.manualMatches[i].valuesToMatch, this.currentReconciliation.manualMatches[i].match);
+              this.manualMatches.set(this.currentReconciliation.manualMatches[i].valuesToMatch[0], this.currentReconciliation.manualMatches[i].match[0]);
             }
             this.reconciliationForm = this.fb.group({
               selectedGroup: new FormControl(''),
@@ -353,13 +353,13 @@ export class ReconciliationComponent implements OnInit {
     this.sourceArray;
     let manualMatchesArray = [];
     Array.from(this.manualMatches).forEach((manualMatchPair) => {
-      let match = new transformationDataModel.MatchPair(manualMatchPair[0], manualMatchPair[1]);
+      let match = new transformationDataModel.MatchPair([manualMatchPair[0]], [manualMatchPair[1]]);
       manualMatchesArray.push(match);
     });
 
     let automaticMatchesArray = [];
     Array.from(this.automaticMatches).forEach((manualMatchPair) => {
-      let match = new transformationDataModel.MatchPair(manualMatchPair[0], manualMatchPair[1]);
+      let match = new transformationDataModel.MatchPair([manualMatchPair[0]], [manualMatchPair[1]]);
       automaticMatchesArray.push(match);
     });
 
@@ -393,7 +393,7 @@ export class ReconciliationComponent implements OnInit {
       [newAnnotationType], // the type is the guessed type
       urifyPrefix, // we use the just created URIfy prefix
       false, // this is not a subject yet
-      'warning', // annotation is not subject or object so state is warning
+      'valid', // annotation is not subject or object but has a type
       newColumnAnnotationId,
       this.selectedServiceObject.getId(), // we assign the conciliator name as the so called 'ID' of the selected one
       [], // no extensions yet

@@ -2,46 +2,64 @@
 <div mat-dialog-content>
 
   <form #configForm="ngForm">
-
     <section class="form-block">
+      <div class="form-group">
+        <label class="required" for="service">Choose if you would like to create or edit extensions: </label>
+        <div class="clr-form-control">
+          <div class="clr-control-container clr-control-inline">
+            <div class="clr-radio-wrapper">
+              <input type="radio" id="option-create-new" name="radio-full" value="create-new" class="clr-radio"
+                [(ngModel)]="editOrCreateNew" (ngModelChange)="changeEditOrCreateNewRadio()">
+              <label for="option-create-new" class="clr-control-label">Create new extension</label>
+            </div>
+            <div class="clr-radio-wrapper">
+              <input type="radio" id="option-edit-existing" name="radio-full" value="edit-existing" class="clr-radio"
+                [(ngModel)]="editOrCreateNew" (ngModelChange)="changeEditOrCreateNewRadio()">
+              <label for="option-edit-existing" class="clr-control-label">Edit existing extension</label>
+            </div>
+            <div class="select" *ngIf="editOrCreateNew === 'edit-existing'">
+              <select [disabled]="editOrCreateNew === 'create-new'" id="service" name="service"
+                [(ngModel)]="selectedExtension" (ngModelChange)="changeCurrentExtension()">
+                <option *ngFor="let extension of currentAnnotation.extensions; let i = index" [value]="i">
+                  {{getExtensionName(extension)}}</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <section class="form-block" *ngIf="editOrCreateNew === 'create-new'">
       <div class="form-group">
         <label class="required" for="service">Extensions from selected datasets: </label>
         <div class="select">
-          <select id="service"
-                  name="service"
-                  [(ngModel)]="selectedService"
-                  (ngModelChange)="resetVariables()"
-                  (change)="showPreview = false;">
-            <option *ngFor="let service of services" [value]="service.getId()">{{service.getName()}} Extension</option>
+          <select id="service" name="service" [(ngModel)]="selectedServiceId" (ngModelChange)="resetVariables()"
+            (change)="showPreview = false;">
+            <option *ngFor="let service of extensionServices" [value]="service.getId()">{{service.getName()}} Extension
+            </option>
           </select>
         </div>
       </div>
     </section>
-    <clr-checkbox *ngIf="colIndex < enrichmentService.headers.length - 1"
-                  name="shiftColumn" id="shiftColumn" [(ngModel)]="shiftColumn">
+    <clr-checkbox *ngIf="colIndex < enrichmentService.headers.length - 1" name="shiftColumn" id="shiftColumn"
+      [(ngModel)]="shiftColumn">
       New column(s) next to <i>{{header}}</i>
     </clr-checkbox>
 
-    <ng-container *ngIf="isColReconciled">
-      <section class="form-block" *ngIf="selectedService === reconciledFromService.getId()">
+    <ng-container *ngIf="this.dialogInputData.reconciliationServiceId">
+      <section class="form-block" *ngIf="selectedServiceId === reconciledFromService.getId()">
         <div class="form-group">
           <label class="required">Select properties: </label>
-          <tag-input [(ngModel)]="selectedProperties"
-                     name="properties"
-                     [disable]="dataLoading"
-                     [onlyFromAutocomplete]="true"
-                     [placeholder]="'+ Property'"
-                     [secondaryPlaceholder]="'Property'"
-                     (onAdd)="addPropertyToPreview($event.value)"
-                     (onRemove)="removePropertyFromPreview($event.value)">
-            <tag-input-dropdown [autocompleteObservable]='extensionProperties'
-                                [zIndex]="9999"
-                                [identifyBy]="'id'" [displayBy]="'name'" #input>
+          <tag-input [(ngModel)]="selectedProperties" name="properties" [disable]="dataLoading"
+            [onlyFromAutocomplete]="true" [placeholder]="'+ Property'" [secondaryPlaceholder]="'Property'"
+            (onAdd)="addPropertyToPreview($event.value)" (onRemove)="removePropertyFromPreview($event.value)">
+            <tag-input-dropdown [autocompleteObservable]='extensionProperties' [zIndex]="9999" [identifyBy]="'id'"
+              [displayBy]="'name'" #input>
               <ng-template let-item="item">
-              <span class="p5" style="display: block; margin-top: 0">
-                <b>{{item.name}}</b> <br/>
-                ({{item.id}})
-              </span>
+                <span class="p5" style="display: block; margin-top: 0">
+                  <b>{{item.name}}</b> <br />
+                  ({{item.id}})
+                </span>
               </ng-template>
             </tag-input-dropdown>
           </tag-input>
@@ -49,7 +67,7 @@
       </section>
 
     </ng-container>
-    <section class="form-block" *ngIf="selectedService === 'ecmwf'">
+    <section class="form-block" *ngIf="selectedServiceId === 'ecmwf'">
       <div class="form-group">
         <ng-container *ngIf="isColDate">
           <label>Select place(s)</label>
@@ -58,9 +76,8 @@
             <label for="colPlaceRadio">Read place from column:</label>
             <div class="suggestions">
               <input id="colPlace" type="text" name="colPlace" size="30" [(ngModel)]="readPlacesFromCol"
-                     placeholder="Choose a place column"
-                     [disabled]="placeChoice !== 'fromCol'" matInput [matAutocomplete]="placeColumn"
-                     (ngModelChange)="_filter($event)">
+                placeholder="Choose a place column" [disabled]="placeChoice !== 'fromCol'" matInput
+                [matAutocomplete]="placeColumn" (ngModelChange)="_filter($event)">
               <mat-autocomplete #placeColumn="matAutocomplete">
                 <mat-option class="option_suggestions" *ngFor="let element of geoAllowedSources" [value]="element">
                   {{element}}
@@ -71,25 +88,24 @@
 
           <div class="radio">
             <input type="radio" name="placeChoice" id="placePickerRadio" value="placefromPicker"
-                   [(ngModel)]="placeChoice">
+              [(ngModel)]="placeChoice">
             <label for="placePickerRadio">Enter place:</label>
           </div>
           <div class="suggestions">
             <input type="text" id="place" name="place" [(ngModel)]="selectedPlace" size="55"
-                   (ngModelChange)="geoSuggestions($event)" placeholder="Enter a place"
-                   [disabled]="placeChoice !== 'placefromPicker'" matInput [matAutocomplete]="auto">
+              (ngModelChange)="geoSuggestions($event)" placeholder="Enter a place"
+              [disabled]="placeChoice !== 'placefromPicker'" matInput [matAutocomplete]="auto">
 
             <mat-autocomplete #auto="matAutocomplete">
               <mat-option class="option_suggestions" *ngFor="let element of dataSource" [value]="element.geonameId">
                 <b> ID: {{element.geonameId}}</b>
                 <span class="toponymName">
-                     <a href="http://www.geonames.org/{{element.geonameId}}"
-                        target="blank"> {{element.toponymName}} </a>
-                   </span>
-                <span class="fcode">{{element.fcl}}  {{element.fcode}} </span>
-                <hr style="height:1px; visibility:hidden;"/>
+                  <a href="http://www.geonames.org/{{element.geonameId}}" target="blank"> {{element.toponymName}} </a>
+                </span>
+                <span class="fcode">{{element.fcl}} {{element.fcode}} </span>
+                <hr style="height:1px; visibility:hidden;" />
                 {{element.countryName}} > {{element.adminName1}}
-                <hr style="height:1px;"/>
+                <hr style="height:1px;" />
               </mat-option>
             </mat-autocomplete>
           </div>
@@ -101,9 +117,8 @@
             <label for="colDateRadio">Read date from column:</label>
             <div class="suggestions">
               <input id="colDate" type="text" name="colDate" size="55" [(ngModel)]="readDatesFromCol"
-                     placeholder="Enter a dates column"
-                     [disabled]="dateChoice !== 'fromCol'" matInput [matAutocomplete]="dateColumn"
-                     (ngModelChange)="_filterDates($event)">
+                placeholder="Enter a dates column" [disabled]="dateChoice !== 'fromCol'" matInput
+                [matAutocomplete]="dateColumn" (ngModelChange)="_filterDates($event)">
               <mat-autocomplete #dateColumn="matAutocomplete">
                 <mat-option class="option_suggestions" *ngFor="let element of allowedSources" [value]="element">
                   {{element}}
@@ -115,7 +130,7 @@
             <input type="radio" name="dateChoice" id="datePickerRadio" value="fromPicker" [(ngModel)]="dateChoice">
             <label for="datePickerRadio">Enter Date</label>
             <input type="date" id="date" name="date" [(ngModel)]="selectedDate" [disabled]="dateChoice === 'fromCol'"
-                   clrDate>
+              clrDate>
           </div>
 
         </ng-container>
@@ -126,7 +141,7 @@
         <div class="weather-parameters">
           <mat-form-field>
             <mat-select id="wParameters" placeholder="weather parameters" multiple
-                        [(ngModel)]="selectedWeatherParameters" name="wParameters">
+              [(ngModel)]="selectedWeatherParameters" name="wParameters">
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedWeatherParameters?.length > 0">
@@ -148,13 +163,13 @@
         <div class="weather-offset">
           <mat-form-field>
             <mat-select id="wOffsets" placeholder="weather offset" multiple [(ngModel)]="selectedWeatherOffsets"
-                        name="wOffsets">
+              name="wOffsets">
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedWeatherOffsets?.length > 0">
-                    <span *ngFor="let o_selected of selectedWeatherOffsets" class="round">
-                      {{o_selected}}
-                    </span>
+                  <span *ngFor="let o_selected of selectedWeatherOffsets" class="round">
+                    {{o_selected}}
+                  </span>
 
                 </ng-container>
               </mat-select-trigger>
@@ -167,17 +182,15 @@
       <div class="form-group">
         <label class="required" for="wAggregators">Select weather aggregator: </label>
         <div class="select">
-          <select id="wAggregators"
-                  name="wAggregators"
-                  [(ngModel)]="selectedWeatherAggregators"
-                  multiple style="z-index: 0">
+          <select id="wAggregators" name="wAggregators" [(ngModel)]="selectedWeatherAggregators" multiple
+            style="z-index: 0">
             <option *ngFor="let p of weatherAggregators" [value]="p">{{p}}</option>
           </select>
         </div>
       </div>
     </section>
 
-    <section *ngIf="selectedService === 'sameas'">
+    <section *ngIf="selectedServiceId === 'sameas'">
       <div class="form-group">
         <label class="required" for="kgService">Target KB: </label>
         <div class="select">
@@ -188,7 +201,7 @@
       </div>
     </section>
 
-    <section class="form-block" *ngIf="selectedService === 'er'">
+    <section class="form-block" *ngIf="selectedServiceId === 'er'">
       <ng-container *ngIf="!isGeonamesColumn">
         <div class="form-group">
           <label>Select place(s)</label>
@@ -197,9 +210,8 @@
             <label for="colPlaceRadio">Read place from column:</label>
             <div class="suggestions">
               <input id="colPlace" type="text" name="colPlace" size="55" [(ngModel)]="readPlacesFromCol"
-                     placeholder="Enter a places column"
-                     [disabled]="placeChoice !== 'fromCol'" matInput [matAutocomplete]="placeColumn"
-                     (ngModelChange)="_filter($event)">
+                placeholder="Enter a places column" [disabled]="placeChoice !== 'fromCol'" matInput
+                [matAutocomplete]="placeColumn" (ngModelChange)="_filter($event)">
               <mat-autocomplete #placeColumn="matAutocomplete">
                 <mat-option class="option_suggestions" *ngFor="let element of geoAllowedSources" [value]="element">
                   {{element}}
@@ -211,42 +223,32 @@
 
           <div class="radio">
             <input type="radio" name="placeChoice" id="placePickerRadio" value="placefromPicker"
-                   [(ngModel)]="placeChoice">
+              [(ngModel)]="placeChoice">
             <label for="placePickerRadio">Enter places:</label>
           </div>
           <mat-form-field class="chip-list">
             <mat-chip-list #chipPlaceList>
-              <mat-chip
-                *ngFor="let element of selectedChipsPlaces"
-                [selectable]=true
-                [removable]=true
+              <mat-chip *ngFor="let element of selectedChipsPlaces" [selectable]=true [removable]=true
                 (removed)="removePlaceChips(element)">
                 {{element}}
                 <mat-icon matChipRemove>cancel</mat-icon>
               </mat-chip>
-              <input
-                type="text"
-                placeholder="enter place"
-                [(ngModel)]="selectedPlace"
-                #inputPLaceChips
-                name="chipsPlace"
-                (ngModelChange)="geoSuggestions($event)"
-                [matAutocomplete]="chipsPlace"
-                [matChipInputFor]="chipPlaceList"
-                [matChipInputAddOnBlur]="addOnBlur"
+              <input type="text" placeholder="enter place" [(ngModel)]="selectedPlace" #inputPLaceChips
+                name="chipsPlace" (ngModelChange)="geoSuggestions($event)" [matAutocomplete]="chipsPlace"
+                [matChipInputFor]="chipPlaceList" [matChipInputAddOnBlur]="addOnBlur"
                 [disabled]="placeChoice !== 'placefromPicker'">
             </mat-chip-list>
             <mat-autocomplete #chipsPlace="matAutocomplete">
               <mat-option class="option_suggestions" *ngFor="let element of dataSource"
-                          (click)="addPlaceChips(element.geonameId)">
+                (click)="addPlaceChips(element.geonameId)">
                 <b> ID: {{element.geonameId}}</b>
                 <span class="toponymName">
                   <a href="http://www.geonames.org/{{element.geonameId}}" target="blank"> {{element.toponymName}} </a>
                 </span>
-                <span class="fcode">{{element.fcl}}  {{element.fcode}} </span>
-                <hr style="height:1px; visibility:hidden;"/>
-                  {{element.countryName}} > {{element.adminName1}}
-                <hr style="height:1px;"/>
+                <span class="fcode">{{element.fcl}} {{element.fcode}} </span>
+                <hr style="height:1px; visibility:hidden;" />
+                {{element.countryName}} > {{element.adminName1}}
+                <hr style="height:1px;" />
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
@@ -261,9 +263,8 @@
             <label for="colDateRadio">Read date from column:</label>
             <div class="suggestions">
               <input id="colDate" type="text" name="colDate" size="55" [(ngModel)]="readDatesFromCol"
-                     placeholder="Enter a dates column"
-                     [disabled]="dateChoice !== 'fromCol'" matInput [matAutocomplete]="dateColumn"
-                     (ngModelChange)="_filterDates($event)">
+                placeholder="Enter a dates column" [disabled]="dateChoice !== 'fromCol'" matInput
+                [matAutocomplete]="dateColumn" (ngModelChange)="_filterDates($event)">
               <mat-autocomplete #dateColumn="matAutocomplete">
                 <mat-option class="option_suggestions" *ngFor="let element of allowedSources" [value]="element">
                   {{element}}
@@ -275,7 +276,7 @@
             <input type="radio" name="dateChoice" id="datePickerRadio" value="fromPicker" [(ngModel)]="dateChoice">
             <label for="datePickerRadio">Enter Date</label>
             <input type="date" id="date" name="date" [(ngModel)]="selectedDate" [disabled]="dateChoice === 'fromCol'"
-                   clrDate>
+              clrDate>
           </div>
         </div>
       </ng-container>
@@ -285,16 +286,15 @@
           <label>Select categories:</label>
           <div class="radio-inline">
             <input type="radio" name="cetegoryChoice" id="colCategoriesRadio" value="fromCol"
-                   [(ngModel)]="categoryChoice">
+              [(ngModel)]="categoryChoice">
             <label for="colCategoriesRadio">Read categories from column:</label>
             <div class="suggestions">
               <input id="colCategory" type="text" name="colCategory" size="55" [(ngModel)]="readCategoriesFromCol"
-                     placeholder="Enter a categories column"
-                     [disabled]="categoryChoice !== 'fromCol'" matInput [matAutocomplete]="categoryColumn"
-                     (ngModelChange)="_filterCategories($event)">
+                placeholder="Enter a categories column" [disabled]="categoryChoice !== 'fromCol'" matInput
+                [matAutocomplete]="categoryColumn" (ngModelChange)="_filterCategories($event)">
               <mat-autocomplete #categoryColumn="matAutocomplete">
                 <mat-option class="option_suggestions" *ngFor="let element of categoriesAllowedSources"
-                            [value]="element">
+                  [value]="element">
                   {{element}}
                 </mat-option>
               </mat-autocomplete>
@@ -304,40 +304,30 @@
 
           <div class="radio">
             <input type="radio" name="categoryChoice" id="categoryPickerRadio" value="categoryfromPicker"
-                   [(ngModel)]="categoryChoice">
+              [(ngModel)]="categoryChoice">
             <label for="categoryPickerRadio">Enter categories:</label>
           </div>
 
           <mat-form-field class="chip-list">
             <mat-chip-list #chipCategoriesList>
-              <mat-chip
-                *ngFor="let element of selectedChipsCategories"
-                [selectable]=true
-                [removable]=true
+              <mat-chip *ngFor="let element of selectedChipsCategories" [selectable]=true [removable]=true
                 (removed)="removeCategoriesChips(element)">
                 {{element}}
                 <mat-icon matChipRemove>cancel</mat-icon>
               </mat-chip>
-              <input
-                type="text"
-                placeholder="enter category"
-                [(ngModel)]="selectedCategory"
-                #inputCategoriesChips
-                name="chipsCategory"
-                (ngModelChange)="categoriesSuggestions($event)"
-                [matAutocomplete]="chipsCategory"
-                [matChipInputFor]="chipCategoriesList"
-                [matChipInputAddOnBlur]=true
+              <input type="text" placeholder="enter category" [(ngModel)]="selectedCategory" #inputCategoriesChips
+                name="chipsCategory" (ngModelChange)="categoriesSuggestions($event)" [matAutocomplete]="chipsCategory"
+                [matChipInputFor]="chipCategoriesList" [matChipInputAddOnBlur]=true
                 [disabled]="categoryChoice !== 'categoryfromPicker'">
             </mat-chip-list>
             <mat-autocomplete #chipsCategory="matAutocomplete">
               <mat-option class="option_suggestions" *ngFor="let element of categorySuggestions"
-                          (click)="addCategoriesChips(element.id)">
+                (click)="addCategoriesChips(element.id)">
                 <b> ID: {{element.id}}</b>
                 <span class="toponymName">
                   {{element.name}}
                 </span>
-                <hr style="height:1px;"/>
+                <hr style="height:1px;" />
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
@@ -354,9 +344,8 @@
       <clr-dg-column *ngFor="let prop of previewProperties">
         {{prop}}
         <a *ngIf="propertyDescriptions.get(prop) && propertyDescriptions.get(prop).type"
-           href="{{reconciledFromService.getSchemaSpace()}}{{propertyDescriptions.get(prop).type.id}}"
-           class="label label-orange clickable"
-           target="_blank">
+          href="{{reconciledFromService.getSchemaSpace()}}{{propertyDescriptions.get(prop).type.id}}"
+          class="label label-orange clickable" target="_blank">
           {{propertyDescriptions.get(prop).type.id}}
         </a>
       </clr-dg-column>
@@ -368,13 +357,11 @@
             *ngIf="extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['str']">
             {{extension.properties.get(prop)[0]['str']}}
           </span>
-          <a
-            *ngIf="!reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
+          <a *ngIf="!reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
             href="{{reconciledFromService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
             target="_blank">{{extension.properties.get(prop)[0]['name']}}
           </a>
-          <a
-            *ngIf="reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
+          <a *ngIf="reconciledToService && extension.properties.get(prop) && extension.properties.get(prop).length > 0 && extension.properties.get(prop)[0]['id']"
             href="{{reconciledToService.getIdentifierSpace()}}{{extension.properties.get(prop)[0]['id']}}"
             target="_blank">{{extension.properties.get(prop)[0]['name']}}
           </a>
@@ -394,72 +381,60 @@
 
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
 
-  <ng-container *ngIf="isColReconciled">
-    <button *ngIf="selectedService === reconciledFromService.getId()"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="selectedProperties.length === 0 || dataLoading"
-            (click)="extend()" cdkFocusInitial>Extend
+  <ng-container *ngIf="this.dialogInputData.reconciliationServiceId">
+    <button *ngIf="selectedServiceId === reconciledFromService.getId()" mat-button class="btn btn-sm btn-link"
+      [disabled]="selectedProperties.length === 0 || dataLoading" (click)="fetchReconciliationServiceExtensions()"
+      cdkFocusInitial>Extend
     </button>
-    <button *ngIf="selectedService === 'sameas'"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!selectedKGService || dataLoading"
-            (click)="sameas()" cdkFocusInitial>Extend
+    <button *ngIf="selectedServiceId === 'sameas'" mat-button class="btn btn-sm btn-link"
+      [disabled]="!selectedKGService || dataLoading" (click)="sameas()" cdkFocusInitial>Extend
     </button>
   </ng-container>
 
-  <ng-container *ngIf="selectedService === 'ecmwf'">
-    <button *ngIf="isGeonamesColumn"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
+  <ng-container *ngIf="selectedServiceId === 'ecmwf'">
+    <button *ngIf="isGeonamesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
           (dateChoice === 'fromCol' && readDatesFromCol || dateChoice === 'fromPicker' && selectedDate))"
-            (click)="weather()" cdkFocusInitial>Fetch Weather data!
+      (click)="fetchWeatherData()" cdkFocusInitial>Fetch Weather data!
     </button>
 
 
-    <button *ngIf="isColDate"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
+    <button *ngIf="isColDate" mat-button class="btn btn-sm btn-link" [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
             (placeChoice === 'fromCol' && readPlacesFromCol || placeChoice === 'placefromPicker' && selectedPlace))"
-            (click)="weather()" cdkFocusInitial>Fetch Weather data
+      (click)="fetchWeatherData()" cdkFocusInitial>Fetch Weather data
     </button>
   </ng-container>
-  <ng-container *ngIf="selectedService === 'er'">
-    <button *ngIf="isColDate"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!(((categoryChoice === 'fromCol' && readCategoriesFromCol)
+  <ng-container *ngIf="selectedServiceId === 'er'">
+    <button *ngIf="isColDate" mat-button class="btn btn-sm btn-link" [disabled]="!(((categoryChoice === 'fromCol' && readCategoriesFromCol)
                       ||
                       (categoryChoice === 'categoryfromPicker' && selectedChipsCategories.length > 0))
                       &&
                       ((placeChoice === 'fromCol' && readPlacesFromCol)
                       ||
-                      (placeChoice === 'placefromPicker' && selectedChipsPlaces.length > 0)))"
-            (click)="event()" cdkFocusInitial>Fetch Event data
+                      (placeChoice === 'placefromPicker' && selectedChipsPlaces.length > 0)))" (click)="event()"
+      cdkFocusInitial>Fetch Event data
     </button>
-    <button *ngIf="isGeonamesColumn"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!(((categoryChoice === 'fromCol' && readCategoriesFromCol)
+    <button *ngIf="isGeonamesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(((categoryChoice === 'fromCol' && readCategoriesFromCol)
                       ||
                       (categoryChoice === 'categoryfromPicker' && selectedChipsCategories.length > 0))
                       &&
                       ((dateChoice === 'fromCol' && readDatesFromCol)
                       ||
-                      (dateChoice === 'fromPicker' && selectedDate)))"
-            (click)="event()" cdkFocusInitial>Fetch Event data
+                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="event()" cdkFocusInitial>Fetch Event
+      data
     </button>
-    <button *ngIf="isCategoriesColumn"
-            mat-button class="btn btn-sm btn-link"
-            [disabled]="!(((placeChoice === 'fromCol' && readPlacesFromCol)
+    <button *ngIf="isCategoriesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(((placeChoice === 'fromCol' && readPlacesFromCol)
                       ||
                       (placeChoice === 'placefromPicker' && selectedChipsPlaces.length > 0))
                       &&
                       ((dateChoice === 'fromCol' && readDatesFromCol)
                       ||
-                      (dateChoice === 'fromPicker' && selectedDate)))"
-            (click)="event()" cdkFocusInitial>Fetch Event data
+                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="event()" cdkFocusInitial>Fetch Event
+      data
     </button>
 
   </ng-container>
-  <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0"
-          (click)="submit()" *ngIf="showPreview">Apply
+  <button mat-button class="btn btn-sm btn-link"
+    [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0" (click)="applyExtension()"
+    *ngIf="showPreview">Apply
   </button>
 </div>

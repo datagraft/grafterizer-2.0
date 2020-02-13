@@ -364,7 +364,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       if (valuesType === ColumnTypes.Literal) {
         this.currentAnnotation = new transformationDataModel.LiteralNodeAnnotation('', 0, [], '', '', 'valid', this.currentAnnotation.id);
       } else if (valuesType === ColumnTypes.URI) {
-        this.currentAnnotation = new transformationDataModel.URINodeAnnotation('', 0, [], [], '', false, 'valid', this.currentAnnotation.id, '', [], null);
+        // we keep the conciliator service name, extensions and reconciliations for URI node annotations
+        this.currentAnnotation = new transformationDataModel.URINodeAnnotation('', 0, [], [], '', false, 'valid', this.currentAnnotation.id, this.currentAnnotation.conciliatorServieName, this.currentAnnotation.extensions, this.currentAnnotation.reconciliation);
         // change status of all object annotations from 'warning' (indicating subject has not been correctly annotated) to 'valid'
         let objectAnnotations = this.transformationObj.getAllObjectAnnotationsForSubject(this.currentAnnotation.id);
         for (let i = 0; i < objectAnnotations.length; ++i) {

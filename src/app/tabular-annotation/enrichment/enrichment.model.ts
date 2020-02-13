@@ -235,147 +235,147 @@ export class Extension {
   }
 }
 
-export interface DeriveMap {
-  deriveMap;
-  fromCols: string[];
-  newColName: string;
-  newColTypes: Type[];
-  withProperty: string;
-  newColDatatype: string;
+// export interface DeriveMap {
+//   deriveMap;
+//   fromCols: string[];
+//   newColName: string;
+//   newColTypes: Type[];
+//   withProperty: string;
+//   newColDatatype: string;
 
-  asClojureDeriveFunction(fName: string, fDescr: string, elseValue: string): string;
-}
+//   asClojureDeriveFunction(fName: string, fDescr: string, elseValue: string): string;
+// }
 
-abstract class DeriveMapImpl<T> implements DeriveMap {
-  deriveMap: Map<T, string>;
-  fromCols: string[];
-  newColName: string;
-  newColTypes: Type[];
-  withProperty: string;
-  newColDatatype: string;
+// abstract class DeriveMapImpl<T> implements DeriveMap {
+//   deriveMap: Map<T, string>;
+//   fromCols: string[];
+//   newColName: string;
+//   newColTypes: Type[];
+//   withProperty: string;
+//   newColDatatype: string;
 
-  protected constructor(newColName: string, fromCols: string[], withProperty: string) {
-    this.deriveMap = new Map();
-    this.fromCols = fromCols;
-    this.newColTypes = [];
-    this.withProperty = withProperty;
-    this.newColName = newColName;
-  }
+//   protected constructor(newColName: string, fromCols: string[], withProperty: string) {
+//     this.deriveMap = new Map();
+//     this.fromCols = fromCols;
+//     this.newColTypes = [];
+//     this.withProperty = withProperty;
+//     this.newColName = newColName;
+//   }
 
-  protected abstract getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string };
+//   protected abstract getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string };
 
-  /**
-   * Return the deriveMap as a Clojure function to use in a Derive Column step
-   * (defn <fName> "<fDescr>" <params> (get <map> <key> <elseValue>)
-   */
-  asClojureDeriveFunction(fName: string, fDescr: string, elseValue: string): string {
-    const cljObj = this.getClojureElements();
-    // TODO: use the elseFunc as elseValue when it will be available as Grafter function
-    return `(defn ${fName} "${fDescr}" ${cljObj['params']} (get ${cljObj['map']} ${cljObj['searchKey']} "${elseValue}"))`;
-  }
+//   /**
+//    * Return the deriveMap as a Clojure function to use in a Derive Column step
+//    * (defn <fName> "<fDescr>" <params> (get <map> <key> <elseValue>)
+//    */
+//   asClojureDeriveFunction(fName: string, fDescr: string, elseValue: string): string {
+//     const cljObj = this.getClojureElements();
+//     // TODO: use the elseFunc as elseValue when it will be available as Grafter function
+//     return `(defn ${fName} "${fDescr}" ${cljObj['params']} (get ${cljObj['map']} ${cljObj['searchKey']} "${elseValue}"))`;
+//   }
 
-}
+// }
 
-export class ReconciliationDeriveMap extends DeriveMapImpl<ReconciliationQuery> {
-  deriveMap: Map<ReconciliationQuery, string>;
+// export class ReconciliationDeriveMap extends DeriveMapImpl<ReconciliationQuery> {
+//   deriveMap: Map<ReconciliationQuery, string>;
 
-  constructor(newColName: string, fromCols: string[]) {
-    super(newColName, fromCols, null);
-  }
+//   constructor(newColName: string, fromCols: string[]) {
+//     super(newColName, fromCols, null);
+//   }
 
-  buildFromMapping(mapping: QueryResult[], threshold: number, types: Type[]) {
-    this.deriveMap.clear();
-    this.newColTypes = types;
-    mapping.forEach(m => {
-      if (m.results.length > 0 && m.results[0].match) {
-        this.deriveMap.set(m.reconciliationQuery, m.results[0].id); // TODO: iterate over results!
-      }
-    });
-    return this;
-  }
+//   buildFromMapping(mapping: QueryResult[], threshold: number, types: Type[]) {
+//     this.deriveMap.clear();
+//     this.newColTypes = types;
+//     mapping.forEach(m => {
+//       if (m.results.length > 0 && m.results[0].match) {
+//         this.deriveMap.set(m.reconciliationQuery, m.results[0].id); // TODO: iterate over results!
+//       }
+//     });
+//     return this;
+//   }
 
-  /**
-   * Return the elements needed for writing the Clojure function
-   * Map: {[<q1> <v1.1> <v1.2>] "v1" [<q2> <v2.1> <v2.2>] "v2" ... [<qN> <vN.1> <vN.2>] "vN"}
-   * Params: [q x1 x2 ... xN]
-   * Key: [<q> <x1> <x2>]
-   * ElseFunc: asiaClient("<q>", [{"property" "<p1.1>", "value" "<v1.1>"}, {"property" "p1.2", "value" "v1.2"}], <types>, <threshold>)
-   * @returns {params: string, searchKey: string, map: string}
-   */
-  protected getClojureElements(): { params: string; searchKey: string; map: string; elseFunc: string } {
-    const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
+//   /**
+//    * Return the elements needed for writing the Clojure function
+//    * Map: {[<q1> <v1.1> <v1.2>] "v1" [<q2> <v2.1> <v2.2>] "v2" ... [<qN> <vN.1> <vN.2>] "vN"}
+//    * Params: [q x1 x2 ... xN]
+//    * Key: [<q> <x1> <x2>]
+//    * ElseFunc: asiaClient("<q>", [{"property" "<p1.1>", "value" "<v1.1>"}, {"property" "p1.2", "value" "v1.2"}], <types>, <threshold>)
+//    * @returns {params: string, searchKey: string, map: string}
+//    */
+//   protected getClojureElements(): { params: string; searchKey: string; map: string; elseFunc: string } {
+//     const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
 
-    let map = '{';
-    this.deriveMap.forEach((value: string, key: ReconciliationQuery) => {
-      map += `["${[key.getQuery()].concat(key.getPropertyValues().map((p: PropertyValue) => p.getValue())).join('" "')}"] "${value}" `;
-    });
-    map += '}';
+//     let map = '{';
+//     this.deriveMap.forEach((value: string, key: ReconciliationQuery) => {
+//       map += `["${[key.getQuery()].concat(key.getPropertyValues().map((p: PropertyValue) => p.getValue())).join('" "')}"] "${value}" `;
+//     });
+//     map += '}';
 
-    const searchKey = `[${params.join(' ')}]`;
+//     const searchKey = `[${params.join(' ')}]`;
 
-    const propertiesArray: string[] = this.deriveMap.entries().next().value[0].getPropertyValues().map((p: PropertyValue, idx) => {
-      return `{"property" "${p.getProperty()}", "value" v${idx}}`;
-    });
-    const elseFunc = `asiaClient.reconcile(q, [${propertiesArray.join(', ')}], null, null) `; // TODO test this func when available
+//     const propertiesArray: string[] = this.deriveMap.entries().next().value[0].getPropertyValues().map((p: PropertyValue, idx) => {
+//       return `{"property" "${p.getProperty()}", "value" v${idx}}`;
+//     });
+//     const elseFunc = `asiaClient.reconcile(q, [${propertiesArray.join(', ')}], null, null) `; // TODO test this func when available
 
-    return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
-  }
+//     return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
+//   }
 
-}
+// }
 
-export class ExtensionDeriveMap extends DeriveMapImpl<string[]> {
+// export class ExtensionDeriveMap extends DeriveMapImpl<string[]> {
 
-  deriveMap: Map<string[], string>;
+//   deriveMap: Map<string[], string>;
 
-  constructor(newColName: string, fromCols: string[], withProperty: string) {
-    super(newColName, fromCols, withProperty);
-  }
+//   constructor(newColName: string, fromCols: string[], withProperty: string) {
+//     super(newColName, fromCols, withProperty);
+//   }
 
-  buildFromExtension(selectedProperty: string, extensions: Extension[], types: Type[]) {
-    this.deriveMap.clear();
-    this.newColTypes = types;
-    extensions.forEach(e => {
-      if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
-        const firstRes = e.properties.get(selectedProperty)[0];
-        if (firstRes['id']) {
-          this.deriveMap.set(e.key, firstRes['id']);
-        } else if (firstRes['str']) {
-          this.deriveMap.set(e.key, firstRes['str']);
-          this.newColDatatype = XSDDatatypes.string;
-        } else if (firstRes['date']) {
-          this.deriveMap.set(e.key, firstRes['date']);
-          this.newColDatatype = XSDDatatypes.date;
-        } else if (firstRes['float']) {
-          this.deriveMap.set(e.key, firstRes['float']);
-          this.newColDatatype = XSDDatatypes.float;
-        } else if (firstRes['int']) {
-          this.deriveMap.set(e.key, firstRes['int']);
-          this.newColDatatype = XSDDatatypes.integer;
-        } else if (firstRes['bool']) {
-          this.deriveMap.set(e.key, firstRes['bool']);
-          this.newColDatatype = XSDDatatypes.boolean;
-        }
-      }
-    });
-    return this;
-  }
+//   buildFromExtension(selectedProperty: string, extensions: Extension[], types: Type[]) {
+//     this.deriveMap.clear();
+//     this.newColTypes = types;
+//     extensions.forEach(e => {
+//       if (e.properties.has(selectedProperty) && e.properties.get(selectedProperty).length > 0) {
+//         const firstRes = e.properties.get(selectedProperty)[0];
+//         if (firstRes['id']) {
+//           this.deriveMap.set(e.key, firstRes['id']);
+//         } else if (firstRes['str']) {
+//           this.deriveMap.set(e.key, firstRes['str']);
+//           this.newColDatatype = XSDDatatypes.string;
+//         } else if (firstRes['date']) {
+//           this.deriveMap.set(e.key, firstRes['date']);
+//           this.newColDatatype = XSDDatatypes.date;
+//         } else if (firstRes['float']) {
+//           this.deriveMap.set(e.key, firstRes['float']);
+//           this.newColDatatype = XSDDatatypes.float;
+//         } else if (firstRes['int']) {
+//           this.deriveMap.set(e.key, firstRes['int']);
+//           this.newColDatatype = XSDDatatypes.integer;
+//         } else if (firstRes['bool']) {
+//           this.deriveMap.set(e.key, firstRes['bool']);
+//           this.newColDatatype = XSDDatatypes.boolean;
+//         }
+//       }
+//     });
+//     return this;
+//   }
 
-  protected getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string } {
-    const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
-    const searchKey = `[${params.join(' ')}]`;
+//   protected getClojureElements(): { params: string, searchKey: string, map: string, elseFunc: string } {
+//     const params = ['q'].concat(this.fromCols.map((col, idx) => `v${idx}`));
+//     const searchKey = `[${params.join(' ')}]`;
 
-    let map = '{';
-    this.deriveMap.forEach((value: string, key: string[]) => {
-      map += `["${key.join('" "')}"] "${value}" `;
-    });
-    map += '}';
+//     let map = '{';
+//     this.deriveMap.forEach((value: string, key: string[]) => {
+//       map += `["${key.join('" "')}"] "${value}" `;
+//     });
+//     map += '}';
 
-    const elseFunc = `asiaClient.extend() `; // TODO complete this func when available
+//     const elseFunc = `asiaClient.extend() `; // TODO complete this func when available
 
-    return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
-  }
+//     return { params: `[${params.join(' ')}]`, searchKey: searchKey, map: map, elseFunc: elseFunc };
+//   }
 
-}
+// }
 
 export class ConciliatorService {
   private id: string;
@@ -413,28 +413,28 @@ export class ConciliatorService {
   }
 }
 
-export class ReconciledColumn {
-  private _deriveMap: DeriveMap;
-  private _conciliator: ConciliatorService;
+// export class ReconciledColumn {
+//   private _deriveMap: DeriveMap;
+//   private _conciliator: ConciliatorService;
 
 
-  constructor(deriveMap: DeriveMap, conciliator: ConciliatorService) {
-    this._deriveMap = deriveMap;
-    this._conciliator = conciliator;
-  }
+//   constructor(deriveMap: DeriveMap, conciliator: ConciliatorService) {
+//     this._deriveMap = deriveMap;
+//     this._conciliator = conciliator;
+//   }
 
-  getDeriveMap(): DeriveMap {
-    return this._deriveMap;
-  }
+//   getDeriveMap(): DeriveMap {
+//     return this._deriveMap;
+//   }
 
-  getConciliator(): ConciliatorService {
-    return this._conciliator;
-  }
+//   getConciliator(): ConciliatorService {
+//     return this._conciliator;
+//   }
 
-  getHeader(): string {
-    return this._deriveMap.newColName;
-  }
-}
+//   getHeader(): string {
+//     return this._deriveMap.newColName;
+//   }
+// }
 
 export class WeatherConfigurator {
   private parameters: string[];

@@ -9,11 +9,7 @@ import {
   Id,
   Property,
   PropertyValue,
-  PropertyValueId,
-  PropertyValueNumber,
-  PropertyValueString,
   QueryResult,
-  ReconciledColumn,
   ReconciliationQuery,
   Result,
   Type,
@@ -32,18 +28,20 @@ export class EnrichmentService {
 
   public headers: string[];
   public data;
-  private reconciledColumns: {};
   private asiaURL;
 
   public reconciliationServicesMapSource: BehaviorSubject<Map<string, ConciliatorService>>;
+  public extensionServicesMapSource: BehaviorSubject<Map<string, ConciliatorService>>;
 
   constructor(private http: HttpClient, private config: AppConfig) {
     this.headers = [];
     this.data = [];
-    this.reconciledColumns = {};
     this.asiaURL = this.config.getConfig('asia-backend');
     let emptyServiceMap = new Map<string, ConciliatorService>();
+    // TODO not sure if necessary to have second empty map
+    let emptyServiceMap2 = new Map<string, ConciliatorService>();
     this.reconciliationServicesMapSource = new BehaviorSubject<Map<string, ConciliatorService>>(emptyServiceMap);
+    this.extensionServicesMapSource = new BehaviorSubject<Map<string, ConciliatorService>>(emptyServiceMap2);
   }
 
   /**
@@ -211,21 +209,23 @@ export class EnrichmentService {
   }
 
   private getPropertyValues(row: [string], selectedColumn, selectedProperties, conciliator: ConciliatorService): PropertyValue[] {
-    return selectedColumn.map((col, index) => {
-      if (this.isColumnReconciled(col) && this.getReconciliationServiceOfColumn(col).getId() === conciliator.getId()) {
-        // Column reconciled against the same service used for this reconciliation -> return value as ID
-        return new PropertyValueId(selectedProperties[index], new Id(row[col]));
-      } else if (!isNaN(Number(row[col]))) {
-        // The column contains numbers -> return value as Number
-        return new PropertyValueNumber(selectedProperties[index], Number(row[col]));
-      } else {
-        // The column contains just strings -> return value as String
-        return new PropertyValueString(selectedProperties[index], row[col]);
-      }
-    });
+    // @TODO needs to be reimplemented
+    return [];
+    // return selectedColumn.map((col, index) => {
+    //   if (this.isColumnReconciled(col) && this.getReconciliationServiceOfColumn(col).getId() === conciliator.getId()) {
+    //     // Column reconciled against the same service used for this reconciliation -> return value as ID
+    //     return new PropertyValueId(selectedProperties[index], new Id(row[col]));
+    //   } else if (!isNaN(Number(row[col]))) {
+    //     // The column contains numbers -> return value as Number
+    //     return new PropertyValueNumber(selectedProperties[index], Number(row[col]));
+    //   } else {
+    //     // The column contains just strings -> return value as String
+    //     return new PropertyValueString(selectedProperties[index], row[col]);
+    //   }
+    // });
   }
 
-  extendColumn(header: string, properties: string[]): Observable<{ ext: Extension[], props: Property[] }> {
+  extendColumn(header: string, properties: string[], conciliator: ConciliatorService): Observable<{ ext: Extension[], props: Property[] }> {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
@@ -245,7 +245,7 @@ export class EnrichmentService {
 
     const params = new HttpParams()
       .set('extend', JSON.stringify(extendQuery))
-      .set('conciliator', this.getReconciliationServiceOfColumn(header).getId());
+      .set('conciliator', conciliator.getId());
 
     const httpOptions = {
       headers: new HttpHeaders({
@@ -535,32 +535,32 @@ export class EnrichmentService {
     });
   } // end weatherData
 
-  setReconciledColumn(reconciledColumn: ReconciledColumn) {
-    this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
-  }
+  // setReconciledColumn(reconciledColumn: ReconciledColumn) {
+  //   this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
+  // }
 
-  isColumnReconciled(header: string): boolean {
-    return Object.keys(this.reconciledColumns).includes(header);
-  }
+  // isColumnReconciled(header: string): boolean {
+  //   return Object.keys(this.reconciledColumns).includes(header);
+  // }
 
-  isColumnDate(header: string): boolean {
-    return header.toLowerCase().search('date') !== -1;
-  }
+  // isColumnDate(header: string): boolean {
+  //   return header.toLowerCase().search('date') !== -1;
+  // }
 
 
-  getReconciledColumns(): ReconciledColumn[] {
-    const recCols = [];
-    Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
-    return recCols;
-  }
+  // getReconciledColumns(): ReconciledColumn[] {
+  //   const recCols = [];
+  //   Object.keys(this.reconciledColumns).forEach(key => recCols.push(this.reconciledColumns[key]));
+  //   return recCols;
+  // }
 
-  getReconciledColumn(header: string): ReconciledColumn {
-    return this.reconciledColumns[header];
-  }
+  // getReconciledColumn(header: string): ReconciledColumn {
+  //   return this.reconciledColumns[header];
+  // }
 
-  removeReconciledColumn(columnHeader: string) {
-    delete this.reconciledColumns[columnHeader];
-  }
+  // removeReconciledColumn(columnHeader: string) {
+  //   delete this.reconciledColumns[columnHeader];
+  // }
 
   public propertiesAvailable = (service: ConciliatorService): Observable<any> => {
     const requestURL = this.asiaURL + '/propose_properties';
@@ -593,9 +593,9 @@ export class EnrichmentService {
       .get(url);
   }
 
-  getReconciliationServiceOfColumn(header: string) {
-    return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
-  }
+  // getReconciliationServiceOfColumn(header: string) {
+  //   return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
+  // }
 
   geoNamesAutocomplete(keyword) {
     if (keyword && keyword.length > 1) {
