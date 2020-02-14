@@ -499,8 +499,6 @@ export class ExtensionComponent implements OnInit {
       extensionId = this.transformationObj.getUniqueId();
     }
 
-    debugger;
-
     if (this.selectedServiceId === this.reconciledFromService.getId()) {
       // Extension is from the same service that we reconciled the column with
       this.currentExtension = new transformationDataModel.ReconciliationServiceExtension(derivedColumnNames, extensionMatchPairs, extensionId, this.currentAnnotation.conciliatorServiceName, this.previewProperties);
@@ -583,7 +581,6 @@ export class ExtensionComponent implements OnInit {
     // add extension to current annotation and update the transformation
     this.currentAnnotation.addOrReplaceExtension(this.currentExtension);
     this.transformationObj.addOrReplaceAnnotation(this.currentAnnotation);
-    debugger;
     this.transformationSvc.transformationObjSource.next(this.transformationObj);
     console.log(this.transformationObj);
     this.dialogRef.close();
