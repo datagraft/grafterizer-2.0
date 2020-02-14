@@ -199,11 +199,14 @@ export class ExtensionComponent implements OnInit {
   }
 
   changeEditOrCreateNewRadio() {
+    this.resetVariables();
     if (this.editOrCreateNew === 'create-new') {
       this.currentExtension = null;
       this.showPreview = false;
       this.selectedProperties = [];
+      this.selectedServiceId = '';
     } else if (this.editOrCreateNew === 'edit-existing') {
+      this.selectedServiceId = '';
       // not sure if necessary - TODO probably enable/disable the editing buttons
       if (!isNaN(Number.parseInt(this.selectedExtension))) {
         this.currentExtension = this.currentAnnotation.extensions[Number.parseInt(this.selectedExtension)];
@@ -212,7 +215,6 @@ export class ExtensionComponent implements OnInit {
     } else {
       throw ("unknown enrichment editor mode!");
     }
-    this.resetVariables();
   }
 
   changeCurrentExtension() {
@@ -235,6 +237,36 @@ export class ExtensionComponent implements OnInit {
       this.fetchReconciliationServiceExtensions();
     } else if (this.currentExtension instanceof transformationDataModel.ECMWFWeatherExtension) {
       this.selectedServiceId = 'ecmwf';
+
+      if (this.currentExtension.location instanceof transformationDataModel.WeatherExtensionLocationColumn) {
+        if (!this.isGeonamesColumn) {
+          this.placeChoice = 'fromCol';
+          this.readPlacesFromCol = this.currentExtension.location.columnName;
+        }
+      } else if (this.currentExtension.location instanceof transformationDataModel.WeatherExtensionLocationString) {
+        this.selectedPlace = this.currentExtension.location.locationString;
+        this.placeChoice = 'placefromPicker';
+      } else {
+        throw ("Error loading extension - unknown location option of ECMWF weather extension location.");
+      }
+
+      if (this.currentExtension.date instanceof transformationDataModel.WeatherExtensionDateFromColumn) {
+        // if the column for extension is not a date, then we use the column name
+        if (!this.isColDate) {
+          this.readDatesFromCol = this.currentExtension.date.columnName;
+          this.dateChoice = 'fromCol';
+        }
+      } else if (this.currentExtension.date instanceof transformationDataModel.WeatherExtensionDateFromString) {
+        this.selectedDate = this.currentExtension.date.dateString;
+        this.dateChoice = 'fromPicker';
+      } else {
+        throw ("Error loading extension - unknown location option of ECMWF weather extension date.");
+      }
+
+      this.selectedWeatherParameters = this.currentExtension.weatherFeatures;
+      this.selectedWeatherAggregators = this.currentExtension.aggregations;
+      this.selectedWeatherOffsets = this.currentExtension.offsetDays;
+      this.fetchWeatherData();
     } else if (this.currentExtension instanceof transformationDataModel.SameAsExtension) {
       this.selectedServiceId = 'sameas';
     } else if (this.currentExtension instanceof transformationDataModel.EventExtension) {
@@ -431,6 +463,20 @@ export class ExtensionComponent implements OnInit {
     }
   }
 
+  getExtensionMatchPairs(): Array<any> {
+    // generate match pairs
+    let extensionMatchPairs = [];
+    for (let i = 0; i < this.extensionData.length; ++i) {
+      let valuesToMatch = this.extensionData[i].key;
+      let matches = [];
+      Array.from(this.extensionData[i].properties.values()).forEach((match) => {
+        matches.push(match[0].id);
+      });
+      extensionMatchPairs.push(new transformationDataModel.MatchPair(valuesToMatch, matches));
+    }
+    return extensionMatchPairs;
+  }
+
   applyExtension() {
     let derivedColumnNames = [];
     this.previewProperties;
@@ -481,15 +527,7 @@ export class ExtensionComponent implements OnInit {
     });
 
     // generate match pairs
-    let extensionMatchPairs = [];
-    for (let i = 0; i < this.extensionData.length; ++i) {
-      let valuesToMatch = this.extensionData[i].key;
-      let matches = [];
-      Array.from(this.extensionData[i].properties.values()).forEach((match) => {
-        matches.push(match[0].id);
-      });
-      extensionMatchPairs.push(new transformationDataModel.MatchPair(valuesToMatch, matches));
-    }
+    let extensionMatchPairs = this.getExtensionMatchPairs();
 
     // we keep existing ID of extension if it exists or create a unique one
     let extensionId = 0;
@@ -551,7 +589,8 @@ export class ExtensionComponent implements OnInit {
             "http://www.w3.org/2001/XMLSchema#string", // datatype assumed to be string
             "en", // lang tag
             "valid", // status
-            annotationId // id
+            annotationId, // id
+            []
           );
           this.transformationObj.addOrReplaceAnnotation(newAnnotation);
         }
@@ -566,12 +605,46 @@ export class ExtensionComponent implements OnInit {
       // One of the extension services has been used
       switch (this.selectedServiceId) {
         case 'geonames':
+          // date column (can't extend using non-dates or non-reconciled cols)
           break;
         case 'er':
           break;
         case 'sameas':
           break;
         case 'ecmwf':
+          this.previewProperties;
+          this.extensionData;
+          let extensionMatchPairs = this.getExtensionMatchPairs();
+
+          let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();
+          if (this.isColDate) {
+            weatherExtensionDate = new transformationDataModel.WeatherExtensionDateFromColumn(this.header);
+          } else if (this.dateChoice === 'fromCol') {
+            weatherExtensionDate = new transformationDataModel.WeatherExtensionDateFromColumn(this.readDatesFromCol);
+          } else {
+            weatherExtensionDate = new transformationDataModel.WeatherExtensionDateFromString(this.selectedDate);
+          }
+
+          let weatherExtensionLocation = new transformationDataModel.WeatherExtensionLocation();
+          if (this.isGeonamesColumn) {
+            weatherExtensionLocation = new transformationDataModel.WeatherExtensionLocationColumn(this.header);
+          } else if (this.placeChoice === 'fromCol') {
+            weatherExtensionLocation = new transformationDataModel.WeatherExtensionLocationColumn(this.readPlacesFromCol);
+          } else {
+            weatherExtensionLocation = new transformationDataModel.WeatherExtensionLocationString(this.selectedDate);
+          }
+
+
+          this.currentExtension = new transformationDataModel.ECMWFWeatherExtension(
+            derivedColumnNames,
+            extensionMatchPairs,
+            extensionId,
+            weatherExtensionLocation,
+            weatherExtensionDate,
+            this.selectedWeatherParameters,
+            this.selectedWeatherOffsets,
+            this.selectedWeatherAggregators
+          );
           break;
         default:
           throw ("Could not identify the type of extension");
@@ -715,6 +788,10 @@ export class ExtensionComponent implements OnInit {
     this.readDatesFromCol = '';
     this.readPlacesFromCol = '';
     this.readCategoriesFromCol = '';
+
+    this.selectedWeatherAggregators = [];
+    this.selectedWeatherOffsets = [];
+    this.selectedWeatherParameters = [];
 
     this.dataSource = [];
     this.geoAllowedSources = this.geoSources;

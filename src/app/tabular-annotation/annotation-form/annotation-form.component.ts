@@ -76,7 +76,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.currentAnnotation = this.transformationObj.getAnnotationById(annotationId);
       this.setFormFromAnnotation();
     } else {
-      this.currentAnnotation = new transformationDataModel.Annotation(this.dialogInputData.header, 0, [], 'invalid', this.transformationObj.getUniqueId());
+      this.currentAnnotation = new transformationDataModel.Annotation(this.dialogInputData.header, 0, [], 'invalid', this.transformationObj.getUniqueId(), []);
       this.getInitialSuggestionsAsia();
     }
 
@@ -218,7 +218,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     this.transformationObj.removeAnnotationById(this.currentAnnotation.id);
 
     // set the current annotation to null so we do not save it in the transformation if we submit (there is a check for null in the beginning of submission)
-    this.currentAnnotation = new transformationDataModel.Annotation('', 0, [], 'invalid', 0);
+    this.currentAnnotation = new transformationDataModel.Annotation('', 0, [], 'invalid', 0, []);
 
 
     this.isSubject = false;
@@ -307,7 +307,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
           '',
           '',
           this.currentAnnotation.status,
-          this.currentAnnotation.id);
+          this.currentAnnotation.id,
+          this.currentAnnotation.extensions);
       }
     }
     formElement.markAsDirty();
@@ -362,7 +363,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     if (this.currentAnnotation.id) {
       const valuesType = this.annotationForm.get('columnInfo.columnValuesType').value;
       if (valuesType === ColumnTypes.Literal) {
-        this.currentAnnotation = new transformationDataModel.LiteralNodeAnnotation('', 0, [], '', '', 'valid', this.currentAnnotation.id);
+        this.currentAnnotation = new transformationDataModel.LiteralNodeAnnotation('', 0, [], '', '', 'valid', this.currentAnnotation.id, this.currentAnnotation.extensions);
       } else if (valuesType === ColumnTypes.URI) {
         // we keep the conciliator service name, extensions and reconciliations for URI node annotations
         this.currentAnnotation = new transformationDataModel.URINodeAnnotation('', 0, [], [], '', false, 'valid', this.currentAnnotation.id, this.currentAnnotation.conciliatorServieName, this.currentAnnotation.extensions, this.currentAnnotation.reconciliation);

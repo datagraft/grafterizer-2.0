@@ -250,6 +250,18 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           switch (annotation.conciliatorServiceName) {
             case 'geonames':
               this.geoNamesSources.push(header);
+              // also add derived columns from GeoNames enrichments
+              if (annotation.extensions) {
+                annotation.extensions.forEach((extension) => {
+                  if (extension instanceof transformationDataModel.ReconciliationServiceExtension) {
+                    if (extension.reconciliationServiceId === 'geonames') {
+                      for (let i = 0; i < extension.derivedColumns.length; ++i) {
+                        this.geoNamesSources.push(extension.derivedColumns[i]);
+                      }
+                    }
+                  }
+                });
+              }
               break;
             case 'productsservices':
             case 'keywordsmatcher':

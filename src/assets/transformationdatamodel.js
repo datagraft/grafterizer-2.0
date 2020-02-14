@@ -1543,17 +1543,23 @@ export function WeatherExtensionDate() {
 _this.WeatherExtensionDate = WeatherExtensionDate;
 
 export function WeatherExtensionDateFromColumn(columnName) {
-  this.columnName = columnName;
+  this.columnName = columnName || '';
   this.__type = 'WeatherExtensionDateFromColumn';
 }
 WeatherExtensionDateFromColumn.prototype = Object.create(WeatherExtensionDate.prototype);
+WeatherExtensionDateFromColumn.revive = function (data) {
+  return new WeatherExtensionDateFromColumn(data.columnName);
+};
 _this.WeatherExtensionDateFromColumn = WeatherExtensionDateFromColumn;
 
 export function WeatherExtensionDateFromString(dateString) {
-  this.dateString = dateString;
+  this.dateString = dateString || '';
   this.__type = 'WeatherExtensionDateFromString';
 }
 WeatherExtensionDateFromString.prototype = Object.create(WeatherExtensionDate.prototype);
+WeatherExtensionDateFromString.revive = function (data) {
+  return new WeatherExtensionDateFromString(data.dateString);
+};
 _this.WeatherExtensionDateFromString = WeatherExtensionDateFromString;
 
 export function WeatherExtensionLocation() {
@@ -1565,12 +1571,18 @@ export function WeatherExtensionLocationString(locationString) {
   this.locationString = locationString || '';
   this.__type = 'WeatherExtensionLocationString';
 }
+WeatherExtensionLocationString.revive = function (data) {
+  return new WeatherExtensionLocationString(data.locationString);
+};
 _this.WeatherExtensionLocationString = WeatherExtensionLocationString;
 
 export function WeatherExtensionLocationColumn(columnName) {
   this.columnName = columnName || '';
   this.__type = 'WeatherExtensionLocationColumn';
 }
+WeatherExtensionLocationColumn.revive = function (data) {
+  return new WeatherExtensionLocationColumn(data.columnName);
+};
 _this.WeatherExtensionLocationColumn = WeatherExtensionLocationColumn;
 
 /**
@@ -1613,6 +1625,93 @@ export function ECMWFWeatherExtension(derivedColumns, manualMatches, id, locatio
   this.__type = 'ECMWFWeatherExtension';
 }
 ECMWFWeatherExtension.prototype = Object.create(Extension.prototype);
+ECMWFWeatherExtension.revive = function (data) {
+  var i;
+  var derivedColumns = [];
+  // revive derivedColumns
+  if (data.derivedColumns) {
+    if (data.derivedColumns.length) {
+      for (i = 0; i < data.derivedColumns.length; ++i) {
+        derivedColumns.push(data.derivedColumns[i]);
+      }
+    }
+  }
+
+  // revive manualMatches
+  var manualMatches = [];
+  if (data.manualMatches) {
+    if (data.manualMatches.length) {
+      for (i = 0; i < data.manualMatches.length; ++i) {
+        if (data.manualMatches[i].__type) {
+          if (data.manualMatches[i].__type === 'MatchPair') {
+            // revive MatchPair objects
+            manualMatches.push(MatchPair.revive(data.manualMatches[i]));
+          }
+        }
+      }
+    }
+  }
+
+  // revive location
+  let location = {};
+  if (data.location) {
+    if (data.location.__type) {
+      if (data.location.__type === 'WeatherExtensionLocationString') {
+        location = WeatherExtensionLocationString.revive(data.location);
+      } else if (data.location.__type === 'WeatherExtensionLocationColumn') {
+        location = WeatherExtensionLocationColumn.revive(data.location);
+      } else {
+        console.log("Error reviving extension location: " + data);
+      }
+    }
+  }
+
+  // revive date
+  let date = {};
+  if (data.date) {
+    if (data.date.__type) {
+      if (data.date.__type === 'WeatherExtensionDateFromColumn') {
+        date = WeatherExtensionDateFromColumn.revive(data.date);
+      } else if (data.date.__type === 'WeatherExtensionDateFromString') {
+        date = WeatherExtensionDateFromString.revive(data.date);
+      } else {
+        console.log("Error reviving extension date: " + data);
+      }
+    }
+  }
+
+  // revive weather features
+  let weatherFeatures = [];
+  if (data.weatherFeatures) {
+    if (data.weatherFeatures.length) {
+      for (i = 0; i < data.weatherFeatures.length; ++i) {
+        weatherFeatures.push(data.weatherFeatures[i]);
+      }
+    }
+  }
+
+  // revive offset days
+  let offsetDays = [];
+  if (data.offsetDays) {
+    if (data.offsetDays.length) {
+      for (i = 0; i < data.offsetDays.length; ++i) {
+        offsetDays.push(data.offsetDays[i]);
+      }
+    }
+  }
+
+  // revive aggregations
+  let aggregations = [];
+  if (data.aggregations) {
+    if (data.aggregations.length) {
+      for (i = 0; i < data.aggregations.length; ++i) {
+        aggregations.push(data.aggregations[i]);
+      }
+    }
+  }
+
+  return new ECMWFWeatherExtension(derivedColumns, manualMatches, data.id, location, date, weatherFeatures, offsetDays, aggregations);
+};
 _this.WeatherExtension = ECMWFWeatherExtension;
 
 
@@ -1717,7 +1816,7 @@ _this.ReconciliationServiceExtension = ReconciliationServiceExtension;
  * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
  * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
  */
-export function Annotation(columnName, subjectAnnotationId, properties, status, id) {
+export function Annotation(columnName, subjectAnnotationId, properties, status, id, extensions) {
   if (!this.generateClojure) {
     this.generateClojure = function () {
       return new jsedn.List([jsedn.sym(this.name)]);
@@ -1730,10 +1829,36 @@ export function Annotation(columnName, subjectAnnotationId, properties, status, 
   this.columnName = columnName || '';
   this.properties = properties || [];
   this.status = status || '';
+  if (extensions) {
+    if (extensions.length) {
+      this.extensions = extensions;
+    } else {
+      this.extensions = [];
+    }
+  } else {
+    this.extensions = [];
+  }
 
   this.__type = 'Annotation';
 }
 Annotation.prototype = Object.create(ReferencableObject.prototype);
+Annotation.prototype.addOrReplaceExtension = function (extension) {
+  if (!(extension instanceof Extension)) {
+    return false;
+  } else {
+    // check ID if exists and overwrite the annotation
+    var i;
+    for (i = 0; i < this.extensions.length; ++i) {
+      if (this.extensions[i].id === extension.id) {
+        this.extensions[i] = extension;
+        return true;
+      }
+    }
+    // ID does not exist so we add it at the end
+    this.extensions.push(extension);
+    return true;
+  }
+};
 _this.Annotation = Annotation;
 
 /**
@@ -1757,7 +1882,7 @@ export function URINodeAnnotation(columnName, subjectAnnotationId,
   isSubject, status, id, consiliatorServiceName, extensions, reconciliation) {
 
   this.columnName = ''; this.id = 0; // HACK - Typescript is an asshole...
-  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id);
+  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id, extensions);
 
   // in case it is a URI node annotation
   this.columnTypes = columnTypes || [];
@@ -1769,16 +1894,6 @@ export function URINodeAnnotation(columnName, subjectAnnotationId,
 
   // the name of the conciliator service used to annotate the column (defined in case it was reconciled)
   this.conciliatorServiceName = consiliatorServiceName || '';
-
-  if (extensions) {
-    if (extensions.length) {
-      this.extensions = extensions;
-    } else {
-      this.extensions = [];
-    }
-  } else {
-    this.extensions = [];
-  }
 
   if (reconciliation) {
     if (reconciliation.__type == 'Reconciliation' || reconciliation.__type == 'SingleColumnReconciliation' || reconciliation.__type == 'MultiColumnReconciliation') {
@@ -1795,23 +1910,6 @@ URINodeAnnotation.prototype = Object.create(Annotation.prototype);
 URINodeAnnotation.prototype.getGraphNode = function () {
   var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
   return new ColumnURI(this.urifyPrefix, this.columnName, notEmptyCondition, []);
-};
-URINodeAnnotation.prototype.addOrReplaceExtension = function (extension) {
-  if (!(extension instanceof Extension)) {
-    return false;
-  } else {
-    // check ID if exists and overwrite the annotation
-    var i;
-    for (i = 0; i < this.extensions.length; ++i) {
-      if (this.extensions[i].id === extension.id) {
-        this.extensions[i] = extension;
-        return true;
-      }
-    }
-    // ID does not exist so we add it at the end
-    this.extensions.push(extension);
-    return true;
-  }
 };
 URINodeAnnotation.revive = function (data) {
 
@@ -1880,15 +1978,17 @@ _this.URINodeAnnotation = URINodeAnnotation;
  * @param {string} langTag language tag of the resulting literal
  * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
  * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+ * @param {Array<Extension>} extensions extensions of the annotated columns
  */
 export function LiteralNodeAnnotation(columnName, subjectAnnotationId,
   properties,
   columnDatatype,
-  langTag, status, id) {
+  langTag, status, id, extensions) {
 
 
   this.id = 0; // HACK - Typescript is an asshole...
-  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id);
+  this.extensions = [];
+  Annotation.call(this, columnName, subjectAnnotationId, properties, status, id, extensions);
 
   this.columnDatatype = columnDatatype || '';
   this.langTag = langTag || '';
@@ -1957,7 +2057,26 @@ LiteralNodeAnnotation.revive = function (data) {
       }
     }
   }
-  return new LiteralNodeAnnotation(data.columnName, data.subjectAnnotationId, props, data.columnDatatype, data.langTag, data.status, data.id);
+
+  // revive extensions
+  var extensions = [];
+  if (data.extensions) {
+    if (data.extensions.length) {
+      for (i = 0; i < data.extensions.length; ++i) {
+        if (data.extensions[i].__type === 'ReconciliationServiceExtension') {
+          extensions.push(ReconciliationServiceExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'EventExtension') {
+          extensions.push(EventExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'SameAsExtension') {
+          extensions.push(SameAsExtension.revive(data.extensions[i]));
+        } else if (data.extensions[i].__type === 'ECMWFWeatherExtension') {
+          extensions.push(ECMWFWeatherExtension.revive(data.extensions[i]));
+        }
+      }
+    }
+  }
+
+  return new LiteralNodeAnnotation(data.columnName, data.subjectAnnotationId, props, data.columnDatatype, data.langTag, data.status, data.id, extensions);
 }
 _this.LiteralNodeAnnotation = LiteralNodeAnnotation;
 
