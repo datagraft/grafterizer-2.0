@@ -2,6 +2,40 @@ mat-form-field{
   padding:0;
   margin:0;
 }
+mat-row {
+      border: 0px;
+justify-content: flex-start;
+    }
+
+mat-cell {
+  /*margin-left: fill;*/
+  /*margin-right: fill;*/
+  /*justify-items: flex-end;*/
+}
+.col-actions {
+  flex: 0 0 auto;
+  /*width: fit-content!important;*/
+
+  /*margin-left: unset!important;*/
+  padding-right: 30px;
+  align-items: flex-end !important;
+  justify-content: flex-end!important;
+  width: 10%;
+}
+
+
+/*.col-actions {*/
+/*  flex: 0 0 100px;*/
+
+/*}*/
+
+.btn-action {
+  padding: 0px;
+  margin:  0px;
+  min-width: 27px;
+
+}
+
 div.weather-parameters{
   float:left;
   display: inline;

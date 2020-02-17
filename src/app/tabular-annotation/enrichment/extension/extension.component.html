@@ -49,6 +49,125 @@
       </section>
 
     </ng-container>
+
+    <section class="form-block" *ngIf="selectedService === 'ce'">
+<!--       <div class="form-group">-->
+<!--        <ng-container *ngIf="selectedService === 'ce'">-->
+          <!-- <h1 mat-dialog-title>Custom event filter</h1> -->
+<!--          <div mat-dialog-content>-->
+            <form [formGroup]="group">
+              <mat-table #table formArrayName="filters" [dataSource]="dateExtensionDataSource">
+                   <ng-container matColumnDef="propertyId">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <!-- used when the row is readonly -->
+                        <input *ngIf="element.controls.readonly.value"
+                               matInput
+                               class="border-0"
+                               placeholder="Property ID"
+                               formControlName="propertyId"
+                               [readonly]="true">
+
+                        <mat-select *ngIf="!element.controls.readonly.value"
+                                    placeholder="Property ID"
+                                    formControlName="propertyId"
+                                    required>
+                          <mat-option *ngFor="let propertyID of propertiesID"
+                                      [value]="propertyID">{{ propertyID }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Operator -->
+                  <ng-container matColumnDef="operator">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <!-- used when the row is readonly -->
+                        <input *ngIf="element.controls.readonly.value"
+                              matInput
+                              class="border-0"
+                              placeholder="Operator"
+                              formControlName="operator"
+                              [readonly]="true">
+
+                        <mat-select *ngIf="!element.controls.readonly.value"
+                                    placeholder="Operator"
+                                    formControlName="operator"
+                                    required>
+                          <mat-option *ngFor="let operator of operators"
+                                      [value]="operator">{{ operator }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Value -->
+                  <ng-container matColumnDef="propertyValue">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <input matInput
+                              placeholder="Value"
+                               class="border-0"
+                              formControlName="propertyValue"
+                              [matAutocomplete]="propertyValueAuto"
+                              [readonly]="element.controls.readonly.value"
+                              required>
+                      </mat-form-field>
+
+                      <mat-autocomplete #propertyValueAuto="matAutocomplete">
+                        <mat-option *ngFor="let propertyValue of propertiesValue"
+                                    [value]="propertyValue">{{ propertyValue }}</mat-option>
+                      </mat-autocomplete>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Actions -->
+                  <ng-container matColumnDef="actions">
+                    <mat-cell *matCellDef="let element; let i = index; let last = last"
+                              class="col-actions">
+                        <button *ngIf="last"
+                                class="btn btn-link btn-action"
+                                (click)="addRow()">
+                          <i class="fa fa-plus-circle fa-2x text-info"></i>
+                        </button>
+                        <button *ngIf="!element.controls.readonly.value"
+                                class="btn btn-link btn-action"
+                                (click)="removeRow(i)">
+                          <i class="fa fa-minus-circle fa-2x text-danger"></i>
+                        </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-row *matRowDef="let row; columns: dateExtensionDisplayedColumns;"></mat-row>
+              </mat-table>
+            </form>
+
+<!--          </div>-->
+
+<!--        </ng-container>-->
+<!--       </div>-->
+
+
+
+
+      <!-- <div class="form-group">
+        <label class="required" for="dOperator">Select DateOperator: </label>
+        <div class="select">
+          <select id="dOperator"
+                  name="dOperator"
+                  [(ngModel)]="selectedDateOperator"
+                  multiple style="z-index: 0">
+            <option *ngFor="let p of dateOperators" [value]="p">{{p}}</option>
+          </select>
+        </div>
+      </div> -->
+
+    </section>
+
     <section class="form-block" *ngIf="selectedService === 'ecmwf'">
       <div class="form-group">
         <ng-container *ngIf="isColDate">
@@ -459,7 +578,38 @@
     </button>
 
   </ng-container>
+
+  <ng-container *ngIf="selectedService === 'ce'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="dateExtension()" cdkFocusInitial>Fetch Event data
+    </button>
+  </ng-container>
+
+
   <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0"
           (click)="submit()" *ngIf="showPreview">Apply
   </button>
+
+  <!-- <div mat-dialog-actions> -->
+    <!-- <button mat-button
+            mat-dialog-close
+            class="btn btn-sm btn-link">
+      <span class="text-danger"> Discard </span>
+    </button> -->
+
+    <button *ngIf="selectedService === 'ce'"
+            mat-button
+            class="btn btn-sm btn-link"
+            (click)="reset()">
+      <span class="text-secondary"> Reset </span>
+    </button>
+
+    <!-- <button *ngIf="selectedService === 'ce'"
+            mat-button
+            class="btn btn-sm btn-link"
+            [disabled]="group.invalid"
+            (click)="submitCustomEvent()">
+      <span class="text-success"> Apply </span>
+    </button> -->
+  <!-- </div> -->
 </div>

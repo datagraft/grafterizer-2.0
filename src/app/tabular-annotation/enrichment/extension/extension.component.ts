@@ -1,10 +1,23 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+// import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { EnrichmentService } from '../enrichment.service';
 import { ConciliatorService, EventConfigurator, Extension, ExtensionDeriveMap, Property, WeatherConfigurator } from '../enrichment.model';
 import { HttpClient } from '@angular/common/http';
 import { UrlUtils } from '../../shared/url-utils';
 import { Observable } from 'rxjs';
+
+// Manuel
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef, MatTable, MatTableDataSource } from '@angular/material';
+
+
+// Manuel
+export class CustomEventFilerModel {
+  propertyId?: string;
+  operator?: string;
+  propertyValue?: string;
+}
+// END Manuel
 
 @Component({
   selector: 'app-extension',
@@ -45,6 +58,7 @@ export class ExtensionComponent implements OnInit {
   public weatherParameters: string[];
   public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
+  
   public weatherOffsets: number[];
   public selectedWeatherParameters: any[];
   public selectedWeatherOffsets: any[];
@@ -59,10 +73,26 @@ export class ExtensionComponent implements OnInit {
   public shiftColumn = false;
   public selectedChipsPlaces: any = [];
   public selectedChipsCategories: any = [];
-
+  
   public kgServices: ConciliatorService[];
   public extendOnCols: string[];
+  
+  //Manuel
+  public dateOperators: string[];c
+  public group : any;
+  public filters: FormArray;
+  public dateExtensionDisplayedColumns = ['propertyId', 'operator', 'propertyValue', 'actions'];
+  public propertiesID: string[] = [];
+  public operators: string[] = [];
+  public propertiesValue : string[] = [];
+  public defaultFilter: CustomEventFilerModel = {
+    propertyId: 'name',
+    operator: '=',
+    propertyValue: this.header
+  }; 
+  public dateExtensionDataSource: MatTableDataSource<any> 
 
+  
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
 
@@ -95,9 +125,27 @@ export class ExtensionComponent implements OnInit {
     this.dataSource = [];
     this.categorySuggestions = [];
 
+    // Manuel
+    this.filters = new FormArray([]);
+    this.group = new FormGroup({
+      filters: this.filters
+    });
+    this.propertiesID = [ 'name', 'surname', 'address', 'email' ];
+    this.operators = [ '>', '<', '+', '-' ];
+    this.propertiesValue = this.enrichmentService.headers;
+    this.dataSource = new MatTableDataSource();
+    this.defaultFilter.propertyValue = this.header;
+
+    this.reset();
+
+  
+
+    // END Manuel
     if (this.isColDate) {
       this.services.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
       this.services.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
+      this.services.push(new ConciliatorService({ 'id': 'ce', 'name': 'CustomEvent', group: 'events' }));
+      
       // this.reconciledFromService = new ConciliatorService({
       //   'id': 'geonames',
       //   'name': 'GeoNames',
@@ -138,10 +186,81 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max', 'cumul'];
+    
+    //Manuel
+    this.dateOperators = ['equal', 'before', 'after']
+    //END Manuel
+
     this.getKGServices().subscribe((data: ConciliatorService[]) => {
       this.kgServices = data;
     });
   } // end ngOnInit
+
+  // Manuel
+  public reset() {
+    if (this.filters == null) { return; }
+
+    let i = 0
+    while (this.filters.length !== 0) {
+      i++;
+      this.filters.removeAt(0);
+    }
+
+    this.filters.reset();
+
+    if (this.hasDefaultFilter) {
+      this.addRow(this.defaultFilter, true);
+    }
+    else {
+
+      this.addRow();
+    }
+  }
+
+  public removeRow(index: number) {
+    console.log('filters')
+    console.log(this.filters.value)
+    console.log(index)
+
+    this.filters.removeAt(index);
+    console.log(this.filters.value)
+
+    if (index === 0 && this.filters.length === 0) {
+      this.addRow();
+    }
+
+    this.dataSource = new MatTableDataSource(this.filters.controls);
+  }
+
+  
+  private emptyRow(): CustomEventFilerModel {
+    return {
+      propertyId: null,
+      operator: null,
+      propertyValue: null
+    };
+  }
+  
+  public addRow(data?: CustomEventFilerModel, readonly: boolean = false) {
+    data = (data != null) ? data : this.emptyRow();
+    
+    const filterGroup = new FormGroup({
+      readonly: new FormControl(readonly),
+      propertyId: new FormControl(data.propertyId, Validators.required),
+      operator: new FormControl(data.operator, Validators.required),
+      propertyValue: new FormControl(data.propertyValue, Validators.required)
+    });
+    
+    this.filters.push(filterGroup);
+    this.dateExtensionDataSource = new MatTableDataSource(this.filters.controls);
+  }
+  
+  //END MANUEL
+
+  private get hasDefaultFilter(): boolean {
+    return (Object.keys(this.defaultFilter).length > 0);
+  }
+  // END Manuel
 
   // Stub: send list of observable to template
   getKGServices = (): Observable<Object> => {
@@ -223,9 +342,14 @@ export class ExtensionComponent implements OnInit {
     }
 
     const weatherConfig = new WeatherConfigurator({ ...wcObj, ...dateConfig, ...placeConfig });
+    console.log('----weatherConfig')
+    console.log(weatherConfig)
     const basedOn = this.isColDate ? 'date' : 'place';
 
     this.enrichmentService.weatherData(basedOn, weatherConfig).subscribe((data: Extension[]) => {
+      console.log('-----------ExtensionData-----------')
+      console.log(data)
+
       this.extensionData = data;
       if (this.extensionData.length > 0) {
         this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -233,6 +357,9 @@ export class ExtensionComponent implements OnInit {
       this.dataLoading = false;
     });
   }
+
+
+
 
   public sameas() {
     // set data loading and showpreview
@@ -296,6 +423,9 @@ export class ExtensionComponent implements OnInit {
     const basedOn = this.isColDate ? 'date' : this.isGeonamesColumn ? 'place' : this.isCategoriesColumn ? 'category' : null;
 
     this.enrichmentService.eventData(basedOn, eventConfig).subscribe((data: Extension[]) => {
+      console.log('----------data-----------')
+      console.log(data)
+
       this.extensionData = data;
       if (this.extensionData.length > 0) {
         this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -304,8 +434,110 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
+
+  public dateExtension(){
+    this.dataLoading = true;
+    this.showPreview = true;
+
+    let payload = {};
+    let query = [];
+    let queries = [];
+    let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
+
+    let cols = [];
+    
+    allDates.forEach((date_in_row, index) => {  
+      query = []; 
+      this.filters.value.forEach(element => {
+
+      let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
+      let value;
+      if (isColumn){
+        value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
+        if (!(this.header in cols)){
+          cols.push(this.header);
+        }
+      }else{
+        value = element['propertyValue'];
+      }
+        query.push({
+          'propertyID': element['propertyId'],
+          'operator' : element['operator'],
+          'value' : value,
+          'isColumn' : isColumn 
+        });
+      });
+      queries.push(query);
+      // queries.push(query);
+    });
+
+    //Setup the columns for the key-matching
+    this.extendOnCols = cols;
+    
+    payload = {'queries' : queries};
+
+    console.log(payload);
+
+    const basedOn = this.isColDate ? 'date' : 'place';
+
+    // The forEach will become a .subscribe on an Observable like the weatherData's one
+    let httpResult = this.enrichmentService.dateData(basedOn, payload, cols)
+    console.log('------httpResult------')
+    console.log(httpResult)
+    this.extensionData = httpResult;
+    if (this.extensionData.length > 0) {
+      this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+    }
+    this.dataLoading = false;
+  }
+
+    // this.enrichmentService.dateData(payload).forEach(data => {
+    //   console.log('----------data-----------')
+    //   console.log(data)
+
+    //   this.extensionData = data;
+    //   if (this.extensionData.length > 0) {
+    //     this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+    //   }
+    //   this.dataLoading = false;
+    // });
+
+    // let allProperties = [], allOperators = [], allColumns = [];
+    // let JSON = [];
+    
+    // this.filters.value.forEach(element => {
+    //   let isHeader = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
+    //   let couples = []
+    //   let allValues;
+      
+    //   if (isHeader) {
+    //     allValues = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]]); 
+    //   } 
+    //   allDates.forEach((date_in_row, index) => {
+    //     if (isHeader) {
+    //       couples.push([date_in_row, allValues[index]]);
+    //     } else {
+    //       couples.push([date_in_row, element['propertyValue']]);
+    //     }
+        
+    //   });
+    //   // allProperties.push(element['propertyId']);
+    //   // allOperators.push(element['operator']);
+    //   let entry = {
+    //     'property' : element['propertyId'],
+    //     'operator' : element['operator'],
+    //     '' : 
+    //   }
+
+    // });
+
+    
+    
+  // }
+
   public submit() {
     const deriveMaps = [];
+
     this.previewProperties.forEach((prop: string) => {
 
       const propDescr = this.propertyDescriptions.has(prop) && this.propertyDescriptions.get(prop) || null;
@@ -325,6 +557,7 @@ export class ExtensionComponent implements OnInit {
         .buildFromExtension(prop, this.extensionData, [propType].filter(p => p != null)));
 
     });
+    
     this.dialogRef.close({
       'deriveMaps': deriveMaps,
       'conciliator': this.reconciledFromService,
@@ -384,6 +617,10 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
+  text1Suggestions(new_val) {
+    this.dataSource = this.enrichmentService.getText1Values(new_val)
+  }
+
   categoriesSuggestions(new_val) {
     this.enrichmentService.googleCategoriesAutocomplete(this.selectedCategory).subscribe(data => {
       this.categorySuggestions = data;
@@ -399,7 +636,6 @@ export class ExtensionComponent implements OnInit {
         this.geoAllowedSources.push(this.geo_Sources[i]);
       }
     }
-
   }
 
   public _filterCategories(value: string) {

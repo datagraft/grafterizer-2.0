@@ -27,6 +27,36 @@ import { forkJoin } from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
 import { UrlUtils } from '../shared/url-utils';
 
+
+// MANUEL
+// interface fakeHTTPobject {
+//   id: string
+//   measurepriceChanged: string
+//   productgtin13: string
+// };
+
+// let fakeData = {
+//   "string" : [{
+//     "id": "CustomEvents/12442",
+//     "measurepriceChanged": true,
+//     "productgtin13": 8718863014653,
+//   },
+//   {
+//     "id": "CustomEvents/12444",
+//     "measurepriceChanged": true,
+//     "productgtin13": 8801643703257,
+//   }
+//   ]
+// }
+
+
+export function getStudentData() {
+  return require('../../../../JSON.json')
+}
+
+// let fakeHTTPResponse :  { string: fakeHTTPobject[] } = JSON.parse(fakeData.toString());
+// END MANUEL
+
 @Injectable()
 export class EnrichmentService {
 
@@ -35,6 +65,7 @@ export class EnrichmentService {
   private reconciledColumns: {};
   private asiaURL;
 
+  
   public reconciliationServicesMapSource: BehaviorSubject<Map<string, ConciliatorService>>;
 
   constructor(private http: HttpClient, private config: AppConfig) {
@@ -382,7 +413,8 @@ export class EnrichmentService {
       results.sort(function (a, b) {
         return a.offset - b.offset; // sort results by offset
       });
-
+      console.log('------------http results------------')
+      console.log(typeof(results))
       const extensions: Extension[] = [];
 
       colData.forEach(row => {
@@ -412,6 +444,10 @@ export class EnrichmentService {
 
         weatherObs.forEach(res => {
           const obs = new WeatherObservation(res);
+          // console.log('----res----')
+          // console.log(res)
+          // console.log('----obs----')
+          // console.log(obs)
           obs.getWeatherParameters().forEach((weatherParam: WeatherParameter) => {
             let propName = `WF_${weatherParam.getId()}_+${obs.getOffset()}`;
             if (weatherConfig.getPlace()) {
@@ -428,11 +464,17 @@ export class EnrichmentService {
             }
           });
         });
+        
+        // console.log('----------properties-----------')
+        // console.log(properties)
+
 
         e.addProperties(properties);
+        // console.log('----------e-----------')
+        // console.log(e)
+
         extensions.push(e);
       });
-
       return extensions;
     });
   } // end weatherData
@@ -535,6 +577,67 @@ export class EnrichmentService {
     });
   } // end weatherData
 
+
+  // MANUEL
+  dateData(on: string, payload, cols){
+    console.log('---payload----')
+    console.log(payload)
+
+    let data = getStudentData()
+    
+    const extensions: Extension[] = [];
+    // console.log(getStudentData())
+    // console.log('---data---')
+    // console.log(data)
+    // console.log(data.results)
+
+    payload.forEach(element => {
+      let key = []
+      if (element.isColumn) {
+        key.push(element.value)
+      }
+    });
+
+    const colData = this.data.filter((row) => { // remove empty strings
+      let notEmpty = true;
+      for (let i = 0; i < cols.length; i++) {
+        notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
+      }
+      return notEmpty;
+    }).map(row => { // remove unused fields from rows
+      return cols.reduce((o, k) => {
+        o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
+        return o;
+      }, {});
+    }).reduce((arr, item) => { // remove duplicates
+      const exists = !!arr.find(x => {
+        let ex = true;
+        cols.forEach(col => {
+          ex = ex && x[col] === item[col];
+        });
+        return ex;
+      });
+      if (!exists) {
+        arr.push(item);
+      }
+      return arr;
+    }, [])
+
+    
+
+
+    data.results.forEach(res => {
+      // console.log('--------------res--------------')
+      // console.log(res)
+      let e = new Extension(res['rowNumber'], []);
+      e.addProperties(res['values'])
+      extensions.push(e)
+    });
+    console.log(extensions)
+    return extensions;
+  }
+  // END MANUEL
+
   setReconciledColumn(reconciledColumn: ReconciledColumn) {
     this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
   }
@@ -607,11 +710,25 @@ export class EnrichmentService {
 
       const url = 'http://api.geonames.org/searchJSON';
 
-      return this.http
-        .get(url, { params: params })
-        .map(res => res['geonames']);
+      //Manuel
+      let result = this.http
+              .get(url, { params: params })
+              .map(res => res['geonames']);
+      // console.log('-----------------------------------')
+      // console.log(result);
+      // console.log('-----------------------------------')
+      return result
+
+      // PREVIOUS CODE (the one which works before)
+      // return this.http
+      //   .get(url, { params: params })
+      //   .map(res => res['geonames']);
     }
     return Observable.of([]);
+  }
+
+  getText1Values(keyword) {
+    return [keyword + 'A', keyword + 'B', keyword + 'C']
   }
 
   googleCategoriesAutocomplete(keyword) {

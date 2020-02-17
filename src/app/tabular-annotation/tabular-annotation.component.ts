@@ -246,6 +246,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         categoriesSoources: this.categoriesSources
       }
     };
+
     const dialogConfigDateColumn = {
       width: '900px',
       data: {
@@ -320,6 +321,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           result['shift']);
 
       }
+
+      // HERE
+
       // Update headers (some columns might have been annotated)
       this.hot.updateSettings({
         columns: this.getTableColumns(),
