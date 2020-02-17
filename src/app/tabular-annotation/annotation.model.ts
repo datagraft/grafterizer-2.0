@@ -17,13 +17,6 @@ export const XSDDatatypes = {
   'custom': ''
 };
 
-export const AnnotationStatuses = {
-  invalid: 'invalid' as 'invalid',
-  wrong: 'wrong' as 'wrong',
-  warning: 'warning' as 'warning',
-  valid: 'valid' as 'valid',
-};
-
 export class Annotation {
 
   columnHeader: string;

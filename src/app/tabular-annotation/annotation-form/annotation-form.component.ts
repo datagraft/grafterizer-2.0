@@ -1,5 +1,5 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { AnnotationService } from '../annotation.service';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {AnnotationService} from '../annotation.service';
 import {
   AbstractControl,
   FormArray,
@@ -8,13 +8,13 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import { ColumnTypes, XSDDatatypes, AnnotationStatuses } from '../annotation.model';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import { Observable, Subscription } from 'rxjs';
-import { AsiaMasService } from '../asia-mas/asia-mas.service';
-import { CustomValidators } from '../shared/custom-validators';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import { TransformationService } from 'app/transformation.service';
+import {ColumnTypes, XSDDatatypes} from '../annotation.model';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import {Observable, Subscription} from 'rxjs';
+import {AsiaMasService} from '../asia-mas/asia-mas.service';
+import {CustomValidators} from '../shared/custom-validators';
+import * as tdm from 'assets/transformationdatamodel.js';
+import {TransformationService} from 'app/transformation.service';
 
 @Component({
   selector: 'app-annotation-form',
@@ -29,7 +29,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   isObject = false;
   submitted = false;
 
-  public inputAnnotation: any;
   public currentAnnotation: any;
   displayURINamespace = false;
   displayDatatype = false;
@@ -48,9 +47,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   annotationForm: FormGroup;
 
   constructor(private transformationSvc: TransformationService, public annotationService: AnnotationService,
-    private suggesterSvc: AsiaMasService,
-    public dialogRef: MatDialogRef<AnnotationFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
+              private suggesterSvc: AsiaMasService,
+              public dialogRef: MatDialogRef<AnnotationFormComponent>,
+              @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
   }
 
   ngOnInit() {
@@ -61,9 +60,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
     this.buildForm();
 
-
     this.header = this.dialogInputData.header;
-    let annotationId = this.dialogInputData.annotationId || 0;
+    const annotationId = this.dialogInputData.annotationId || 0;
     this.isSubject = false; // not subject
 
     if (annotationId) {
@@ -76,18 +74,20 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.currentAnnotation = this.transformationObj.getAnnotationById(annotationId);
       this.setFormFromAnnotation();
     } else {
-      this.currentAnnotation = new transformationDataModel.Annotation(this.dialogInputData.header, 0, [], 'invalid', this.transformationObj.getUniqueId(), []);
+      this.currentAnnotation = new tdm.Annotation(
+        this.dialogInputData.header,
+        0,
+        [],
+        '',
+        this.transformationObj.getUniqueId(),
+        []);
       this.getInitialSuggestionsAsia();
     }
 
+    this.availableNamespaces = Array.from(new Set(this.transformationObj.rdfVocabs.map(vocab => vocab.namespace)));
+    this.allowedSources = this.annotationService.headers.filter(h => h !== this.header);
 
-    const namespacesSet = new Set<string>();
-    this.transformationObj.rdfVocabs.forEach(vocab => namespacesSet.add(vocab.namespace));
-    this.availableNamespaces = Array.from(namespacesSet);
-
-    this.fillAllowedSourcesArray();
     this.onChanges();
-
   }
 
   ngOnDestroy() {
@@ -110,12 +110,12 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         property: new FormControl('', CustomValidators.URLValidator()),
       }),
     }, Validators.compose([
-      CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
-      CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
-      CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
-      CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
-      CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
-    ]
+        CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
+        CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
+        CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
+        CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
+        CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
+      ]
     ));
   }
 
@@ -136,7 +136,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   setFormFromAnnotation() {
-    let subject = this.transformationObj.getAnnotationById(this.currentAnnotation.subjectAnnotationId);
+    const subject = this.transformationObj.getAnnotationById(this.currentAnnotation.subjectAnnotationId);
     if (subject) {
       // set name of subject column
       this.annotationForm.get('relationship.subject').setValue(subject.columnName);
@@ -144,15 +144,16 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
 
     if (this.currentAnnotation.properties.length) {
       // set property name of relation with subject column; NB! - this works only if we have single property annotation
-      this.annotationForm.get('relationship.property').setValue(this.transformationObj.getPropertyNodeFullyQualifiedName(this.currentAnnotation.properties[0]));
+      this.annotationForm.get('relationship.property').setValue(
+        this.transformationObj.getPropertyNodeFullyQualifiedName(this.currentAnnotation.properties[0])
+      );
     }
 
-
     // set the type of node (URI node or Literal)
-    const annotationType = this.currentAnnotation instanceof transformationDataModel.URINodeAnnotation ? ColumnTypes.URI : ColumnTypes.Literal;
+    const annotationType = this.currentAnnotation instanceof tdm.URINodeAnnotation ? ColumnTypes.URI : ColumnTypes.Literal;
     this.annotationForm.get('columnInfo.columnValuesType').setValue(annotationType);
 
-    if (this.currentAnnotation instanceof transformationDataModel.URINodeAnnotation) {
+    if (this.currentAnnotation instanceof tdm.URINodeAnnotation) {
       // in case of URI node annotation, set the types for the column
       const types = this.currentAnnotation.columnTypes;
       for (let i = 0; i < types.length; ++i) {
@@ -160,8 +161,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
           .setValue(this.transformationObj.getConstantURINodeFullyQualifiedName(types[i]));
         this.addColType(i);
       }
-      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.transformationObj.getURIForPrefix(this.currentAnnotation.urifyPrefix));
-    } else if (this.currentAnnotation instanceof transformationDataModel.LiteralNodeAnnotation) {
+      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.currentAnnotation.urifyPrefix);
+    } else if (this.currentAnnotation instanceof tdm.LiteralNodeAnnotation) {
       const annotationDatatype = this.currentAnnotation.columnDatatype;
       let datatype = Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotationDatatype);
       if (!datatype) {
@@ -197,7 +198,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       columnInfo: {
         columnType: '',
         columnValuesType: '',
-        urifyNamespace: '',
+        urifyNamespace: this.annotationService.getUrifyDefault(),
         columnDatatype: 'string',
         customDatatype: '',
         langTag: 'en',
@@ -209,17 +210,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     });
 
     // in case the annotation is a subject, all object annotations must be marked as 'invalid'
-    let objectAnnotations = this.transformationObj.getAllObjectAnnotationsForSubject(this.currentAnnotation.id);
+    const objectAnnotations = this.transformationObj.getAllObjectAnnotationsForSubject(this.currentAnnotation.id);
     for (let i = 0; i < objectAnnotations.length; ++i) {
-      objectAnnotations[i].status = 'invalid';
+      // objectAnnotations[i].status = tdm.AnnotationStatus.invalid;
       objectAnnotations[i].subjectAnnotationId = 0;
     }
     // tentatively remove the annotation from the transformation object; this will be persisted if we submit the form
     this.transformationObj.removeAnnotationById(this.currentAnnotation.id);
 
-    // set the current annotation to null so we do not save it in the transformation if we submit (there is a check for null in the beginning of submission)
-    this.currentAnnotation = new transformationDataModel.Annotation('', 0, [], 'invalid', 0, []);
-
+    // set the current annotation to null so we do not save it in the transformation if we submit
+    // (there is a check for null in the beginning of submission)
+    this.currentAnnotation = new tdm.Annotation('', 0, [], '', 0, []);
 
     this.isSubject = false;
     this.isObject = false;
@@ -239,8 +240,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       if (this.dialogRef) {
         this.submitted = false;
       }
-      // We do not need to listen for the specific change - 
-      // we always change after "Annotate" has been clicked (and save the change in the transformation); 
+      // We do not need to listen for the specific change -
+      // we always change after "Annotate" has been clicked (and save the change in the transformation);
       // if not - we do nothing
     });
   }
@@ -256,10 +257,10 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   subjectValuesTypeValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
       if (control.value === '') {
-        return { 'invalidColumnValuesType': { errorMessage: 'Column values type is required' }, 'missingColumnValuesType': true };
+        return {'invalidColumnValuesType': {errorMessage: 'Column values type is required'}, 'missingColumnValuesType': true};
       }
       if (this.isValuesTypeNotValid(control.value)) {
-        return { 'invalidColumnValuesType': { errorMessage: 'A subject column must be of type URI' } };
+        return {'invalidColumnValuesType': {errorMessage: 'A subject column must be of type URI'}};
       }
       return null;
     };
@@ -277,13 +278,13 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.displayDatatype = false;
       this.displayType = true;
       this.displayCustomDatatype = false;
-      if (!(this.currentAnnotation instanceof transformationDataModel.URINodeAnnotation)) {
-        this.currentAnnotation = new transformationDataModel.URINodeAnnotation(
+      if (!(this.currentAnnotation instanceof tdm.URINodeAnnotation)) {
+        this.currentAnnotation = new tdm.URINodeAnnotation(
           this.currentAnnotation.columnName,
           this.currentAnnotation.subjectAnnotationId,
           this.currentAnnotation.properties,
           [],
-          '',
+          this.annotationService.getUrifyDefault(),
           this.transformationObj.isSubjectAnnotation(this.currentAnnotation),
           this.currentAnnotation.status,
           this.currentAnnotation.id,
@@ -299,8 +300,8 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
       this.displayType = false;
       this.displayURINamespace = false;
       this.displayDatatype = true;
-      if (!(this.currentAnnotation instanceof transformationDataModel.LiteralNodeAnnotation)) {
-        this.currentAnnotation = new transformationDataModel.LiteralNodeAnnotation(
+      if (!(this.currentAnnotation instanceof tdm.LiteralNodeAnnotation)) {
+        this.currentAnnotation = new tdm.LiteralNodeAnnotation(
           this.currentAnnotation.columnName,
           this.currentAnnotation.subjectAnnotationId,
           this.currentAnnotation.properties,
@@ -349,13 +350,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Close dialog without saving changes
-   */
-  closeWithoutSaving() {
-    // this.resetForm();
-  }
-
-  /**
    * Apply changes to the annotation model when the form is submitted
    */
   onSubmit() {
@@ -363,41 +357,72 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
     if (this.currentAnnotation.id) {
       const valuesType = this.annotationForm.get('columnInfo.columnValuesType').value;
       if (valuesType === ColumnTypes.Literal) {
-        this.currentAnnotation = new transformationDataModel.LiteralNodeAnnotation('', 0, [], '', '', 'valid', this.currentAnnotation.id, this.currentAnnotation.extensions);
+        this.currentAnnotation = new tdm.LiteralNodeAnnotation(
+          this.header,
+          0,
+          [],
+          '',
+          '',
+          tdm.AnnotationStatus.valid,
+          this.currentAnnotation.id,
+          this.currentAnnotation.extensions
+        );
       } else if (valuesType === ColumnTypes.URI) {
         // we keep the conciliator service name, extensions and reconciliations for URI node annotations
-        this.currentAnnotation = new transformationDataModel.URINodeAnnotation('', 0, [], [], '', false, 'valid', this.currentAnnotation.id, this.currentAnnotation.conciliatorServieName, this.currentAnnotation.extensions, this.currentAnnotation.reconciliation);
+        this.currentAnnotation = new tdm.URINodeAnnotation(
+          this.header,
+          0,
+          [],
+          [],
+          this.annotationService.getUrifyDefault(),
+          false,
+          tdm.AnnotationStatus.valid,
+          this.currentAnnotation.id,
+          this.currentAnnotation.conciliatorServieName,
+          this.currentAnnotation.extensions,
+          this.currentAnnotation.reconciliation
+        );
         // change status of all object annotations from 'warning' (indicating subject has not been correctly annotated) to 'valid'
-        let objectAnnotations = this.transformationObj.getAllObjectAnnotationsForSubject(this.currentAnnotation.id);
-        for (let i = 0; i < objectAnnotations.length; ++i) {
-          if (objectAnnotations[i].status === 'warning') {
-            objectAnnotations[i].status = 'valid';
-          }
-        }
+        // const objectAnnotations = this.transformationObj.getAllObjectAnnotationsForSubject(this.currentAnnotation.id);
+        // for (let i = 0; i < objectAnnotations.length; ++i) {
+        //   if (objectAnnotations[i].status === tdm.AnnotationStatus.warning) {
+        //     objectAnnotations[i].status = tdm.AnnotationStatus.valid;
+        //   }
+        // }
       }
-      this.currentAnnotation.columnName = this.header;
       if (this.annotationForm.get('relationship.subject').value) {
         // TODO - this assumes a single annotation per column
-        let annotationsForSubject = this.transformationObj.getColumnAnnotations(this.annotationForm.get('relationship.subject').value);
+        const annotationsForSubject = this.transformationObj.getColumnAnnotations(this.annotationForm.get('relationship.subject').value);
         if (annotationsForSubject.length) {
           this.currentAnnotation.subjectAnnotationId = annotationsForSubject[0].id;
         } else {
           // If the column has not been annotated yet, create an empty URI node annotation, add it and set the new ID
-          let newAnnotationId = this.transformationObj.getUniqueId();
-          let newAnnotationForSubject = new transformationDataModel.URINodeAnnotation(this.annotationForm.get('relationship.subject').value, null, [], [],
-            "", true, 'invalid', newAnnotationId, "", [], null);
+          const newAnnotationId = this.transformationObj.getUniqueId();
+          const newAnnotationForSubject = new tdm.URINodeAnnotation(
+            this.annotationForm.get('relationship.subject').value,
+            null,
+            [],
+            [],
+            this.annotationService.getUrifyDefault(),
+            true,
+            '',
+            newAnnotationId,
+            '',
+            [],
+            null);
           this.transformationObj.addOrReplaceAnnotation(newAnnotationForSubject);
           this.currentAnnotation.subjectAnnotationId = newAnnotationId;
-          this.currentAnnotation.status = 'warning';
+          // this.currentAnnotation.status = tdm.AnnotationStatus.warning;
         }
       }
-      let selectedProperty = this.annotationForm.get('relationship.property').value;
-      if (selectedProperty['suggestion']) { // when user select a suggestion from the autocomplete - TODO I don't think this happens
-        this.currentAnnotation.properties = [new transformationDataModel.Property('', selectedProperty['suggestion'], [], [])];
-      } else {
-        this.currentAnnotation.properties = [new transformationDataModel.Property('', selectedProperty, [], [])];
+      const selectedProperty = this.annotationForm.get('relationship.property').value;
+      if (selectedProperty) {
+        if (selectedProperty['suggestion']) { // when user select a suggestion from the autocomplete - TODO I don't think this happens
+          this.currentAnnotation.properties = [new tdm.Property('', selectedProperty['suggestion'], [], [])];
+        } else {
+          this.currentAnnotation.properties = [new tdm.Property('', selectedProperty, [], [])];
+        }
       }
-
 
       if (valuesType === ColumnTypes.URI) {
         const types = [];
@@ -407,7 +432,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
             val = val['suggestion'];
           }
           if (val !== '') {
-            types.push(new transformationDataModel.ConstantURI('', val, [], []));
+            types.push(new tdm.ConstantURI('', val, [], []));
           }
         });
         this.currentAnnotation.columnTypes = types;
@@ -456,19 +481,6 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   deleteAnnotation() {
     this.resetForm();
     this.transformationObj.removeAnnotationById(this.currentAnnotation.id);
-  }
-
-  /**
-   * Fill the subjects array with all columns that can be selected as source of this column
-   * The array contains all table columns, except this column
-   */
-  fillAllowedSourcesArray() {
-    this.allowedSources = [];
-    this.annotationService.headers.forEach((h: string) => {
-      if (h !== this.header) {
-        this.allowedSources.push(h);
-      }
-    });
   }
 
   /**

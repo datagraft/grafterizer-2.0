@@ -81,18 +81,18 @@ DropRowsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym('drop-rows'), this.indexTo]);
   var values = [jsedn.sym('rows')];
   if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
-  this.indexFrom,
-  this.indexTo + 1
+    this.indexFrom,
+    this.indexTo + 1
   ]));
   else values.push(new jsedn.List([jsedn.sym('concat'),
-  new jsedn.List([jsedn.sym('range'),
-    0,
-  this.indexFrom
-  ]),
-  new jsedn.List([jsedn.sym('drop'),
-  this.indexTo + 1,
-  new jsedn.List([jsedn.sym('range')])
-  ])
+    new jsedn.List([jsedn.sym('range'),
+      0,
+      this.indexFrom
+    ]),
+    new jsedn.List([jsedn.sym('drop'),
+      this.indexTo + 1,
+      new jsedn.List([jsedn.sym('range')])
+    ])
   ]));
 
   return new jsedn.List(values);
@@ -391,7 +391,7 @@ GrepFunction.prototype.generateClojure = function () {
 
         if (!this.take) {
           values.push(new jsedn.List([jsedn.sym('comp'), jsedn.sym('not'), new jsedn.List([jsedn.parse('fn [cell]'),
-          new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])
+            new jsedn.List([jsedn.sym('re-find'), new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.parse('(str cell)')])
           ])]));
 
         } else {
@@ -562,7 +562,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
   }
 
   var values = [jsedn.sym('derive-column'),
-  this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
+    this.newColName ? new jsedn.kw(':' + this.newColName) : new jsedn.kw(':unnamed'),
     colsToDeriveFromClj
   ];
   var deriveFuncts = [];
@@ -573,7 +573,7 @@ DeriveColumnFunction.prototype.generateClojure = function () {
       functWithParams = [new jsedn.sym(this.functionsToDeriveWith[i].funct.name), new jsedn.sym('arg')];
       functWithParams = functWithParams.concat(this.functionsToDeriveWith[i].functParams);
       deriveFuncts.push(new jsedn.List([new jsedn.sym('fn'), new jsedn.Vector([new jsedn.sym('arg')]),
-      new jsedn.List(functWithParams)
+        new jsedn.List(functWithParams)
       ]));
     }
   }
@@ -938,22 +938,21 @@ MapcFunction.prototype.generateClojure = function () {
         new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
         new jsedn.sym(this.keyFunctionPairs[i].func.name)
       );
-    else
-      if (this.keyFunctionPairs[i].funcParams.length > 0) {
-        var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
-        funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
-        var mapcFunc = new jsedn.List([new jsedn.sym('fn'), new jsedn.Vector([new jsedn.sym('arg')]),
+    else if (this.keyFunctionPairs[i].funcParams.length > 0) {
+      var funcWithParams = [new jsedn.sym(this.keyFunctionPairs[i].func.name), new jsedn.sym('arg')];
+      funcWithParams = funcWithParams.concat(this.keyFunctionPairs[i].funcParams);
+      var mapcFunc = new jsedn.List([new jsedn.sym('fn'), new jsedn.Vector([new jsedn.sym('arg')]),
         new jsedn.List(funcWithParams)
-        ]);
-        mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-          mapcFunc);
-      } else {
-        mkeyFunctionPairsClj.set(
-          new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
-          new jsedn.sym(this.keyFunctionPairs[i].func.name)
-        );
-      }
+      ]);
+      mkeyFunctionPairsClj.set(
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+        mapcFunc);
+    } else {
+      mkeyFunctionPairsClj.set(
+        new jsedn.kw(':' + this.keyFunctionPairs[i].key.value),
+        new jsedn.sym(this.keyFunctionPairs[i].func.name)
+      );
+    }
   }
 
   var mapc;
@@ -1227,11 +1226,11 @@ MakeDatasetFunction.prototype.generateClojure = function () {
         jsedn.sym('->'),
         new jsedn.List([jsedn.sym('make-dataset'), jsedn.sym('move-first-row-to-header')]),
         new jsedn.List([jsedn.sym('rename-columns'),
-        new jsedn.List([
-          jsedn.sym('comp'),
-          jsedn.sym('keyword'),
-          jsedn.sym('new-tabular/string-as-keyword')
-        ])
+          new jsedn.List([
+            jsedn.sym('comp'),
+            jsedn.sym('keyword'),
+            jsedn.sym('new-tabular/string-as-keyword')
+          ])
         ])
       ]);
     } else {
@@ -1246,15 +1245,15 @@ MakeDatasetFunction.prototype.generateClojure = function () {
   } else {
     // make dataset with lazy naming
     return new jsedn.List([jsedn.sym('make-dataset'),
-    new jsedn.List([jsedn.parse('into'), new jsedn.Vector([]),
-    new jsedn.List([jsedn.sym('map'),
-    jsedn.sym('keyword'),
-    new jsedn.List([jsedn.sym('take'),
-    parseInt(this.numberOfColumns),
-    new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
-    ])
-    ])
-    ])
+      new jsedn.List([jsedn.parse('into'), new jsedn.Vector([]),
+        new jsedn.List([jsedn.sym('map'),
+          jsedn.sym('keyword'),
+          new jsedn.List([jsedn.sym('take'),
+            parseInt(this.numberOfColumns),
+            new jsedn.List([jsedn.sym('grafter.sequences/alphabetical-column-names')])
+          ])
+        ])
+      ])
     ]);
   }
 };
@@ -1323,8 +1322,8 @@ ColumnsFunction.prototype.generateClojure = function () {
     return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
   } else {
     return this.take ? new jsedn.List([jsedn.sym('columns'),
-    new jsedn.List([jsedn.sym('range'), parseInt(this.indexFrom), parseInt(this.indexTo + 1)])
-    ]) :
+        new jsedn.List([jsedn.sym('range'), parseInt(this.indexFrom), parseInt(this.indexTo + 1)])
+      ]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'), parseInt(this.indexFrom), parseInt(this.indexTo)
       ]);
   }
@@ -1390,8 +1389,6 @@ MergeRowsFunction.revive = function (data) {
 };
 MergeRowsFunction.prototype = Object.create(GenericFunction.prototype);
 MergeRowsFunction.prototype.generateClojure = function () {
-
-
 
 
   return new jsedn.List([jsedn.sym('new-tabular/merge-rows'), this.indexFrom, this.indexTo, this.separator]);
@@ -1480,6 +1477,7 @@ export function MatchPair(valuesToMatch, match) {
   this.match = match || '';
   this.__type = 'MatchPair';
 }
+
 MatchPair.revive = function (data) {
   var i;
   // revive valuesToMatch
@@ -1535,17 +1533,20 @@ export function Extension(derivedColumns, manualMatches, id) {
 
   this.__type = 'Extension';
 }
+
 _this.Extension = Extension;
 
 export function WeatherExtensionDate() {
   this.__type = 'WeatherExtensionDate';
 }
+
 _this.WeatherExtensionDate = WeatherExtensionDate;
 
 export function WeatherExtensionDateFromColumn(columnName) {
   this.columnName = columnName || '';
   this.__type = 'WeatherExtensionDateFromColumn';
 }
+
 WeatherExtensionDateFromColumn.prototype = Object.create(WeatherExtensionDate.prototype);
 WeatherExtensionDateFromColumn.revive = function (data) {
   return new WeatherExtensionDateFromColumn(data.columnName);
@@ -1556,6 +1557,7 @@ export function WeatherExtensionDateFromString(dateString) {
   this.dateString = dateString || '';
   this.__type = 'WeatherExtensionDateFromString';
 }
+
 WeatherExtensionDateFromString.prototype = Object.create(WeatherExtensionDate.prototype);
 WeatherExtensionDateFromString.revive = function (data) {
   return new WeatherExtensionDateFromString(data.dateString);
@@ -1565,12 +1567,14 @@ _this.WeatherExtensionDateFromString = WeatherExtensionDateFromString;
 export function WeatherExtensionLocation() {
   this.__type = 'WeatherExtensionLocation';
 }
+
 _this.WeatherExtensionLocation = WeatherExtensionLocation;
 
 export function WeatherExtensionLocationString(locationString) {
   this.locationString = locationString || '';
   this.__type = 'WeatherExtensionLocationString';
 }
+
 WeatherExtensionLocationString.revive = function (data) {
   return new WeatherExtensionLocationString(data.locationString);
 };
@@ -1580,13 +1584,14 @@ export function WeatherExtensionLocationColumn(columnName) {
   this.columnName = columnName || '';
   this.__type = 'WeatherExtensionLocationColumn';
 }
+
 WeatherExtensionLocationColumn.revive = function (data) {
   return new WeatherExtensionLocationColumn(data.columnName);
 };
 _this.WeatherExtensionLocationColumn = WeatherExtensionLocationColumn;
 
 /**
- * 
+ *
  * @param {Array<string>} derivedColumns column names of the columns that were derived using the extension
  * @param {Array} manualMatches manually matched pairs of values (value in source column is directly matched to a value of the target column)
  * @param {number} id unique ID of the extension; NB! should be generated by the transformation prototype function "getUniqueId".
@@ -1595,7 +1600,7 @@ _this.WeatherExtensionLocationColumn = WeatherExtensionLocationColumn;
  * @param {Array<string>} weatherFeatures chosen weather features to extend with
  * @param {Array<number>} offsetDays array of integer numbers of days for the offset from the base date
  * @param {Array<string>} aggregations aggregation function for fetching the weather data for the chosen date and offset
- * 
+ *
  */
 export function ECMWFWeatherExtension(derivedColumns, manualMatches, id, location, date, weatherFeatures, offsetDays, aggregations) {
   this.derivedColumns = [];
@@ -1624,6 +1629,7 @@ export function ECMWFWeatherExtension(derivedColumns, manualMatches, id, locatio
 
   this.__type = 'ECMWFWeatherExtension';
 }
+
 ECMWFWeatherExtension.prototype = Object.create(Extension.prototype);
 ECMWFWeatherExtension.revive = function (data) {
   var i;
@@ -1726,6 +1732,7 @@ export function SameAsExtension(derivedColumns, manualMatches, id) {
   Extension.call(this, derivedColumns, manualMatches, id);
   this.__type = 'SameAsExtension';
 }
+
 SameAsExtension.prototype = Object.create(Extension.prototype);
 _this.SameAsExtension = SameAsExtension;
 
@@ -1744,9 +1751,9 @@ export function EventExtension(derivedColumns, manualMatches, id, fromDate, toDa
   Extension.call(this, derivedColumns, manualMatches, id);
   this.__type = 'EventExtension';
 }
+
 EventExtension.prototype = Object.create(Extension.prototype);
 _this.EventExtension = EventExtension;
-
 
 
 /**
@@ -1767,6 +1774,7 @@ export function ReconciliationServiceExtension(derivedColumns, manualMatches, id
   }
   this.__type = 'ReconciliationServiceExtension';
 }
+
 ReconciliationServiceExtension.prototype = Object.create(Extension.prototype);
 ReconciliationServiceExtension.revive = function (data) {
   var i;
@@ -1808,13 +1816,20 @@ ReconciliationServiceExtension.revive = function (data) {
 }
 _this.ReconciliationServiceExtension = ReconciliationServiceExtension;
 
+export const AnnotationStatus = {
+  invalid: 'invalid',
+  warning: 'warning',
+  valid: 'valid',
+};
+
 /**
  * Defines an annotation using the Tabular Annotation UI. Annotations with specific conciliators can be used to extend data from knowledge graphs or other services.
  * @param {string} columnName name of the column to annotate
  * @param {number} subjectAnnotationId subject column of the triple
  * @param {Array<Property>} properties property of the triple
- * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
+ * @param {string} status whether the annotation is 'valid', 'invalid', or in 'warning' state
  * @param {number} id unique ID of the annotation; NB! should be generated by the transformation prototype function "getUniqueId".
+ * @param extensions
  */
 export function Annotation(columnName, subjectAnnotationId, properties, status, id, extensions) {
   if (!this.generateClojure) {
@@ -1828,7 +1843,7 @@ export function Annotation(columnName, subjectAnnotationId, properties, status, 
   this.subjectAnnotationId = subjectAnnotationId || 0; // zero if not specified
   this.columnName = columnName || '';
   this.properties = properties || [];
-  this.status = status || '';
+  this.status = status || AnnotationStatus.invalid;
   if (extensions) {
     if (extensions.length) {
       this.extensions = extensions;
@@ -1841,6 +1856,7 @@ export function Annotation(columnName, subjectAnnotationId, properties, status, 
 
   this.__type = 'Annotation';
 }
+
 Annotation.prototype = Object.create(ReferencableObject.prototype);
 Annotation.prototype.addOrReplaceExtension = function (extension) {
   if (!(extension instanceof Extension)) {
@@ -1866,7 +1882,7 @@ _this.Annotation = Annotation;
  * @param {string} columnName name of the column that is annotated as a URI node
  * @param {number} subjectAnnotationId subject column of the triple
  * @param {Array<Property>} properties one or properties of the triple; instance of TDM Property
- * @param {Array<ConstantURI>} columnTypes one or more types of the column contents; 
+ * @param {Array<ConstantURI>} columnTypes one or more types of the column contents;
  * @param {string} urifyPrefix prefix of the namespace to use to create a URI from the column annotated
  * @param {boolean} isSubject whether or not this is a subject column
  * @param {string} status whether the annotation is 'valid', 'invalid', 'wrong', or in 'warning' state
@@ -1876,21 +1892,22 @@ _this.Annotation = Annotation;
  * @param {Object} reconciliation reconciliation object in case the annotation has resulted from a reconciliation
  */
 export function URINodeAnnotation(columnName, subjectAnnotationId,
-  properties,
-  columnTypes,
-  urifyPrefix,
-  isSubject, status, id, consiliatorServiceName, extensions, reconciliation) {
+                                  properties,
+                                  columnTypes,
+                                  urifyPrefix,
+                                  isSubject, status, id, consiliatorServiceName, extensions, reconciliation) {
 
-  this.columnName = ''; this.id = 0; // HACK - Typescript is an asshole...
+  this.columnName = '';
+  this.id = 0; // HACK - Typescript is an asshole...
   Annotation.call(this, columnName, subjectAnnotationId, properties, status, id, extensions);
 
   // in case it is a URI node annotation
   this.columnTypes = columnTypes || [];
   this.urifyPrefix = urifyPrefix || '';
 
-  // helper 
+  // helper
   this.isSubject = isSubject || '';
-  this.status = status || '';
+  this.status = status || AnnotationStatus.invalid;
 
   // the name of the conciliator service used to annotate the column (defined in case it was reconciled)
   this.conciliatorServiceName = consiliatorServiceName || '';
@@ -1906,9 +1923,10 @@ export function URINodeAnnotation(columnName, subjectAnnotationId,
   }
   this.__type = 'URINodeAnnotation';
 }
+
 URINodeAnnotation.prototype = Object.create(Annotation.prototype);
 URINodeAnnotation.prototype.getGraphNode = function () {
-  var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
+  var notEmptyCondition = new Condition({'id': 0, 'value': this.columnName}, {'id': 0, 'name': 'Not empty'}, '', null);
   return new ColumnURI(this.urifyPrefix, this.columnName, notEmptyCondition, []);
 };
 URINodeAnnotation.revive = function (data) {
@@ -1966,7 +1984,7 @@ URINodeAnnotation.revive = function (data) {
     }
   }
   return new URINodeAnnotation(data.columnName, data.subjectAnnotationId, props, colTypes, data.urifyPrefix, data.isSubject, data.status, data.id, data.conciliatorServiceName, extensions, rec);
-}
+};
 _this.URINodeAnnotation = URINodeAnnotation;
 
 /**
@@ -1981,9 +1999,9 @@ _this.URINodeAnnotation = URINodeAnnotation;
  * @param {Array<Extension>} extensions extensions of the annotated columns
  */
 export function LiteralNodeAnnotation(columnName, subjectAnnotationId,
-  properties,
-  columnDatatype,
-  langTag, status, id, extensions) {
+                                      properties,
+                                      columnDatatype,
+                                      langTag, status, id, extensions) {
 
 
   this.id = 0; // HACK - Typescript is an asshole...
@@ -1995,6 +2013,7 @@ export function LiteralNodeAnnotation(columnName, subjectAnnotationId,
 
   this.__type = 'LiteralNodeAnnotation';
 }
+
 LiteralNodeAnnotation.prototype = Object.create(Annotation.prototype);
 LiteralNodeAnnotation.prototype.getGraphNode = function () {
 
@@ -2040,7 +2059,7 @@ LiteralNodeAnnotation.prototype.getGraphNode = function () {
     codDt = 'unspecified'
   }
 
-  var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
+  var notEmptyCondition = new Condition({'id': 0, 'value': this.columnName}, {'id': 0, 'name': 'Not empty'}, '', null);
 
   return new ColumnLiteral(this.columnName, this.codDt, null, null, this.langTag, this.columnDatatype, notEmptyCondition);
 }
@@ -2077,7 +2096,7 @@ LiteralNodeAnnotation.revive = function (data) {
   }
 
   return new LiteralNodeAnnotation(data.columnName, data.subjectAnnotationId, props, data.columnDatatype, data.langTag, data.status, data.id, extensions);
-}
+};
 _this.LiteralNodeAnnotation = LiteralNodeAnnotation;
 
 /**
@@ -2112,6 +2131,7 @@ export function Reconciliation(columnName, threshold, inferredTypes, automaticMa
 
   this.__type = 'Reconciliation';
 }
+
 _this.Reconciliation = Reconciliation;
 
 /**
@@ -2133,6 +2153,7 @@ export function SingleColumnReconciliation(columnName, threshold, inferredTypes,
 
   this.__type = 'SingleColumnReconciliation';
 }
+
 SingleColumnReconciliation.prototype = Object.create(Reconciliation.prototype);
 SingleColumnReconciliation.revive = function (data) {
 
@@ -2160,7 +2181,7 @@ SingleColumnReconciliation.revive = function (data) {
 _this.SingleColumnReconciliation = SingleColumnReconciliation;
 
 /**
- * Describes settings for column data for multi-column reconciliations. 
+ * Describes settings for column data for multi-column reconciliations.
  * @param {string} columnName name of column to be matched
  * @param {string} property property name to reconcile the values of the column against
  * @param {string} similarityMeasure name of the similarity measure used for reconciliation
@@ -2174,6 +2195,7 @@ export function ReconciliationSupportColumnSetting(columnName, property, similar
 
   this.__type = 'ReconciliationSupportColumnSetting';
 }
+
 _this.ReconciliationSupportColumnSetting = ReconciliationSupportColumnSetting;
 
 /**
@@ -2200,6 +2222,7 @@ export function MultiColumnReconciliation(columnName, threshold, inferredTypes, 
   }
   this.__type = 'MultiColumnReconciliation';
 }
+
 MultiColumnReconciliation.prototype = Object.create(Reconciliation.prototype);
 _this.MultiColumnReconciliation = MultiColumnReconciliation;
 
@@ -3068,18 +3091,11 @@ Transformation.prototype.getPropertyNodeFullyQualifiedName = function (propertyN
     return propertyNode.propertyName;
   }
   return '';
-}
+};
 
 Transformation.prototype.getValidAnnotations = function () {
-  var validAnnotations = [];
-  var i;
-  for (i = 0; i < this.annotations.length; ++i) {
-    if (this.annotations[i].status === 'valid') {
-      validAnnotations.push(this.annotations[i]);
-    }
-  }
-  return validAnnotations;
-}
+  return this.annotations.filter(annotation => annotation.status === AnnotationStatus.valid);
+};
 
 Transformation.prototype.getUniqueId = function () {
   if (!parseInt(this.identifierSequence)) {
@@ -3156,7 +3172,7 @@ Transformation.prototype.removeAnnotationById = function (annotationId) {
   return false;
 };
 /**
- * Finds all annotations that are objects for a given (subject) annotation. 
+ * Finds all annotations that are objects for a given (subject) annotation.
  * @param  {number} annotationId ID of annotation to match with
  * @returns all object annotations for the given annotation IDs
  */
@@ -3226,6 +3242,66 @@ Transformation.prototype.getExtensionOfDerivedColumn = function (columnName) {
     }
   }
   return null;
+};
+
+/**
+ * Check the new status of an annotation, which can be:
+ * - valid: the annotation itself and its ancestors (subject) annotations are valid
+ * - warning: the annotation itself is valid, but its ancestors are not
+ * - invalid: the annotation itself is wrong (e.g., some fields are empty, it's linked to
+ *            a subject that is a LiterlColumn, etc.)
+ *
+ * @returns extension object that derived this column
+ * @param {Annotation} annotation the annotation to check
+ * @param {Map} statusMap a map with the status of all traversed annotations
+ * @returns {Map}
+ */
+Transformation.prototype.getUpdatedAnnotationStatus = function (annotation, statusMap) {
+  if (annotation instanceof LiteralNodeAnnotation) {
+    if (!annotation.properties.length || !annotation.subjectAnnotationId ||
+      !annotation.columnDatatype ||
+      (annotation.columnDatatype === 'http://www.w3.org/2001/XMLSchema#string' && !annotation.langTag)) {
+      statusMap.set(annotation.id, AnnotationStatus.invalid);
+      return statusMap;
+    }
+
+  } else if (annotation instanceof URINodeAnnotation) {
+    if (!annotation.columnTypes.length || !annotation.urifyPrefix ||
+      (annotation.properties.length && !annotation.subjectAnnotationId) ||
+      (!annotation.properties.length && annotation.subjectAnnotationId)) {
+      statusMap.set(annotation.id, AnnotationStatus.invalid);
+      return statusMap;
+    }
+  }
+
+  if (annotation.subjectAnnotationId) {
+    const subjectAnnotation = this.getAnnotationById(annotation.subjectAnnotationId);
+    if (subjectAnnotation instanceof LiteralNodeAnnotation) {
+      statusMap.set(annotation.id, AnnotationStatus.invalid);
+      return statusMap;
+    }
+    if (!statusMap.has(subjectAnnotation.id)) {
+      this.getUpdatedAnnotationStatus(subjectAnnotation, statusMap)
+    }
+    if (statusMap.get(annotation.subjectAnnotationId) !== AnnotationStatus.valid) {
+      statusMap.set(annotation.id, AnnotationStatus.warning);
+      return statusMap;
+    }
+  }
+
+  statusMap.set(annotation.id, AnnotationStatus.valid);
+  return statusMap;
+};
+
+Transformation.prototype.validateAnnotations = function () {
+  let statusMap = new Map();
+  this.annotations.forEach(annotation => {
+    if (!statusMap.has(annotation.id)) {
+      statusMap = this.getUpdatedAnnotationStatus(annotation, statusMap);
+      console.log(statusMap);
+    }
+    annotation.status = statusMap.get(annotation.id);
+  });
 };
 
 _this.Transformation = Transformation;

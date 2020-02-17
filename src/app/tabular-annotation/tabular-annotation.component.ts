@@ -10,7 +10,7 @@ import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
-import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
+import { Annotation, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
@@ -198,6 +198,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.transformationObj.validateAnnotations();
       this.hot.updateSettings({
         columns: this.getTableColumns(),
         colHeaders: (col) => this.getTableHeader(col)
@@ -342,6 +343,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     }
 
     dialogRef.afterClosed().subscribe(result => {
+      this.transformationObj.validateAnnotations();
+
 
       /*  if (result && result['chosen']){//open reconciliation form
 
@@ -399,7 +402,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Creates the HTML for displaying the enrichment button of a column.
-   * @param  {string} columnName name of column 
+   * @param  {string} columnName name of column
    * @param  {number} colIndex index of column
    * @returns HTML code for enrichment button
    */
@@ -500,10 +503,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // STATUS ICON
       let statusIcon = '';
       let tooltipContent = '';
-      if (annotation.status === AnnotationStatuses.wrong || annotation.status === AnnotationStatuses.invalid) {
+      if (annotation.status === transformationDataModel.AnnotationStatus.invalid) {
         statusIcon = '<i class="material-icons" style="color:red	;">error</i>';
         tooltipContent = 'This column is not correctly annotated';
-      } else if (annotation.status === AnnotationStatuses.warning) {
+      } else if (annotation.status === transformationDataModel.AnnotationStatus.warning) {
         statusIcon = '<i class="material-icons" style="color:Gold	;">warning</i>';
         if (annotation.subjectAnnotationId) {
           const tmpAnno = this.transformationObj.getAnnotationById(annotation.subjectAnnotationId);
@@ -511,7 +514,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         } else {
           tooltipContent = 'This column annotation has no subject';
         }
-      } else if (annotation.status === AnnotationStatuses.valid) {
+      } else if (annotation.status === transformationDataModel.AnnotationStatus.valid) {
         statusIcon = '<i class="material-icons" style="color:green;">check_circle</i>';
         tooltipContent = 'This column is properly annotated';
       }
@@ -598,7 +601,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
 
-    /* 
+    /*
     // temp code for testing of annotation model
     let type1 = new transformationDataModel.ConstantURI('', "http://xmlns.com/foaf/0.1/Person", [], []);
     let subjectAnnotation = new transformationDataModel.URINodeAnnotation(
