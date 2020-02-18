@@ -10,7 +10,7 @@ import { TransformationService } from '../transformation.service';
 import { DispatchService } from '../dispatch.service';
 import { ActivatedRoute } from '@angular/router';
 import { RoutingService } from '../routing.service';
-import { Annotation, AnnotationStatuses, ColumnTypes, XSDDatatypes } from './annotation.model';
+import { Annotation, ColumnTypes, XSDDatatypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationFormComponent } from './annotation-form/annotation-form.component';
 import { MatDialog } from '@angular/material';
@@ -198,6 +198,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.transformationObj.validateAnnotations();
       this.hot.updateSettings({
         columns: this.getTableColumns(),
         colHeaders: (col) => this.getTableHeader(col)
@@ -235,6 +236,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           reconciliationServiceId = 'sameas';
         } else if (extension instanceof transformationDataModel.ECMWFWeatherExtension) {
           reconciliationServiceId = 'ecmwf';
+        } else if (extension instanceof transformationDataModel.KeywordsCategoriesExtension) {
+          reconciliationServiceId = 'keywordcategories';
         }
       }
     }
@@ -284,21 +287,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         indexCol: headerIdx,
         reconciliationServiceId: reconciliationServiceId,
         colDate: false,
+        keywordColumn: false,
         geoSources: this.geoNamesSources,
         categoriesSources: this.categoriesSources
       }
     };
-    const dialogConfigDateColumn = {
-      width: '900px',
-      data: {
-        header: currentHeader,
-        indexCol: headerIdx,
-        reconciliationServiceId: reconciliationServiceId,
-        colDate: true,
-        geoSources: this.geoNamesSources,
-        categoriesSources: this.categoriesSources
-      }
-    };
+    const dialogConfigDateColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colDate: true}}}};
+    const dialogConfigKeywordColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colKeyword: true}}}};
     const dialogConfigReconciliation = {
       width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colDate: false }
@@ -313,6 +308,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
           if (shortType === 'dateTime') { // it's a date column --> open dialogConfigDateCOlumn
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateColumn);
+          } else if (shortType === 'keyword') { // it's a keyword column -> open dialogConfigKeywordColumn
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigKeywordColumn);
           } else {
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
           }
@@ -332,7 +329,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
         if (shortType === 'dateTime') {// it's a dateColumn --> open dialogConfigDateCOlumn
           dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateColumn);
-        } else {// it's not a dateColumn --> open a normal ReconciliationComponent
+        } else if (shortType === 'keyword') {
+          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigKeywordColumn);
+        } else {// it's not a dateColumn or keywordColumn --> open a normal ReconciliationComponent
           dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
         }
       }
@@ -342,6 +341,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     }
 
     dialogRef.afterClosed().subscribe(result => {
+      this.transformationObj.validateAnnotations();
+
 
       /*  if (result && result['chosen']){//open reconciliation form
 
@@ -399,7 +400,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
 
   /**
    * Creates the HTML for displaying the enrichment button of a column.
-   * @param  {string} columnName name of column 
+   * @param  {string} columnName name of column
    * @param  {number} colIndex index of column
    * @returns HTML code for enrichment button
    */
@@ -428,7 +429,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
             // only date literal annotations can be used in extensions
             const type = annotation.columnDatatype;
             const shortType = type ? type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length) : '';
-            if (shortType == 'dateTime') {
+            if (shortType === 'dateTime' || shortType === 'keyword') {
               buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
               tooltipContent = 'Extend dataset';
             }
@@ -450,6 +451,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
             switch (shortType) {
               // here should be all of the exceptions when extension should be the possible option
               case 'dateTime':
+              case 'keyword':
                 // extension
                 buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
                 tooltipContent = 'Extend dataset';
@@ -500,10 +502,10 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       // STATUS ICON
       let statusIcon = '';
       let tooltipContent = '';
-      if (annotation.status === AnnotationStatuses.wrong || annotation.status === AnnotationStatuses.invalid) {
+      if (annotation.status === transformationDataModel.AnnotationStatus.invalid) {
         statusIcon = '<i class="material-icons" style="color:red	;">error</i>';
         tooltipContent = 'This column is not correctly annotated';
-      } else if (annotation.status === AnnotationStatuses.warning) {
+      } else if (annotation.status === transformationDataModel.AnnotationStatus.warning) {
         statusIcon = '<i class="material-icons" style="color:Gold	;">warning</i>';
         if (annotation.subjectAnnotationId) {
           const tmpAnno = this.transformationObj.getAnnotationById(annotation.subjectAnnotationId);
@@ -511,7 +513,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         } else {
           tooltipContent = 'This column annotation has no subject';
         }
-      } else if (annotation.status === AnnotationStatuses.valid) {
+      } else if (annotation.status === transformationDataModel.AnnotationStatus.valid) {
         statusIcon = '<i class="material-icons" style="color:green;">check_circle</i>';
         tooltipContent = 'This column is properly annotated';
       }
@@ -598,7 +600,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     });
 
 
-    /* 
+    /*
     // temp code for testing of annotation model
     let type1 = new transformationDataModel.ConstantURI('', "http://xmlns.com/foaf/0.1/Person", [], []);
     let subjectAnnotation = new transformationDataModel.URINodeAnnotation(

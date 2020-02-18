@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Annotation, AnnotationStatuses, ColumnTypes } from './annotation.model';
+import { Annotation, ColumnTypes } from './annotation.model';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 
 @Injectable()
@@ -24,6 +24,7 @@ export class AnnotationService {
    * if the namespace is known; alternatively, a new prefix is generated and inserted into the
    * rdfVocab array.
    * @param {string} namespace
+   * @param transformation
    * @returns {string} a valid prefix
    */
   getPrefixForNamespace(namespace: string, transformation: any) {

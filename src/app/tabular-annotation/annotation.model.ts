@@ -14,14 +14,7 @@ export const XSDDatatypes = {
   'boolean': 'http://www.w3.org/2001/XMLSchema#boolean',
   'date': 'http://www.w3.org/2001/XMLSchema#dateTime',
   'string': 'http://www.w3.org/2001/XMLSchema#string',
-  'custom': ''
-};
-
-export const AnnotationStatuses = {
-  invalid: 'invalid' as 'invalid',
-  wrong: 'wrong' as 'wrong',
-  warning: 'warning' as 'warning',
-  valid: 'valid' as 'valid',
+  'custom': ['http://ew-shopp.eu/ontology/keyword']
 };
 
 export class Annotation {

@@ -393,7 +393,10 @@
       [disabled]="!selectedKGService || dataLoading" (click)="fetchSameAsData()" cdkFocusInitial>Extend
     </button>
   </ng-container>
-
+  <ng-container *ngIf="selectedServiceId === 'keywordscategories'">
+    <button mat-button class="btn btn-sm btn-link" (click)="fetchCategoriesForKeyword()" cdkFocusInitial>Fetch Categories data!
+    </button>
+  </ng-container>
   <ng-container *ngIf="selectedServiceId === 'ecmwf'">
     <button *ngIf="isGeonamesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(selectedWeatherOffsets && selectedWeatherParameters &&
           (dateChoice === 'fromCol' && readDatesFromCol || dateChoice === 'fromPicker' && selectedDate))"
