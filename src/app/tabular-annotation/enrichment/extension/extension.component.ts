@@ -78,7 +78,7 @@ export class ExtensionComponent implements OnInit {
   public extendOnCols: string[];
   
   //Manuel
-  public dateOperators: string[];c
+  public dateOperators: string[];
   public group : any;
   public filters: FormArray;
   public dateExtensionDisplayedColumns = ['propertyId', 'operator', 'propertyValue', 'actions'];
@@ -86,8 +86,8 @@ export class ExtensionComponent implements OnInit {
   public operators: string[] = [];
   public propertiesValue : string[] = [];
   public defaultFilter: CustomEventFilerModel = {
-    propertyId: 'name',
-    operator: '=',
+    propertyId: 'startDate',
+    operator: '==',
     propertyValue: this.header
   }; 
   public dateExtensionDataSource: MatTableDataSource<any> 
@@ -130,8 +130,26 @@ export class ExtensionComponent implements OnInit {
     this.group = new FormGroup({
       filters: this.filters
     });
-    this.propertiesID = [ 'name', 'surname', 'address', 'email' ];
-    this.operators = [ '>', '<', '+', '-' ];
+    this.propertiesID = [ 'identifier',
+    'name.text',
+    'startDate',
+    'endDate',
+    'category.identifier',
+    'product.identifier',
+    'product.gtin13',
+    'product.description',
+    'product.sku',
+    'product.seller.identifier',
+    'measure.priceChanged',
+    'measure.priceChange',
+    'measure.price'
+  ];
+    this.operators = [ '==', '!=', 
+       '<', '<=', 
+    '>', '>=', 
+    'IN', 'NOT IN', 
+    'LIKE', 'NOT LIKE', 
+    '=~', '!~' ];
     this.propertiesValue = this.enrichmentService.headers;
     this.dataSource = new MatTableDataSource();
     this.defaultFilter.propertyValue = this.header;
@@ -445,18 +463,26 @@ export class ExtensionComponent implements OnInit {
     let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
 
     let cols = [];
-    console.log('col evolution')
+    console.log('---filters---')
+    console.log(this.filters.value)
+
+    this.extendOnCols = [];
+    // console.log('col evolution')
     allDates.forEach((date_in_row, index) => {  
       query = []; 
-      this.filters.value.forEach(element => {
+      this.filters.value.forEach((element, id) => {
+        console.log('---- element ------' + id)
+        console.log(element)
 
         let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
         let value;
         if (isColumn){
           value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
-          if (cols.indexOf(this.header) < 0){
-            cols.push(this.header);
-            console.log(cols)
+          if (cols.indexOf(element['propertyValue']) < 0){
+            cols.push(element['propertyValue']);
+            if (element['propertyValue'] != this.header){
+              this.extendOnCols.push(element['propertyValue']);
+            }
           }
         }else{
           value = element['propertyValue'];
@@ -472,8 +498,12 @@ export class ExtensionComponent implements OnInit {
       });
 
     //Setup the columns for the key-matching
-    this.extendOnCols = [];
     
+    console.log('cols and after extendOnCols')
+    console.log(cols)
+    console.log(this.extendOnCols)
+
+
     payload = {'queries' : queries};
 
     console.log(payload);
