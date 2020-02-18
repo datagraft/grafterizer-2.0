@@ -40,6 +40,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   availableNamespaces: string[];
   availableColumnValuesTypes = Object.keys(ColumnTypes);
   availableDatatypes = Object.keys(XSDDatatypes);
+  availableCustomDatatypes = XSDDatatypes.custom;
 
   private transformationSubscription: Subscription;
   private transformationObj: any;
@@ -346,6 +347,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   changeUrifyNamespace(namespaceValue) {
     const formElement = this.annotationForm.get('columnInfo.urifyNamespace');
     formElement.setValue(namespaceValue);
+    formElement.markAsDirty();
+  }
+
+  /**
+   * Set the value for the formElemement customDatatype (it cannot be done automatically)
+   * TODO: remove this method when Clarity will expose the autocomplete functionality
+   * @param datatypeValue
+   */
+  changeCustomDatatype(datatypeValue) {
+    const formElement = this.annotationForm.get('columnInfo.customDatatype');
+    formElement.setValue(datatypeValue);
     formElement.markAsDirty();
   }
 

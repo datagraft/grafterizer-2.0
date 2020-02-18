@@ -104,7 +104,8 @@
           <label for="customDatatype" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm"
             [class.invalid]="annotationForm.get('columnInfo.customDatatype').invalid
                         && (annotationForm.get('columnInfo.customDatatype').dirty || annotationForm.get('columnInfo.customDatatype').touched) ||
-                        annotationForm.hasError('invalidCustomDatatype')">
+                        annotationForm.hasError('invalidCustomDatatype')" auto-complete
+                 [source]="availableCustomDatatypes" (valueChanged)="changeCustomDatatype($event)">
             <input id="customDatatype" type="text" formControlName="customDatatype" size="45">
             <span class="tooltip-content" *ngIf="annotationForm.hasError('invalidCustomDatatype')">
               {{annotationForm.errors['invalidCustomDatatype'].errorMessage}}
