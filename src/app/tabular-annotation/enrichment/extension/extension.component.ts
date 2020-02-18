@@ -145,7 +145,7 @@ export class ExtensionComponent implements OnInit {
       this.services.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
       this.services.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
       this.services.push(new ConciliatorService({ 'id': 'ce', 'name': 'CustomEvent', group: 'events' }));
-      
+      this.services.push(new ConciliatorService({ 'id': 'ide', 'name': 'Event ID', group: 'events' }))
       // this.reconciledFromService = new ConciliatorService({
       //   'id': 'geonames',
       //   'name': 'GeoNames',
@@ -472,7 +472,7 @@ export class ExtensionComponent implements OnInit {
       });
 
     //Setup the columns for the key-matching
-    this.extendOnCols = cols;
+    this.extendOnCols = [];
     
     payload = {'queries' : queries};
 
@@ -480,7 +480,6 @@ export class ExtensionComponent implements OnInit {
 
     const basedOn = this.isColDate ? 'date' : 'place';
 
-    // The forEach will become a .subscribe on an Observable like the weatherData's one
     let httpResult = this.enrichmentService.dateData(basedOn, payload, cols)
     console.log('------httpResult------')
     console.log(httpResult)

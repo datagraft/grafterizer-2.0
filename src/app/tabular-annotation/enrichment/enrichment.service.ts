@@ -447,7 +447,6 @@ export class EnrichmentService {
         // console.log('----------properties-----------')
         // console.log(properties)
 
-
         e.addProperties(properties);
         // console.log('----------e-----------')
         // console.log(e)
