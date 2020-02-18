@@ -24,6 +24,7 @@ export class ExtensionComponent implements OnInit {
   public previewHeader: any;
   public colIndex: any;
   public isColDate: boolean;
+  public isColKeyword: boolean;
   public extensionData: Extension[];
   public propertyDescriptions: Map<string, Property>;
   public extensionServices: ConciliatorService[];
@@ -98,6 +99,7 @@ export class ExtensionComponent implements OnInit {
     this.categoriesAllowedSources = this.categoriesSources;
     this.colIndex = this.dialogInputData.indexCol;
     this.isColDate = this.dialogInputData.colDate;
+    this.isColKeyword = this.dialogInputData.colKeyword;
     this.showPreview = false;
     this.dataLoading = false;
     this.extensionData = [];
@@ -134,6 +136,8 @@ export class ExtensionComponent implements OnInit {
       //   identifierSpace: 'http://sws.geonames.org/',
       //   schemaSpace: 'http://www.geonames.org/ontology#'
       // });
+    } else if (this.isColKeyword) {
+      this.extensionServices.push(new ConciliatorService({'id': 'keywordscategories', 'name': 'Keyword to Categories', group: 'keywords'}));
     } else if (this.dialogInputData.reconciliationServiceId) {
       this.reconciledFromService = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
       // this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
@@ -377,6 +381,22 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
+  public fetchCategoriesForKeyword() {
+    this.dataLoading = true;
+    this.showPreview = true;
+
+    this.extendOnCols = []; // keywordtocategories extension is always based on a single column - no additional cols
+
+    // pass parameters to enrichment service through Extension object
+    this.enrichmentService.keywordsToCategoriesData(this.header).subscribe((data) => {
+      this.extensionData = data;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
+  }
+
   public sameas() {
     // set data loading and showpreview
     this.dataLoading = true;
@@ -606,10 +626,9 @@ export class ExtensionComponent implements OnInit {
       switch (this.selectedServiceId) {
         case 'geonames':
           // date column (can't extend using non-dates or non-reconciled cols)
-          break;
         case 'er':
-          break;
         case 'sameas':
+        case 'keywordscategories':
           break;
         case 'ecmwf':
           this.previewProperties;

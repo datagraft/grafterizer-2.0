@@ -236,6 +236,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           reconciliationServiceId = 'sameas';
         } else if (extension instanceof transformationDataModel.ECMWFWeatherExtension) {
           reconciliationServiceId = 'ecmwf';
+        } else if (extension instanceof transformationDataModel.KeywordsCategoriesExtension) {
+          reconciliationServiceId = 'keywordcategories';
         }
       }
     }
@@ -285,21 +287,13 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         indexCol: headerIdx,
         reconciliationServiceId: reconciliationServiceId,
         colDate: false,
+        keywordColumn: false,
         geoSources: this.geoNamesSources,
         categoriesSources: this.categoriesSources
       }
     };
-    const dialogConfigDateColumn = {
-      width: '900px',
-      data: {
-        header: currentHeader,
-        indexCol: headerIdx,
-        reconciliationServiceId: reconciliationServiceId,
-        colDate: true,
-        geoSources: this.geoNamesSources,
-        categoriesSources: this.categoriesSources
-      }
-    };
+    const dialogConfigDateColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colDate: true}}}};
+    const dialogConfigKeywordColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colKeyword: true}}}};
     const dialogConfigReconciliation = {
       width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colDate: false }
@@ -314,6 +308,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
           const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
           if (shortType === 'dateTime') { // it's a date column --> open dialogConfigDateCOlumn
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateColumn);
+          } else if (shortType === 'keyword') { // it's a keyword column -> open dialogConfigKeywordColumn
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigKeywordColumn);
           } else {
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
           }
@@ -333,7 +329,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
         if (shortType === 'dateTime') {// it's a dateColumn --> open dialogConfigDateCOlumn
           dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateColumn);
-        } else {// it's not a dateColumn --> open a normal ReconciliationComponent
+        } else if (shortType === 'keyword') {
+          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigKeywordColumn);
+        } else {// it's not a dateColumn or keywordColumn --> open a normal ReconciliationComponent
           dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
         }
       }
@@ -431,7 +429,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
             // only date literal annotations can be used in extensions
             const type = annotation.columnDatatype;
             const shortType = type ? type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length) : '';
-            if (shortType == 'dateTime') {
+            if (shortType === 'dateTime' || shortType === 'keyword') {
               buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
               tooltipContent = 'Extend dataset';
             }
@@ -453,6 +451,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
             switch (shortType) {
               // here should be all of the exceptions when extension should be the possible option
               case 'dateTime':
+              case 'keyword':
                 // extension
                 buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
                 tooltipContent = 'Extend dataset';

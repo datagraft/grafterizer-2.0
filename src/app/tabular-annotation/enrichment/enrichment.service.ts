@@ -265,6 +265,40 @@ export class EnrichmentService {
     });
   }
 
+  keywordsToCategoriesData(header: string): Observable<Extension[]> {
+    // taken all values of the column without duplicates and empty values
+    const colData = this.data.map(row => row[':' + header]);
+    let values = Array.from(new Set(colData));
+
+    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
+
+    // create objects {id:..., properties:{prop1:[], prp2:[],...}}
+    const extensions: Extension[] = [];
+
+    const requestURL = this.asiaURL + '/keywordscategories';
+
+    // create query params
+    const params = new HttpParams().set('kws', values.join(','));
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }),
+      params: params
+    };
+
+    return this.http.post(requestURL, null, httpOptions).map((res: Object[]) => {
+      const properties: Map<string, any[]> = new Map();
+      res.forEach(result => {
+        const e = new Extension(result['keyword'], [header + '_categories']);
+        properties.set(header + '_categories', [{ 'str': result['categories'].join(',') }]);
+        e.addProperties(properties);
+        extensions.push(e);
+      });
+      return extensions;
+    });
+  }
+
   sameasData(header: string, sameAsSource: ConciliatorService, sameAsDestination: ConciliatorService): Observable<Extension[]> {
     // taken all values of the column without duplicates and empty values
     const colData = this.data.map(row => row[':' + header]);
