@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 // Manuel
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatTable, MatTableDataSource } from '@angular/material';
+import { Keys } from '@swimlane/ngx-datatable/release/utils';
 
 
 // Manuel
@@ -250,7 +251,6 @@ export class ExtensionComponent implements OnInit {
     this.dataSource = new MatTableDataSource(this.filters.controls);
   }
 
-  
   private emptyRow(): CustomEventFilerModel {
     return {
       propertyId: null,
@@ -463,13 +463,16 @@ export class ExtensionComponent implements OnInit {
     let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
 
     let cols = [];
+    let key = [];
+    let keys = [];
     console.log('---filters---')
     console.log(this.filters.value)
 
     this.extendOnCols = [];
     // console.log('col evolution')
     allDates.forEach((date_in_row, index) => {  
-      query = []; 
+      query = [];
+      key = [];
       this.filters.value.forEach((element, id) => {
         console.log('---- element ------' + id)
         console.log(element)
@@ -487,25 +490,26 @@ export class ExtensionComponent implements OnInit {
         }else{
           value = element['propertyValue'];
         }
-          query.push({
-            'propertyID': element['propertyId'],
-            'operator' : element['operator'],
-            'value' : value,
-            'isColumn' : isColumn 
-          });
+        query.push({
+          'propertyID': element['propertyId'],
+          'operator' : element['operator'],
+          'value' : value,
+          'isColumn' : isColumn 
         });
-        queries.push(query);
+        key.push(value)
       });
+      keys.push(key)
+      queries.push({'key' : key, 'filters' : query});
+    });
 
     //Setup the columns for the key-matching
     
-    console.log('cols and after extendOnCols')
-    console.log(cols)
-    console.log(this.extendOnCols)
-
+    // console.log('cols and after extendOnCols')
+    // console.log(cols)
+    // console.log(this.extendOnCols)
 
     payload = {'queries' : queries};
-
+    console.log('--payloadAA--')
     console.log(payload);
 
     const basedOn = this.isColDate ? 'date' : 'place';
