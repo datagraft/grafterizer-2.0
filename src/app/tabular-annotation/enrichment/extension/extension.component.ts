@@ -397,7 +397,7 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
-  public sameas() {
+  public fetchSameAsData() {
     // set data loading and showpreview
     this.dataLoading = true;
     this.showPreview = true;
