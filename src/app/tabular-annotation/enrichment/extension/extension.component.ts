@@ -342,7 +342,7 @@ export class ExtensionComponent implements OnInit {
     }
 
     const weatherConfig = new WeatherConfigurator({ ...wcObj, ...dateConfig, ...placeConfig });
-    console.log('----weatherConfig')
+    console.log('----weatherConfig-------')
     console.log(weatherConfig)
     const basedOn = this.isColDate ? 'date' : 'place';
 
@@ -445,31 +445,31 @@ export class ExtensionComponent implements OnInit {
     let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
 
     let cols = [];
-    
+    console.log('col evolution')
     allDates.forEach((date_in_row, index) => {  
       query = []; 
       this.filters.value.forEach(element => {
 
-      let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
-      let value;
-      if (isColumn){
-        value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
-        if (!(this.header in cols)){
-          cols.push(this.header);
+        let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
+        let value;
+        if (isColumn){
+          value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
+          if (cols.indexOf(this.header) < 0){
+            cols.push(this.header);
+            console.log(cols)
+          }
+        }else{
+          value = element['propertyValue'];
         }
-      }else{
-        value = element['propertyValue'];
-      }
-        query.push({
-          'propertyID': element['propertyId'],
-          'operator' : element['operator'],
-          'value' : value,
-          'isColumn' : isColumn 
+          query.push({
+            'propertyID': element['propertyId'],
+            'operator' : element['operator'],
+            'value' : value,
+            'isColumn' : isColumn 
+          });
         });
+        queries.push(query);
       });
-      queries.push(query);
-      // queries.push(query);
-    });
 
     //Setup the columns for the key-matching
     this.extendOnCols = cols;
@@ -490,50 +490,6 @@ export class ExtensionComponent implements OnInit {
     }
     this.dataLoading = false;
   }
-
-    // this.enrichmentService.dateData(payload).forEach(data => {
-    //   console.log('----------data-----------')
-    //   console.log(data)
-
-    //   this.extensionData = data;
-    //   if (this.extensionData.length > 0) {
-    //     this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-    //   }
-    //   this.dataLoading = false;
-    // });
-
-    // let allProperties = [], allOperators = [], allColumns = [];
-    // let JSON = [];
-    
-    // this.filters.value.forEach(element => {
-    //   let isHeader = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
-    //   let couples = []
-    //   let allValues;
-      
-    //   if (isHeader) {
-    //     allValues = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]]); 
-    //   } 
-    //   allDates.forEach((date_in_row, index) => {
-    //     if (isHeader) {
-    //       couples.push([date_in_row, allValues[index]]);
-    //     } else {
-    //       couples.push([date_in_row, element['propertyValue']]);
-    //     }
-        
-    //   });
-    //   // allProperties.push(element['propertyId']);
-    //   // allOperators.push(element['operator']);
-    //   let entry = {
-    //     'property' : element['propertyId'],
-    //     'operator' : element['operator'],
-    //     '' : 
-    //   }
-
-    // });
-
-    
-    
-  // }
 
   public submit() {
     const deriveMaps = [];

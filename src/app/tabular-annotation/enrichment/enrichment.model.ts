@@ -227,8 +227,8 @@ export class Extension {
   }
 
   addProperties(properties: Map<string, any[]>) {
-    console.log('--properties--')
-    console.log(properties)
+    // console.log('--properties--')
+    // console.log(properties)
 
     properties.forEach((value, key) => this.properties.set(key, value));
   }

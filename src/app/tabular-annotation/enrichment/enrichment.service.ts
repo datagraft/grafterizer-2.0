@@ -29,32 +29,11 @@ import { UrlUtils } from '../shared/url-utils';
 
 
 // MANUEL
-// interface fakeHTTPobject {
-//   id: string
-//   measurepriceChanged: string
-//   productgtin13: string
-// };
-
-// let fakeData = {
-//   "string" : [{
-//     "id": "CustomEvents/12442",
-//     "measurepriceChanged": true,
-//     "productgtin13": 8718863014653,
-//   },
-//   {
-//     "id": "CustomEvents/12444",
-//     "measurepriceChanged": true,
-//     "productgtin13": 8801643703257,
-//   }
-//   ]
-// }
-
 
 export function getStudentData() {
   return require('../../../../JSON.json')
 }
 
-// let fakeHTTPResponse :  { string: fakeHTTPobject[] } = JSON.parse(fakeData.toString());
 // END MANUEL
 
 @Injectable()
@@ -587,11 +566,10 @@ export class EnrichmentService {
     
     const extensions: Extension[] = [];
     // console.log(getStudentData())
-    // console.log('---data---')
-    // console.log(data)
-    // console.log(data.results)
+    console.log('---data---')
+    console.log(data)
 
-    payload.forEach(element => {
+    payload['queries'].forEach(element => {
       let key = []
       if (element.isColumn) {
         key.push(element.value)
@@ -623,14 +601,15 @@ export class EnrichmentService {
       return arr;
     }, [])
 
-    
-
-
-    data.results.forEach(res => {
-      // console.log('--------------res--------------')
-      // console.log(res)
-      let e = new Extension(res['rowNumber'], []);
-      e.addProperties(res['values'])
+    data.forEach(res => {
+      const properties: Map<string, any[]> = new Map();
+      
+      console.log('--------------res--------------')
+      console.log(res)
+      let e = new Extension(res['key'], []);
+      let concat = ''
+      properties.set('results', [{str: res['results'].join(', ')}])
+      e.addProperties(properties)
       extensions.push(e)
     });
     console.log(extensions)
@@ -710,13 +689,9 @@ export class EnrichmentService {
 
       const url = 'http://api.geonames.org/searchJSON';
 
-      //Manuel
       let result = this.http
               .get(url, { params: params })
               .map(res => res['geonames']);
-      // console.log('-----------------------------------')
-      // console.log(result);
-      // console.log('-----------------------------------')
       return result
 
       // PREVIOUS CODE (the one which works before)
