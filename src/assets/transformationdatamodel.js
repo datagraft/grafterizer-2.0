@@ -3482,6 +3482,13 @@ Transformation.prototype.removeAnnotationById = function (annotationId) {
           this.removeExtensionById(this.annotations[i].extensions[j].id);
         }
       }
+
+      // reset subject annotation IDs of annotations that have this as subject
+      var objectAnnotations = this.getAllObjectAnnotationsForSubject(annotationId) || [];
+      for (j = 0; j < objectAnnotations.length; ++j) {
+        objectAnnotations[j].subjectAnnotationId = 0;
+      }
+
       // remove annotation itself
       this.annotations.splice(i, 1);
       return true;
@@ -3697,16 +3704,21 @@ Transformation.prototype.getUpdatedAnnotationStatus = function (annotation, stat
 
   if (annotation.subjectAnnotationId) {
     const subjectAnnotation = this.getAnnotationById(annotation.subjectAnnotationId);
-    if (subjectAnnotation instanceof LiteralNodeAnnotation) {
-      statusMap.set(annotation.id, AnnotationStatus.invalid);
-      return statusMap;
-    }
-    if (!statusMap.has(subjectAnnotation.id)) {
-      this.getUpdatedAnnotationStatus(subjectAnnotation, statusMap)
-    }
-    if (statusMap.get(annotation.subjectAnnotationId) !== AnnotationStatus.valid) {
+    if (subjectAnnotation) {
+      if (subjectAnnotation instanceof LiteralNodeAnnotation) {
+        statusMap.set(annotation.id, AnnotationStatus.invalid);
+        return statusMap;
+      }
+      if (!statusMap.has(subjectAnnotation.id)) {
+        this.getUpdatedAnnotationStatus(subjectAnnotation, statusMap);
+      }
+      if (statusMap.get(annotation.subjectAnnotationId) !== AnnotationStatus.valid) {
+        statusMap.set(annotation.id, AnnotationStatus.warning);
+        return statusMap;
+      }
+    } else {
+      annotation.id = 0;
       statusMap.set(annotation.id, AnnotationStatus.warning);
-      return statusMap;
     }
   }
 
