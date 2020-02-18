@@ -310,7 +310,7 @@ export class AppComponent implements OnInit {
     const paramMap = this.route.firstChild.snapshot.paramMap;
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
-      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj);
+      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj, false);
       this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 10000)
         .then((result) => {
           this.transformationSvc.graftwerkDataSource.next(result);
@@ -351,7 +351,7 @@ export class AppComponent implements OnInit {
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
     const existingTransformationID = paramMap.get('transformationId');
-    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false);
     let newTransformationName = null;
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
@@ -482,7 +482,7 @@ export class AppComponent implements OnInit {
   createNewTransformation(distributionID?: string) {
     this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
-    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource);
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false);
     let transformationType = 'graft';
     let transformationCommand = 'my-graft';
 

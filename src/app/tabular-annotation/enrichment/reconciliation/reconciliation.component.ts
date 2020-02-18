@@ -149,9 +149,13 @@ export class ReconciliationComponent implements OnInit {
               this.automaticMatches.set(this.currentReconciliation.automaticMatches[i].valuesToMatch[0], this.currentReconciliation.automaticMatches[i].match[0]);
 
             }
+            if (this.currentReconciliation.manualMatches instanceof Array) {
+              for (i = 0; i < this.currentReconciliation.manualMatches.length; ++i) {
+                this.manualMatches.set(this.currentReconciliation.manualMatches[i].valuesToMatch[0], this.currentReconciliation.manualMatches[i].match[0]);
+              }
+            } else {
 
-            for (i = 0; i < this.currentReconciliation.manualMatches.length; ++i) {
-              this.manualMatches.set(this.currentReconciliation.manualMatches[i].valuesToMatch[0], this.currentReconciliation.manualMatches[i].match[0]);
+              this.currentReconciliation.manualMatches = [this.currentReconciliation.manualMatches ? this.currentReconciliation.manualMatches : ""];
             }
             this.reconciliationForm = this.fb.group({
               selectedGroup: new FormControl(''),
@@ -379,24 +383,30 @@ export class ReconciliationComponent implements OnInit {
       this.selectedServiceObject.getIdentifierSpace(),
       this.transformationObj);
 
+    let extensions = [];
     let newColumnAnnotationId = 0;
+    let subjectAnnotationId = 0;
+    let properties = [];
     if (this.currentAnnotation) {
       newColumnAnnotationId = this.currentAnnotation.id;
+      extensions = this.currentAnnotation.extensions || [];
+      subjectAnnotationId = this.currentAnnotation.subjectAnnotationId;
+      properties = this.currentAnnotation.properties;
     } else {
       newColumnAnnotationId = this.transformationObj.getUniqueId();
     }
 
     let newColumnAnnotation = new transformationDataModel.URINodeAnnotation(
       newColumnName,
-      0, // there is no subject yet
-      [], // there are no properties
+      subjectAnnotationId, // there is no subject yet
+      properties, // there are no properties
       [newAnnotationType], // the type is the guessed type
       urifyPrefix, // we use the just created URIfy prefix
       false, // this is not a subject yet
       'valid', // annotation is not subject or object but has a type
       newColumnAnnotationId,
       this.selectedServiceObject.getId(), // we assign the conciliator name as the so called 'ID' of the selected one
-      [], // no extensions yet
+      extensions, // no extensions yet
       this.currentReconciliation // current reconciliation
     );
 
@@ -409,6 +419,7 @@ export class ReconciliationComponent implements OnInit {
 
     // store changes in the transformation object
     this.transformationSvc.transformationObjSource.next(this.transformationObj);
+    this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
   }
 
   updateServicesForSelectedGroup(): void {
@@ -709,5 +720,13 @@ export class ReconciliationComponent implements OnInit {
         option => option.toLowerCase().includes(filterValue));
     }
     return [];
+  }
+
+  removeCurrentReconciliation() {
+    if (confirm("Are you sure you want to delete this reconciliation?")) {
+      this.transformationObj.removeAnnotationById(this.currentAnnotation.id);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
+      this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
+    }
   }
 }// end export class

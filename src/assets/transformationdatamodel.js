@@ -1464,6 +1464,37 @@ MeltFunction.prototype.generateClojure = function () {
 };
 _this.MeltFunction = MeltFunction;
 
+/**
+ * 
+ * @param  {number} annotationId ID of the annotation containing the reconciliation object
+ * @param  {string} docString documentation string for the function
+ */
+export function ReconciliationFunction(annotationId, docString) {
+  this.annotationId = annotationId || 0;
+  this.docstring = docString || 'Reconcile data';
+  this.__type = 'ReconciliationFunction';
+};
+ReconciliationFunction.revive = function (data) {
+  return new ReconciliationFunction(data.annotationId, data.docstring);
+};
+ReconciliationFunction.prototype = Object.create(GenericFunction.prototype);
+_this.ReconciliationFunction = ReconciliationFunction;
+
+/**
+ * @param  {number} extensionId ID of the extension object for this function
+ * @param  {string} docString documentation string for the function
+ */
+export function ExtensionFunction(extensionId, docString) {
+  this.extensionId = extensionId || 0;
+  this.docstring = docString || 'Extend data';
+  this.__type = 'ExtensionFunction';
+};
+ExtensionFunction.revive = function (data) {
+  return new ExtensionFunction(data.extensionId, data.docstring);
+};
+ExtensionFunction.prototype = Object.create(GenericFunction.prototype);
+_this.ExtensionFunction = ExtensionFunction;
+
 //////////////////// Annotations, extensions and reconciliations ////////////////////
 
 
@@ -1712,7 +1743,83 @@ ECMWFWeatherExtension.revive = function (data) {
 
   return new ECMWFWeatherExtension(derivedColumns, manualMatches, data.id, location, date, weatherFeatures, offsetDays, aggregations);
 };
-_this.WeatherExtension = ECMWFWeatherExtension;
+ECMWFWeatherExtension.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
+  var i, j;
+  var clojureFunctions = [];
+  if (isClojureForJar) {
+
+  } else {
+    for (i = 0; i < this.derivedColumns.length; ++i) {
+      var derivedColName = this.derivedColumns[i];
+      var matchesMapValuesString = '';
+      // first generate the jsedn map object for looking up the values
+      // since this is an ECMWF extension, we have a two-column values key (date and place)
+      for (j = 0; j < this.manualMatches.length; ++j) {
+        var mapKey = '["' + (this.manualMatches[j].valuesToMatch[0] || '') + '" "' + (this.manualMatches[j].valuesToMatch[1] || '') + '"]';
+        var mapValue = this.manualMatches[j].match[i] || '';
+        matchesMapValuesString += mapKey + ' "' + mapValue + '" ';
+      }
+
+      var functionName = 'extend_' + derivedColName + '_weather';
+      var clojureMap = '{ ' + matchesMapValuesString + '}';
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [date place] (get ' + clojureMap + ' [date place] "" ))' + '\n');
+    }
+  }
+  return clojureFunctions;
+};
+ECMWFWeatherExtension.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar) {
+  var i;
+  var clojureFunctions = [];
+  var dateClojureParam = '';
+  var placeClojureParam = '';
+
+  var isDateFromColumn = this.date instanceof WeatherExtensionDateFromColumn;
+  var isLocationFromColumn = this.location instanceof WeatherExtensionLocationColumn;
+
+  if (isDateFromColumn) {
+    dateClojureParam = ':' + this.date.columnName;
+  } else if (this.date instanceof WeatherExtensionDateFromString) {
+    dateClojureParam = '"' + this.date.dateString + '"';
+  } else {
+    throw ('Could not create extension code - unknown type of date parameter!');
+  }
+
+  if (isLocationFromColumn) {
+    placeClojureParam = ':' + this.location.columnName;
+  } else if (this.location instanceof WeatherExtensionLocationString) {
+    placeClojureParam = '"' + this.location.locationString + '"';
+  } else {
+    throw ('Could not create extension code - unknown type of location parameter!');
+  }
+
+  if (isClojureForJar) {
+
+  } else {
+    for (i = 0; i < this.derivedColumns.length; ++i) {
+      var derivedColName = this.derivedColumns[i];
+      var functionName = 'extend_' + derivedColName + '_weather';
+
+      clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + ' ' + placeClojureParam + '] ' + functionName + ')');
+      // if(isDateFromColumn && isLocationFromColumn) {
+      //   // both date and location are read from columns
+      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')');
+      // } else if (!isDateFromColumn && isLocationFromColumn){
+      //   // only location is read from column
+      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+      // }  else if (isDateFromColumn && !isLocationFromColumn){
+      //   // only date is read from column
+      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+      // }  else if (!isDateFromColumn && !isLocationFromColumn){
+      //   // neither date nor location are read from columns
+      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+      // } 
+
+    }
+  }
+  return clojureFunctions;
+};
+
+_this.ECMWFWeatherExtension = ECMWFWeatherExtension;
 
 
 /**
@@ -1806,6 +1913,44 @@ ReconciliationServiceExtension.revive = function (data) {
 
   return new ReconciliationServiceExtension(derivedColumns, manualMatches, data.id, data.reconciliationServiceId, extensionProperties);
 }
+ReconciliationServiceExtension.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
+  var i, j;
+  var clojureFunctions = [];
+  if (isClojureForJar) {
+
+  } else {
+    for (i = 0; i < this.derivedColumns.length; ++i) {
+      var derivedColName = this.derivedColumns[i];
+      var matchesMapValuesString = '';
+      // first generate the jsedn map object for looking up the values
+      // since this is a single column reconciliation, we only have a simple key for the map
+      for (j = 0; j < this.manualMatches.length; ++j) {
+        var mapKey = this.manualMatches[j].valuesToMatch[0] || '';
+        var mapValue = this.manualMatches[j].match[i] || '';
+        matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+      }
+
+      var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
+      var clojureMap = '{ ' + matchesMapValuesString + '}';
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [v] (get ' + clojureMap + ' v "" ))' + '\n');
+    }
+  }
+  return clojureFunctions;
+};
+ReconciliationServiceExtension.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar, sourceColumnName) {
+  var i;
+  var clojureFunctions = [];
+  if (isClojureForJar) {
+
+  } else {
+    for (i = 0; i < this.derivedColumns.length; ++i) {
+      var derivedColName = this.derivedColumns[i];
+      var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
+      clojureFunctions.push('(derive-column :' + derivedColName + ' [:' + sourceColumnName + '] ' + functionName + ')')
+    }
+  }
+  return clojureFunctions;
+};
 _this.ReconciliationServiceExtension = ReconciliationServiceExtension;
 
 /**
@@ -1842,23 +1987,6 @@ export function Annotation(columnName, subjectAnnotationId, properties, status, 
   this.__type = 'Annotation';
 }
 Annotation.prototype = Object.create(ReferencableObject.prototype);
-Annotation.prototype.addOrReplaceExtension = function (extension) {
-  if (!(extension instanceof Extension)) {
-    return false;
-  } else {
-    // check ID if exists and overwrite the annotation
-    var i;
-    for (i = 0; i < this.extensions.length; ++i) {
-      if (this.extensions[i].id === extension.id) {
-        this.extensions[i] = extension;
-        return true;
-      }
-    }
-    // ID does not exist so we add it at the end
-    this.extensions.push(extension);
-    return true;
-  }
-};
 _this.Annotation = Annotation;
 
 /**
@@ -2157,6 +2285,43 @@ SingleColumnReconciliation.revive = function (data) {
 
   return new SingleColumnReconciliation(data.columnName, data.threshold, data.inferredTypes, autoMatches, manMatches);
 }
+SingleColumnReconciliation.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar, newColumnName) {
+  if (isClojureForJar) {
+
+  } else {
+    return ['(derive-column :' + newColumnName + ' [:' + this.columnName + '] ' + 'reconcile_' + this.columnName + ')'];
+  }
+};
+/**
+ * Generates an array of strings with the code for reconciling the data (added as a function declaration in the output Clojure).
+ * @param  {boolean} isClojureForJar true if the Clojure generated for the JAR implementation
+ */
+SingleColumnReconciliation.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
+  var i;
+  if (isClojureForJar) {
+
+  } else {
+    var matchesMapValuesString = '';
+    // first generate the jsedn map object for looking up the values
+    // since this is a single column reconciliation, we only have a simple key for the map
+    for (i = 0; i < this.automaticMatches.length; ++i) {
+      var mapKey = this.automaticMatches[i].valuesToMatch[0];
+      var mapValue = this.automaticMatches[i].match[0];
+      matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+    }
+
+    for (i = 0; i < this.manualMatches.length; ++i) {
+      var mapKey = this.manualMatches[i].valuesToMatch[0] || '';
+      var mapValue = this.manualMatches[i].match[0] || '';
+      matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+    }
+
+    var functionName = 'reconcile_' + this.columnName;
+    var clojureMap = '{ ' + matchesMapValuesString + '}';
+
+    return ['(defn ' + functionName + ' "Reconcile column ' + this.columnName + ' to ' + this.inferredTypes[0].id + '." [v] (get ' + clojureMap + ' v "" ))'];
+  }
+};
 _this.SingleColumnReconciliation = SingleColumnReconciliation;
 
 /**
@@ -2284,6 +2449,14 @@ export function Pipeline(functions) {
       if (funct.__type === 'SplitFunction') {
         functions[i] = SplitFunction.revive(funct);
       }
+
+      if (funct.__type === 'ReconciliationFunction') {
+        functions[i] = ReconciliationFunction.revive(funct);
+      }
+
+      if (funct.__type === 'ExtensionFunction') {
+        functions[i] = ExtensionFunction.revive(funct);
+      }
     }
   }
 
@@ -2321,6 +2494,31 @@ Pipeline.prototype.remove = function (funct) {
   this.functions.splice(index, 1);
   return true;
 };
+
+Pipeline.prototype.getReconciliationFunction = function (annotationId) {
+  let i;
+  for (i = 0; i < this.functions.length; ++i) {
+    if (this.functions[i] instanceof ReconciliationFunction) {
+      if (this.functions[i].annotationId === annotationId) {
+        return this.functions[i];
+      }
+    }
+  }
+  return null;
+};
+
+Pipeline.prototype.getExtensionFunction = function (extensionId) {
+  let i;
+  for (i = 0; i < this.functions.length; ++i) {
+    if (this.functions[i] instanceof ExtensionFunction) {
+      if (this.functions[i].extensionId === extensionId) {
+        return this.functions[i];
+      }
+    }
+  }
+  return null;
+};
+
 _this.Pipeline = Pipeline;
 
 export function getGraphElement(inputElement) {
@@ -3111,7 +3309,76 @@ Transformation.prototype.getAnnotationById = function (id) {
   return null;
 };
 
+Transformation.prototype.findReconciliationPipelineFunction = function (annotationId) {
+  var i, j;
+  if (this.pipelines) {
+    if (this.pipelines.length) {
+      for (i = 0; i < this.pipelines.length; ++i) {
+        for (j = 0; j < this.pipelines[i].functions.length; ++j) {
+          if (this.pipelines[i].functions[j].annotationId === annotationId) {
+            return this.pipelines[i].functions[j];
+          }
+        }
+      }
+    }
+  }
+};
+
+Transformation.prototype.findExtensionPipelineFunction = function (extensionId) {
+  var i, j;
+  if (this.pipelines) {
+    if (this.pipelines.length) {
+      for (i = 0; i < this.pipelines.length; ++i) {
+        for (j = 0; j < this.pipelines[i].functions.length; ++j) {
+          if (this.pipelines[i].functions[j].extensionId === extensionId) {
+            return this.pipelines[i].functions[j];
+          }
+        }
+      }
+    }
+  }
+};
+
+Transformation.prototype.addOrReplaceExtension = function (annotation, extension) {
+
+  // if any of the two inputs are undefined, we do nothing
+  if (!annotation || !extension) {
+    return false;
+  }
+
+  // check if the classes are correct
+  if (!(extension instanceof Extension) || !(annotation instanceof Annotation)) {
+    return false;
+  } else {
+    // check ID if exists and overwrite the annotation
+    var i;
+    for (i = 0; i < annotation.extensions.length; ++i) {
+      if (annotation.extensions[i].id === extension.id) {
+        annotation.extensions[i] = extension;
+        // if there is no extension function with this ID already, add it
+        if (!this.findExtensionPipelineFunction(extension.id)) {
+          this.pipelines[0].addAfter({}, new ExtensionFunction(extension.id, ''));
+        }
+        return true;
+      }
+    }
+    // ID does not exist so we add it at the end
+    annotation.extensions.push(extension);
+    // if there is no extension function with this ID already, add it
+    if (!this.findExtensionPipelineFunction(extension.id)) {
+      this.pipelines[0].addAfter({}, new ExtensionFunction(extension.id, ''));
+    }
+    return true;
+  }
+};
+
 Transformation.prototype.addOrReplaceAnnotation = function (annotation) {
+  // if ID is 0 or not defined - can't add annotation
+  if (!annotation.id) {
+    return false;
+  }
+
+  // must be an annotation to add it
   if (!(annotation instanceof Annotation)) {
     return false;
   } else {
@@ -3120,11 +3387,26 @@ Transformation.prototype.addOrReplaceAnnotation = function (annotation) {
     for (i = 0; i < this.annotations.length; ++i) {
       if (this.annotations[i].id === annotation.id) {
         this.annotations[i] = annotation;
+        // if this is a reconciliation annotation, we need to update the pipeline
+        if (annotation.reconciliation) {
+          // find the function related to this annotation and add a pipeline function if it does not exist yet
+          if (!this.findReconciliationPipelineFunction(annotation.id)) {
+            this.pipelines[0].addAfter({}, new ReconciliationFunction(annotation.id));
+          }
+        }
         return true;
       }
     }
     // ID does not exist so we add it at the end
     this.annotations.push(annotation);
+
+    // if there is a reconciliation with the annotation, also add a new function
+    if (annotation.reconciliation) {
+      // find the function related to this annotation and add a pipeline function if it does not exist yet
+      if (!this.findReconciliationPipelineFunction(annotation.id)) {
+        this.pipelines[0].addAfter({}, new ReconciliationFunction(annotation.id));
+      }
+    }
     return true;
   }
 };
@@ -3147,14 +3429,68 @@ Transformation.prototype.getURIForPrefix = function (prefix) {
   return '';
 };
 Transformation.prototype.removeAnnotationById = function (annotationId) {
-  for (var i = 0; i < this.annotations.length; ++i) {
+  var i, j;
+  for (i = 0; i < this.annotations.length; ++i) {
     if (this.annotations[i].id === annotationId) {
+      // remove reconciliation
+      if (this.annotations[i].reconciliation) {
+        // get reconciliation function from pipeline (if any)
+        let funct = this.pipelines[0].getReconciliationFunction(annotationId);
+        // remove reconciliation function (if any)
+        if (funct) {
+          this.pipelines[0].remove(funct);
+        }
+      }
+      // remove extensions
+      if (this.annotations[i].extensions) {
+        for (j = 0; j < this.annotations[i].extensions.length; ++j) {
+          this.removeExtensionById(this.annotations[i].extensions[j].id);
+        }
+      }
+      // remove annotation itself
       this.annotations.splice(i, 1);
       return true;
     }
   }
   return false;
 };
+
+Transformation.prototype.removeExtensionById = function (extensionId) {
+  var i, j, k;
+  for (i = 0; i < this.annotations.length; ++i) {
+    if (this.annotations[i].extensions) {
+      for (j = 0; j < this.annotations[i].extensions.length; ++j) {
+        var extension = this.annotations[i].extensions[j];
+        if (extension.id === extensionId) {
+          // remove annotations of extended cols (if any)
+          if (extension.derivedColumns) {
+            for (k = 0; k < extension.derivedColumns.length; ++k) {
+              var derivedColAnnotations = this.getColumnAnnotations(extension.derivedColumns[k]);
+              if (derivedColAnnotations) {
+                for (var l = 0; l < derivedColAnnotations.length; ++l) {
+                  this.removeAnnotationById(derivedColAnnotations[l].id);
+                }
+              }
+            }
+          }
+
+          // remove extension function
+          let funct = this.pipelines[0].getExtensionFunction(extensionId);
+
+          if (funct) {
+            this.pipelines[0].remove(funct);
+          }
+
+          // remove extension itself
+          this.annotations[i].extensions.splice(j, 1);
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
 /**
  * Finds all annotations that are objects for a given (subject) annotation. 
  * @param  {number} annotationId ID of annotation to match with
@@ -3226,6 +3562,72 @@ Transformation.prototype.getExtensionOfDerivedColumn = function (columnName) {
     }
   }
   return null;
+};
+
+Transformation.prototype.getExtensionById = function (id) {
+  if (id) {
+    var i, j;
+    for (i = 0; i < this.annotations.length; ++i) {
+      if (this.annotations[i].extensions) {
+        for (j = 0; j < this.annotations[i].extensions.length; ++j) {
+          if (this.annotations[i].extensions[j].id === id) {
+            return this.annotations[i].extensions[j];
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+/** Get the annotation containing the extension with the given ID
+ * @param  {number} id
+ * @returns the annotation or null if not found
+ */
+Transformation.prototype.getAnnotationByExtensionId = function (id) {
+  id = Number.parseInt(id);
+  if (id) {
+    var i, j;
+    for (i = 0; i < this.annotations.length; ++i) {
+      if (this.annotations[i].extensions) {
+        for (j = 0; j < this.annotations[i].extensions.length; ++j) {
+          if (this.annotations[i].extensions[j].id === id) {
+            return this.annotations[i];
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+Transformation.prototype.getAllEnrichments = function () {
+  var i, j;
+  var enrichmentObjects = [];
+  if (this.annotations) {
+    // gather all Reconciliation and Enrichment objects
+    for (i = 0; i < this.annotations.length; ++i) {
+      if (this.annotations[i].reconciliation) {
+        if (this.annotations[i].reconciliation instanceof Reconciliation) {
+          enrichmentObjects.push(this.annotations[i].reconciliation);
+        }
+      }
+
+      if (this.annotations[i]) {
+        if (this.annotations[i].extensions) {
+          if (this.annotations[i].extensions.length) {
+            for (j = 0; j < this.annotations[i].extensions.length; ++j) {
+              if (this.annotations[i].extensions[j] instanceof Extension) {
+                enrichmentObjects.push(this.annotations[i].extensions[j]);
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+
+  return enrichmentObjects;
 };
 
 _this.Transformation = Transformation;

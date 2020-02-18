@@ -100,6 +100,9 @@ var prefixers = [];
 /* Holds the jsedn list of user functions. Used to render them in Clojure code. */
 var userFunctions = [];
 
+/** */
+var extensionFunctions = [];
+
 /* Interface for alerts about errors. To be used to connect to other interface components when we integrate the GUI. */
 function alertInterface(error, errorString) {
   /*
@@ -955,7 +958,7 @@ function getConcept(element, str, containingGraph, prefixersInGUI) {
   return str;
 }
 
-function generateGrafterCode(transformation) {
+function generateGrafterCode(transformation, isJarCode) {
   /* Grafter Declarations */
 
   // TODO those are not needed here; may be needed afterwards?
@@ -1015,7 +1018,26 @@ function generateGrafterCode(transformation) {
   /* Pipeline Function */
   transformation.pipelines.forEach(function (pipeline) {
     pipeline.functions.forEach(function (genericFunction) {
-      addPipelineFunction(genericFunction);
+      var generatedPipelineFunctionClojureFunctionsArray = [];
+      switch (genericFunction.__type) {
+        case 'ReconciliationFunction':
+          var annotationOfReconciliation = transformation.getAnnotationById(genericFunction.annotationId);
+          var reconciliation = annotationOfReconciliation.reconciliation;
+          generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(isJarCode, annotationOfReconciliation.columnName);
+          pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[0]));
+          break;
+        case 'ExtensionFunction':
+          var extension = transformation.getExtensionById(genericFunction.extensionId);
+          var annotationOfExtension = transformation.getAnnotationByExtensionId(genericFunction.extensionId);
+          generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(isJarCode, annotationOfExtension.columnName);
+          for (i = 0; i < generatedPipelineFunctionClojureFunctionsArray.length; ++i) {
+            pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[i]));
+          }
+          break;
+        default:
+          addPipelineFunction(genericFunction);
+          break;
+      }
     });
   });
 
@@ -1049,6 +1071,23 @@ function generateGrafterCode(transformation) {
     textStr += (grafterCustomFunctions[i].ednEncode() + '\n');
   }
 
+  var enrichments = transformation.getAllEnrichments() || [];
+  for (i = 0; i < enrichments.length; ++i) {
+    // dummy code for now
+    if (enrichments[i].__type === 'SingleColumnReconciliation') {
+      textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isJarCode)[0]).ednEncode();
+    }
+    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension') {
+      // retrieve all Clojure functions
+      var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isJarCode);
+
+      // add each Clojure function to the declarations code
+      for (var j = 0; j < clojureFunctionsArray.length; ++j) {
+        textStr += parseEdnFromString(clojureFunctionsArray[j]).ednEncode();
+      }
+    }
+  }
+
   textStr += graphTemplate.ednEncode();
 
   textStr += '\n';
@@ -1063,9 +1102,9 @@ function generateGrafterCode(transformation) {
   return textStr;
 }
 
-export function fromTransformation(transformation) {
+export function fromTransformation(transformation, isJarCode) {
   try {
-    var generatedCode = generateGrafterCode(transformation);
+    var generatedCode = generateGrafterCode(transformation, isJarCode);
 
     return generatedCode;
   } catch (e) {

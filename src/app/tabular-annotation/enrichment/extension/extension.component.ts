@@ -377,7 +377,7 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
-  public sameas() {
+  public fetchSameAsData() {
     // set data loading and showpreview
     this.dataLoading = true;
     this.showPreview = true;
@@ -468,9 +468,23 @@ export class ExtensionComponent implements OnInit {
     let extensionMatchPairs = [];
     for (let i = 0; i < this.extensionData.length; ++i) {
       let valuesToMatch = this.extensionData[i].key;
+      if (this.selectedServiceId === 'ecmwf') {
+        if (!this.isColDate && this.extensionData[i].key.length === 2) {
+          // the ECMWF extension service returns the key in different order based on what is the base column type (?!)
+          // this hack reverses the key so we can generate the Clojure correctly later...
+          valuesToMatch = [this.extensionData[i].key[1], this.extensionData[i].key[0]];
+        }
+      }
+
       let matches = [];
       Array.from(this.extensionData[i].properties.values()).forEach((match) => {
-        matches.push(match[0].id);
+        if (match[0]) {
+          if (match[0].id) {
+            matches.push(match[0].id);
+          } if (match[0].str) {
+            matches.push(match[0].str);
+          }
+        }
       });
       extensionMatchPairs.push(new transformationDataModel.MatchPair(valuesToMatch, matches));
     }
@@ -652,10 +666,10 @@ export class ExtensionComponent implements OnInit {
     }
 
     // add extension to current annotation and update the transformation
-    this.currentAnnotation.addOrReplaceExtension(this.currentExtension);
+    this.transformationObj.addOrReplaceExtension(this.currentAnnotation, this.currentExtension);
     this.transformationObj.addOrReplaceAnnotation(this.currentAnnotation);
     this.transformationSvc.transformationObjSource.next(this.transformationObj);
-    console.log(this.transformationObj);
+    this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
     this.dialogRef.close();
   }
 
@@ -799,4 +813,11 @@ export class ExtensionComponent implements OnInit {
 
   }
 
+  removeCurrentExtension() {
+    if (confirm("Are you sure you want to delete this extension?")) {
+      this.transformationObj.removeExtensionById(this.currentExtension.id);
+      this.transformationSvc.transformationObjSource.next(this.transformationObj);
+      this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
+    }
+  }
 }

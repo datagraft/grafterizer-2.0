@@ -381,13 +381,16 @@
 
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
 
+  <button *ngIf="this.currentExtension && editOrCreateNew === 'edit-existing'" mat-button class="btn btn-sm btn-link"
+    mat-dialog-close (click)="removeCurrentExtension()"><span class="red"> Delete selected extension </span></button>
+
   <ng-container *ngIf="this.dialogInputData.reconciliationServiceId">
     <button *ngIf="selectedServiceId === reconciledFromService.getId()" mat-button class="btn btn-sm btn-link"
       [disabled]="selectedProperties.length === 0 || dataLoading" (click)="fetchReconciliationServiceExtensions()"
       cdkFocusInitial>Extend
     </button>
     <button *ngIf="selectedServiceId === 'sameas'" mat-button class="btn btn-sm btn-link"
-      [disabled]="!selectedKGService || dataLoading" (click)="sameas()" cdkFocusInitial>Extend
+      [disabled]="!selectedKGService || dataLoading" (click)="fetchSameAsData()" cdkFocusInitial>Extend
     </button>
   </ng-container>
 
@@ -431,7 +434,6 @@
                       (dateChoice === 'fromPicker' && selectedDate)))" (click)="event()" cdkFocusInitial>Fetch Event
       data
     </button>
-
   </ng-container>
   <button mat-button class="btn btn-sm btn-link"
     [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0" (click)="applyExtension()"

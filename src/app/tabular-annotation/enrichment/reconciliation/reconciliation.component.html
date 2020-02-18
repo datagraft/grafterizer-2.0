@@ -176,16 +176,19 @@
                 <i class="material-icons" style="color:red	;">error</i> {{skippedCount}}
               </div>
               <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
-                <span>Reconciled entity with score < threshold </span> </clr-tooltip-content> </clr-tooltip> </div> <div
-                    class="specific_icon">
-                    <clr-tooltip>
-                      <div clrTooltipTrigger>
-                        <i class="material-icons" style="color:Gold	;">warning</i> {{notReconciledCount}}
-                      </div>
-                      <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
-                        <span> row not reconciled </span>
-                      </clr-tooltip-content>
-                    </clr-tooltip>
+                <span>Reconciled entity with score < threshold </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger>
+                <i class="material-icons" style="color:Gold	;">warning</i> {{notReconciledCount}}
+              </div>
+              <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                <span> row not reconciled </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
           </div>
         </div>
 
@@ -232,9 +235,10 @@
             </mat-option>
 
             <mat-option *ngIf="skippedCount > 0" [value]="3">
-              < threshold </mat-option> <mat-option *ngIf="notReconciledCount > 0" [value]="4">
-                not reconciled
-            </mat-option>
+              < threshold </mat-option>
+                <mat-option *ngIf="notReconciledCount > 0" [value]="4">
+                  not reconciled
+                </mat-option>
 
           </mat-select>
         </mat-form-field>
@@ -392,6 +396,9 @@
 
 
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
+  <button *ngIf="this.currentAnnotation" mat-button class="btn btn-sm btn-link" mat-dialog-close
+    (click)="removeCurrentReconciliation()"><span class="red"> Delete loaded reconciliation </span></button>
+
   <button mat-button class="btn btn-sm btn-link"
     [disabled]="!reconciliationForm.get('selectedService').value || dataLoading || reconciliationForm.invalid"
     (click)="reconcile()" cdkFocusInitial>Reconcile

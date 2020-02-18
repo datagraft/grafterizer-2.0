@@ -100,8 +100,9 @@ export class CustomFunctionModalComponent implements OnInit {
     for (let cfd of this.transformationObjSource.customFunctionDeclarations) {
       if (cfd.group === 'UTILITY') {
         this.userDefinedFunctions.push({ label: cfd.name, value: cfd });
-      }
-      else {
+      } else if (cfd.group === 'ENRICHMENT') {
+        // ignore enrichment functions
+      } else {
         this.customFunctionDeclarations.push(cfd);
       }
     }

@@ -108,46 +108,50 @@ export class PipelineComponent implements OnInit, OnDestroy {
     });
   }
 
-  verboseLabels(label) {
-    switch (label) {
+  verboseLabels(pipelineFunc) {
+    switch (pipelineFunc.__type) {
       case 'MakeDatasetFunction':
-        return 'Headers created'
+        return 'Headers created';
       case 'GroupRowsFunction':
-        return 'Grouped and aggregated'
+        return 'Grouped and aggregated';
       case 'MeltFunction':
-        return 'Dataset reshaped'
+        return 'Dataset reshaped';
       case 'SortDatasetFunction':
-        return 'Columns sorted'
+        return 'Columns sorted';
       case 'DeriveColumnFunction':
-        return 'Column derived'
+        return 'Column derived';
       case 'MapcFunction':
-        return 'Columns mapped'
+        return 'Columns mapped';
       case 'AddColumnsFunction':
-        return 'Column added'
+        return 'Column added';
       case 'ColumnsFunction':
-        return 'Columns deleted'
+        return 'Columns deleted';
       case 'ShiftColumnFunction':
-        return 'Column shifted'
+        return 'Column shifted';
       case 'MergeColumnsFunction':
-        return 'Columns merged'
+        return 'Columns merged';
       case 'SplitFunction':
-        return 'Column split'
+        return 'Column split';
       case 'RenameColumnsFunction':
-        return 'Header title(s) changed'
+        return 'Header title(s) changed';
       case 'AddRowFunction':
-        return 'Row(s) added'
+        return 'Row(s) added';
       case 'ShiftRowFunction':
-        return 'Row shifted'
+        return 'Row shifted';
       case 'DropRowsFunction':
-        return 'Rows deleted'
+        return 'Rows deleted';
       case 'GrepFunction':
-        return 'Row(s) filtered'
+        return 'Row(s) filtered';
       case 'RemoveDuplicatesFunction':
-        return 'Duplicates removed'
+        return 'Duplicates removed';
       case 'UtilityFunction':
-        return 'Utility'
+        return 'Utility';
+      case 'ReconciliationFunction':
+        return 'Reconcile data';
+      case 'ExtensionFunction':
+        return 'Extend data';
       default:
-        return label;
+        return pipelineFunc.__type;
     }
   }
 
@@ -212,6 +216,13 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEvent.startEdit = false;
         this.pipelineEvent.commitEdit = false;
 
+
+        if (currentFunction instanceof transformationDataModel.ReconciliationFunction) {
+          // if the function is a reconciliation function, remove the corresponding annotation
+          this.transformationObj.removeAnnotationById(currentFunction.annotationId);
+        } else if (currentFunction instanceof transformationDataModel.ExtensionFunction) {
+          this.transformationObj.removeExtensionById(currentFunction.extensionId);
+        }
         this.transformationObj.pipelines[0].remove(currentFunction);
         this.transformationService.previewedTransformationObjSource.next(this.transformationObj);
         this.transformationService.transformationObjSource.next(this.transformationObj);

@@ -846,10 +846,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     });
 
-    console.log(leafNodeTypeNodes);
 
     let gr = new transformationDataModel.Graph(graphURI, graphRootNodes.concat(leafNodeTypeNodes));
-    console.log(gr);
     return gr;
     // return new transformationDataModel.Graph(graphURI, graphRootNodes.concat(leafNodeTypeNodes));
   }
