@@ -92,7 +92,7 @@ export class ExtensionComponent implements OnInit {
     propertyValue: this.header
   }; 
   public dateExtensionDataSource: MatTableDataSource<any> 
-
+  public eventProperties : string[] = []
   
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
@@ -185,6 +185,8 @@ export class ExtensionComponent implements OnInit {
       }
       this.services.push(new ConciliatorService({ 'id': 'sameas', 'name': 'SameAs', group: 'sameas' }));
     }
+
+    this.eventProperties = this.propertiesID;
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     this.weatherParametersDescriptions = {

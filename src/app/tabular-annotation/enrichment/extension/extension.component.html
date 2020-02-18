@@ -50,6 +50,30 @@
 
     </ng-container>
 
+    <section class="form-block" *ngIf="selectedService === 'ide'">
+      <div class="form-group">
+        <label class="required" for="wParameters">Select matching properties: </label>
+        <div class="weather-parameters">
+          <mat-form-field>
+            <mat-select id="pParameters" placeholder="matching properties" multiple
+                        [(ngModel)]="selectedEventProperties" name="wParameters">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedEventProperties?.length > 0">
+                  <span *ngFor="let p_selected of selectedEventProperties">
+                    {{p_selected}} 
+                  </span>
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of eventProperties" [value]="p"> {{ p }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </section>
+
     <section class="form-block" *ngIf="selectedService === 'ce'">
 <!--       <div class="form-group">-->
 <!--        <ng-container *ngIf="selectedService === 'ce'">-->
@@ -581,10 +605,14 @@
 
   <ng-container *ngIf="selectedService === 'ce'">
     <button mat-button class="btn btn-sm btn-link"
-            (click)="dateExtension()" cdkFocusInitial>Fetch Event data
+            (click)="dateExtension()" cdkFocusInitial>Fetch Date data
     </button>
   </ng-container>
-
+  <ng-container *ngIf="selectedService === 'ide'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="EventIDExtension()" cdkFocusInitial>Fetch Event data
+    </button>
+  </ng-container>
 
   <button mat-button class="btn btn-sm btn-link" [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0"
           (click)="submit()" *ngIf="showPreview">Apply
