@@ -292,8 +292,8 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         categoriesSources: this.categoriesSources
       }
     };
-    const dialogConfigDateColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colDate: true}}}};
-    const dialogConfigKeywordColumn = {...dialogConfigExtension, ...{data: { ...dialogConfigExtension.data, ...{colKeyword: true}}}};
+    const dialogConfigDateColumn = { ...dialogConfigExtension, ...{ data: { ...dialogConfigExtension.data, ...{ colDate: true } } } };
+    const dialogConfigKeywordColumn = { ...dialogConfigExtension, ...{ data: { ...dialogConfigExtension.data, ...{ colKeyword: true } } } };
     const dialogConfigReconciliation = {
       width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colDate: false }
@@ -792,7 +792,12 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         let anno = this.transformationObj.getAnnotationById(annotation.subjectAnnotationId);
         // attach object (always the current annotation) to the property node
         annotation.properties.forEach((property) => {
-          property.subElements.push(annotation.getGraphNode());
+          if (property.subElements.length) {
+            property.subElements.splice(1);
+            property.subElements[0] = annotation.getGraphNode();
+          } else {
+            property.subElements.push(annotation.getGraphNode());
+          }
         });
 
         // find the annotation to which this object annotation is related and attach the property-object pairs
@@ -825,7 +830,6 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         } else {
           propNode.subElements[0].subElements = [];
         }
-
         return transformationDataModel.Property.revive(propNode);
       });
       colUriNode.subElements = colUriNode.subElements.concat(propsDeepCopy);

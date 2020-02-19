@@ -958,7 +958,17 @@ function getConcept(element, str, containingGraph, prefixersInGUI) {
   return str;
 }
 
-function generateGrafterCode(transformation, isJarCode) {
+function generateASIAFunctionDeclarationsText(asiaEndpointUrl) {
+  let text = '';
+
+  text += '(defn reconcileAsia [label type threshold conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.reconcile asia-client label type threshold conciliator)))' + '\n';
+  text += '(defn extendAsia [id propertyName conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extend asia-client id propertyName conciliator)))' + '\n';
+  text += '(defn extendWeatherAsia [regionGeonamesId date aggregator weatherParamName offsetDays] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extendWeather asia-client regionGeonamesId date aggregator weatherParamName offsetDays)))' + '\n';
+
+  return text;
+}
+
+function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl) {
   /* Grafter Declarations */
 
   // TODO those are not needed here; may be needed afterwards?
@@ -1023,13 +1033,13 @@ function generateGrafterCode(transformation, isJarCode) {
         case 'ReconciliationFunction':
           var annotationOfReconciliation = transformation.getAnnotationById(genericFunction.annotationId);
           var reconciliation = annotationOfReconciliation.reconciliation;
-          generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(isJarCode, annotationOfReconciliation.columnName);
+          generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(annotationOfReconciliation.columnName);
           pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[0]));
           break;
         case 'ExtensionFunction':
           var extension = transformation.getExtensionById(genericFunction.extensionId);
           var annotationOfExtension = transformation.getAnnotationByExtensionId(genericFunction.extensionId);
-          generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(isJarCode, annotationOfExtension.columnName);
+          generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(annotationOfExtension.columnName);
           for (i = 0; i < generatedPipelineFunctionClojureFunctionsArray.length; ++i) {
             pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[i]));
           }
@@ -1043,6 +1053,11 @@ function generateGrafterCode(transformation, isJarCode) {
 
   var resultingPipeline = constructPipeline();
   var textStr = '';
+
+  // add ASIA service code (if used)
+  if (isAsiaServiceCode) {
+    textStr += generateASIAFunctionDeclarationsText(asiaEndpointUrl);
+  }
 
   if (grafterPrefixers.length) {
     for (i = 0; i < grafterPrefixers.length; ++i) {
@@ -1075,11 +1090,13 @@ function generateGrafterCode(transformation, isJarCode) {
   for (i = 0; i < enrichments.length; ++i) {
     // dummy code for now
     if (enrichments[i].__type === 'SingleColumnReconciliation') {
-      textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isJarCode)[0]).ednEncode();
+      var reconciliationAnnotation = transformation.getAnnotationForReconciledColumn(enrichments[i].columnName);
+      console.info(reconciliationAnnotation);
+      textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode, reconciliationAnnotation.conciliatorServiceName)[0]).ednEncode();
     }
     if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension') {
       // retrieve all Clojure functions
-      var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isJarCode);
+      var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode);
 
       // add each Clojure function to the declarations code
       for (var j = 0; j < clojureFunctionsArray.length; ++j) {
@@ -1099,12 +1116,13 @@ function generateGrafterCode(transformation, isJarCode) {
 
   textStr +=
     '(defgraft my-graft "Transformation that converts input CSV data into RDF graph data." my-pipe make-graph)';
+
   return textStr;
 }
 
-export function fromTransformation(transformation, isJarCode) {
+export function fromTransformation(transformation, isAsiaServiceCode, asiaEndpointUrl) {
   try {
-    var generatedCode = generateGrafterCode(transformation, isJarCode);
+    var generatedCode = generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl);
 
     return generatedCode;
   } catch (e) {

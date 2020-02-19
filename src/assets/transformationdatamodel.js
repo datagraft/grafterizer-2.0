@@ -1660,7 +1660,6 @@ export function ECMWFWeatherExtension(derivedColumns, manualMatches, id, locatio
 
   this.__type = 'ECMWFWeatherExtension';
 }
-
 ECMWFWeatherExtension.prototype = Object.create(Extension.prototype);
 ECMWFWeatherExtension.revive = function (data) {
   var i;
@@ -1750,30 +1749,53 @@ ECMWFWeatherExtension.revive = function (data) {
   return new ECMWFWeatherExtension(derivedColumns, manualMatches, data.id, location, date, weatherFeatures, offsetDays, aggregations);
 };
 ECMWFWeatherExtension.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
-  var i, j;
+  var i, j, k;
   var clojureFunctions = [];
-  if (isClojureForJar) {
 
-  } else {
-    for (i = 0; i < this.derivedColumns.length; ++i) {
-      var derivedColName = this.derivedColumns[i];
-      var matchesMapValuesString = '';
-      // first generate the jsedn map object for looking up the values
-      // since this is an ECMWF extension, we have a two-column values key (date and place)
-      for (j = 0; j < this.manualMatches.length; ++j) {
-        var mapKey = '["' + (this.manualMatches[j].valuesToMatch[0] || '') + '" "' + (this.manualMatches[j].valuesToMatch[1] || '') + '"]';
-        var mapValue = this.manualMatches[j].match[i] || '';
-        matchesMapValuesString += mapKey + ' "' + mapValue + '" ';
+  // arranging the derivation parameters in the order of the derived columns
+  var derivationParameters = [];
+  for (i = 0; i < this.offsetDays.length; ++i) {
+    for (j = 0; j < this.weatherFeatures.length; ++j) {
+      for (k = 0; k < this.aggregations.length; ++k) {
+        derivationParameters.push({
+          offset: this.offsetDays[i],
+          feature: this.weatherFeatures[j],
+          aggregator: this.aggregations[k]
+        });
       }
+    }
+  }
 
-      var functionName = 'extend_' + derivedColName + '_weather';
-      var clojureMap = '{ ' + matchesMapValuesString + '}';
-      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [date place] (get ' + clojureMap + ' [date place] "" ))' + '\n');
+  for (i = 0; i < this.derivedColumns.length; ++i) {
+    var derivedColName = this.derivedColumns[i];
+    var matchesMapValuesString = '';
+    // first generate the jsedn map object for looking up the values
+    // since this is an ECMWF extension, we have a two-column values key (date and place)
+    for (j = 0; j < this.manualMatches.length; ++j) {
+      var mapKey = '["' + (this.manualMatches[j].valuesToMatch[0] || '') + '" "' + (this.manualMatches[j].valuesToMatch[1] || '') + '"]';
+      var mapValue = this.manualMatches[j].match[i] || '';
+      matchesMapValuesString += mapKey + ' "' + mapValue + '" ';
+    }
+
+    var functionName = 'extend_' + derivedColName + '_weather';
+    var clojureMap = '{ ' + matchesMapValuesString + '}';
+
+    if (isClojureForJar) {
+      var aggregator = derivationParameters[i].aggregator;
+      var feature = derivationParameters[i].feature;
+      var offset = derivationParameters[i].offset;
+      var asiaExtensionFunctionCall = '(extendWeatherAsia place date "' + aggregator + '" "' + feature + '" "' + offset + '")';
+      let conditionBlock = '(cond (blank? place) "" (blank? date) "" :else (get ' + clojureMap + ' [date place] ' + asiaExtensionFunctionCall + '))';
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [date place] ' + conditionBlock + ')');
+
+    } else {
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName
+        + '." [date place] (get ' + clojureMap + ' [date place] "" ))' + '\n');
     }
   }
   return clojureFunctions;
 };
-ECMWFWeatherExtension.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar) {
+ECMWFWeatherExtension.prototype.generatePipelineFunctionClojureFunctions = function (sourceColumnName) {
   var i;
   var clojureFunctions = [];
   var dateClojureParam = '';
@@ -1798,33 +1820,28 @@ ECMWFWeatherExtension.prototype.generatePipelineFunctionClojureFunctions = funct
     throw ('Could not create extension code - unknown type of location parameter!');
   }
 
-  if (isClojureForJar) {
+  for (i = 0; i < this.derivedColumns.length; ++i) {
+    var derivedColName = this.derivedColumns[i];
+    var functionName = 'extend_' + derivedColName + '_weather';
 
-  } else {
-    for (i = 0; i < this.derivedColumns.length; ++i) {
-      var derivedColName = this.derivedColumns[i];
-      var functionName = 'extend_' + derivedColName + '_weather';
+    clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + ' ' + placeClojureParam + '] ' + functionName + ')');
+    // if(isDateFromColumn && isLocationFromColumn) {
+    //   // both date and location are read from columns
+    //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')');
+    // } else if (!isDateFromColumn && isLocationFromColumn){
+    //   // only location is read from column
+    //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+    // }  else if (isDateFromColumn && !isLocationFromColumn){
+    //   // only date is read from column
+    //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+    // }  else if (!isDateFromColumn && !isLocationFromColumn){
+    //   // neither date nor location are read from columns
+    //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
+    // } 
 
-      clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + ' ' + placeClojureParam + '] ' + functionName + ')');
-      // if(isDateFromColumn && isLocationFromColumn) {
-      //   // both date and location are read from columns
-      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')');
-      // } else if (!isDateFromColumn && isLocationFromColumn){
-      //   // only location is read from column
-      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
-      // }  else if (isDateFromColumn && !isLocationFromColumn){
-      //   // only date is read from column
-      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
-      // }  else if (!isDateFromColumn && !isLocationFromColumn){
-      //   // neither date nor location are read from columns
-      //   clojureFunctions.push('(derive-column :' + derivedColName + ' [' + dateClojureParam + placeClojureParam + '] ' + functionName + ')')
-      // } 
-
-    }
   }
   return clojureFunctions;
 };
-
 _this.ECMWFWeatherExtension = ECMWFWeatherExtension;
 
 
@@ -1939,38 +1956,39 @@ ReconciliationServiceExtension.revive = function (data) {
 ReconciliationServiceExtension.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
   var i, j;
   var clojureFunctions = [];
-  if (isClojureForJar) {
 
-  } else {
-    for (i = 0; i < this.derivedColumns.length; ++i) {
-      var derivedColName = this.derivedColumns[i];
-      var matchesMapValuesString = '';
-      // first generate the jsedn map object for looking up the values
-      // since this is a single column reconciliation, we only have a simple key for the map
-      for (j = 0; j < this.manualMatches.length; ++j) {
-        var mapKey = this.manualMatches[j].valuesToMatch[0] || '';
-        var mapValue = this.manualMatches[j].match[i] || '';
-        matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
-      }
-
-      var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
-      var clojureMap = '{ ' + matchesMapValuesString + '}';
-      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [v] (get ' + clojureMap + ' v "" ))' + '\n');
+  for (i = 0; i < this.derivedColumns.length; ++i) {
+    var derivedColName = this.derivedColumns[i];
+    var matchesMapValuesString = '';
+    // first generate the jsedn map object for looking up the values
+    // since this is a single column reconciliation, we only have a simple key for the map
+    for (j = 0; j < this.manualMatches.length; ++j) {
+      var mapKey = this.manualMatches[j].valuesToMatch[0] || '';
+      var mapValue = this.manualMatches[j].match[i] || '';
+      matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
     }
+
+    var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
+    var clojureMap = '{ ' + matchesMapValuesString + '}';
+
+    if (isClojureForJar) {
+      var functionBlock = '(extendAsia v "' + this.extensionProperties[i] + '" "' + this.reconciliationServiceId + '")';
+      var conditionBlock = '(cond (blank? v) "" :else (get ' + clojureMap + ' v ' + functionBlock + '))';
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [v] ' + conditionBlock + ')');
+    } else {
+      clojureFunctions.push('(defn ' + functionName + ' "Enrich the new column ' + derivedColName + '." [v] (get ' + clojureMap + ' v "" )' + ')\n');
+    }
+
   }
   return clojureFunctions;
 };
-ReconciliationServiceExtension.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar, sourceColumnName) {
+ReconciliationServiceExtension.prototype.generatePipelineFunctionClojureFunctions = function (sourceColumnName) {
   var i;
   var clojureFunctions = [];
-  if (isClojureForJar) {
-
-  } else {
-    for (i = 0; i < this.derivedColumns.length; ++i) {
-      var derivedColName = this.derivedColumns[i];
-      var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
-      clojureFunctions.push('(derive-column :' + derivedColName + ' [:' + sourceColumnName + '] ' + functionName + ')')
-    }
+  for (i = 0; i < this.derivedColumns.length; ++i) {
+    var derivedColName = this.derivedColumns[i];
+    var functionName = 'extend_' + derivedColName + '_' + this.reconciliationServiceId || '';
+    clojureFunctions.push('(derive-column :' + derivedColName + ' [:' + sourceColumnName + '] ' + functionName + ')')
   }
   return clojureFunctions;
 };
@@ -2325,40 +2343,39 @@ SingleColumnReconciliation.revive = function (data) {
 
   return new SingleColumnReconciliation(data.columnName, data.threshold, data.inferredTypes, autoMatches, manMatches);
 }
-SingleColumnReconciliation.prototype.generatePipelineFunctionClojureFunctions = function (isClojureForJar, newColumnName) {
-  if (isClojureForJar) {
-
-  } else {
-    return ['(derive-column :' + newColumnName + ' [:' + this.columnName + '] ' + 'reconcile_' + this.columnName + ')'];
-  }
+SingleColumnReconciliation.prototype.generatePipelineFunctionClojureFunctions = function (newColumnName) {
+  var functionName = 'reconcile_' + this.columnName;
+  return ['(derive-column :' + newColumnName + ' [:' + this.columnName + '] ' + functionName + ')'];
 };
 /**
  * Generates an array of strings with the code for reconciling the data (added as a function declaration in the output Clojure).
  * @param  {boolean} isClojureForJar true if the Clojure generated for the JAR implementation
  */
-SingleColumnReconciliation.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
+SingleColumnReconciliation.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar, conciliatorName) {
   var i;
+  var matchesMapValuesString = '';
+  // first generate the jsedn map object for looking up the values
+  // since this is a single column reconciliation, we only have a simple key for the map
+  for (i = 0; i < this.automaticMatches.length; ++i) {
+    var mapKey = this.automaticMatches[i].valuesToMatch[0];
+    var mapValue = this.automaticMatches[i].match[0];
+    matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+  }
+
+  for (i = 0; i < this.manualMatches.length; ++i) {
+    var mapKey = this.manualMatches[i].valuesToMatch[0] || '';
+    var mapValue = this.manualMatches[i].match[0] || '';
+    matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+  }
+
+  var functionName = 'reconcile_' + this.columnName;
+  var clojureMap = '{ ' + matchesMapValuesString + '}';
+
   if (isClojureForJar) {
+    let conditionBlock = '(cond (blank? v) "" :else (get ' + clojureMap + ' v (reconcileAsia v "' + this.inferredTypes[0].id + '" ' + this.threshold + ' "' + conciliatorName + '" )))';
+    return ['(defn ' + functionName + ' "Reconcile column ' + this.columnName + ' to ' + this.inferredTypes[0].id + '." [v] ' + conditionBlock + ')'];
 
   } else {
-    var matchesMapValuesString = '';
-    // first generate the jsedn map object for looking up the values
-    // since this is a single column reconciliation, we only have a simple key for the map
-    for (i = 0; i < this.automaticMatches.length; ++i) {
-      var mapKey = this.automaticMatches[i].valuesToMatch[0];
-      var mapValue = this.automaticMatches[i].match[0];
-      matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
-    }
-
-    for (i = 0; i < this.manualMatches.length; ++i) {
-      var mapKey = this.manualMatches[i].valuesToMatch[0] || '';
-      var mapValue = this.manualMatches[i].match[0] || '';
-      matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
-    }
-
-    var functionName = 'reconcile_' + this.columnName;
-    var clojureMap = '{ ' + matchesMapValuesString + '}';
-
     return ['(defn ' + functionName + ' "Reconcile column ' + this.columnName + ' to ' + this.inferredTypes[0].id + '." [v] (get ' + clojureMap + ' v "" ))'];
   }
 };
@@ -3731,7 +3748,6 @@ Transformation.prototype.validateAnnotations = function () {
   this.annotations.forEach(annotation => {
     if (!statusMap.has(annotation.id)) {
       statusMap = this.getUpdatedAnnotationStatus(annotation, statusMap);
-      console.log(statusMap);
     }
     annotation.status = statusMap.get(annotation.id);
   });

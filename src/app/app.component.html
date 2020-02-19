@@ -179,17 +179,34 @@
       <div fxFlex *ngIf="downloadMode == 'jar'" id="jar">
         <div id="container">
           <div id=paragraph>
-            <p>Usage: java -jar transformation.jar input.csv
-              output.(nt|rdf|n3|ttl || csv)</p>
+            <p>You can choose between CSV or RDF output. Usage: java -jar transformation.jar input.csv
+              output.(nt|rdf|n3|ttl [used with the RDF output option] or csv [used with the CSV option])</p>
+            <p>If you choose not to use ASIA, the created JAR file will reconcile and extend data based only on the
+              matched
+              entitiies and values that you selected. If you choose to provide a URL of ASIA, the transformation will
+              automatically call the ASIA service to reconcile and/or extend the data.</p>
           </div>
         </div>
         <label for="jar-option" class="clr-control-label">Choose JAR file output:</label>
         <div class="clr-select-wrapper">
           <select clrSelect id="jar-option" [(ngModel)]="chosenJarFormatDownloadOption">
-            <option value="nt">N-Triples</option>
+            <option value="nt">RDF</option>
             <option value="csv">CSV</option>
           </select>
         </div>
+        <br />
+        <label for="asia-endpoint-option" class="clr-control-label">Choose option for ASIA service:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="asia-endpoint-option" [(ngModel)]="chosenEndpointURLOption">
+            <option value="no-asia">Do not use ASIA</option>
+            <option value="asia-url">Provide ASIA URL</option>
+          </select>
+        </div>
+        <br />
+        <br />
+        <mat-form-field style="display: block;" *ngIf="chosenEndpointURLOption == 'asia-url'">
+          <input matInput placeholder="ASIA endpoint URL" [(ngModel)]="asiaEndpointURL" name="asiaUrl" required />
+        </mat-form-field>
       </div>
     </div>
   </div>

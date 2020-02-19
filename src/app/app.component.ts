@@ -78,6 +78,9 @@ export class AppComponent implements OnInit {
   chosenRdfFormatDownloadOption: string = 'nt';
   chosenJarFormatDownloadOption: string = 'nt';
 
+  chosenEndpointURLOption: string = 'no-asia';
+  asiaEndpointURL: string = '';
+
   constructor(private http: Http, public router: Router, private route: ActivatedRoute, private config: AppConfig,
     public dispatch: DispatchService, private jarfterSvc: JarfterService, private transformationSvc: TransformationService,
     public messageSvc: DataGraftMessageService, private routingService: RoutingService,
@@ -310,7 +313,7 @@ export class AppComponent implements OnInit {
     const paramMap = this.route.firstChild.snapshot.paramMap;
 
     if (paramMap.has('publisher') && paramMap.has('transformationId') && paramMap.has('filestoreId')) {
-      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj, false);
+      const clojure = generateClojure.fromTransformation(this.previewedTransformationObj, false, "");
       this.transformationSvc.previewTransformation(paramMap.get('filestoreId'), clojure, 0, 10000)
         .then((result) => {
           this.transformationSvc.graftwerkDataSource.next(result);
@@ -351,7 +354,7 @@ export class AppComponent implements OnInit {
     const paramMap = this.route.firstChild.snapshot.paramMap;
     const publisher = paramMap.get('publisher');
     const existingTransformationID = paramMap.get('transformationId');
-    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false);
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false, "");
     let newTransformationName = null;
     let newTransformationDescription = null;
     let newTransformationKeywords = null;
@@ -482,7 +485,7 @@ export class AppComponent implements OnInit {
   createNewTransformation(distributionID?: string) {
     this.transformationObjSource = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationUpdaterSvc.updateTransformationCustomFunctionDeclarations(this.transformationObjSource);
-    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false);
+    const clojureCode = generateClojure.fromTransformation(this.transformationObjSource, false, "");
     let transformationType = 'graft';
     let transformationCommand = 'my-graft';
 
@@ -706,7 +709,7 @@ export class AppComponent implements OnInit {
     if (this.chosenJarFormatDownloadOption == 'csv') {
       isCsv = true;
     }
-    input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, isCsv);
+    input.value = this.jarfterSvc.generateClojure(this.transformationObjSource, isCsv, this.chosenEndpointURLOption === 'no-asia' ? "no-asia" : this.asiaEndpointURL);
     var submit = document.createElement('input');
     submit.type = 'submit';
     submit.id = 'submitProject';

@@ -23,12 +23,14 @@ export class JarfterService {
     return this.jarfterPath + '/webresources/transformStandAlone';
   };
 
-  generateClojure(transformation, isCsv) {
+  generateClojure(transformation, isCsv, asiaEnrpointUrl) {
     // namespace declaration and imports
-    var clojure = '(ns grafterizer.transformation\r\n     (:require [grafter.tabular :refer :all]\r\n               [clojure.string :refer [capitalize lower-case upper-case trim trim-newline triml trimr]]\r\n               [tabular_functions.datatypes :as datatypes]\r\n               [tabular_functions.pipeline :as new-tabular]\r\n               [grafter.rdf :refer [prefixer s add]]\r\n               [grafter.rdf.templater :refer [graph]]\r\n\t\t\t      [grafter.rdf.formats :refer :all]\r\n               [grafter.vocabularies.rdf :refer :all]\r\n               [grafter.vocabularies.qb :refer :all]\r\n               [grafter.vocabularies.sdmx-measure :refer :all]\r\n               [grafter.vocabularies.sdmx-attribute :refer :all]\r\n               [grafter.vocabularies.skos :refer :all]\r\n               [grafter.vocabularies.foaf :refer :all]\r\n               [grafter.vocabularies.owl :refer :all]\r\n          [grafter.vocabularies.dcterms :refer :all]\r\n\t\t\t      [clj-time.format]\r\n\t\t\t      [grafter.rdf.io :as ses]\r\n\t\t\t      [grafter.tabular.common :refer [read-dataset*]]\r\n\t)\r\n     (:import [gov.nasa.worldwind.geom.coords.UTMCoord]\r\n              [org.openrdf.model.impl.URIImpl]\r\n\t)\r\n\t\r\n)';
+    // var clojure = '(ns grafterizer.transformation\r\n     (:require [grafter.tabular :refer :all]\r\n               [clojure.string :refer [capitalize lower-case upper-case trim trim-newline triml trimr]]\r\n               [tabular_functions.datatypes :as datatypes]\r\n               [tabular_functions.pipeline :as new-tabular]\r\n               [grafter.rdf :refer [prefixer s add]]\r\n               [grafter.rdf.templater :refer [graph]]\r\n\t\t\t      [grafter.rdf.formats :refer :all]\r\n               [grafter.vocabularies.rdf :refer :all]\r\n               [grafter.vocabularies.qb :refer :all]\r\n               [grafter.vocabularies.sdmx-measure :refer :all]\r\n               [grafter.vocabularies.sdmx-attribute :refer :all]\r\n               [grafter.vocabularies.skos :refer :all]\r\n               [grafter.vocabularies.foaf :refer :all]\r\n               [grafter.vocabularies.owl :refer :all]\r\n          [grafter.vocabularies.dcterms :refer :all]\r\n\t\t\t      [clj-time.format]\r\n\t\t\t      [grafter.rdf.io :as ses]\r\n\t\t\t      [grafter.tabular.common :refer [read-dataset*]]\r\n\t)\r\n     (:import [gov.nasa.worldwind.geom.coords.UTMCoord]\r\n              [org.openrdf.model.impl.URIImpl]\r\n\t)\r\n\t\r\n)';
+
+    var clojure = '(ns grafterizer.transformation (:require [grafter.tabular :refer :all] [clojure.string :refer [capitalize lower-case upper-case trim trim-newline triml trimr blank?]] [tabular_functions.datatypes :as datatypes] [tabular_functions.pipeline :as new-tabular] [clj-http.client :as client] [grafter.rdf :refer [prefixer s add]] [grafter.rdf.templater :refer [graph]] [grafter.rdf.formats :refer :all] [grafter.vocabularies.rdf :refer :all] [grafter.vocabularies.qb :refer :all] [grafter.vocabularies.sdmx-measure :refer :all] [grafter.vocabularies.sdmx-attribute :refer :all] [grafter.vocabularies.skos :refer :all] [grafter.vocabularies.foaf :refer :all] [grafter.vocabularies.owl :refer :all] [grafter.vocabularies.dcterms :refer :all] [clj-time.format] [grafter.rdf.io :as ses] [grafter.tabular.common :refer [read-dataset*]] ) (:import [gov.nasa.worldwind.geom.coords.UTMCoord] [org.openrdf.model.impl.URIImpl] [it.unimib.disco.asia.ASIAHashtableClient] [it.unimib.disco.asia.ASIA4JFactory] [it.unimib.disco.asia.ASIA4J] ) )'
 
     // pipeline and graft
-    clojure += generateClojure.fromTransformation(transformation, true);
+    clojure += generateClojure.fromTransformation(transformation, (asiaEnrpointUrl === 'no-asia' ? false : true), asiaEnrpointUrl);
 
     if (!isCsv) {
       // if graft - execute the pipeline and then the graft
@@ -45,10 +47,10 @@ export class JarfterService {
    * TODO FIX. DO NOT USE! BUG IN JARFTER BACKEND CAUSES CORRUPTED RESULTS. Create a Grafter JAR file out of the Clojure code provided
    * @param  {string} transformationObj Transformation object to generate Clojure from
    */
-  public getTransformationJar(transformationObj: string): Promise<any> {
+  public getTransformationJar(transformationObj: string, asiaEnrpointUrl: string): Promise<any> {
     const url = this.getJarCreatorStandAloneEndpoint();
     const headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate, br' });
-    const clojure = this.generateClojure(transformationObj, false);
+    const clojure = this.generateClojure(transformationObj, false, asiaEnrpointUrl);
     // const formData: FormData = new FormData();
     // formData.append('clojure', clojure);
     const body = new HttpParams()
