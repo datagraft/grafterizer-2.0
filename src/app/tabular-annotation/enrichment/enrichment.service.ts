@@ -30,9 +30,14 @@ import { UrlUtils } from '../shared/url-utils';
 
 // MANUEL
 
-export function getStudentData() {
+export function getDateData() {
   return require('../../../../JSON.json')
 }
+
+export function getEventData() {
+  return require('../../../../JSON copy.json')
+}
+
 
 // END MANUEL
 
@@ -558,62 +563,122 @@ export class EnrichmentService {
 
   // MANUEL
   dateData(on: string, payload, cols){
-    console.log('---payload----')
-    console.log(payload)
-
-    let data = getStudentData()
-    
-    const extensions: Extension[] = [];
-    // console.log(getStudentData())
-    console.log('---data---')
-    console.log(data)
-
     payload['queries'].forEach(element => {
       let key = []
       if (element.isColumn) {
         key.push(element.value)
       }
     });
+    console.log('---payload----')
+    console.log(payload)
 
-    const colData = this.data.filter((row) => { // remove empty strings
-      let notEmpty = true;
-      for (let i = 0; i < cols.length; i++) {
-        notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
-      }
-      return notEmpty;
-    }).map(row => { // remove unused fields from rows
-      return cols.reduce((o, k) => {
-        o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
-        return o;
-      }, {});
-    }).reduce((arr, item) => { // remove duplicates
-      const exists = !!arr.find(x => {
-        let ex = true;
-        cols.forEach(col => {
-          ex = ex && x[col] === item[col];
-        });
-        return ex;
-      });
-      if (!exists) {
-        arr.push(item);
-      }
-      return arr;
-    }, [])
+    // let response = this.http.post(requestURL, payload, httpOptions)
+    // console.log('response')
+    // console.log(response)
 
-    data.forEach(res => {
-      const properties: Map<string, any[]> = new Map();
+    const requestURL = this.asiaURL + '/customevents/match';
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    const extensions: Extension[] = [];
+    this.http.post(requestURL, payload, httpOptions).map((results: any) => {
+    // let results = getDateData();
       
-      console.log('--------------res--------------')
-      console.log(res)
-      let e = new Extension(res['key'], []);
-      let concat = ''
-      properties.set('results', [{str: res['results'].join(', ')}])
-      e.addProperties(properties)
-      extensions.push(e)
+      console.log('--Results--')
+      console.log(results)
+      results.forEach(res => {
+        const properties: Map<string, any[]> = new Map();
+        
+        console.log('--------------res--------------')
+        console.log(res)
+        let e = new Extension(res['key'], []);
+        let concat = ''
+        properties.set('results', [{str: res['results'].join(', ')}])
+        e.addProperties(properties)
+        extensions.push(e)
+      });
+      console.log(extensions)
+      return extensions;
+
     });
-    console.log(extensions)
-    return extensions;
+    return []
   }
+      // const colData = this.data.filter((row) => { // remove empty strings
+      //   let notEmpty = true;
+      //   for (let i = 0; i < cols.length; i++) {
+      //     notEmpty = notEmpty && (row[':' + cols[i]] === 0 || row[':' + cols[i]]); // Consider the trailing ':' char from EDN response
+      //   }
+      //   return notEmpty;
+      // }).map(row => { // remove unused fields from rows
+      //   return cols.reduce((o, k) => {
+      //     o[k] = row[':' + k]; // Do not consider the trailing ':' from now on
+      //     return o;
+      //   }, {});
+      // }).reduce((arr, item) => { // remove duplicates
+      //   const exists = !!arr.find(x => {
+      //     let ex = true;
+      //     cols.forEach(col => {
+      //       ex = ex && x[col] === item[col];
+      //     });
+      //     return ex;
+      //   });
+      //   if (!exists) {
+      //     arr.push(item);
+      //   }
+      //   return arr;
+      // }, [])
+  
+
+    // let data = getDateData()
+    
+    // console.log(getDateData())
+    // console.log('---data---')
+    // console.log(data)
+
+  getEventsExtension(on, url){
+
+    const extensions: Extension[] = [];
+    
+    this.http.get(url).map((results: any) => {
+      
+      // let results = getEventData()
+      
+      console.log('--url--')
+      console.log(url)
+      
+      
+      console.log('--static Data--')
+      console.log(Object.keys(results.result))
+      
+      // const properties: Map<string, any[]> = new Map();
+      
+      results.result.forEach(res => {
+        
+        let e = new Extension([res['id']], []);
+        console.log('--res--')
+        console.log(res)
+        Object.keys(res).forEach(k => {
+          if (k != 'id'){
+            const properties: Map<string, any[]> = new Map();  
+            properties.set(k, [{'str' : res[k]}])
+            e.addProperties(properties)
+          }
+        });
+        
+        extensions.push(e)      
+      });
+      console.log('-extensions-')
+      console.log(extensions)
+      return extensions;
+    });
+
+    return []
+  } 
+
+  
   // END MANUEL
 
   setReconciledColumn(reconciledColumn: ReconciledColumn) {

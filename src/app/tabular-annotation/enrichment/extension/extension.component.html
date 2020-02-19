@@ -52,16 +52,16 @@
 
     <section class="form-block" *ngIf="selectedService === 'ide'">
       <div class="form-group">
-        <label class="required" for="wParameters">Select matching properties: </label>
+        <label class="required" for="pParameters">Select matching properties: </label>
         <div class="weather-parameters">
           <mat-form-field>
             <mat-select id="pParameters" placeholder="matching properties" multiple
-                        [(ngModel)]="selectedEventProperties" name="wParameters">
+                        [(ngModel)]="selectedEventProperties" name="pParameters">
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedEventProperties?.length > 0">
                   <span *ngFor="let p_selected of selectedEventProperties">
-                    {{p_selected}} 
+                    {{ p_selected + '\n' }} 
                   </span>
                 </ng-container>
               </mat-select-trigger>

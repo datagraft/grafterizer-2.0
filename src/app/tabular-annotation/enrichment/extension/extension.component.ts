@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 // import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import { EnrichmentService } from '../enrichment.service';
+import { EnrichmentService, getEventData } from '../enrichment.service';
 import { ConciliatorService, EventConfigurator, Extension, ExtensionDeriveMap, Property, WeatherConfigurator } from '../enrichment.model';
 import { HttpClient } from '@angular/common/http';
 import { UrlUtils } from '../../shared/url-utils';
@@ -79,6 +79,7 @@ export class ExtensionComponent implements OnInit {
   public extendOnCols: string[];
   
   //Manuel
+  public selectedEventProperties: string[];
   public dateOperators: string[];
   public group : any;
   public filters: FormArray;
@@ -250,7 +251,7 @@ export class ExtensionComponent implements OnInit {
       this.addRow();
     }
 
-    this.dataSource = new MatTableDataSource(this.filters.controls);
+    this.dateExtensionDataSource = new MatTableDataSource(this.filters.controls);
   }
 
   private emptyRow(): CustomEventFilerModel {
@@ -362,8 +363,6 @@ export class ExtensionComponent implements OnInit {
     }
 
     const weatherConfig = new WeatherConfigurator({ ...wcObj, ...dateConfig, ...placeConfig });
-    console.log('----weatherConfig-------')
-    console.log(weatherConfig)
     const basedOn = this.isColDate ? 'date' : 'place';
 
     this.enrichmentService.weatherData(basedOn, weatherConfig).subscribe((data: Extension[]) => {
@@ -375,7 +374,14 @@ export class ExtensionComponent implements OnInit {
         this.previewProperties = Array.from(this.extensionData[0].properties.keys());
       }
       this.dataLoading = false;
+      
+      console.log('extensionData')
+      console.log(this.extensionData)
+      
+      console.log('previewProperties')
+      console.log(this.previewProperties)
     });
+  
   }
 
 
@@ -476,8 +482,8 @@ export class ExtensionComponent implements OnInit {
       query = [];
       key = [];
       this.filters.value.forEach((element, id) => {
-        console.log('---- element ------' + id)
-        console.log(element)
+        // console.log('---- element ------' + id)
+        // console.log(element)
 
         let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
         let value;
@@ -504,21 +510,11 @@ export class ExtensionComponent implements OnInit {
       queries.push({'key' : key, 'filters' : query});
     });
 
-    //Setup the columns for the key-matching
-    
-    // console.log('cols and after extendOnCols')
-    // console.log(cols)
-    // console.log(this.extendOnCols)
-
     payload = {'queries' : queries};
-    console.log('--payloadAA--')
-    console.log(payload);
 
     const basedOn = this.isColDate ? 'date' : 'place';
 
     let httpResult = this.enrichmentService.dateData(basedOn, payload, cols)
-    console.log('------httpResult------')
-    console.log(httpResult)
     this.extensionData = httpResult;
     if (this.extensionData.length > 0) {
       this.previewProperties = Array.from(this.extensionData[0].properties.keys());
@@ -557,6 +553,39 @@ export class ExtensionComponent implements OnInit {
       'header': this.previewHeader,
       'indexCol': this.colIndex
     });
+  }
+
+  public EventIDExtension(){
+    this.dataLoading = true;
+    this.showPreview = true;
+
+    let props = this.selectedEventProperties;
+
+    let allEventIds = this.enrichmentService.data.map(row => row[':' + this.header]);
+    
+    const distinctArray = allEventIds.filter((n, i) => allEventIds.indexOf(n) === i);
+    
+    console.log('lengths')
+    console.log(allEventIds)
+    console.log(distinctArray.length)
+
+    let requestUrl = 'customevents/select?ids=' + distinctArray.join(',') + '&propIds='+ props.join(',');
+    
+    const basedOn = this.isColDate ? 'date' : 'place';
+
+    let httpResult = this.enrichmentService.getEventsExtension(basedOn, requestUrl)
+
+    this.extensionData = httpResult;
+    if (this.extensionData.length > 0) {
+      this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+    }
+    this.dataLoading = false;
+
+    console.log('extensionData')
+    console.log(this.extensionData)
+
+    console.log('previewProperties')
+    console.log(this.previewProperties)
   }
 
   public extensionProperties = (): Observable<Response> => {
