@@ -460,6 +460,9 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
+  public castDate(date){
+    return date.substring(0, 4) + '-' + date.substring(4, 6) + '-' + date.substring(6, 8)
+  }
 
   public dateExtension(){
     this.dataLoading = true;
@@ -468,7 +471,8 @@ export class ExtensionComponent implements OnInit {
     let payload = {};
     let query = [];
     let queries = [];
-    let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
+    let allDates = this.enrichmentService.data.map(row => [this.castDate(row[':' + this.header])]);
+    
 
     let cols = [];
     let key = [];
@@ -484,7 +488,6 @@ export class ExtensionComponent implements OnInit {
       this.filters.value.forEach((element, id) => {
         // console.log('---- element ------' + id)
         // console.log(element)
-
         let isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1; 
         let value;
         if (isColumn){
@@ -498,6 +501,9 @@ export class ExtensionComponent implements OnInit {
         }else{
           value = element['propertyValue'];
         }
+        if (id == 0){
+          value = this.castDate(value)
+        }
         query.push({
           'propertyID': element['propertyId'],
           'operator' : element['operator'],
@@ -510,11 +516,11 @@ export class ExtensionComponent implements OnInit {
       queries.push({'key' : key, 'filters' : query});
     });
 
-    payload = {'queries' : queries};
+    // payload = {'queries' : queries};
 
     const basedOn = this.isColDate ? 'date' : 'place';
 
-    let httpResult = this.enrichmentService.dateData(basedOn, payload, cols)
+    let httpResult = this.enrichmentService.dateData(basedOn, queries, cols)
     this.extensionData = httpResult;
     if (this.extensionData.length > 0) {
       this.previewProperties = Array.from(this.extensionData[0].properties.keys());

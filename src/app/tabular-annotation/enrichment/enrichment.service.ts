@@ -393,6 +393,11 @@ export class EnrichmentService {
       .set('weatherParams', weatherConfig.getParameters().join(','))
       .set('offsets', weatherConfig.getOffsets().join(','));
 
+    // let response = this.http.post(requestURL, params);
+
+
+    // return [];
+    
     return this.http.post(requestURL, params).map((results: any) => {
       results.sort(function (a, b) {
         return a.offset - b.offset; // sort results by offset
@@ -562,8 +567,8 @@ export class EnrichmentService {
 
 
   // MANUEL
-  dateData(on: string, payload, cols){
-    payload['queries'].forEach(element => {
+  dateData(on: string, payload, cols): Observable<Extension[]>{
+    payload.forEach(element => {
       let key = []
       if (element.isColumn) {
         key.push(element.value)
@@ -583,10 +588,16 @@ export class EnrichmentService {
         'Content-Type': 'application/json'
       }),
     };
-    const extensions: Extension[] = [];
-    this.http.post(requestURL, payload, httpOptions).map((results: any) => {
-    // let results = getDateData();
+
+    // let response = this.http.post(requestURL, payload, httpOptions)
+    // console.log(response)
+    
+    console.log(requestURL)
+    
+    return this.http.post(requestURL, payload, httpOptions).map((results: any) => {
+      // let results = getDateData();
       
+      const extensions: Extension[] = [];
       console.log('--Results--')
       console.log(results)
       results.forEach(res => {
@@ -603,8 +614,12 @@ export class EnrichmentService {
       console.log(extensions)
       return extensions;
 
+    }).catch((error : Observable<Extension[]>) => {
+      
+      console.log(error)
+      return [];
     });
-    return []
+    // return extensions;
   }
       // const colData = this.data.filter((row) => { // remove empty strings
       //   let notEmpty = true;
