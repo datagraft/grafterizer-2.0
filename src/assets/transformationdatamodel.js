@@ -818,6 +818,11 @@ KeyFunctionPair.revive = function (data) {
 };
 KeyFunctionPair.prototype.getParams = function () {
   var params = [];
+  if (!this.func) {
+    console.log("Warning - key function pair found with incorrect parameters");
+    console.log(this);
+    return params;
+  }
   if (!this.func.hasOwnProperty('clojureCode')) return params;
   if (!this.func.clojureCode) return params;
   var d = this.func.clojureCode.match(/\[(.*?)\]/g);
@@ -3265,7 +3270,7 @@ Transformation.prototype.getPartialTransformation = function (untilFunction) {
 
     var partialPipeline = new Pipeline(partialPipelineFunctions);
 
-    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */], this.rdfVocabs);
+    var partialTransformation = new Transformation(this.customFunctionDeclarations, this.prefixers, [partialPipeline], [ /* no graphs needed for this */], this.rdfVocabs, this.annotations, this.identifierSequence);
 
     return partialTransformation;
   } catch (e) {
