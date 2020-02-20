@@ -22,6 +22,7 @@ import { PipelineEventsService } from '../tabular-transformation/pipeline-events
 import { ReconciliationComponent } from './enrichment/reconciliation/reconciliation.component';
 import { ExtensionComponent } from './enrichment/extension/extension.component';
 import { UrlUtils } from './shared/url-utils';
+import {ConstantURI} from 'assets/transformationdatamodel';
 
 declare var Handsontable: any;
 
@@ -294,6 +295,7 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     };
     const dialogConfigDateColumn = { ...dialogConfigExtension, ...{ data: { ...dialogConfigExtension.data, ...{ colDate: true } } } };
     const dialogConfigKeywordColumn = { ...dialogConfigExtension, ...{ data: { ...dialogConfigExtension.data, ...{ colKeyword: true } } } };
+    const dialogConfigEventColumn = { ...dialogConfigExtension, ...{ data: { ...dialogConfigExtension.data, ...{ colEvent: true } } } };
     const dialogConfigReconciliation = {
       width: '900px',
       data: { header: currentHeader, indexCol: headerIdx, colDate: false }
@@ -302,10 +304,15 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
     if (reconciliationServiceId || this.transformationObj.isColumnResultOfExtension(currentHeader)) {
       if (annotation) { // to check if it's a date column
         if (annotation instanceof transformationDataModel.URINodeAnnotation) {
-          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+          const shortTypes = annotation.columnTypes.map((type: transformationDataModel.ConstantURI) => type.constant.substr(UrlUtils.getNamespaceFromURL(new URL(type.constant)).length));
+          if (shortTypes.includes('Event')) {
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigEventColumn);
+          } else {
+            dialogRef = this.dialog.open(ExtensionComponent, dialogConfigExtension);
+          }
         } else {
           const type = annotation.columnDatatype;
-          const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
+          const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type.constant)).length);
           if (shortType === 'dateTime') { // it's a date column --> open dialogConfigDateCOlumn
             dialogRef = this.dialog.open(ExtensionComponent, dialogConfigDateColumn);
           } else if (shortType === 'keyword') { // it's a keyword column -> open dialogConfigKeywordColumn
@@ -320,11 +327,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       }
     } else if (annotation) {
       if (annotation instanceof transformationDataModel.URINodeAnnotation) {
-        // to do
-        dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
-
+        const shortTypes = annotation.columnTypes.map((type: transformationDataModel.ConstantURI) => type.constant.substr(UrlUtils.getNamespaceFromURL(new URL(type.constant)).length));
+        if (shortTypes.includes('Event')) {
+          dialogRef = this.dialog.open(ExtensionComponent, dialogConfigEventColumn);
+        } else {
+          // to do
+          dialogRef = this.dialog.open(ReconciliationComponent, dialogConfigReconciliation);
+        }
       } else {
-
         const type = annotation.columnDatatype;
         const shortType = type.substr(UrlUtils.getNamespaceFromURL(new URL(type)).length);
         if (shortType === 'dateTime') {// it's a dateColumn --> open dialogConfigDateCOlumn
@@ -437,12 +447,14 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
         } else {
           // column has been annotated but not as a result of a reconciliation - we check if it is some specific type
           if (annotation instanceof transformationDataModel.URINodeAnnotation) {
-            // TODO this is currently not useful but may be in the future
-            // TODO if there are other exceptions to when extension should be possible - add them here - e.g., instances of A.ADM4 should be extensible
-            // buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
-            // tooltipContent = 'Extend dataset';
-            buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > insert_link </i>' + '</button>';
-            tooltipContent = 'Reconcile column';
+            const shortTypes = annotation.columnTypes.map((type: transformationDataModel.ConstantURI) => type.constant.substr(UrlUtils.getNamespaceFromURL(new URL(type.constant)).length));
+            if (shortTypes.includes('Event')) {
+              buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > post_add </i>' + '</button>';
+              tooltipContent = 'Extend dataset';
+            } else {
+              buttonHTML = '<button class="btn btn-sm btn-link btn-icon" id="enrich_ ' + colIndex + '">' + '<i class="material-icons top-margin" > insert_link </i>' + '</button>';
+              tooltipContent = 'Reconcile column';
+            }
           } else {
             // must be Literal node annotation
             const type = annotation.columnDatatype;

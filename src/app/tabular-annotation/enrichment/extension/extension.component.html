@@ -67,6 +67,210 @@
       </section>
 
     </ng-container>
+
+    <section class="form-block" *ngIf="selectedServiceId === 'ma'">
+      <div class="form-group">
+        <label>Insert start date</label>
+          <input
+          name = "maStartDate"
+          size="21"
+          type="text"
+          placeholder="Start Date"
+          [(ngModel)]="maStartDate"
+          >
+      </div>
+      <div class="form-group">
+
+        <label>Insert end date</label>
+          <input
+          name = "maEndDate"
+          size="21"
+          type="text"
+          placeholder="End Date"
+          [(ngModel)]="maEndDate"
+          >
+      </div>
+
+      <div class="form-group">
+        <label> Insert Weather Offset</label>
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="wOffsets" placeholder="weather offset" multiple [(ngModel)]="selectedWeatherOffsets"
+            name="wOffsets">
+            <mat-select-trigger>
+
+              <ng-container *ngIf="selectedWeatherOffsets?.length > 0">
+                    <span *ngFor="let o_selected of selectedWeatherOffsets" class="round">
+                      {{o_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of weatherOffsets" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-group">
+        <label> Insert Features</label>
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="features" placeholder="select features" multiple [(ngModel)]="selectedFeatures"
+                        name="features">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedFeatures?.length > 0">
+                    <span *ngFor="let f_selected of selectedFeatures" class="round">
+                      {{f_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of features" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-group">
+        <label> Insert Countries</label>
+
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="countries" placeholder="select countries" multiple [(ngModel)]="selectedCountry"
+                        name="countries">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedCountry?.length > 0">
+                    <span *ngFor="let c_selected of selectedCountry" class="round">
+                      {{c_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of countries" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-block" *ngIf="selectedServiceId === 'ce'">
+      <div class="form-group">
+        <label class="required" for="pParameters">Select matching properties: </label>
+        <div class="weather-parameters">
+          <mat-form-field>
+            <mat-select id="pParameters" placeholder="matching properties" multiple
+                        [(ngModel)]="selectedEventProperties" name="pParameters">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedEventProperties?.length > 0">
+                  <span *ngFor="let p_selected of selectedEventProperties">
+                    {{ p_selected + '\n' }}
+                  </span>
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of eventProperties" [value]="p"> {{ p }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="form-block" *ngIf="selectedServiceId === 'ide'">
+            <form [formGroup]="group">
+              <mat-table #table formArrayName="filters" [dataSource]="dateExtensionDataSource">
+                   <ng-container matColumnDef="propertyId">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <!-- used when the row is readonly -->
+                        <input *ngIf="element.controls.readonly.value"
+                               matInput
+                               class="border-0"
+                               placeholder="Property ID"
+                               formControlName="propertyId"
+                               [readonly]="true">
+
+                        <mat-select *ngIf="!element.controls.readonly.value"
+                                    placeholder="Property ID"
+                                    formControlName="propertyId"
+                                    required>
+                          <mat-option *ngFor="let propertyID of propertiesID"
+                                      [value]="propertyID">{{ propertyID }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Operator -->
+                  <ng-container matColumnDef="operator">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <!-- used when the row is readonly -->
+                        <input *ngIf="element.controls.readonly.value"
+                              matInput
+                              class="border-0"
+                              placeholder="Operator"
+                              formControlName="operator"
+                              [readonly]="true">
+
+                        <mat-select *ngIf="!element.controls.readonly.value"
+                                    placeholder="Operator"
+                                    formControlName="operator"
+                                    required>
+                          <mat-option *ngFor="let operator of operators"
+                                      [value]="operator">{{ operator }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Value -->
+                  <ng-container matColumnDef="propertyValue">
+                    <mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
+                      <mat-form-field [floatLabel]="(i === 0) ? 'auto' : 'never'"
+                                      class="w-100 pr-1">
+                        <input matInput
+                              placeholder="Value"
+                               class="border-0"
+                              formControlName="propertyValue"
+                              [matAutocomplete]="propertyValueAuto"
+                              [readonly]="element.controls.readonly.value"
+                              required>
+                      </mat-form-field>
+
+                      <mat-autocomplete #propertyValueAuto="matAutocomplete">
+                        <mat-option *ngFor="let propertyValue of propertiesValue"
+                                    [value]="propertyValue">{{ propertyValue }}</mat-option>
+                      </mat-autocomplete>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Actions -->
+                  <ng-container matColumnDef="actions">
+                    <mat-cell *matCellDef="let element; let i = index; let last = last"
+                              class="col-actions">
+                        <button *ngIf="last"
+                                class="btn btn-link btn-action"
+                                (click)="addRow()">
+                          <i class="fa fa-plus-circle fa-2x text-info"></i>
+                        </button>
+                        <button *ngIf="!element.controls.readonly.value"
+                                class="btn btn-link btn-action"
+                                (click)="removeRow(i)">
+                          <i class="fa fa-minus-circle fa-2x text-danger"></i>
+                        </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-row *matRowDef="let row; columns: dateExtensionDisplayedColumns;"></mat-row>
+              </mat-table>
+            </form>
+    </section>
+
     <section class="form-block" *ngIf="selectedServiceId === 'ecmwf'">
       <div class="form-group">
         <ng-container *ngIf="isColDate">
@@ -416,7 +620,7 @@
                       &&
                       ((placeChoice === 'fromCol' && readPlacesFromCol)
                       ||
-                      (placeChoice === 'placefromPicker' && selectedChipsPlaces.length > 0)))" (click)="event()"
+                      (placeChoice === 'placefromPicker' && selectedChipsPlaces.length > 0)))" (click)="fetchEREventsData()"
       cdkFocusInitial>Fetch Event data
     </button>
     <button *ngIf="isGeonamesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(((categoryChoice === 'fromCol' && readCategoriesFromCol)
@@ -425,7 +629,7 @@
                       &&
                       ((dateChoice === 'fromCol' && readDatesFromCol)
                       ||
-                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="event()" cdkFocusInitial>Fetch Event
+                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="fetchEREventsData()" cdkFocusInitial>Fetch Event
       data
     </button>
     <button *ngIf="isCategoriesColumn" mat-button class="btn btn-sm btn-link" [disabled]="!(((placeChoice === 'fromCol' && readPlacesFromCol)
@@ -434,10 +638,31 @@
                       &&
                       ((dateChoice === 'fromCol' && readDatesFromCol)
                       ||
-                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="event()" cdkFocusInitial>Fetch Event
+                      (dateChoice === 'fromPicker' && selectedDate)))" (click)="fetchEREventsData()" cdkFocusInitial>Fetch Event
       data
     </button>
   </ng-container>
+
+  <ng-container *ngIf="selectedServiceId === 'ce'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="fetchCustomEventsData()" cdkFocusInitial>Fetch Custom Events
+    </button>
+  </ng-container>
+  <ng-container *ngIf="selectedServiceId === 'ide'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="reset()"> <span class="text-secondary"> Reset </span>
+    </button>
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="fetchCustomEventIDsData()" cdkFocusInitial>Fetch Custom Events IDs
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="selectedServiceId === 'ma'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="fetchMediaAttentionData()" cdkFocusInitial>Fetch Media Attention data
+    </button>
+  </ng-container>
+
   <button mat-button class="btn btn-sm btn-link"
     [disabled]="dataLoading || extensionData.length === 0 || previewProperties.length === 0" (click)="applyExtension()"
     *ngIf="showPreview">Apply
