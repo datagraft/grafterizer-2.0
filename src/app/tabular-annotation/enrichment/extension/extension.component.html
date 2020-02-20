@@ -50,6 +50,92 @@
 
     </ng-container>
 
+    <section class="form-block" *ngIf="selectedService === 'ma'">
+      <div class="form-group">
+        <label>Insert start date</label>
+          <input
+          name = "maStartDate"
+          size="21"
+          type="text"
+          placeholder="Start Date"
+          [(ngModel)]="maStartDate"
+          >
+      </div>
+      <div class="form-group">
+
+        <label>Insert end date</label>
+          <input
+          name = "maEndDate"
+          size="21"
+          type="text"
+          placeholder="End Date"
+          [(ngModel)]="maEndDate"
+          >
+      </div>
+
+      <div class="form-group">
+        <label> Insert Weather Offset</label>
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="wOffsets" placeholder="weather offset" multiple [(ngModel)]="selectedWeatherOffsets"
+            name="wOffsets">
+            <mat-select-trigger>
+              
+              <ng-container *ngIf="selectedWeatherOffsets?.length > 0">
+                    <span *ngFor="let o_selected of selectedWeatherOffsets" class="round">
+                      {{o_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of weatherOffsets" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-group">
+        <label> Insert Features</label>
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="features" placeholder="select features" multiple [(ngModel)]="selectedFeatures"
+                        name="features">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedFeatures?.length > 0">
+                    <span *ngFor="let f_selected of selectedFeatures" class="round">
+                      {{f_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of features" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-group">
+        <label> Insert Countries</label>
+
+        <div class="weather-offset">
+          <mat-form-field>
+            <mat-select id="countries" placeholder="select countries" multiple [(ngModel)]="selectedCountry"
+                        name="countries">
+              <mat-select-trigger>
+
+                <ng-container *ngIf="selectedCountry?.length > 0">
+                    <span *ngFor="let c_selected of selectedCountry" class="round">
+                      {{c_selected}}
+                    </span>
+
+                </ng-container>
+              </mat-select-trigger>
+              <mat-option *ngFor="let p of countries" [value]="p"> {{p}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </section>
+
     <section class="form-block" *ngIf="selectedService === 'ide'">
       <div class="form-group">
         <label class="required" for="pParameters">Select matching properties: </label>
@@ -169,27 +255,6 @@
                   <mat-row *matRowDef="let row; columns: dateExtensionDisplayedColumns;"></mat-row>
               </mat-table>
             </form>
-
-<!--          </div>-->
-
-<!--        </ng-container>-->
-<!--       </div>-->
-
-
-
-
-      <!-- <div class="form-group">
-        <label class="required" for="dOperator">Select DateOperator: </label>
-        <div class="select">
-          <select id="dOperator"
-                  name="dOperator"
-                  [(ngModel)]="selectedDateOperator"
-                  multiple style="z-index: 0">
-            <option *ngFor="let p of dateOperators" [value]="p">{{p}}</option>
-          </select>
-        </div>
-      </div> -->
-
     </section>
 
     <section class="form-block" *ngIf="selectedService === 'ecmwf'">
@@ -605,12 +670,18 @@
 
   <ng-container *ngIf="selectedService === 'ce'">
     <button mat-button class="btn btn-sm btn-link"
-            (click)="dateExtension()" cdkFocusInitial>Fetch Date data
+            (click)="customEventExtension()" cdkFocusInitial>Fetch Date data
     </button>
   </ng-container>
   <ng-container *ngIf="selectedService === 'ide'">
     <button mat-button class="btn btn-sm btn-link"
             (click)="EventIDExtension()" cdkFocusInitial>Fetch Event data
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="selectedService === 'ma'">
+    <button mat-button class="btn btn-sm btn-link"
+            (click)="MediaAttentionExtension()" cdkFocusInitial>Fetch Media Attention data
     </button>
   </ng-container>
 

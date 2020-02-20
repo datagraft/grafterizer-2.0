@@ -28,18 +28,6 @@ import * as moment from 'moment';
 import { UrlUtils } from '../shared/url-utils';
 
 
-// MANUEL
-
-export function getDateData() {
-  return require('../../../../JSON.json')
-}
-
-export function getEventData() {
-  return require('../../../../JSON copy.json')
-}
-
-
-// END MANUEL
 
 @Injectable()
 export class EnrichmentService {
@@ -567,7 +555,7 @@ export class EnrichmentService {
 
 
   // MANUEL
-  dateData(on: string, payload, cols): Observable<Extension[]>{
+  customEventData(on: string, payload, cols): Observable<Extension[]>{
     payload.forEach(element => {
       let key = []
       if (element.isColumn) {
@@ -611,13 +599,10 @@ export class EnrichmentService {
         e.addProperties(properties)
         extensions.push(e)
       });
+      console.log('--extensions--')
       console.log(extensions)
       return extensions;
 
-    }).catch((error : Observable<Extension[]>) => {
-      
-      console.log(error)
-      return [];
     });
     // return extensions;
   }
@@ -653,11 +638,11 @@ export class EnrichmentService {
     // console.log('---data---')
     // console.log(data)
 
-  getEventsExtension(on, url){
+  getEventsExtension(on, url): Observable<Extension[]>{
 
     const extensions: Extension[] = [];
     
-    this.http.get(url).map((results: any) => {
+    return this.http.get(url).map((results: any) => {
       
       // let results = getEventData()
       
@@ -667,8 +652,6 @@ export class EnrichmentService {
       
       console.log('--static Data--')
       console.log(Object.keys(results.result))
-      
-      // const properties: Map<string, any[]> = new Map();
       
       results.result.forEach(res => {
         
@@ -689,8 +672,6 @@ export class EnrichmentService {
       console.log(extensions)
       return extensions;
     });
-
-    return []
   } 
 
   

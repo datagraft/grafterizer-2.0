@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 // import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import { EnrichmentService, getEventData } from '../enrichment.service';
+import { EnrichmentService} from '../enrichment.service';
 import { ConciliatorService, EventConfigurator, Extension, ExtensionDeriveMap, Property, WeatherConfigurator } from '../enrichment.model';
 import { HttpClient } from '@angular/common/http';
 import { UrlUtils } from '../../shared/url-utils';
@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatTable, MatTableDataSource } from '@angular/material';
 import { Keys } from '@swimlane/ngx-datatable/release/utils';
-
+import * as moment from 'moment';
 
 // Manuel
 export class CustomEventFilerModel {
@@ -94,7 +94,15 @@ export class ExtensionComponent implements OnInit {
   }; 
   public dateExtensionDataSource: MatTableDataSource<any> 
   public eventProperties : string[] = []
-  
+  public maStartDate : any;
+  public maEndDate : any;
+  public features : string[];
+  public selectedFeatures: any;
+  public countries : string[];
+  public selectedCountry: any;
+
+
+
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
 
@@ -152,6 +160,9 @@ export class ExtensionComponent implements OnInit {
     'IN', 'NOT IN', 
     'LIKE', 'NOT LIKE', 
     '=~', '!~' ];
+    this.features = ['A', 'B', 'C']
+    this.countries = ['Germany', 'Italy', 'Spain']
+
     this.propertiesValue = this.enrichmentService.headers;
     this.dataSource = new MatTableDataSource();
     this.defaultFilter.propertyValue = this.header;
@@ -166,6 +177,7 @@ export class ExtensionComponent implements OnInit {
       this.services.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
       this.services.push(new ConciliatorService({ 'id': 'ce', 'name': 'CustomEvent', group: 'events' }));
       this.services.push(new ConciliatorService({ 'id': 'ide', 'name': 'Event ID', group: 'events' }))
+      this.services.push(new ConciliatorService({ 'id': 'ma', 'name': 'Media Attention', group: 'events' }))
       // this.reconciledFromService = new ConciliatorService({
       //   'id': 'geonames',
       //   'name': 'GeoNames',
@@ -460,18 +472,18 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
-  public castDate(date){
-    return date.substring(0, 4) + '-' + date.substring(4, 6) + '-' + date.substring(6, 8)
-  }
+  // public castDate(date){
+  //   return date.substring(0, 4) + '-' + date.substring(4, 6) + '-' + date.substring(6, 8)
+  // }
 
-  public dateExtension(){
+  public customEventExtension(){
     this.dataLoading = true;
     this.showPreview = true;
 
     let payload = {};
     let query = [];
     let queries = [];
-    let allDates = this.enrichmentService.data.map(row => [this.castDate(row[':' + this.header])]);
+    let allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
     
 
     let cols = [];
@@ -492,6 +504,7 @@ export class ExtensionComponent implements OnInit {
         let value;
         if (isColumn){
           value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
+          
           if (cols.indexOf(element['propertyValue']) < 0){
             cols.push(element['propertyValue']);
             if (element['propertyValue'] != this.header){
@@ -501,16 +514,18 @@ export class ExtensionComponent implements OnInit {
         }else{
           value = element['propertyValue'];
         }
-        if (id == 0){
-          value = this.castDate(value)
-        }
+
+        key.push(value)
+        // if (id == 0){
+        //   value = moment(value).format()
+        // }
+
         query.push({
           'propertyID': element['propertyId'],
           'operator' : element['operator'],
           'value' : value,
           'isColumn' : isColumn 
         });
-        key.push(value)
       });
       keys.push(key)
       queries.push({'key' : key, 'filters' : query});
@@ -520,12 +535,13 @@ export class ExtensionComponent implements OnInit {
 
     const basedOn = this.isColDate ? 'date' : 'place';
 
-    let httpResult = this.enrichmentService.dateData(basedOn, queries, cols)
-    this.extensionData = httpResult;
-    if (this.extensionData.length > 0) {
-      this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-    }
-    this.dataLoading = false;
+    this.enrichmentService.customEventData(basedOn, queries, cols).subscribe((httpResult : Extension[]) => {      
+      this.extensionData = httpResult;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
   }
 
   public submit() {
@@ -579,14 +595,15 @@ export class ExtensionComponent implements OnInit {
     
     const basedOn = this.isColDate ? 'date' : 'place';
 
-    let httpResult = this.enrichmentService.getEventsExtension(basedOn, requestUrl)
-
-    this.extensionData = httpResult;
-    if (this.extensionData.length > 0) {
-      this.previewProperties = Array.from(this.extensionData[0].properties.keys());
-    }
-    this.dataLoading = false;
-
+    
+    this.enrichmentService.getEventsExtension(basedOn, requestUrl).subscribe((httpResult : Extension[]) => {  
+      this.extensionData = httpResult;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    })
+      
     console.log('extensionData')
     console.log(this.extensionData)
 
