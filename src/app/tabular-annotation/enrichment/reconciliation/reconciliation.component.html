@@ -30,18 +30,18 @@
           <input type="text" id="column-name"
             placeholder="{{header}}_{{reconciliationForm.get('selectedService').value}}" size="45"
             formControlName="newColumnName" name="newColumnName">
-          <clr-checkbox *ngIf="colIndex < annotationService.headers.length - 1" name="shiftColumn" id="shiftColumn"
+          <!-- <clr-checkbox *ngIf="colIndex < annotationService.headers.length - 1" name="shiftColumn" id="shiftColumn"
             formControlName="shiftColumn">
             New column next to <i>{{header}}</i>
-          </clr-checkbox>
+          </clr-checkbox> -->
         </div>
       </section>
 
-      <div class="toggle-switch">
+      <!-- <div class="toggle-switch">
         <input [(ngModel)]="reconcileWithProperties" [ngModelOptions]="{standalone: true}" type="checkbox"
           id="reconcileWithProperties" [disabled]="!this.reconciliationForm.get('selectedService').value">
         <label for="reconcileWithProperties">Specify properties to constrain results</label>
-      </div>
+      </div> -->
 
       <section class="form-block" *ngIf="reconcileWithProperties">
         <div formArrayName="items" *ngFor="let ctrl of reconciliationForm.get('items').controls; let i = index;">
