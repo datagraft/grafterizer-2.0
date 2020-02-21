@@ -107,6 +107,7 @@ export class ExtensionComponent implements OnInit {
   selectedExtension: any = {};
 
   public reconciliationServicesMap: Map<string, ConciliatorService>;
+  private sameAsSource: ConciliatorService;
 
   @ViewChild('inputCategoriesChips') inputCategoriesChips: ElementRef<HTMLInputElement>;
   @ViewChild('inputPLaceChips') inputPLaceChips: ElementRef<HTMLInputElement>;
@@ -210,15 +211,16 @@ export class ExtensionComponent implements OnInit {
       this.extensionServices.push(new ConciliatorService({ 'id': 'ce', 'name': 'CustomEvent', group: 'events' }));
     } else if (this.dialogInputData.reconciliationServiceId) {
       this.reconciledFromService = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
-      // this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
-      this.extensionServices.push(this.reconciledFromService);
-      if (this.reconciledFromService.getId() === 'geonames') {
-        this.isGeonamesColumn = true;
-        this.extensionServices.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
-        this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
-      } else if (this.reconciledFromService.getId() === 'productsservices') {
-        this.isCategoriesColumn = true;
-        this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
+      if (this.reconciledFromService) {
+        this.extensionServices.push(this.reconciledFromService);
+        if (this.reconciledFromService.getId() === 'geonames') {
+          this.isGeonamesColumn = true;
+          this.extensionServices.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
+          this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
+        } else if (this.reconciledFromService.getId() === 'productsservices') {
+          this.isCategoriesColumn = true;
+          this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
+        }
       }
       this.extensionServices.push(new ConciliatorService({ 'id': 'sameas', 'name': 'SameAs', group: 'sameas' }));
     }
@@ -569,18 +571,41 @@ export class ExtensionComponent implements OnInit {
     this.extendOnCols = []; // sameas extension is always based on a single column - no additional cols
 
     // get KB source and KB target parameters
-    const sameAsSource = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
-    // const sameAsSource = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
-    this.reconciledToService = this.kgServices.find((svc: ConciliatorService) => svc.getId() === this.selectedKGService);
+    this.sameAsSource = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
 
-    // pass parameters to enrichment service through Extension object
-    this.enrichmentService.sameasData(this.header, sameAsSource, this.reconciledToService).subscribe((data) => {
-      this.extensionData = data;
-      if (this.extensionData.length > 0) {
-        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+    if (!this.sameAsSource) {
+      // sameAs extension source not one of the reconciliation services - try the KG services
+      this.sameAsSource = this.kgServices.find(source => source.getId() === this.dialogInputData.reconciliationServiceId);
+      if (!this.sameAsSource) {
+        // last resort - if the annotation is a 'sameAs' - use the extension's target knowledge base
+        const extension = this.transformationObj.getExtensionOfDerivedColumn(this.header);
+        if (extension) {
+          if (extension instanceof transformationDataModel.SameAsExtension) {
+            this.sameAsSource = this.kgServices.find(source => source.getId() === extension.targetKnowledgeBase);
+          }
+        }
       }
-      this.dataLoading = false;
-    });
+    }
+
+
+
+    // check if we got a hit either from the reconciliation services or from the KG services
+    if (this.sameAsSource) {
+      // const sameAsSource = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
+      this.reconciledToService = this.kgServices.find((svc: ConciliatorService) => svc.getId() === this.selectedKGService);
+
+      // pass parameters to enrichment service through Extension object
+      this.enrichmentService.sameasData(this.header, this.sameAsSource, this.reconciledToService).subscribe((data) => {
+        this.extensionData = data;
+        if (this.extensionData.length > 0) {
+          this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+        }
+        this.dataLoading = false;
+      });
+    } else {
+      // TODO - what if we did not find any source??
+    }
+
   }
 
   fetchEREventsData() {
@@ -788,7 +813,14 @@ export class ExtensionComponent implements OnInit {
     } else {
       extensionId = this.transformationObj.getUniqueId();
     }
-
+    if (!this.reconciledFromService) {
+      if (this.sameAsSource) {
+        this.reconciledFromService = this.sameAsSource;
+      } else {
+        // TODO need a better solution for this!
+        this.reconciledFromService = new ConciliatorService({ 'id': 'nonexistantservice', 'name': 'nonexistantservice', 'identifierSpace': 'nonexistantservice' });
+      }
+    }
     if (this.selectedServiceId === this.reconciledFromService.getId()) {
       // Extension is from the same service that we reconciled the column with
       this.currentExtension = new transformationDataModel.ReconciliationServiceExtension(derivedColumnNames, extensionMatchPairs, extensionId, this.currentAnnotation.conciliatorServiceName, this.previewProperties);
@@ -862,10 +894,14 @@ export class ExtensionComponent implements OnInit {
         case 'er':
           break;
         case 'sameas':
-          this.previewProperties;
-          this.extensionData;
           let annotationPrefixUri = this.transformationObj.getURIForPrefix(this.currentAnnotation.urifyPrefix);
-          let sourceKgService = this.kgServices.find(kgService => kgService.getIdentifierSpace() === annotationPrefixUri);
+          let sourceKgService;
+          if (this.sameAsSource) {
+            sourceKgService = this.sameAsSource;
+          } else {
+            sourceKgService = this.kgServices.find(kgService => kgService.getIdentifierSpace() === annotationPrefixUri);
+          }
+
           let targetKgService = this.kgServices.find(kgService => kgService.getId() === this.selectedKGService);
           if (sourceKgService) {
             this.currentExtension = new transformationDataModel.SameAsExtension(derivedColumnNames, extensionMatchPairs,
