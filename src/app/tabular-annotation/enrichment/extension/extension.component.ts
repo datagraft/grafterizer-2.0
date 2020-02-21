@@ -126,6 +126,10 @@ export class ExtensionComponent implements OnInit {
 
       });
 
+    this.kgServicesSubscription = this.getKGServices().subscribe((data: ConciliatorService[]) => {
+      this.kgServices = data;
+    });
+
     if (this.isColDate) {
       this.extensionServices.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
       this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
@@ -137,7 +141,7 @@ export class ExtensionComponent implements OnInit {
       //   schemaSpace: 'http://www.geonames.org/ontology#'
       // });
     } else if (this.isColKeyword) {
-      this.extensionServices.push(new ConciliatorService({'id': 'keywordscategories', 'name': 'Keyword to Categories', group: 'keywords'}));
+      this.extensionServices.push(new ConciliatorService({ 'id': 'keywordscategories', 'name': 'Keyword to Categories', group: 'keywords' }));
     } else if (this.dialogInputData.reconciliationServiceId) {
       this.reconciledFromService = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
       // this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
@@ -172,10 +176,24 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max', 'cumul'];
-    this.kgServicesSubscription = this.getKGServices().subscribe((data: ConciliatorService[]) => {
-      this.kgServices = data;
-    });
+
   } // end ngOnInit
+
+  checkIfSupportedSameAsExtension(): boolean {
+    // annotation needs to be in place and needs to be a URI node annotation
+    if (!this.currentAnnotation || this.currentAnnotation instanceof transformationDataModel.LiteralNodeAnnotation) {
+      return false;
+    }
+
+    // the prefix should correspond to one of the supported services' identifier spaces
+    let annotationPrefixUri = this.transformationObj.getURIForPrefix(this.currentAnnotation.urifyPrefix);
+    let sourceKgService = this.kgServices.find(kgService => kgService.getIdentifierSpace() === annotationPrefixUri);
+    if (sourceKgService) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   ngOnDestroy() {
     this.transformationSubscription.unsubscribe();
@@ -273,6 +291,8 @@ export class ExtensionComponent implements OnInit {
       this.fetchWeatherData();
     } else if (this.currentExtension instanceof transformationDataModel.SameAsExtension) {
       this.selectedServiceId = 'sameas';
+      this.selectedKGService = this.currentExtension.targetKnowledgeBase;
+      this.fetchSameAsData();
     } else if (this.currentExtension instanceof transformationDataModel.EventExtension) {
       this.selectedServiceId = 'er';
     } else {
@@ -636,18 +656,54 @@ export class ExtensionComponent implements OnInit {
 
       }
     } else {
+      let extensionMatchPairs = this.getExtensionMatchPairs();
       // One of the extension services has been used
       switch (this.selectedServiceId) {
         case 'geonames':
-          // date column (can't extend using non-dates or non-reconciled cols)
+        // date column (can't extend using non-dates or non-reconciled cols)
         case 'er':
+          break;
         case 'sameas':
+          this.previewProperties;
+          this.extensionData;
+          let annotationPrefixUri = this.transformationObj.getURIForPrefix(this.currentAnnotation.urifyPrefix);
+          let sourceKgService = this.kgServices.find(kgService => kgService.getIdentifierSpace() === annotationPrefixUri);
+          let targetKgService = this.kgServices.find(kgService => kgService.getId() === this.selectedKGService);
+          if (sourceKgService) {
+            this.currentExtension = new transformationDataModel.SameAsExtension(derivedColumnNames, extensionMatchPairs,
+              extensionId, sourceKgService.getId(), this.selectedKGService);
+          } else {
+            throw ("Unknown source knowledge graph for sameAs extension");
+          }
+
+          // create the annotation of the new column
+          let propertyTDMObject = new transformationDataModel.Property('', 'http://www.w3.org/2002/07/owl#sameAs', [], []);
+          // if the column has already been annotated (this could happen when editing an existing extension)
+          // we use the ID of the existing annotation; otherwise we create a unique ID
+          let existingAnnotation = this.transformationObj.getColumnAnnotations(derivedColumnNames[0])[0];
+          let annotationId = existingAnnotation ? existingAnnotation.id : this.transformationObj.getUniqueId();
+
+          let newAnnotation = new transformationDataModel.URINodeAnnotation(
+            derivedColumnNames[0],
+            this.currentAnnotation.id,
+            [propertyTDMObject], // props
+            [], // types
+            this.annotationService.getPrefixForNamespace(targetKgService.getIdentifierSpace(), this.transformationObj),
+            false,
+            transformationDataModel.AnnotationStatus.invalid,
+            annotationId,
+            '',
+            [],
+            null
+          );
+          this.transformationObj.addOrReplaceAnnotation(newAnnotation);
+
+          break;
         case 'keywordscategories':
           break;
         case 'ecmwf':
           this.previewProperties;
           this.extensionData;
-          let extensionMatchPairs = this.getExtensionMatchPairs();
 
           let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();
           if (this.isColDate) {

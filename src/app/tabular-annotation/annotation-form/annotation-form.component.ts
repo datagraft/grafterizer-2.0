@@ -1,5 +1,5 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {AnnotationService} from '../annotation.service';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { AnnotationService } from '../annotation.service';
 import {
   AbstractControl,
   FormArray,
@@ -8,13 +8,13 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import {ColumnTypes, XSDDatatypes} from '../annotation.model';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {Observable, Subscription} from 'rxjs';
-import {AsiaMasService} from '../asia-mas/asia-mas.service';
-import {CustomValidators} from '../shared/custom-validators';
+import { ColumnTypes, XSDDatatypes } from '../annotation.model';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { Observable, Subscription } from 'rxjs';
+import { AsiaMasService } from '../asia-mas/asia-mas.service';
+import { CustomValidators } from '../shared/custom-validators';
 import * as tdm from 'assets/transformationdatamodel.js';
-import {TransformationService} from 'app/transformation.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'app-annotation-form',
@@ -48,9 +48,9 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   annotationForm: FormGroup;
 
   constructor(private transformationSvc: TransformationService, public annotationService: AnnotationService,
-              private suggesterSvc: AsiaMasService,
-              public dialogRef: MatDialogRef<AnnotationFormComponent>,
-              @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
+    private suggesterSvc: AsiaMasService,
+    public dialogRef: MatDialogRef<AnnotationFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogInputData: any) {
   }
 
   ngOnInit() {
@@ -111,12 +111,12 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         property: new FormControl('', CustomValidators.URLValidator()),
       }),
     }, Validators.compose([
-        CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
-        CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
-        CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
-        CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
-        CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
-      ]
+      CustomValidators.langTagValidator('columnInfo.columnDatatype', 'columnInfo.langTag'),
+      CustomValidators.subjectPropertyValidator('relationship.subject', 'relationship.property', 'columnInfo.columnValuesType'),
+      CustomValidators.customDatatypeValidator('columnInfo.columnDatatype', 'columnInfo.customDatatype'),
+      CustomValidators.columnTypesValidator('columnInfo.columnTypes', 'columnInfo.columnValuesType'),
+      CustomValidators.urifyNamespaceValidator('columnInfo.urifyNamespace', 'columnInfo.columnValuesType'),
+    ]
     ));
   }
 
@@ -162,7 +162,7 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
           .setValue(this.transformationObj.getConstantURINodeFullyQualifiedName(types[i]));
         this.addColType(i);
       }
-      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.currentAnnotation.urifyPrefix);
+      this.annotationForm.get('columnInfo.urifyNamespace').setValue(this.transformationObj.getURIForPrefix(this.currentAnnotation.urifyPrefix));
     } else if (this.currentAnnotation instanceof tdm.LiteralNodeAnnotation) {
       const annotationDatatype = this.currentAnnotation.columnDatatype;
       let datatype = Object.keys(XSDDatatypes).find(key => XSDDatatypes[key] === annotationDatatype);
@@ -258,10 +258,10 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
   subjectValuesTypeValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
       if (control.value === '') {
-        return {'invalidColumnValuesType': {errorMessage: 'Column values type is required'}, 'missingColumnValuesType': true};
+        return { 'invalidColumnValuesType': { errorMessage: 'Column values type is required' }, 'missingColumnValuesType': true };
       }
       if (this.isValuesTypeNotValid(control.value)) {
-        return {'invalidColumnValuesType': {errorMessage: 'A subject column must be of type URI'}};
+        return { 'invalidColumnValuesType': { errorMessage: 'A subject column must be of type URI' } };
       }
       return null;
     };

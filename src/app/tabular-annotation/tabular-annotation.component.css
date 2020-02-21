@@ -28,6 +28,12 @@
   margin-bottom: 0.2em !important;
 }
 
+>>> .ann-info-error {
+  color: red !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
 >>> .ann-info-reconciliations {
   color: #737373 !important;
   margin-top: 0 !important;

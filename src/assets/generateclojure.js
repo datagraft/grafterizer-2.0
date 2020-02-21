@@ -964,6 +964,7 @@ function generateASIAFunctionDeclarationsText(asiaEndpointUrl) {
   text += '(defn reconcileAsia [label type threshold conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.reconcile asia-client label type threshold conciliator)))' + '\n';
   text += '(defn extendAsia [id propertyName conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extend asia-client id propertyName conciliator)))' + '\n';
   text += '(defn extendWeatherAsia [regionGeonamesId date aggregator weatherParamName offsetDays] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extendWeather asia-client regionGeonamesId date aggregator weatherParamName offsetDays)))' + '\n';
+  text += '(defn extendSameAsAsia [id source target] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.geoExactMatch asia-client id source target)))' + '\n';
 
   return text;
 }
@@ -1032,16 +1033,36 @@ function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl)
       switch (genericFunction.__type) {
         case 'ReconciliationFunction':
           var annotationOfReconciliation = transformation.getAnnotationById(genericFunction.annotationId);
-          var reconciliation = annotationOfReconciliation.reconciliation;
-          generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(annotationOfReconciliation.columnName);
-          pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[0]));
+          if (annotationOfReconciliation) {
+            var reconciliation = annotationOfReconciliation.reconciliation;
+            if (reconciliation) {
+              generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(annotationOfReconciliation.columnName);
+              if (generatedPipelineFunctionClojureFunctionsArray) {
+                pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[0]));
+              } else {
+                console.error("Error getting parameters of reconciliation function");
+                console.log(genericFunction);
+              }
+            } else {
+              console.error("Error getting parameters of reconciliation function");
+              console.log(genericFunction);
+            }
+          } else {
+            console.error("Error getting parameters of reconciliation function");
+            console.log(genericFunction);
+          }
           break;
         case 'ExtensionFunction':
           var extension = transformation.getExtensionById(genericFunction.extensionId);
           var annotationOfExtension = transformation.getAnnotationByExtensionId(genericFunction.extensionId);
-          generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(annotationOfExtension.columnName);
-          for (i = 0; i < generatedPipelineFunctionClojureFunctionsArray.length; ++i) {
-            pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[i]));
+          if (extension && annotationOfExtension) {
+            generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(annotationOfExtension.columnName);
+            for (i = 0; i < generatedPipelineFunctionClojureFunctionsArray.length; ++i) {
+              pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[i]));
+            }
+          } else {
+            console.error("Error getting parameters for extension function");
+            console.log(genericFunction);
           }
           break;
         default:
@@ -1094,7 +1115,7 @@ function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl)
       console.info(reconciliationAnnotation);
       textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode, reconciliationAnnotation.conciliatorServiceName)[0]).ednEncode();
     }
-    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension') {
+    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension') {
       // retrieve all Clojure functions
       var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode);
 

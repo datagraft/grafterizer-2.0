@@ -379,7 +379,7 @@
 </div>
 <div mat-dialog-actions>
 
-  <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span class="red"> Discard </span></button>
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span> Discard </span></button>
 
   <button *ngIf="this.currentExtension && editOrCreateNew === 'edit-existing'" mat-button class="btn btn-sm btn-link"
     mat-dialog-close (click)="removeCurrentExtension()"><span class="red"> Delete selected extension </span></button>
@@ -394,7 +394,8 @@
     </button>
   </ng-container>
   <ng-container *ngIf="selectedServiceId === 'keywordscategories'">
-    <button mat-button class="btn btn-sm btn-link" (click)="fetchCategoriesForKeyword()" cdkFocusInitial>Fetch Categories data!
+    <button mat-button class="btn btn-sm btn-link" (click)="fetchCategoriesForKeyword()" cdkFocusInitial>Fetch
+      Categories data!
     </button>
   </ng-container>
   <ng-container *ngIf="selectedServiceId === 'ecmwf'">

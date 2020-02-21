@@ -540,6 +540,9 @@ export class TabularAnnotationComponent implements OnInit, OnDestroy {
       if (annotation instanceof transformationDataModel.URINodeAnnotation) {
         annInfoLabel = '<p class="p7 ann-info-label">Type(s):</p>';
         annInfoTypes = '';
+        if (!annotation.columnTypes.length) {
+          annInfoTypes += '<span class="p7 ann-info-error" title="URI annotations require type definitions!"> Not defined </span>';
+        }
         for (let i = 0; i < annotation.columnTypes.length; ++i) {
 
           const qualifiedTypeString = this.transformationObj.getConstantURINodeFullyQualifiedName(annotation.columnTypes[i]);
