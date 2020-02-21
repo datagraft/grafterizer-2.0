@@ -1,12 +1,11 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {
   ConciliatorService,
   Event,
   EventConfigurator,
   Extension,
-  Id,
   Property,
   PropertyValue,
   QueryResult,
@@ -18,10 +17,10 @@ import {
   WeatherObservation,
   WeatherParameter
 } from './enrichment.model';
-import { AppConfig } from '../../app.config';
-import { forkJoin } from 'rxjs/observable/forkJoin';
+import {AppConfig} from '../../app.config';
+import {forkJoin} from 'rxjs/observable/forkJoin';
 import * as moment from 'moment';
-import { UrlUtils } from '../shared/url-utils';
+import {UrlUtils} from '../shared/url-utils';
 
 @Injectable()
 export class EnrichmentService {
@@ -165,7 +164,7 @@ export class EnrichmentService {
    * @param sampleSize number of rows to use for determining the most frequent entity type (default is 10).
    */
   reconcileColumn(header: string, selectedProperties: string[],
-    selectedColumns: string[], service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
+                  selectedColumns: string[], service: ConciliatorService, sampleSize: number = 10): Observable<QueryResult[]> {
 
     const colData = this.data.filter(function (row) { // remove empty strings
       return row[':' + header] === 0 || row[':' + header];  // Consider the trailing ':' char from EDN response
@@ -188,24 +187,24 @@ export class EnrichmentService {
       return arr;
     }, []).map(item => {
       // Create the object needed for the reconciliation (value to reconcile + propertyValues)
-      return { value: item[header], properties: this.getPropertyValues(item, selectedColumns, selectedProperties, service) };
+      return {value: item[header], properties: this.getPropertyValues(item, selectedColumns, selectedProperties, service)};
     });
 
     // reconcile #sampleSize values for guessing the column type
     return this.execQueries(colData.slice(0, sampleSize).map((v: { value, properties }) => new QueryResult(
       new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties), [])),
       service).flatMap(
-        results => {
-          // reconcile all rows against the most frequent type
-          const type: Type = this.getMostFrequentType(results);
-          if (type) {
-            return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
-              new ReconciliationQuery(v.value, type.id, TypeStrict.SHOULD, undefined, v.properties), [])), service);
-          } else {
-            return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
-              new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties), [])), service);
-          }
-        });
+      results => {
+        // reconcile all rows against the most frequent type
+        const type: Type = this.getMostFrequentType(results);
+        if (type) {
+          return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
+            new ReconciliationQuery(v.value, type.id, TypeStrict.SHOULD, undefined, v.properties), [])), service);
+        } else {
+          return this.execQueries(colData.map((v: { value, properties }) => new QueryResult(
+            new ReconciliationQuery(v.value, undefined, undefined, undefined, v.properties), [])), service);
+        }
+      });
   }
 
   private getPropertyValues(row: [string], selectedColumn, selectedProperties, conciliator: ConciliatorService): PropertyValue[] {
@@ -238,8 +237,8 @@ export class EnrichmentService {
       extensions.push(new Extension([value], properties));
     });
 
-    const queryProperties = properties.map(prop => ({ 'id': prop }));
-    const extendQuery = { ids: values, properties: queryProperties };
+    const queryProperties = properties.map(prop => ({'id': prop}));
+    const extendQuery = {ids: values, properties: queryProperties};
 
     const requestURL = this.asiaURL + '/extend';
 
@@ -261,7 +260,7 @@ export class EnrichmentService {
       const propDescriptions: Property[] = [];
       res['meta'].forEach(p => propDescriptions.push(new Property(p)));
 
-      return { ext: extensions, props: propDescriptions };
+      return {ext: extensions, props: propDescriptions};
     });
   }
 
@@ -270,7 +269,9 @@ export class EnrichmentService {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
-    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
+    values = values.filter(function (e) {
+      return e === 0 || e;
+    });  // remove empty strings
 
     // create objects {id:..., properties:{prop1:[], prp2:[],...}}
     const extensions: Extension[] = [];
@@ -291,7 +292,7 @@ export class EnrichmentService {
       const properties: Map<string, any[]> = new Map();
       res.forEach(result => {
         const e = new Extension(result['keyword'], [header + '_categories']);
-        properties.set(header + '_categories', [{ 'str': result['categories'].join(',') }]);
+        properties.set(header + '_categories', [{'str': result['categories'].join(',')}]);
         e.addProperties(properties);
         extensions.push(e);
       });
@@ -304,7 +305,9 @@ export class EnrichmentService {
     const colData = this.data.map(row => row[':' + header]);
     let values = Array.from(new Set(colData));
 
-    values = values.filter(function (e) { return e === 0 || e; });  // remove empty strings
+    values = values.filter(function (e) {
+      return e === 0 || e;
+    });  // remove empty strings
 
     // create objects {id:..., properties:{prop1:[], prp2:[],...}}
     const extensions: Extension[] = [];
@@ -391,15 +394,15 @@ export class EnrichmentService {
           isoDate = moment(weatherConfig.getDate(), 'MM/DD/YYYY').toISOString(true);
           originalDateFormat = 'MM/DD/YYYY';
         }
-        return { place: `${item[header]}`, date: date, isoDate: isoDate, originalDateFormat: originalDateFormat };
+        return {place: `${item[header]}`, date: date, isoDate: isoDate, originalDateFormat: originalDateFormat};
       } else {
         date = `${item[header]}`;
         isoDate = moment(date).format();
         originalDateFormat = moment(date).creationData().format;
         if (auxCol) {
-          return { date: date, place: `${item[auxCol]}`, isoDate: isoDate, originalDateFormat: originalDateFormat };
+          return {date: date, place: `${item[auxCol]}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
         } else {
-          return { date: date, place: `${weatherConfig.getPlace()}`, isoDate: isoDate, originalDateFormat: originalDateFormat };
+          return {date: date, place: `${weatherConfig.getPlace()}`, isoDate: isoDate, originalDateFormat: originalDateFormat};
         }
       }
     });
@@ -416,7 +419,6 @@ export class EnrichmentService {
       results.sort(function (a, b) {
         return a.offset - b.offset; // sort results by offset
       });
-
       const extensions: Extension[] = [];
 
       colData.forEach(row => {
@@ -457,16 +459,14 @@ export class EnrichmentService {
             for (const agg of weatherConfig.getAggregators()) {
               const v = weatherParam.get(agg);
               if (v) {
-                properties.set(`${propName}_${agg}`, [{ 'str': `${v}` }]);
+                properties.set(`${propName}_${agg}`, [{'str': `${v}`}]);
               }
             }
           });
         });
-
         e.addProperties(properties);
         extensions.push(e);
       });
-
       return extensions;
     });
   } // end weatherData
@@ -539,7 +539,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([date], []);
           }
-          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(date, extension);
         } else if (on === 'place') {
@@ -548,7 +548,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([event.getGeonamesId()], []);
           }
-          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(event.getGeonamesId(), extension);
         } else if (on === 'category') {
@@ -560,7 +560,7 @@ export class EnrichmentService {
           if (!extension) {
             extension = new Extension([event.getCategories()[0]], []);
           }
-          properties.set('eventsCount', [{ 'str': `${event.getEventsCount()}` }]);
+          properties.set('eventsCount', [{'str': `${event.getEventsCount()}`}]);
           extension.addProperties(properties);
           extensions.set(event.getCategories()[0], extension);
         }
@@ -573,6 +573,57 @@ export class EnrichmentService {
   //   this.reconciledColumns[reconciledColumn.getHeader()] = reconciledColumn;
   // }
 
+  customEventIDData(on: string, payload, cols): Observable<Extension[]> {
+    payload.forEach(element => {
+      const key = [];
+      if (element.isColumn) {
+        key.push(element.value);
+      }
+    });
+
+    const requestURL = this.asiaURL + '/customevents/match';
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+
+    return this.http.post(requestURL, payload, httpOptions).map((results: any) => {
+      const extensions: Extension[] = [];
+      results.forEach(res => {
+        const properties: Map<string, any[]> = new Map();
+        const e = new Extension(res['key'], []);
+        properties.set('custom_event_ids', [{str: res['results'].join(',')}]);
+        e.addProperties(properties);
+        extensions.push(e);
+      });
+      return extensions;
+    });
+  }
+
+  customEvents(on, distinctArray, props): Observable<Extension[]> {
+
+    const url = this.asiaURL + 'customevents/select?ids=' + distinctArray.join(',') + '&propIds=' + props.join(',');
+    const extensions: Extension[] = [];
+
+    return this.http.get(url).map((results: any) => {
+      results.forEach(res => {
+
+        const e = new Extension([res['id']], []);
+        Object.keys(res).forEach(k => {
+          if (k !== 'id') {
+            const properties: Map<string, any[]> = new Map();
+            properties.set(k, [{'str': res[k]}]);
+            e.addProperties(properties);
+          }
+        });
+        extensions.push(e);
+      });
+      return extensions;
+    });
+  }
+
   // isColumnReconciled(header: string): boolean {
   //   return Object.keys(this.reconciledColumns).includes(header);
   // }
@@ -580,7 +631,6 @@ export class EnrichmentService {
   // isColumnDate(header: string): boolean {
   //   return header.toLowerCase().search('date') !== -1;
   // }
-
 
   // getReconciledColumns(): ReconciledColumn[] {
   //   const recCols = [];
@@ -619,13 +669,13 @@ export class EnrichmentService {
         return prop;
       });
     });
-  }
+  };
 
   public listServices = (): Observable<Object> => {
     const url = this.asiaURL + '/services';
     return this.http
       .get(url);
-  }
+  };
 
   // getReconciliationServiceOfColumn(header: string) {
   //   return new ConciliatorService(this.getReconciledColumn(header).getConciliator());
@@ -642,7 +692,7 @@ export class EnrichmentService {
       const url = 'http://api.geonames.org/searchJSON';
 
       return this.http
-        .get(url, { params: params })
+        .get(url, {params: params})
         .map(res => res['geonames']);
     }
     return Observable.of([]);

@@ -1,5 +1,5 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource } from '@angular/material';
 import { EnrichmentService } from '../enrichment.service';
 import { ConciliatorService, EventConfigurator, Extension, Property, WeatherConfigurator } from '../enrichment.model';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +8,13 @@ import { Observable, Subscription } from 'rxjs';
 import { TransformationService } from 'app/transformation.service';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationService } from 'app/tabular-annotation/annotation.service';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+
+export class CustomEventFilerModel {
+  propertyId?: string;
+  operator?: string;
+  propertyValue?: string;
+}
 
 @Component({
   selector: 'app-extension',
@@ -19,12 +26,12 @@ export class ExtensionComponent implements OnInit {
   public isCategoriesColumn = false;
   public dataSource: any;
   public categorySuggestions: any;
-  public displayedColumns: string[] = ['placeSuggestions'];
   public header: any;
   public previewHeader: any;
   public colIndex: any;
   public isColDate: boolean;
   public isColKeyword: boolean;
+  public isColEvent: boolean;
   public extensionData: Extension[];
   public propertyDescriptions: Map<string, Property>;
   public extensionServices: ConciliatorService[];
@@ -48,6 +55,7 @@ export class ExtensionComponent implements OnInit {
   public weatherParameters: string[];
   public weatherParametersDescriptions: any;
   public weatherAggregators: string[];
+
   public weatherOffsets: number[];
   public selectedWeatherParameters: any[];
   public selectedWeatherOffsets: any[];
@@ -66,15 +74,37 @@ export class ExtensionComponent implements OnInit {
   public kgServices: ConciliatorService[];
   public extendOnCols: string[];
 
+  public selectedEventProperties: string[];
+  public dateOperators: string[];
+  public group: any;
+  public filters: FormArray;
+  public dateExtensionDisplayedColumns = ['propertyId', 'operator', 'propertyValue', 'actions'];
+  public propertiesID: string[] = [];
+  public operators: string[] = [];
+  public propertiesValue: string[] = [];
+  // TODO: is it always true that propertyValue is equal to header??
+  public defaultFilter: CustomEventFilerModel = {
+    propertyId: 'startDate',
+    operator: '==',
+    propertyValue: this.header
+  };
+  public dateExtensionDataSource: MatTableDataSource<any>;
+  public eventProperties: string[] = [];
+  public maStartDate: any;
+  public maEndDate: any;
+  public features: string[];
+  public selectedFeatures: any;
+  public countries: string[];
+  public selectedCountry: any;
+
   private kgServicesSubscription: Subscription;
   private transformationSubscription: Subscription;
   private reconciliationServicesMapSubscription: Subscription;
   private transformationObj: any;
   private currentExtension: any;
   currentAnnotation: any = { extensions: [] };
-  editOrCreateNew: string = 'create-new';
+  editOrCreateNew = 'create-new';
   selectedExtension: any = {};
-
 
   public reconciliationServicesMap: Map<string, ConciliatorService>;
 
@@ -84,15 +114,13 @@ export class ExtensionComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<ExtensionComponent>,
     private http: HttpClient,
     @Inject(MAT_DIALOG_DATA) public dialogInputData: any,
-    public enrichmentService: EnrichmentService, public transformationSvc: TransformationService, public annotationService: AnnotationService) {
+    public enrichmentService: EnrichmentService, public transformationSvc: TransformationService,
+    public annotationService: AnnotationService) {
   }
 
   ngOnInit() {
     this.header = this.dialogInputData.header;
     this.previewHeader = this.header;
-
-
-
     this.geoSources = this.dialogInputData.geoSources;
     this.geoAllowedSources = this.geoSources;
     this.categoriesSources = this.dialogInputData.categoriesSources;
@@ -100,6 +128,7 @@ export class ExtensionComponent implements OnInit {
     this.colIndex = this.dialogInputData.indexCol;
     this.isColDate = this.dialogInputData.colDate;
     this.isColKeyword = this.dialogInputData.colKeyword;
+    this.isColEvent = this.dialogInputData.colEvent;
     this.showPreview = false;
     this.dataLoading = false;
     this.extensionData = [];
@@ -130,9 +159,44 @@ export class ExtensionComponent implements OnInit {
       this.kgServices = data;
     });
 
+    this.filters = new FormArray([]);
+    this.group = new FormGroup({
+      filters: this.filters
+    });
+    this.propertiesID = ['identifier',
+      'name.text',
+      'startDate',
+      'endDate',
+      'category.identifier',
+      'product.identifier',
+      'product.gtin13',
+      'product.description',
+      'product.sku',
+      'product.seller.identifier',
+      'measure.priceChanged',
+      'measure.priceChange',
+      'measure.price'
+    ];
+    this.operators = ['==', '!=',
+      '<', '<=',
+      '>', '>=',
+      'IN', 'NOT IN',
+      'LIKE', 'NOT LIKE',
+      '=~', '!~'];
+    this.features = ['A', 'B', 'C'];
+    this.countries = ['Germany', 'Italy', 'Spain'];
+
+    this.propertiesValue = this.enrichmentService.headers;
+    this.dataSource = new MatTableDataSource();
+    this.defaultFilter.propertyValue = this.header;
+
+    this.reset();
+
     if (this.isColDate) {
       this.extensionServices.push(new ConciliatorService({ 'id': 'ecmwf', 'name': 'ECMWF', group: 'weather' }));
       this.extensionServices.push(new ConciliatorService({ 'id': 'er', 'name': 'EventRegistry', group: 'events' }));
+      this.extensionServices.push(new ConciliatorService({ 'id': 'ide', 'name': 'Custom Event ID', group: 'events' }));
+      this.extensionServices.push(new ConciliatorService({ 'id': 'ma', 'name': 'Media Attention', group: 'events' }));
       // this.reconciledFromService = new ConciliatorService({
       //   'id': 'geonames',
       //   'name': 'GeoNames',
@@ -142,6 +206,8 @@ export class ExtensionComponent implements OnInit {
       // });
     } else if (this.isColKeyword) {
       this.extensionServices.push(new ConciliatorService({ 'id': 'keywordscategories', 'name': 'Keyword to Categories', group: 'keywords' }));
+    } else if (this.isColEvent) {
+      this.extensionServices.push(new ConciliatorService({ 'id': 'ce', 'name': 'CustomEvent', group: 'events' }));
     } else if (this.dialogInputData.reconciliationServiceId) {
       this.reconciledFromService = this.reconciliationServicesMap.get(this.dialogInputData.reconciliationServiceId);
       // this.reconciledFromService = this.enrichmentService.getReconciliationServiceOfColumn(this.header);
@@ -156,6 +222,8 @@ export class ExtensionComponent implements OnInit {
       }
       this.extensionServices.push(new ConciliatorService({ 'id': 'sameas', 'name': 'SameAs', group: 'sameas' }));
     }
+
+    this.eventProperties = this.propertiesID;
 
     this.weatherOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     this.weatherParametersDescriptions = {
@@ -176,6 +244,8 @@ export class ExtensionComponent implements OnInit {
     };
     this.weatherParameters = Object.keys(this.weatherParametersDescriptions);
     this.weatherAggregators = ['avg', 'min', 'max', 'cumul'];
+
+    this.dateOperators = ['equal', 'before', 'after'];
 
   } // end ngOnInit
 
@@ -204,18 +274,26 @@ export class ExtensionComponent implements OnInit {
   getExtensionName(extensionObject) {
     if (extensionObject) {
       if (extensionObject instanceof transformationDataModel.ECMWFWeatherExtension) {
-        return "(ECMWF) " + extensionObject.derivedColumns.toString();
+        return '(ECMWF) ' + extensionObject.derivedColumns.toString();
       } else if (extensionObject instanceof transformationDataModel.SameAsExtension) {
-        return "(SameAs) " + extensionObject.derivedColumns.toString();
+        return '(SameAs) ' + extensionObject.derivedColumns.toString();
       } else if (extensionObject instanceof transformationDataModel.EventExtension) {
-        return "(ER) " + extensionObject.derivedColumns.toString();
+        return '(ER) ' + extensionObject.derivedColumns.toString();
       } else if (extensionObject instanceof transformationDataModel.ReconciliationServiceExtension) {
-        return "(KB) " + extensionObject.derivedColumns.toString();
+        return '(KB) ' + extensionObject.derivedColumns.toString();
+      } else if (extensionObject instanceof transformationDataModel.KeywordsCategoriesExtension) {
+        return '(KC) ' + extensionObject.derivedColumns.toString();
+      } else if (extensionObject instanceof transformationDataModel.CustomEventExtension) {
+        return '(CE) ' + extensionObject.derivedColumns.toString();
+      } else if (extensionObject instanceof transformationDataModel.CustomEventIDExtension) {
+        return '(CEID) ' + extensionObject.derivedColumns.toString();
+      } else if (extensionObject instanceof transformationDataModel.MediaAttentionExtension) {
+        return '(MA) ' + extensionObject.derivedColumns.toString();
       } else {
-        return "Unknown extension";
+        return 'Unknown extension';
       }
     } else {
-      return "<Error loading extension object>";
+      return '<Error loading extension object>';
     }
 
   }
@@ -235,13 +313,12 @@ export class ExtensionComponent implements OnInit {
         this.changeCurrentExtension();
       }
     } else {
-      throw ("unknown enrichment editor mode!");
+      throw new Error(('unknown enrichment editor mode!'));
     }
   }
 
   changeCurrentExtension() {
     this.currentExtension = this.currentAnnotation.extensions[Number.parseInt(this.selectedExtension)];
-    this.extensionServices;
 
     if (this.currentExtension instanceof transformationDataModel.ReconciliationServiceExtension) {
       this.selectedServiceId = this.currentExtension.reconciliationServiceId;
@@ -269,7 +346,7 @@ export class ExtensionComponent implements OnInit {
         this.selectedPlace = this.currentExtension.location.locationString;
         this.placeChoice = 'placefromPicker';
       } else {
-        throw ("Error loading extension - unknown location option of ECMWF weather extension location.");
+        throw new Error(('Error loading extension - unknown location option of ECMWF weather extension location.'));
       }
 
       if (this.currentExtension.date instanceof transformationDataModel.WeatherExtensionDateFromColumn) {
@@ -282,7 +359,7 @@ export class ExtensionComponent implements OnInit {
         this.selectedDate = this.currentExtension.date.dateString;
         this.dateChoice = 'fromPicker';
       } else {
-        throw ("Error loading extension - unknown location option of ECMWF weather extension date.");
+        throw new Error(('Error loading extension - unknown location option of ECMWF weather extension date.'));
       }
 
       this.selectedWeatherParameters = this.currentExtension.weatherFeatures;
@@ -295,10 +372,76 @@ export class ExtensionComponent implements OnInit {
       this.fetchSameAsData();
     } else if (this.currentExtension instanceof transformationDataModel.EventExtension) {
       this.selectedServiceId = 'er';
+    } else if (this.currentExtension instanceof transformationDataModel.KeywordsCategoriesExtension) {
+      this.selectedServiceId = 'keywordscategories';
+    } else if (this.currentExtension instanceof transformationDataModel.CustomEventExtension) {
+      this.selectedServiceId = 'ce';
+    } else if (this.currentExtension instanceof transformationDataModel.CustomEventIDExtension) {
+      this.selectedServiceId = 'ide';
+    } else if (this.currentExtension instanceof transformationDataModel.MediaAttentionExtension) {
+      this.selectedServiceId = 'ma';
     } else {
       this.selectedServiceId = '';
     }
 
+  }
+
+  public reset() {
+    if (this.filters == null) {
+      return;
+    }
+
+    let i = 0;
+    while (this.filters.length !== 0) {
+      i++;
+      this.filters.removeAt(0);
+    }
+
+    this.filters.reset();
+
+    if (this.hasDefaultFilter) {
+      this.addRow(this.defaultFilter, true);
+    } else {
+
+      this.addRow();
+    }
+  }
+
+  public removeRow(index: number) {
+
+    this.filters.removeAt(index);
+
+    if (index === 0 && this.filters.length === 0) {
+      this.addRow();
+    }
+
+    this.dateExtensionDataSource = new MatTableDataSource(this.filters.controls);
+  }
+
+  private emptyRow(): CustomEventFilerModel {
+    return {
+      propertyId: null,
+      operator: null,
+      propertyValue: null
+    };
+  }
+
+  public addRow(data?: CustomEventFilerModel, readonly: boolean = false) {
+    data = (data != null) ? data : this.emptyRow();
+
+    const filterGroup = new FormGroup({
+      readonly: new FormControl(readonly),
+      propertyId: new FormControl(data.propertyId, Validators.required),
+      operator: new FormControl(data.operator, Validators.required),
+      propertyValue: new FormControl(data.propertyValue, Validators.required)
+    });
+
+    this.filters.push(filterGroup);
+    this.dateExtensionDataSource = new MatTableDataSource(this.filters.controls);
+  }
+
+  private get hasDefaultFilter(): boolean {
+    return (Object.keys(this.defaultFilter).length > 0);
   }
 
   // Stub: send list of observable to template
@@ -399,6 +542,7 @@ export class ExtensionComponent implements OnInit {
       }
       this.dataLoading = false;
     });
+
   }
 
   public fetchCategoriesForKeyword() {
@@ -439,7 +583,7 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
-  event() {
+  fetchEREventsData() {
     this.dataLoading = true;
     this.showPreview = true;
 
@@ -488,15 +632,70 @@ export class ExtensionComponent implements OnInit {
     });
   }
 
-  isColNameAvailable(colName): boolean {
-    let ret = this.enrichmentService.headers.find((headerName) => { return headerName === colName; }) ? false : true;
-    return ret;
+  public fetchCustomEventIDsData() {
+    this.dataLoading = true;
+    this.showPreview = true;
+
+    let query = [];
+    const queries = [];
+    const allDates = this.enrichmentService.data.map(row => [row[':' + this.header]]);
+
+    const cols = [];
+    let key = [];
+    const keys = [];
+
+    this.extendOnCols = [];
+    allDates.forEach((date_in_row, index) => {
+      query = [];
+      key = [];
+      this.filters.value.forEach((element, id) => {
+        const isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1;
+        let value;
+        if (isColumn) {
+          value = this.enrichmentService.data.map(row => [row[':' + element['propertyValue']]])[index][0];
+
+          if (cols.indexOf(element['propertyValue']) < 0) {
+            cols.push(element['propertyValue']);
+            if (element['propertyValue'] !== this.header) {
+              this.extendOnCols.push(element['propertyValue']);
+            }
+          }
+          key.push(value); // push the value only if it is needed for deriving the new column!
+        } else {
+          value = element['propertyValue'];
+
+        }
+        query.push({
+          'propertyID': element['propertyId'],
+          'operator': element['operator'],
+          'value': value,
+          'isColumn': isColumn
+        });
+      });
+      keys.push(key);
+      queries.push({ 'key': key, 'filters': query });
+    });
+
+    const basedOn = this.isColDate ? 'date' : 'place';
+
+    this.enrichmentService.customEventIDData(basedOn, queries, cols).subscribe((httpResult: Extension[]) => {
+      this.extensionData = httpResult;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
   }
 
+  isColNameAvailable(colName): boolean {
+    return !this.enrichmentService.headers.find((headerName) => {
+      return headerName === colName;
+    });
+  }
 
   isValidUrl(string): boolean {
     try {
-      new URL(string);
+      const url = new URL(string);
       return true;
     } catch (_) {
       return false;
@@ -505,7 +704,7 @@ export class ExtensionComponent implements OnInit {
 
   getExtensionMatchPairs(): Array<any> {
     // generate match pairs
-    let extensionMatchPairs = [];
+    const extensionMatchPairs = [];
     for (let i = 0; i < this.extensionData.length; ++i) {
       let valuesToMatch = this.extensionData[i].key;
       if (this.selectedServiceId === 'ecmwf') {
@@ -516,12 +715,13 @@ export class ExtensionComponent implements OnInit {
         }
       }
 
-      let matches = [];
+      const matches = [];
       Array.from(this.extensionData[i].properties.values()).forEach((match) => {
         if (match[0]) {
           if (match[0].id) {
             matches.push(match[0].id);
-          } if (match[0].str) {
+          }
+          if (match[0].str) {
             matches.push(match[0].str);
           }
         }
@@ -532,11 +732,7 @@ export class ExtensionComponent implements OnInit {
   }
 
   applyExtension() {
-    let derivedColumnNames = [];
-    this.previewProperties;
-    this.propertyDescriptions;
-
-
+    const derivedColumnNames = [];
 
     this.previewProperties.forEach((prop: string) => {
 
@@ -564,7 +760,9 @@ export class ExtensionComponent implements OnInit {
         newColName = tmpColName;
       } else {
         // if we are editing the current extension, we need to check if the new column name is one of the names from the already derived columns
-        if (this.currentExtension.derivedColumns.find((derivedColName) => { return derivedColName === newColName; })) {
+        if (this.currentExtension.derivedColumns.find((derivedColName) => {
+          return derivedColName === newColName;
+        })) {
           // it is one of the derived column names! nothing to do here
         } else {
           // it is not one of the derived column names; check if it is available
@@ -581,7 +779,7 @@ export class ExtensionComponent implements OnInit {
     });
 
     // generate match pairs
-    let extensionMatchPairs = this.getExtensionMatchPairs();
+    const extensionMatchPairs = this.getExtensionMatchPairs();
 
     // we keep existing ID of extension if it exists or create a unique one
     let extensionId = 0;
@@ -596,31 +794,31 @@ export class ExtensionComponent implements OnInit {
       this.currentExtension = new transformationDataModel.ReconciliationServiceExtension(derivedColumnNames, extensionMatchPairs, extensionId, this.currentAnnotation.conciliatorServiceName, this.previewProperties);
       let i;
       for (i = 0; i < derivedColumnNames.length; ++i) {
-        let colName = derivedColumnNames[i];
+        const colName = derivedColumnNames[i];
         // get corresponding property name
-        let propertyName = this.previewProperties[i];
-        let propertyDescription = this.propertyDescriptions.get(propertyName);
+        const propertyName = this.previewProperties[i];
+        const propertyDescription = this.propertyDescriptions.get(propertyName);
 
         let propertyFullyQualifiedName = propertyName;
         // if the property name is not a valid URI, we need to prefix it with the schema string of the reconciliation service
         if (!this.isValidUrl(propertyName)) {
           propertyFullyQualifiedName = this.reconciledFromService.getSchemaSpace() + propertyName;
         }
-        let propertyTDMObject = new transformationDataModel.Property('', propertyFullyQualifiedName, [], []);
+        const propertyTDMObject = new transformationDataModel.Property('', propertyFullyQualifiedName, [], []);
 
         // if the column has already been annotated (this could happen when editing an existing extension)
         // we use the ID of the existing annotation; otherwise we create a unique ID
-        let existingAnnotation = this.transformationObj.getColumnAnnotations(colName)[0];
-        let annotationId = existingAnnotation ? existingAnnotation.id : this.transformationObj.getUniqueId();
+        const existingAnnotation = this.transformationObj.getColumnAnnotations(colName)[0];
+        const annotationId = existingAnnotation ? existingAnnotation.id : this.transformationObj.getUniqueId();
 
         // check the 'type' attribute to determine whether the value of the property is a URI node or literal node
         if (propertyDescription.type) {
           // Type is not null for URI nodes
-          let newAnnotationType = new transformationDataModel.ConstantURI(
+          const newAnnotationType = new transformationDataModel.ConstantURI(
             this.annotationService.getPrefixForNamespace(this.reconciledFromService.getSchemaSpace(), this.transformationObj), // prefix
             propertyDescription.type.id // namespace
             , [], []);
-          let newAnnotation = new transformationDataModel.URINodeAnnotation(
+          const newAnnotation = new transformationDataModel.URINodeAnnotation(
             colName,
             this.currentAnnotation.id,
             [propertyTDMObject], // props
@@ -636,13 +834,13 @@ export class ExtensionComponent implements OnInit {
           this.transformationObj.addOrReplaceAnnotation(newAnnotation);
         } else {
           // literal annotation
-          let newAnnotation = new transformationDataModel.LiteralNodeAnnotation(
+          const newAnnotation = new transformationDataModel.LiteralNodeAnnotation(
             colName,
             this.currentAnnotation.id, // subject annotation ID
             [propertyTDMObject], // properties
-            "http://www.w3.org/2001/XMLSchema#string", // datatype assumed to be string
-            "en", // lang tag
-            "valid", // status
+            'http://www.w3.org/2001/XMLSchema#string', // datatype assumed to be string
+            'en', // lang tag
+            'valid', // status
             annotationId, // id
             []
           );
@@ -700,11 +898,11 @@ export class ExtensionComponent implements OnInit {
 
           break;
         case 'keywordscategories':
+        case 'ma':
+        case 'ide':
+        case 'ce':
           break;
         case 'ecmwf':
-          this.previewProperties;
-          this.extensionData;
-
           let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();
           if (this.isColDate) {
             weatherExtensionDate = new transformationDataModel.WeatherExtensionDateFromColumn(this.header);
@@ -723,7 +921,6 @@ export class ExtensionComponent implements OnInit {
             weatherExtensionLocation = new transformationDataModel.WeatherExtensionLocationString(this.selectedDate);
           }
 
-
           this.currentExtension = new transformationDataModel.ECMWFWeatherExtension(
             derivedColumnNames,
             extensionMatchPairs,
@@ -736,7 +933,7 @@ export class ExtensionComponent implements OnInit {
           );
           break;
         default:
-          throw ("Could not identify the type of extension");
+          throw new Error(('Could not identify the type of extension'));
       }
     }
 
@@ -746,6 +943,30 @@ export class ExtensionComponent implements OnInit {
     this.transformationSvc.transformationObjSource.next(this.transformationObj);
     this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
     this.dialogRef.close();
+  }
+
+  public fetchCustomEventsData() {
+    this.dataLoading = true;
+    this.showPreview = true;
+
+    const props = this.selectedEventProperties;
+    const allEventIds = this.enrichmentService.data.map(row => row[':' + this.header]);
+    const distinctArray = allEventIds.filter((n, i) => allEventIds.indexOf(n) === i);
+    const basedOn = this.isColDate ? 'date' : 'place';
+
+    this.enrichmentService.customEvents(basedOn, distinctArray, props).subscribe((httpResult: Extension[]) => {
+      this.extensionData = httpResult;
+      if (this.extensionData.length > 0) {
+        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+      }
+      this.dataLoading = false;
+    });
+  }
+
+  // TODO: stub method
+  public fetchMediaAttentionData() {
+    this.dataLoading = false;
+    return [];
   }
 
   public extensionProperties = (): Observable<Response> => {
@@ -762,33 +983,33 @@ export class ExtensionComponent implements OnInit {
     }
   }
 
-  changeDateColumn(placeColValue) {
-    this.readDatesFromCol = placeColValue;
-  }
-
-  changePlaceColumn(dateColValue) {
-    this.readPlacesFromCol = dateColValue;
-
-  }
-
-  setManualPlace(row) {
-
-    this.selectedPlace = this.dataSource[row].geonameId;
-    this.dataSource = [];
-  }
-
-  private propertyWithReconciledValues(prop): boolean {
-    let valid = true;
-    this.extensionData.forEach((extension: Extension) => {
-      const objects = extension.properties.get(prop);
-      if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
-        return !(obj && !obj['id']);
-      }).length) {
-        valid = false;
-      }
-    });
-    return valid;
-  }
+  // changeDateColumn(placeColValue) {
+  //   this.readDatesFromCol = placeColValue;
+  // }
+  //
+  // changePlaceColumn(dateColValue) {
+  //   this.readPlacesFromCol = dateColValue;
+  //
+  // }
+  //
+  // setManualPlace(row) {
+  //
+  //   this.selectedPlace = this.dataSource[row].geonameId;
+  //   this.dataSource = [];
+  // }
+  //
+  // private propertyWithReconciledValues(prop): boolean {
+  //   let valid = true;
+  //   this.extensionData.forEach((extension: Extension) => {
+  //     const objects = extension.properties.get(prop);
+  //     if (objects && objects.length !== extension.properties.get(prop).filter(obj => {
+  //       return !(obj && !obj['id']);
+  //     }).length) {
+  //       valid = false;
+  //     }
+  //   });
+  //   return valid;
+  // }
 
 
   geoSuggestions(new_val) {
@@ -812,7 +1033,6 @@ export class ExtensionComponent implements OnInit {
         this.geoAllowedSources.push(this.geoSources[i]);
       }
     }
-
   }
 
   public _filterCategories(value: string) {
@@ -889,7 +1109,7 @@ export class ExtensionComponent implements OnInit {
   }
 
   removeCurrentExtension() {
-    if (confirm("Are you sure you want to delete this extension?")) {
+    if (confirm('Are you sure you want to delete this extension?')) {
       this.transformationObj.removeExtensionById(this.currentExtension.id);
       this.transformationSvc.transformationObjSource.next(this.transformationObj);
       this.transformationSvc.previewedTransformationObjSource.next(this.transformationObj);
