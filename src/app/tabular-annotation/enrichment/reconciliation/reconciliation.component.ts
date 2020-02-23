@@ -11,6 +11,7 @@ import { AsiaMasService } from '../../asia-mas/asia-mas.service';
 import { CustomValidators } from '../../shared/custom-validators';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { TransformationService } from 'app/transformation.service';
+import { UrlUtils } from 'app/tabular-annotation/shared/url-utils';
 
 @Component({
   selector: 'app-reconciliation',
@@ -331,6 +332,15 @@ export class ReconciliationComponent implements OnInit {
       });
   }
 
+  isValidUrl(string): boolean {
+    try {
+      const url = new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   public applyReconciliation() {
 
     // create reconciliation with values for threshold, etc.
@@ -371,10 +381,22 @@ export class ReconciliationComponent implements OnInit {
     this.currentReconciliation.automaticMatches = automaticMatchesArray;
 
     // determine the type of the new annotation
-    let newAnnotationType = new transformationDataModel.ConstantURI(
-      this.annotationService.getPrefixForNamespace(this.services.get(this.reconciliationForm.get('selectedService').value).getSchemaSpace(), this.transformationObj), // prefix
-      this.guessedType.id // namespace
-      , [], []);
+    let newAnnotationType;
+    if (this.isValidUrl(this.guessedType.id)) {
+      // in the case where the ID is not from the identifier space of the conciliator service
+      const namespace = UrlUtils.getNamespaceFromURL(new URL(this.guessedType.id));
+      const shortType = this.guessedType.id.substr(UrlUtils.getNamespaceFromURL(new URL(this.guessedType.id)).length);
+      newAnnotationType = new transformationDataModel.ConstantURI(
+        this.annotationService.getPrefixForNamespace(namespace, this.transformationObj), // prefix
+        shortType // short name
+        , [], []);
+    } else {
+      newAnnotationType = new transformationDataModel.ConstantURI(
+        this.annotationService.getPrefixForNamespace(this.services.get(this.reconciliationForm.get('selectedService').value).getSchemaSpace(), this.transformationObj), // prefix
+        this.guessedType.id // short name
+        , [], []);
+    }
+
 
     this.selectedServiceObject = this.services.get(this.reconciliationForm.get('selectedService').value);
 

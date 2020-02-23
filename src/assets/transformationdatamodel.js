@@ -1927,8 +1927,6 @@ SameAsExtension.revive = function (data) {
     }
   }
 
-
-
   return new SameAsExtension(derivedColumns, manualMatches, data.id, data.sourceKnowledgeBase, data.targetKnowledgeBase);
 }
 _this.SameAsExtension = SameAsExtension;
@@ -1946,6 +1944,65 @@ export function KeywordsCategoriesExtension(derivedColumns, manualMatches, id) {
 }
 
 KeywordsCategoriesExtension.prototype = Object.create(Extension.prototype);
+KeywordsCategoriesExtension.prototype.generatePipelineFunctionClojureFunctions = function (sourceColumnName) {
+  var functionName = 'extend_' + this.derivedColumns[0];
+  return ['(derive-column :' + this.derivedColumns[0] + ' [:' + sourceColumnName + '] ' + functionName + ')'];
+};
+/**
+ * Generates an array of strings with the code for reconciling the data (added as a function declaration in the output Clojure).
+ * @param  {boolean} isClojureForJar true if the Clojure generated for the JAR implementation
+ */
+KeywordsCategoriesExtension.prototype.generateEnrichmentClojureFunctions = function (isClojureForJar) {
+  var i;
+  var matchesMapValuesString = '';
+  // first generate the jsedn map object for looking up the values
+  // since this is a single column reconciliation, we only have a simple key for the map
+  for (i = 0; i < this.manualMatches.length; ++i) {
+    var mapKey = this.manualMatches[i].valuesToMatch[0] || '';
+    var mapValue = this.manualMatches[i].match[0] || '';
+    matchesMapValuesString += '"' + mapKey + '" ' + '"' + mapValue + '" ';
+  }
+
+  var functionName = 'extend_' + this.derivedColumns[0];
+  var clojureMap = '{ ' + matchesMapValuesString + '}';
+  clojureMap = clojureMap.replace(/""/g, '"');
+  // TODO if scale up of the service uncomment the JAR generation code block
+  // if (isClojureForJar) {
+  //   let conditionBlock = '(cond (blank? v) "" :else (get ' + clojureMap + ' v (extendKeywordsCategories v)))';
+  //   return ['(defn ' + functionName + ' "Extend column ' + this.derivedColumns[0] + '." [v] ' + conditionBlock + ')'];
+
+  // } else {
+  return ['(defn ' + functionName + ' "Extend column ' + this.derivedColumns[0] + '." [v] (get ' + clojureMap + ' v "" ))'];
+  // }
+};
+KeywordsCategoriesExtension.revive = function (data) {
+  var i;
+  var derivedColumns = [];
+  // revive derivedColumns
+  if (data.derivedColumns) {
+    if (data.derivedColumns.length) {
+      for (i = 0; i < data.derivedColumns.length; ++i) {
+        derivedColumns.push(data.derivedColumns[i]);
+      }
+    }
+  }
+  // revive manualMatches
+  var manualMatches = [];
+  if (data.manualMatches) {
+    if (data.manualMatches.length) {
+      for (i = 0; i < data.manualMatches.length; ++i) {
+        if (data.manualMatches[i].__type) {
+          if (data.manualMatches[i].__type === 'MatchPair') {
+            // revive MatchPair objects
+            manualMatches.push(MatchPair.revive(data.manualMatches[i]));
+          }
+        }
+      }
+    }
+  }
+
+  return new KeywordsCategoriesExtension(derivedColumns, manualMatches, data.id);
+};
 _this.KeywordsCategoriesExtension = KeywordsCategoriesExtension;
 
 /**

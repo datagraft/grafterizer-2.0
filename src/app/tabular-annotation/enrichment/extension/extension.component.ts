@@ -732,6 +732,9 @@ export class ExtensionComponent implements OnInit {
     const extensionMatchPairs = [];
     for (let i = 0; i < this.extensionData.length; ++i) {
       let valuesToMatch = this.extensionData[i].key;
+      if (!(valuesToMatch instanceof Array)) {
+        valuesToMatch = [valuesToMatch];
+      }
       if (this.selectedServiceId === 'ecmwf') {
         if (!this.isColDate && this.extensionData[i].key.length === 2) {
           // the ECMWF extension service returns the key in different order based on what is the base column type (?!)
@@ -934,6 +937,14 @@ export class ExtensionComponent implements OnInit {
 
           break;
         case 'keywordscategories':
+          extensionId = 0;
+          if (this.currentExtension) {
+            extensionId = this.currentExtension.id || this.transformationObj.getUniqueId();
+          } else {
+            extensionId = this.transformationObj.getUniqueId();
+          }
+          this.currentExtension = new transformationDataModel.KeywordsCategoriesExtension(derivedColumnNames, extensionMatchPairs, extensionId);
+          break;
         case 'ma':
         case 'ide':
         case 'ce':

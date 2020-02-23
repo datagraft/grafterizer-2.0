@@ -965,6 +965,7 @@ function generateASIAFunctionDeclarationsText(asiaEndpointUrl) {
   text += '(defn extendAsia [id propertyName conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extend asia-client id propertyName conciliator)))' + '\n';
   text += '(defn extendWeatherAsia [regionGeonamesId date aggregator weatherParamName offsetDays] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extendWeather asia-client regionGeonamesId date aggregator weatherParamName offsetDays)))' + '\n';
   text += '(defn extendSameAsAsia [id source target] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.geoExactMatch asia-client id source target)))' + '\n';
+  text += '(defn extendKeywordCategories [keyword] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.keywordClustering  asia-client keyword)))' + '\n';
 
   return text;
 }
@@ -1115,10 +1116,9 @@ function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl)
       console.info(reconciliationAnnotation);
       textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode, reconciliationAnnotation.conciliatorServiceName)[0]).ednEncode();
     }
-    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension') {
+    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension' || enrichments[i].__type === 'KeywordsCategoriesExtension') {
       // retrieve all Clojure functions
       var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode);
-
       // add each Clojure function to the declarations code
       for (var j = 0; j < clojureFunctionsArray.length; ++j) {
         textStr += parseEdnFromString(clojureFunctionsArray[j]).ednEncode();
