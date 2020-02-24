@@ -37,6 +37,14 @@ li.bottom-margin{
   margin-bottom: 2px;
 }
 
+span.sin-round-extension-props {
+  border: 1px solid ;
+  padding: 5px;
+  border-radius: 15px;
+  margin-right: 5px;
+  text-align: center;
+}
+
 span.round {
   border: 1px solid ;
   padding: 5px;

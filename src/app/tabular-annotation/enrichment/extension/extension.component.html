@@ -146,13 +146,13 @@
       <div class="form-group">
         <label class="required" for="pParameters">Select matching properties: </label>
         <div class="weather-parameters">
-          <mat-form-field>
+          <mat-form-field style="min-width: 300px;">
             <mat-select id="pParameters" placeholder="matching properties" multiple
               [(ngModel)]="selectedEventProperties" name="pParameters">
               <mat-select-trigger>
 
                 <ng-container *ngIf="selectedEventProperties?.length > 0">
-                  <span *ngFor="let p_selected of selectedEventProperties">
+                  <span *ngFor="let p_selected of selectedEventProperties" class="sin-round-extension-props">
                     {{ p_selected + '\n' }}
                   </span>
                 </ng-container>
