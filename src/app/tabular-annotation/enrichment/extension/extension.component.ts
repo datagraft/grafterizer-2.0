@@ -10,10 +10,21 @@ import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { AnnotationService } from 'app/tabular-annotation/annotation.service';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
-export class CustomEventFilerModel {
+export class CustomEventFilterModel {
   propertyId?: string;
   operator?: string;
   propertyValue?: string;
+  constructor(propertyId, operator, propertyValue) {
+    if (propertyId) {
+      this.propertyId = propertyId;
+    }
+    if (operator) {
+      this.operator = operator;
+    }
+    if (propertyValue) {
+      this.propertyValue = propertyValue;
+    }
+  }
 }
 
 @Component({
@@ -83,7 +94,7 @@ export class ExtensionComponent implements OnInit {
   public operators: string[] = [];
   public propertiesValue: string[] = [];
   // TODO: is it always true that propertyValue is equal to header??
-  public defaultFilter: CustomEventFilerModel = {
+  public defaultFilter: CustomEventFilterModel = {
     propertyId: 'startDate',
     operator: '==',
     propertyValue: this.header
@@ -379,7 +390,16 @@ export class ExtensionComponent implements OnInit {
     } else if (this.currentExtension instanceof transformationDataModel.CustomEventExtension) {
       this.selectedServiceId = 'ce';
     } else if (this.currentExtension instanceof transformationDataModel.CustomEventIDExtension) {
+      let parameters = this.currentExtension.parameters;
+      if (parameters.length) {
+        for (let i = 0; i < parameters.length; ++i) {
+          // first filter contains start date and is compulsory
+          this.addRow(new CustomEventFilterModel(parameters[i].property, parameters[i].operator, parameters[i].value), i === 0);
+        }
+        this.removeRow(0); // remove the first row - it will be replaced with the one from the saved extension
+      }
       this.selectedServiceId = 'ide';
+      this.fetchCustomEventIDsData();
     } else if (this.currentExtension instanceof transformationDataModel.MediaAttentionExtension) {
       this.selectedServiceId = 'ma';
     } else {
@@ -420,7 +440,7 @@ export class ExtensionComponent implements OnInit {
     this.dateExtensionDataSource = new MatTableDataSource(this.filters.controls);
   }
 
-  private emptyRow(): CustomEventFilerModel {
+  private emptyRow(): CustomEventFilterModel {
     return {
       propertyId: null,
       operator: null,
@@ -428,7 +448,7 @@ export class ExtensionComponent implements OnInit {
     };
   }
 
-  public addRow(data?: CustomEventFilerModel, readonly: boolean = false) {
+  public addRow(data?: CustomEventFilterModel, readonly: boolean = false) {
     data = (data != null) ? data : this.emptyRow();
 
     const filterGroup = new FormGroup({
@@ -937,17 +957,38 @@ export class ExtensionComponent implements OnInit {
 
           break;
         case 'keywordscategories':
-          extensionId = 0;
-          if (this.currentExtension) {
-            extensionId = this.currentExtension.id || this.transformationObj.getUniqueId();
-          } else {
-            extensionId = this.transformationObj.getUniqueId();
-          }
           this.currentExtension = new transformationDataModel.KeywordsCategoriesExtension(derivedColumnNames, extensionMatchPairs, extensionId);
           break;
         case 'ma':
         case 'ide':
+          let customEventParams = [];
+          // get parameters
+          this.filters.value.forEach((element, id) => {
+            const isColumn = this.enrichmentService.headers.indexOf(element['propertyValue']) > -1;
+            let param = new transformationDataModel.CustomEventIDExtensionParameter(element.propertyId, element.operator, element.propertyValue, isColumn);
+            customEventParams.push(param);
+          });
+
+          this.currentExtension = new transformationDataModel.CustomEventIDExtension(derivedColumnNames, extensionMatchPairs, extensionId, customEventParams);
+
+          newAnnotation = new transformationDataModel.URINodeAnnotation(
+            derivedColumnNames[0],
+            0,
+            [],
+            [],
+            '',
+            false,
+            transformationDataModel.AnnotationStatus.invalid,
+            this.transformationObj.getUniqueId(),
+            '',
+            [],
+            null
+          );
+
+          this.transformationObj.addOrReplaceAnnotation(newAnnotation);
+          break;
         case 'ce':
+
           break;
         case 'ecmwf':
           let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();

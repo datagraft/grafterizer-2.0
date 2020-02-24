@@ -1116,7 +1116,7 @@ function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl)
       console.info(reconciliationAnnotation);
       textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode, reconciliationAnnotation.conciliatorServiceName)[0]).ednEncode();
     }
-    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension' || enrichments[i].__type === 'KeywordsCategoriesExtension') {
+    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension' || enrichments[i].__type === 'KeywordsCategoriesExtension' || enrichments[i].__type === 'CustomEventIDExtension') {
       // retrieve all Clojure functions
       var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode);
       // add each Clojure function to the declarations code
