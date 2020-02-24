@@ -997,6 +997,34 @@ export class ExtensionComponent implements OnInit {
           break;
         case 'ce':
           this.currentExtension = new transformationDataModel.CustomEventExtension(derivedColumnNames, extensionMatchPairs, extensionId, this.selectedEventProperties);
+
+          // add annotations (if not existing) for the new columns from the extension
+          // check current annotation just in case something went wrong
+          if (this.currentAnnotation) {
+            let i;
+            for (i = 0; i < derivedColumnNames.length; ++i) {
+              annotationId = 0;
+              let colAnnotation = this.transformationObj.getColumnAnnotations(derivedColumnNames[i])[0];
+              if (colAnnotation) {
+                annotationId = colAnnotation.id;
+              } else {
+                annotationId = this.transformationObj.getUniqueId();
+              }
+              const newAnnotation = new transformationDataModel.LiteralNodeAnnotation(
+                derivedColumnNames[i],
+                this.currentAnnotation.id, // subject annotation ID
+                [], // properties
+                'http://www.w3.org/2001/XMLSchema#string', // datatype assumed to be string
+                'en', // lang tag
+                transformationDataModel.AnnotationStatus.invalid, // status
+                annotationId, // id
+                []
+              );
+              this.transformationObj.addOrReplaceAnnotation(newAnnotation);
+            }
+          }
+
+
           break;
         case 'ecmwf':
           let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();
