@@ -388,7 +388,9 @@ export class ExtensionComponent implements OnInit {
     } else if (this.currentExtension instanceof transformationDataModel.KeywordsCategoriesExtension) {
       this.selectedServiceId = 'keywordscategories';
     } else if (this.currentExtension instanceof transformationDataModel.CustomEventExtension) {
+      this.selectedEventProperties = this.currentExtension.extensionProperties;
       this.selectedServiceId = 'ce';
+      this.fetchCustomEventsData();
     } else if (this.currentExtension instanceof transformationDataModel.CustomEventIDExtension) {
       let parameters = this.currentExtension.parameters;
       if (parameters.length) {
@@ -796,6 +798,8 @@ export class ExtensionComponent implements OnInit {
       } else {
         newColName += prop;
       }
+      // replace dot (.) with underscore (_) as it is a special character
+      newColName = newColName.replace(/\./g, '_');
 
       let tmpColName = newColName;
       // if we are creating a new extension we need to check if the column name is available
@@ -960,6 +964,7 @@ export class ExtensionComponent implements OnInit {
           this.currentExtension = new transformationDataModel.KeywordsCategoriesExtension(derivedColumnNames, extensionMatchPairs, extensionId);
           break;
         case 'ma':
+          break;
         case 'ide':
           let customEventParams = [];
           // get parameters
@@ -971,24 +976,27 @@ export class ExtensionComponent implements OnInit {
 
           this.currentExtension = new transformationDataModel.CustomEventIDExtension(derivedColumnNames, extensionMatchPairs, extensionId, customEventParams);
 
-          newAnnotation = new transformationDataModel.URINodeAnnotation(
-            derivedColumnNames[0],
-            0,
-            [],
-            [],
-            '',
-            false,
-            transformationDataModel.AnnotationStatus.invalid,
-            this.transformationObj.getUniqueId(),
-            '',
-            [],
-            null
-          );
+          if (!this.transformationObj.getColumnAnnotations(derivedColumnNames[0])[0]) {
+            // create an empty annotation if there is not already an existing one
+            newAnnotation = new transformationDataModel.URINodeAnnotation(
+              derivedColumnNames[0],
+              0,
+              [],
+              [],
+              '',
+              false,
+              transformationDataModel.AnnotationStatus.invalid,
+              this.transformationObj.getUniqueId(),
+              '',
+              [],
+              null
+            );
 
-          this.transformationObj.addOrReplaceAnnotation(newAnnotation);
+            this.transformationObj.addOrReplaceAnnotation(newAnnotation);
+          }
           break;
         case 'ce':
-
+          this.currentExtension = new transformationDataModel.CustomEventExtension(derivedColumnNames, extensionMatchPairs, extensionId, this.selectedEventProperties);
           break;
         case 'ecmwf':
           let weatherExtensionDate = new transformationDataModel.WeatherExtensionDate();
