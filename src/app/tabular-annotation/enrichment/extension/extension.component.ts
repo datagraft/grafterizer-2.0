@@ -562,7 +562,14 @@ export class ExtensionComponent implements OnInit {
     this.enrichmentService.weatherData(basedOn, weatherConfig).subscribe((data: Extension[]) => {
       this.extensionData = data;
       if (this.extensionData.length > 0) {
-        this.previewProperties = Array.from(this.extensionData[0].properties.keys());
+        this.previewProperties = [];
+        // get the preview property names
+        for (let i = 0; i < this.extensionData.length; ++i) {
+          let tmpProps = Array.from(this.extensionData[i].properties.keys());
+          if (this.previewProperties.length < tmpProps.length) {
+            this.previewProperties = tmpProps;
+          }
+        }
       }
       this.dataLoading = false;
     });
