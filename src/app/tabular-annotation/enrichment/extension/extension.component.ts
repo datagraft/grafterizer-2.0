@@ -112,7 +112,7 @@ export class ExtensionComponent implements OnInit {
   private transformationSubscription: Subscription;
   private reconciliationServicesMapSubscription: Subscription;
   private transformationObj: any;
-  private currentExtension: any;
+  currentExtension: any;
   currentAnnotation: any = { extensions: [] };
   editOrCreateNew = 'create-new';
   selectedExtension: any = {};

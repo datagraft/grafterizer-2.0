@@ -75,7 +75,7 @@ export class ReconciliationComponent implements OnInit {
 
   private currentReconciliation: any;
 
-  private currentAnnotation: any;
+  currentAnnotation: any;
   private transformationSubscription: Subscription;
 
   private manualMatches: Map<string, string>;
