@@ -5,37 +5,36 @@ import * as transformationDataModel from '../../../assets/transformationdatamode
 @Injectable()
 export class RecommenderService {
 
-  profile = {
+  private profile = {
     string: 0, //selection contains only strings
     multiple: 0, // 2 or more columns/rows selected
     column: 0,
     row: 0,
     hasLowercase: 0, // string selection contains lowercase characters
-    //hasDuplicates: 0, // selection of rows contains identical rows
     first: 0 // selection is the first row or a subset of cells of the first row
   }
+
   // 1: compulsory condition, 0 : don't care, -1: forbidden condition
-  conditionMatrix = [
+  private conditionMatrix = [
     //[string|multiple|column|row|hasLowercase|hasDuplicates|first]
-    // [0, 0, 0, 1, 0, 0], //Insert row above
-    // [0, 0, 0, 1, 0, 0], //Insert row below
-    // [0, 0, 0, 0, 0, 0], //Filter
-    // [0, 0, 1, -1, 0, 0], //Group and Aggregate
-    // [0, 0, 1, -1, 0, 0], //Mapc
-    // [1, 0, 1, -1, 1, 0], //uppercase
-    [0, 1, 1, -1, 0, 0],  //Merge columns
-    [0, -1, 1, -1, 0, 0],	//Split columns 
-    [0, -1, 1, -1, 0, 0],	//Shift column     
-    [0, -1, 1, -1, 0, 0],  //Add columns    
-    // [0, 0, 1, -1, 0, 0],	//Rename columns
-    // [0, 0, 0, 1, 0, 0],	//Delete row
-    [0, 0, 1, -1, 0, 0],	//Derive columns
     [0, 0, 0, 0, 0, 0],	//Make dataset
+    [0, 0, 1, -1, 0, 0], //Group and Aggregate
+    [0, 0, 0, 0, 0, 0], //Reshape dataset (melt)
     [0, 0, 1, -1, 0, 0],	//Sort dataset
-    [0, 0, -1, 1, 0, 0],	//Take rows
-    [0, 0, -1, 1, 0, 0],	//Shift row    
+    [0, 0, 1, -1, 0, 0],	//Derive columns
+    [0, 0, 1, -1, 0, 0], //Mapc
+    [0, -1, 1, -1, 0, 0],	//Add columns
     [0, 0, 1, -1, 0, 0],	//Take columns
-    // [0, -1, 1, -1, 0, 0],	//Delete column
+    [0, -1, 1, -1, 0, 0],	//Shift column   
+    [0, 1, 1, -1, 0, 0],  //Merge columns    
+    [0, -1, 1, -1, 0, 0],	//Split columns 
+    [0, 0, 1, -1, 0, 0],	//Rename columns
+    [0, 0, -1, 1, 0, 0],  //Add rows    
+    [0, 0, -1, 1, 0, 0],	//Shift row    
+    [0, 0, -1, 1, 0, 0],	//Take rows
+    [0, 0, -1, 1, 0, 0], //Filter rows
+    [0, 0, 0, 0, 0, 0], //Deduplicate
+    [0, 0, 0, 0, 0, 0], //Utility function
   ];
 
   data = [];
@@ -85,7 +84,6 @@ export class RecommenderService {
       this.profile.string = 1;
       for (let i = cs; i <= ce; i++) {
         if (!isNaN(Number(data[0][i]))) { //+ date checking
-          //   console.log(this.data[0][i]);
 
           this.profile.string = 0;
           break;
@@ -112,9 +110,6 @@ export class RecommenderService {
           records.push(data[i].join()); //concatenates values of a record to be able to compare them later
         }
         let count = datalib.count(records);
-        console.log(records);
-        console.log(count);
-        console.log(count.unique);
         if (count == count.unique) {
           this.profile.hasDuplicates = 0;
         } else {
@@ -130,29 +125,24 @@ export class RecommenderService {
     var profile = this.getDataProfile(rs, cs, re, ce, rows, columns, data);
     var recommendation = [];
     var functionList = [
-      // { label: 'Insert row above', value: { id: 'add-row-above', defaultParams: { position: rs - 1, values: new Array(columns) } } },
-      // { label: 'Insert row below', value: { id: 'add-row-below', defaultParams: { position: rs + 1, values: new Array(columns) } } },
-      // { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: { colsToFilter: headers } } },
-      // { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: { colnames: headers } } },
-      // { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: { keyFunctionPairs: this.keyFunctionPairs(headers, null) } } },
-      // { label: 'Convert to uppercase', value: { id: 'map-columns-uc', defaultParams: { keyFunctionPairs: this.keyFunctionPairs(headers, new transformationDataModel.CustomFunctionDeclaration('upper-case', '', 'STRING', 'Converts string to all upper-case')) } } },
-      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: { colsToMerge: headers } } },
-      // { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: { colsToRename: headers } } },
-      // { label: 'Delete row', value: { id: 'take-columns-delete', defaultParams: { take: false, indexFrom: rs - 1, indexTo: rs } } },
-      { label: 'Split columns', value: { id: 'SplitFunction', defaultParams: { colToSplit: headers[0] } } },
-      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
-      // { label: 'Delete column', value: { id: 'take-columns-delete', defaultParams: { take: false, colToDelete: headers[0] } } },
-      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
-      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
-      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
-      // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
-      // { label: 'Set first row as a header', value: { id: 'make-dataset-header', defaultParams: { moveFirstRowToHeader: true } } },
-      { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: { colsToSort: headers } } },
-      { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
-      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
+      { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
+      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
+      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
       { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Split columns', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: null } },
+      { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
+      { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
+      { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      { label: 'Utility function', value: { id: 'UtilityFunction', defaultParams: null } }
     ];
 
     for (let i = 0; i < this.conditionMatrix.length; i++) {
@@ -198,6 +188,7 @@ export class RecommenderService {
   }
 
   hasLowercase(str) {
+    return false;
     // return !(str === str.toUpperCase());
   }
 

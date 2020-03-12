@@ -22,6 +22,9 @@ export class ProfilingComponent implements OnInit {
   @Input() dataBoxplot: any;
   @Input() inferredType: boolean = false;
 
+  gradient: boolean = false;
+  showLegend: boolean = false;
+
   // complete dataset from graftwerk
   private data: any;
   private header: any;
@@ -32,8 +35,8 @@ export class ProfilingComponent implements OnInit {
   private advancedPieChart_init: any[];
 
   // barChart and advancedPieChart  
-  private dimensionsAdvancedPieChart: any[] = [700, 400];
-  private dimensionsBarChart: any[] = [400, 300];
+  dimensionsAdvancedPieChart: any[] = [700, 300];
+  dimensionsBarChart: any[] = [300, 200];
 
   private tileSpanMissingValues = 1;
   private tileSpanDataDistribution = 3;
@@ -44,8 +47,8 @@ export class ProfilingComponent implements OnInit {
   //chart 03
   showXAxis = true;
   showYAxis = true;
-  showXAxisLabel = true;
-  showYAxisLabel = true;
+  showXAxisLabel = false;
+  showYAxisLabel = false;
   xAxisLabel = 'Values (displaying at most 14 bins)';
   yAxisLabel = 'Number of values';
 
@@ -59,14 +62,14 @@ export class ProfilingComponent implements OnInit {
   private outliersLayout: any;
 
   // chart 04
-  private datatableBordered = false;
-  private datatableStriped = false;
+  datatableBordered = false;
+  datatableStriped = false;
 
-  private colorSchemeAdvancedPieChart = {
+  colorSchemeAdvancedPieChart = {
     domain: ['#00A896', '#FF1654', '#F9BE02']
   };
 
-  private colorSchemeBarChart = {
+  colorSchemeBarChart = {
     domain: [
       '#003459',
       '#00171F',
@@ -112,7 +115,7 @@ export class ProfilingComponent implements OnInit {
     this.dataBarChart = this.barChart_init;
     this.dataAdvancedPieChart = this.advancedPieChart_init;
     this.dataBoxplot = [0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10, 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25];
-    this.getOptionsBoxplot();
+    this.getOptionsBoxplot(true, true, true);
     Plotly.newPlot('boxplot', this.outliersData, this.outliersLayout, { displayModeBar: false });
     Plotly.redraw('boxplot');
     this.dataStatisticsTable = [
@@ -128,8 +131,6 @@ export class ProfilingComponent implements OnInit {
   }
 
   onSelect(event) {
-    console.log(event);
-    console.log(event.index);
   }
 
   loadJSON(data: any) {
@@ -144,6 +145,12 @@ export class ProfilingComponent implements OnInit {
         this.dataBarChart = this.statisticService.profile[2];
         this.dataAdvancedPieChart = this.statisticService.profile[3];
         this.dataBoxplot = this.statisticService.profile[5];
+        if (this.statisticService.profile[5].length) {
+          this.getOptionsBoxplot(true, true, true);
+        } else {
+          this.getOptionsBoxplot(false, false, false);
+          Plotly.deleteTraces('boxplot', 0);
+        }
         this.dataStatisticsTable = this.statisticService.statData;
         this.refreshPlotly();
       },
@@ -152,12 +159,11 @@ export class ProfilingComponent implements OnInit {
   };
 
   refreshPlotly() {
-    this.getOptionsBoxplot();
     Plotly.newPlot('boxplot', this.outliersData, this.outliersLayout, { displayModeBar: false });
     Plotly.redraw('boxplot');
   }
 
-  getOptionsBoxplot() {
+  getOptionsBoxplot(showgrid, zeroline, yAxisVisible) {
     this.outliersTrace = {
       y: this.dataBoxplot,
       type: 'box',
@@ -183,14 +189,20 @@ export class ProfilingComponent implements OnInit {
       paper_bgcolor: 'rgb(250,250,250)',
       plot_bgcolor: 'rgb(250,250,250)',
       width: 300,
-      height: 350,
+      height: 200,
       margin: {
         t: 30,
         b: 0
       },
       yaxis: {
-        showgrid: true,
-        zerolinecolor: '#C4BBB8'
+        visible: yAxisVisible,
+        showgrid: showgrid,
+        zeroline: zeroline,
+        zerolinecolor: '#C4BBB8',
+        fixedrange: true
+      },
+      xaxis: {
+        fixedrange: true
       }
     };
   }
@@ -219,7 +231,6 @@ export class ProfilingComponent implements OnInit {
     }
     this.profileSubset.chart = 2;
     this.chartSubsetEmit();
-    console.log()
   }
 
 }

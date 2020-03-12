@@ -1,3 +1,7 @@
 .spinner {
   margin-top: 200px;
 }
+
+#handsontable {
+  z-index: 1;
+}

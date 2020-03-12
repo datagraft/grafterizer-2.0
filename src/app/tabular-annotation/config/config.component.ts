@@ -1,7 +1,13 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {AbstatService} from '../abstat.service';
-import {AppConfig} from '../../app.config';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AsiaMasService } from '../asia-mas/asia-mas.service';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { FormControl } from '@angular/forms';
+import { map, startWith } from 'rxjs/operators';
+import { CustomValidators } from '../shared/custom-validators';
+import { AnnotationService } from '../annotation.service';
 
 @Component({
   selector: 'app-config',
@@ -10,42 +16,112 @@ import {AppConfig} from '../../app.config';
 })
 export class ConfigComponent implements OnInit {
 
-  public summaries: any;
-  public selectedEndpoint: any;
-  public abstatEndpointsNames: string[];
-  public abstatEndpoints: Map<string, string>;
-  public advancedSettings: boolean;
+  visible = true;
+  selectable = true;
+  removable = true;
+  addOnBlur = true;
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+  summaryCtrl = new FormControl();
+  filteredSummaries: Observable<string[]>;
+  preferredSummaries = [];
+  summaries: any = [];
 
-  constructor(private abstat: AbstatService, private config: AppConfig) {
+  @ViewChild('auto') matAutocomplete: MatAutocomplete;
+  @ViewChild('summaryInput') summaryInput: ElementRef<HTMLInputElement>;
+
+  public suggester: string;
+  public suggesters: any = [];
+  public language: string;
+  public languages: any = [];
+
+  urifyURLFormControl = new FormControl('', [
+    CustomValidators.URLValidator()
+  ]);
+
+  constructor(private suggesterSvc: AsiaMasService, private annotationSvc: AnnotationService) {
+    this.filteredSummaries = this.summaryCtrl.valueChanges.pipe(
+      startWith(null),
+      map((summary: string | null) => summary ? this._filter(summary) : this._availableSummaries.slice()));
   }
 
   ngOnInit() {
-    this.advancedSettings = false;
-    this.abstatEndpoints = new Map<string, string>();
-    this.abstatEndpoints.set('ABSTAT-UNIMIB', this.config.getConfig('abstat-path'));
-    this.abstatEndpoints.set('ABSTAT-POLIBA', this.config.getConfig('abstat-path-ba'));
-    this.abstatEndpointsNames = Array.from(this.abstatEndpoints.keys());
-    this.abstatEndpoints.forEach((value, key) => {
-      if (value === this.abstat.getCurrentEndpoint()) {
-        this.selectedEndpoint = key;
-      }
+    this.suggesterSvc.getSuggestersList().subscribe((data) => {
+      this.suggesters = data;
+      this.suggester = this.suggesterSvc.getSuggester() || this.suggesters[0];
+      this.preferredSummaries = this.suggesterSvc.getPreferredSummaries();
+      this.fetchSummaries();
     });
-    this.summaries = [];
-    const existingSummaries = this.abstat.getPreferredSummaries();
-    if (existingSummaries) {
-      existingSummaries.forEach(summary => this.summaries.push({summary_name: summary,  display: summary, value: summary}));
+    this.suggesterSvc.getLanguagesList().subscribe((data) => {
+      this.languages = data;
+      this.language = this.suggesterSvc.getLanguage() || this.languages[0];
+    });
+
+    this.urifyURLFormControl.setValue(this.annotationSvc.getUrifyDefault());
+  }
+
+  private fetchSummaries() {
+    this.suggesterSvc.getSummariesList(this.suggester).subscribe((data) => {
+      this.summaries = data;
+    });
+  }
+
+  update() {
+    this.preferredSummaries = [];
+    this.fetchSummaries();
+  }
+
+  public save() {
+    this.suggesterSvc.setSuggester(this.suggester);
+    this.suggesterSvc.setLanguage(this.language);
+    this.suggesterSvc.setPreferredSummaries(Array.from(this.preferredSummaries));
+    this.annotationSvc.setUrifyDefault(this.urifyURLFormControl.value.trim());
+  }
+
+  remove(summary: string): void {
+    const index = this.preferredSummaries.indexOf(summary);
+
+    if (index >= 0) {
+      this.preferredSummaries.splice(index, 1);
     }
   }
 
-  public abstatAvailableSummaries = (): Observable<Response> => {
-    return this.abstat.listSummaries();
+  add(event: MatChipInputEvent): void {
+    // Add summary only when MatAutocomplete is not open
+    // To make sure this does not conflict with OptionSelected Event
+    if (!this.matAutocomplete.isOpen) {
+      const input = event.input;
+      const value = event.value;
+
+      // Add the summary if
+      // - it does not already exist
+      // - it comes from the summaries list
+      if ((value || '').trim() && this._availableSummaries.indexOf(value.trim()) > 0) {
+        this.preferredSummaries.push(value.trim());
+      }
+
+      // Reset the input value
+      if (input) {
+        input.value = '';
+      }
+
+      this.summaryCtrl.setValue(null);
+    }
   }
 
-  // Data format: [0: {URI: "http://ld-summaries.org/sdati-3", summary_name: "sdati-3", display: "sdati-3", value: "sdati-3"}, ...]
-  public save() {
-    const summariesList = [];
-    this.summaries.forEach(tag => summariesList.push(tag.summary_name));
-    this.abstat.updatePreferredSummaries(summariesList);
-    this.abstat.updateEndpoint(this.abstatEndpoints.get(this.selectedEndpoint));
+  selected(event: MatAutocompleteSelectedEvent): void {
+    this.preferredSummaries.push(event.option.viewValue);
+    this.summaryInput.nativeElement.value = '';
+    this.summaryCtrl.setValue(null);
   }
+
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this._availableSummaries.filter(summary => summary.toLowerCase().indexOf(filterValue) === 0);
+  }
+
+  get _availableSummaries(): string[] {
+    return this.summaries.filter(summary => this.preferredSummaries.indexOf(summary) === -1);
+  }
+
 }
+

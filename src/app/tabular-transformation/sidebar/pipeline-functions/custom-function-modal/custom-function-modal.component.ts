@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 import { TransformationService } from 'app/transformation.service';
 
@@ -20,37 +20,38 @@ export class CustomFunctionModalComponent implements OnInit {
 
   @ViewChild('editor') editor: any;
 
-  private modalEnabled: any = false;
-  private functions: any[] = [];
+  modalEnabled: any = false;
+  userDefinedFunctions: any[] = [];
   private customFunctionDeclarations: any[] = [];
-  private configurationObject: any;
+  configurationObject: any;
 
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any;
 
-  private previewedTransformationObj: any;
-  private previewedTransformationSubscription: Subscription;
+  private transformationObjSourceSubscription: Subscription;
+  private transformationObjSource: any;
 
-  private selected: any;
-  private nameWarning: boolean = false;
+  selected: any;
+  nameWarning: boolean = false;
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService, private codeMirror: CodemirrorService) { }
 
   ngOnInit() {
-    this.configurationObject = { lineWrapping: true, lineNumbers: false, theme: "monokai", mode: 'clojure', autofocus: true, matchBrackets: true, indentWithTabs: true };
+    this.configurationObject = { lineWrapping: true, lineNumbers: false, theme: "monokai", mode: 'clojure', autofocus: true, matchBrackets: true, indentWithTabs: true, maxHighlightLength: Infinity };
     this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
       this.pipelineEvent = currentEvent;
       if (currentEvent.newStepType === 'CustomFunctionDeclaration') {
-        if (this.functions[0] == null) {
+        if (this.userDefinedFunctions[0] == null) {
           this.retreiveCustomFunctions();
         }
         this.modalEnabled = true;
       }
     });
-    this.previewedTransformationSubscription = this.transformationSvc.currentPreviewedTransformationObj
-      .subscribe((previewedTransformation) => {
-        this.previewedTransformationObj = previewedTransformation;
-      });
+
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource.subscribe((transformationObjSource) => {
+      this.transformationObjSource = transformationObjSource;
+    });
+
     this.selected = { clojureCode: '' };
   }
 
@@ -61,8 +62,8 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.previewedTransformationSubscription.unsubscribe();
     this.pipelineEventsSubscription.unsubscribe();
+    this.transformationObjSourceSubscription.unsubscribe();
   }
 
   onCodeChange($event) {
@@ -82,12 +83,12 @@ export class CustomFunctionModalComponent implements OnInit {
         this.selected.name = name;
       } else {
         this.selected.name = name;
-        var found = lodash.find(this.customFunctionDeclarations, (customFunction) => {
+        var found = lodash.find(this.userDefinedFunctions, (customFunction) => {
           return customFunction.clojureCode !== this.selected.clojureCode && customFunction.name === name;
         });
         this.nameWarning = !!found;
       }
-      for (let funct of this.functions) {
+      for (let funct of this.userDefinedFunctions) {
         if (funct.label === label) {
           funct.label = name;
         }
@@ -96,11 +97,17 @@ export class CustomFunctionModalComponent implements OnInit {
   }
 
   retreiveCustomFunctions() {
-    for (let cfd of this.previewedTransformationObj.customFunctionDeclarations) {
+    for (let cfd of this.transformationObjSource.customFunctionDeclarations) {
       if (cfd.group === 'UTILITY') {
-        this.functions.push({ label: cfd.name, value: cfd });
+        this.userDefinedFunctions.push({ label: cfd.name, value: cfd });
+      } else if (cfd.group === 'ENRICHMENT') {
+        // ignore enrichment functions
+      } else {
         this.customFunctionDeclarations.push(cfd);
       }
+    }
+    if (this.userDefinedFunctions.length) {
+      this.selected = this.userDefinedFunctions[0].value;
     }
   }
 
@@ -114,37 +121,45 @@ export class CustomFunctionModalComponent implements OnInit {
     let find = (funct) => { return funct.name === name; };
 
     do { name = this.randomA[Math.floor(Math.random() * this.randomA.length)] + '-' + this.randomB[Math.floor(Math.random() * this.randomB.length)] }
-    while (lodash.find(this.previewedTransformationObj.customFunctionDeclarations, find) && ++cpt < 10);
+    while (lodash.find(this.transformationObjSource.customFunctionDeclarations, find) && ++cpt < 10);
 
     let emptyCustomFunction = new transformationDataModel.CustomFunctionDeclaration(name, '(defn ' + name + ' "" [] ())', 'UTILITY', '')
-    this.customFunctionDeclarations.push(emptyCustomFunction);
-    this.functions.push({ label: name, value: emptyCustomFunction });
-    this.selected = this.customFunctionDeclarations[this.customFunctionDeclarations.length - 1];
+    this.userDefinedFunctions.push({ label: name, value: emptyCustomFunction });
+    this.selected = this.userDefinedFunctions[this.userDefinedFunctions.length - 1].value;
   }
 
   removeFunction(i: number) {
-    this.customFunctionDeclarations.splice(i, 1);
-    this.functions.splice(i, 1);
-    this.selected = { clojureCode: '' };
+    this.userDefinedFunctions.splice(i, 1);
+    if (this.userDefinedFunctions.length) {
+      this.selected = this.userDefinedFunctions[0].value;
+    }
   }
 
   resetModal() {
-    this.functions = [];
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.userDefinedFunctions = [];
     this.customFunctionDeclarations = [];
-    this.retreiveCustomFunctions();
     this.selected = { clojureCode: '' };
     this.editor.setValue('');
+    this.modalEnabled = false;
   }
 
   accept() {
-    this.previewedTransformationObj.customFunctionDeclarations = this.customFunctionDeclarations;
-    this.transformationSvc.changePreviewedTransformationObj(this.previewedTransformationObj);
-    this.modalEnabled = false;
+    for (let cfd of this.userDefinedFunctions) {
+      if (cfd.value.group === 'UTILITY') {
+        this.customFunctionDeclarations.push(cfd.value);
+      }
+    }
+    this.transformationObjSource.customFunctionDeclarations = this.customFunctionDeclarations;
+    this.transformationSvc.transformationObjSource.next(this.transformationObjSource);
+    this.transformationSvc.previewedTransformationObjSource.next(this.transformationObjSource);
+    this.resetModal();
   }
 
   cancel() {
     this.resetModal();
-    this.modalEnabled = false;
   }
 
 }

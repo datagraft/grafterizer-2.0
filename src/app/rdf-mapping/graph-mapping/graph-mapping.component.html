@@ -1,9 +1,10 @@
-<div style="margin-top: 16px">
+<div style="margin-top: 16px" fxLayoutAlign="center center">
   <button mat-button (click)="addFirstNode()" [hidden]="graph.graphRoots.length!=0" aria-label="Add node" matTooltip="Add a root node to the graph"
     matTooltipShowDelay="500">
     <i class="fa fa-large fa-plus-circle"></i>&nbsp;Add node
   </button>
-
+</div>
+<div style="margin-top: 16px">
   <div fxFlex fxLayout="column" fxLayoutAlign="start start">
     <div fxLayout="row" fxLayoutAlign="center" *ngFor="let node of graph.graphRoots">
       <constant-uri-node *ngIf="node.__type=='ConstantURI'" [node]="node" [parent]="graph"></constant-uri-node>

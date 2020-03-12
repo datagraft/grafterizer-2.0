@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
@@ -14,7 +14,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class SortDatasetComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,13 +24,13 @@ export class SortDatasetComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private sortTypes: string[] = ["Alphabetical", "Numerical", "By length", "Date"];
-  private selectedColumn: any;
+  sortTypes: string[] = ["Alphabetical", "Numerical", "By length", "Date"];
+  selectedColumn: any;
   private order: boolean = false;
-  private sorttype: any;
+  sorttype: any;
   private colnamesSorttypesMap: any[] = [];
-  private previewedDataColumns: any[] = [];
-  private docstring: string = 'Sort column';
+  previewedDataColumns: any[] = [];
+  docstring: string = 'Sort column';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -40,11 +40,11 @@ export class SortDatasetComponent implements OnInit {
       this.currentlySelectedFunction = selFunction.currentFunction;
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
-            return { id: idx, value: v.substring(1, v.length) };
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
           });
         }
       });
@@ -78,7 +78,7 @@ export class SortDatasetComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editSortColumnsFunction(this.currentlySelectedFunction);
@@ -138,7 +138,7 @@ export class SortDatasetComponent implements OnInit {
     this.docstring = 'Sort column';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

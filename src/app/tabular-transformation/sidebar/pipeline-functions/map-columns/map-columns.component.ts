@@ -1,6 +1,9 @@
-import { Component, OnInit, Input, Output, SimpleChanges, EventEmitter, OnChanges } from '@angular/core';
-import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
   selector: 'map-columns',
@@ -8,96 +11,146 @@ import * as transformationDataModel from '../../../../../assets/transformationda
   styleUrls: ['./map-columns.component.css']
 })
 
-export class MapColumnsComponent implements OnInit, OnChanges {
+export class MapColumnsComponent implements OnInit {
 
-  @Input() modalEnabled;
-  @Input() function: any;
-  @Input() defaultParams;
-  @Input() columns: String[] = [];
-  @Input() transformation: any;
-  @Output() emitter = new EventEmitter();
-  private keyFunctionPairs: any[] = []; // type keyFunctionPair
-  private functionsToMapWith: any[] = []; // type customFunctionDeclaration
-  private keys: String[] = [];
-  private params: any[] = [];
-  private docstring: String;
+  modalEnabled: boolean = false;
 
-  private dataService: CompleterData;
-  private availableFunctions: any[] = [];
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
 
-  constructor(private completerService: CompleterService) {
-    // this.transformation = transformationDataModel.Transformation.revive(data);
-    // this.dataService = completerService.local(this.transformation.customFunctionDeclarations, 'name', 'name');
-    if (!this.function) {
-      this.keyFunctionPairs = [new transformationDataModel.KeyFunctionPair(null, null, [])];
-      this.functionsToMapWith = [undefined];
-      this.keys = [""];
-      this.function = new transformationDataModel.MapcFunction(this.keyFunctionPairs, this.docstring);
-    }
-    else {
-      this.keyFunctionPairs = this.function.keyFunctionPairs;
-      for (let availableFunction of this.function.keyFunctionPairs) {
-        this.functionsToMapWith.push(availableFunction.func);
-        this.keys.push(availableFunction.key);
-        this.docstring = this.function.docstring;
-      }
-    }
-  }
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private transformationObjSourceSubscription: Subscription;
+  private previewedDataSubscription: Subscription;
+
+  keyFunctionPairs: any[] = [];
+  previewedDataColumns: any = [];
+  customFunctions: any[] = [];
+  docstring: string = 'Map column';
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-  }
-  ngOnChanges(changes: SimpleChanges) {
 
-    if (changes.defaultParams && this.defaultParams) {
-      if (this.defaultParams.keyFunctionPairs) {
-
-        this.keyFunctionPairs[0] = new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[0].key, this.defaultParams.keyFunctionPairs[0].func, []);
-        this.functionsToMapWith[0] = this.defaultParams.keyFunctionPairs[0].func;
-        this.keys[0] = this.defaultParams.keyFunctionPairs[0].key;
-        for (let i = 1; i < this.defaultParams.keyFunctionPairs.length; ++i) {
-          this.keyFunctionPairs.push(new transformationDataModel.KeyFunctionPair(this.defaultParams.keyFunctionPairs[i].key, this.defaultParams.keyFunctionPairs[i].func, []));
-          this.functionsToMapWith.push(this.defaultParams.keyFunctionPairs[i].func);
-          this.keys.push(this.defaultParams.keyFunctionPairs[i].key);
-
-        }
+    this.transformationObjSourceSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
+      if (transformation) {
+        this.customFunctions = transformation.customFunctionDeclarations.map((v, idx) => {
+          return { id: idx, clojureCode: v.clojureCode, group: v.group, name: v.name };
+        });
       }
+    });
 
-    }
-  }
-  accept() {
-    this.function.keyFunctionPairs = this.keyFunctionPairs;
-    this.function.docstring = this.docstring;
-    this.emitter.emit(this.function);
-    this.modalEnabled = false;
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'MapcFunction') {
+        this.modalEnabled = true;
+        this.keyFunctionPairs = this.currentlySelectedFunction.keyFunctionPairs;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'MapcFunction') {
+        this.modalEnabled = true;
+        this.addMapping();
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
+          });
+        }
+      });
   }
 
-  onFunctionSelected(selected: CompleterItem, idx) {
-    this.keyFunctionPairs[idx] = new transformationDataModel.KeyFunctionPair(this.keys[idx], selected.originalObject, []);
+  ngOnDestroy() {
+    this.transformationObjSourceSubscription.unsubscribe();
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
   addMapping() {
-    this.functionsToMapWith.push(undefined);
-    this.keys.push("");
-    this.keyFunctionPairs.push(new transformationDataModel.KeyFunctionPair("", undefined, []));
-  }
-  removeMapping(idx) {
-
-    this.functionsToMapWith.splice(idx, 1);
-    this.keys.splice(idx, 1);
-    this.keyFunctionPairs.splice(idx, 1);
-
-  }
-  getparams(idx) {
-
-    var params = [];
-    if (this.keyFunctionPairs[idx].func) { params = this.keyFunctionPairs[idx].getParams(); }
-    return params;
-
+    let keyFunctionPair = new transformationDataModel.KeyFunctionPair({}, {}, []);
+    this.keyFunctionPairs.push(keyFunctionPair);
   }
 
+  removeMapping(id: number) {
+    if (this.keyFunctionPairs.length > 1) {
+      this.keyFunctionPairs.splice(id, 1);
+    }
+  }
+
+  incrementMapping(id) {
+    return id += 1;
+  }
+
+  accept() {
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editMapColumnsFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
+    }
+    else if (this.pipelineEvent.createNew) {
+      const newFunction = new transformationDataModel.MapcFunction(this.keyFunctionPairs, this.docstring);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
+
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
+    }
+    this.resetModal();
+  }
+
+  private editMapColumnsFunction(instanceObj): any {
+    for (let keyFunctionPair of this.keyFunctionPairs) {
+      if (keyFunctionPair.getParams().length === 0) {
+        keyFunctionPair.funcParams = [];
+      }
+    }
+    instanceObj.keyFunctionPairs = this.keyFunctionPairs.filter((value, index, arr) => {
+      return value.func.id !== undefined && value.key.id !== undefined;
+    })
+    instanceObj.docstring = this.docstring;
+  }
+
+  private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.keyFunctionPairs = [];
+    this.modalEnabled = false;
+    this.docstring = 'Map column';
+  }
 
   cancel() {
-    this.modalEnabled = false;
+    this.resetModal();
   }
 
 }

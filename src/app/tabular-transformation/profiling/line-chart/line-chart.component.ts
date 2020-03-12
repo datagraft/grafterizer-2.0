@@ -22,6 +22,7 @@ export class LineChartComponent implements OnInit {
   showLegend = false;
   showXAxisLabel = true;
   showYAxisLabel = true;
+  xAxisLabel;
   yAxisLabel;
   showRefLines = true;
   showRefLabels = true;

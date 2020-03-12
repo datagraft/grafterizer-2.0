@@ -1,46 +1,68 @@
 <div class="main-container">
   <header class="header-6">
-    <div class="branding" *ngIf="!isEmbedded">
-      <a href="http://localhost:4200/" class="nav-link">
-        <img src="http://localhost:4200/assets/logo.png" height="24" width="48">
+    <div class="branding" *ngIf="!showWizardNavigation">
+      <a href="/" class="nav-link">
+        <img *ngIf="showLogo" src="/assets/logo.png" height="24" width="48">
         <span class="title">
           <strong>Grafterizer 2.0</strong>
         </span>
       </a>
     </div>
     <div class="header-nav">
-      <a routerLink="/{{url}}tabular-transformation" routerLinkActive="active" class="nav-link">
+      <a routerLink="/{{grafterizerUrl}}tabular-transformation" routerLinkActive="active" class="nav-link">
         <span class="nav-text">Tabular Transformation</span>
       </a>
-      <a *ngIf="showRdfMappingTab" routerLink="/{{url}}rdf-mapping" routerLinkActive="active" class="nav-link">
+      <a routerLink="/{{grafterizerUrl}}rdf-mapping" routerLinkActive="active" class="nav-link">
         <span class="nav-text">RDF Mapping</span>
       </a>
-      <a *ngIf="showTabularAnnotationTab" routerLink="/{{url}}tabular-annotation" routerLinkActive="active" class="nav-link">
-        <span class="nav-text">Tabular Annotation</span>
+      <a *ngIf="showTabularAnnotationTab" routerLink="/{{grafterizerUrl}}tabular-annotation" routerLinkActive="active"
+        class="nav-link">
+        <span class="nav-text">Tabular Enrichment</span>
       </a>
       <!--       <a routerLink="/transformation/new/data-exploration" routerLinkActive="active" class="nav-link">
       <span class="nav-text">Data Exploration</span>
       </a> -->
     </div>
     <div class="header-actions">
-      <a *ngIf="showSaveButton" href="javascript://" (click)="save()" title="Save" class="nav-link nav-icon">
-        <clr-icon shape="floppy"></clr-icon>
+      <a *ngIf="showChangeFileActions" href="javascript://" (click)="loadDistribution()"
+        title="Select an existing file from your DataGraft assets" class="sin-nav-icon">
+        <i class="material-icons md-light">cloud</i>
       </a>
-      <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="nav-link nav-icon">
-        <clr-icon shape="copy"></clr-icon>
+      <a *ngIf="showChangeFileActions" href="javascript://" (click)="fileInputHeader.click()"
+        title="Upload a file locally from your computer" class="sin-nav-icon">
+        <i class="material-icons md-light">folder_open</i>
+        <input hidden type="file" #fileInputHeader (change)="onFileChange($event)" />
       </a>
-      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download" class="nav-link nav-icon">
-        <clr-icon shape="download"></clr-icon>
+
+      <a *ngIf="showSaveButton" href="javascript://" (click)="save(false)" title="Save" class="sin-nav-icon">
+        <i class="material-icons md-light">save</i>
       </a>
-      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete" class="nav-link nav-icon">
-        <clr-icon shape="trash"></clr-icon>
+      <a *ngIf="showForkButton" href="javascript://" (click)="fork()" title="Copy" class="sin-nav-icon">
+        <i class="material-icons md-light md-22">file_copy</i>
       </a>
-      <button mat-raised-button *ngIf="isEmbedded" (click)="goBack()" class="sin-datagraft-wizard-button">Back</button>
-      <button mat-raised-button *ngIf="isEmbedded" (click)="openNextStepConfirmation()" class="sin-datagraft-wizard-button">Next step</button>
+      <a *ngIf="showDownloadButton" href="javascript://" (click)="showDownloadDialog = true" title="Download"
+        class="sin-nav-icon">
+        <i class="material-icons md-light">get_app</i>
+      </a>
+      <a *ngIf="showDeleteButton" href="javascript://" (click)="showConfirmDeleteDialog = true" title="Delete"
+        class="sin-nav-icon">
+        <i class="material-icons md-light">delete</i>
+      </a>
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="goBack()"
+        class="sin-datagraft-wizard-button">Back</button>
+      <button mat-raised-button *ngIf="showWizardNavigation" (click)="openNextStepConfirmation()"
+        class="sin-datagraft-wizard-button">Next
+        step</button>
+    </div>
+
+  </header>
+  <header class="header-6" style="max-height: 0px">
+    <div class="progress loop" *ngIf="showLoading" style="max-height: 5px;"><progress></progress>
     </div>
   </header>
   <clr-alerts>
-    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true" *ngFor="let error of globalErrors; let i = index">
+    <clr-alert class="alerts" [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="true"
+      *ngFor="let error of globalErrors; let i = index">
       <div class="alert-item">
         <span class="alert-text">
           Woops - something went wrong! If the problem persists, try reloading the application.
@@ -53,79 +75,153 @@
     </clr-alert>
   </clr-alerts>
   <div class="content-container">
-    <router-outlet></router-outlet>
-    <div style="height: 100%" fxLayout="column" fxLayoutAlign="center center" *ngIf="showLoading">
-      <div class="spinner">
-        <span class="spinner spinner-lg" fxflex>
-          Loading...
-        </span>
-      </div>
+    <div class="sin-disable" [hidden]="!showLoading">
     </div>
-    <div *ngIf="showLoadDistributionDialog" id="load-distribution">
-      <h4>1 - Select an existing file from your DataGraft assets:</h4>
-      <br>
-      <button type="button" (click)="loadDistribution()">Load existing file</button>
-      <br>
-      <h4>OR</h4>
-      <h4>2 - Upload a file locally from your computer:</h4>
-      <br>
-      <input type="file" id="fileSelect" (change)="onFileChange($event)" #fileInput>
+    <router-outlet></router-outlet>
+    <div *ngIf="showLoadDistributionMenu" class="load-distribution">
+      <div id="btn">
+        <button mat-fab (click)="loadDistribution()" matTooltip="Select an existing file from your DataGraft assets">
+          <mat-icon aria-label="Upload a file locally from your computer">cloud</mat-icon>
+        </button>
+      </div>
+      <div id="btn">
+        <button mat-fab (click)="fileInput.click()" matTooltip="Upload a file locally from your computer">
+          <mat-icon aria-label="Upload a file locally from your computer">folder_open</mat-icon>
+          <input hidden type="file" id="fileSelect" #fileInput (change)="onFileChange($event)" />
+        </button>
+      </div>
     </div>
   </div>
+</div>
 
-  <clr-modal *ngIf="showLoadDistributionDialog" [(clrModalOpen)]="modalEnabled" [clrModalClosable]="false" [clrModalSize]="'lg'">
-    <h3 class="modal-title">Load existing file</h3>
-    <div class="modal-body">
-      <div fxLayout='column' fxLayoutAlign="left">
-        <p-listbox [options]="distributionList" [(ngModel)]="selected" (ngModelChange)="onChange($event)" [styleClass]="ui-state-active"
-          [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}" [listStyle]="{'height':'360px'}">
-        </p-listbox>
-      </div>
+<clr-modal [(clrModalOpen)]="showLoadExistingFileDialog" [clrModalClosable]="false" [clrModalSize]="'lg'">
+  <h3 class="modal-title">Load existing file</h3>
+  <div class="modal-body">
+    <div fxLayout='column' fxLayoutAlign="left">
+      <p-listbox [options]="distributionList" [(ngModel)]="selectedFile" (ngModelChange)="onChange($event)"
+        [styleClass]="uiStateActive" [style]="{'width':'800px', 'background-color':'white', 'border':'1px solid grey'}"
+        [listStyle]="{'height':'360px'}">
+      </p-listbox>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
-    </div>
-  </clr-modal>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="accept()">OK</button>
+  </div>
+</clr-modal>
 
-  <clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
-    <h3 class="modal-title">Are you sure you want to continue?</h3>
-    <div class="modal-body">
-      <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
+<clr-modal [(clrModalOpen)]="showConfirmNextStepDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to continue?</h3>
+  <div class="modal-body">
+    <div class="radio">
+      <input type="radio" [(ngModel)]="transformationType" value="pipe" id="mode_1">
+      <label for="mode_1">Save as file</label>
+    </div>
+    <div class="radio">
+      <input type="radio" [(ngModel)]="transformationType" value="graft" id="mode_2">
+      <label for="mode_2">Save as graph in a SPARQL endpoint</label>
+    </div>
+    <br>
+    <!-- <mat-progress-spinner [hidden]="fillingWizard" mode="indeterminate" diameter="50px" style="margin: auto;">
     </mat-progress-spinner> -->
+    <div>
       <div *ngIf="loadingNextStepMessage && fillingWizard">{{loadingNextStepMessage}}</div>
-      <br/>
       <div *ngIf="!fillingWizard">{{nextStepDialogMessage}}</div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
-    </div>
-  </clr-modal>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelNextStep()" [disabled]="fillingWizard">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="goNextStep()" [disabled]="fillingWizard">Confirm</button>
+  </div>
+</clr-modal>
 
-  <clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
-    <h3 class="modal-title">Download</h3>
-    <div class="modal-body">
+<clr-modal [(clrModalOpen)]="showDownloadDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Choose download option</h3>
+  <div class="modal-body">
+    <div fxLayout="column">
       <div class="radio">
-        <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_1">
-        <label for="mode_1">CSV</label>
+        <input type="radio" [(ngModel)]="downloadMode" value="rdf" id="mode_1">
+        <label for="mode_1">Download result as RDF</label>
+      </div>
+      <div fxFlex *ngIf="downloadMode == 'rdf'" id="rdf">
+        <label for="rdf-format" class="clr-control-label">Choose output format:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="rdf-format" [(ngModel)]="chosenRdfFormatDownloadOption">
+            <!-- Note: Currently the Graftwerk backend only supports N-Triples. 
+            The serialiser does support other formats, but they have been hacked out in Graftwerk. -->
+            <option value="nt">N-Triples</option>
+            <!-- <option value="nq">N-Quads</option>
+            <option value="ttl">Turtle</option>
+            <option value="rdf+xml">RDF/XML</option>
+            <option value="n3">N3</option>
+            <option value="trix">TRiX</option>
+            <option value="trig">TRiG</option>
+            <option value="jsonld">JSON-LD</option> -->
+          </select>
+        </div>
       </div>
       <div class="radio">
-        <input type="radio" [(ngModel)]="downloadMode" value="n-triples" id="mode_2">
-        <label for="mode_2">N-Triples</label>
+        <input type="radio" [(ngModel)]="downloadMode" value="csv" id="mode_3">
+        <label for="mode_3">Download result as CSV</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="arango-json" id="mode_4">
+        <label for="mode_4">Download result as ArangoDB JSON collections</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="grafterizer-json" id="mode_5">
+        <label for="mode_5">Download transformation JSON</label>
+      </div>
+      <div class="radio">
+        <input type="radio" [(ngModel)]="downloadMode" value="jar" id="mode_2">
+        <label for="mode_2">Download executable JAR file</label>
+      </div>
+      <div fxFlex *ngIf="downloadMode == 'jar'" id="jar">
+        <div id="container">
+          <div id=paragraph>
+            <p>You can choose between CSV or RDF output. Usage: java -jar transformation.jar input.csv
+              output.(nt|rdf|n3|ttl [used with the RDF output option] or csv [used with the CSV option])</p>
+            <p>If you choose not to use ASIA, the created JAR file will reconcile and extend data based only on the
+              matched
+              entitiies and values that you selected. If you choose to provide a URL of ASIA, the transformation will
+              automatically call the ASIA service to reconcile and/or extend the data.</p>
+          </div>
+        </div>
+        <label for="jar-option" class="clr-control-label">Choose JAR file output:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="jar-option" [(ngModel)]="chosenJarFormatDownloadOption">
+            <option value="nt">RDF</option>
+            <option value="csv">CSV</option>
+          </select>
+        </div>
+        <br />
+        <label for="asia-endpoint-option" class="clr-control-label">Choose option for ASIA service:</label>
+        <div class="clr-select-wrapper">
+          <select clrSelect id="asia-endpoint-option" [(ngModel)]="chosenEndpointURLOption">
+            <option value="no-asia">Do not use ASIA backend</option>
+            <option value="asia-url">Provide ASIA backend URL</option>
+          </select>
+        </div>
+        <br />
+        <br />
+        <mat-form-field style="display: block;" *ngIf="chosenEndpointURLOption == 'asia-url'">
+          <input matInput placeholder="ASIA endpoint URL" [(ngModel)]="asiaEndpointURL" name="asiaUrl" required />
+        </mat-form-field>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="download()">OK</button>
-    </div>
-  </clr-modal>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="showDownloadDialog = false">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="download()">OK</button>
+  </div>
+</clr-modal>
 
-  <clr-modal [(clrModalOpen)]="showConfirmDeleteDialog" [clrModalClosable]="false">
-    <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
-    <br>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="delete()">Confirm</button>
-    </div>
-  </clr-modal>
+<clr-modal [(clrModalOpen)]="showConfirmDeleteDialog" [clrModalClosable]="false">
+  <h3 class="modal-title">Are you sure you want to delete the transformation?</h3>
+  <br>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="showConfirmDeleteDialog = false"
+      [disabled]="downloadingResult">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="delete()" [disabled]="downloadingResult">Confirm</button>
+  </div>
+</clr-modal>

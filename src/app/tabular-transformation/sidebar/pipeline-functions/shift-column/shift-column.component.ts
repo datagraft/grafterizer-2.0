@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
@@ -14,12 +14,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class ShiftColumnComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
-  private colFrom: any;
-  private indexTo: string = null;
-  private shiftcolmode: string = 'eods';
-  private docstring: String = 'Shift (move) column';
+  colFrom: any;
+  indexTo: string = null;
+  shiftcolmode: string = 'eods';
+  docstring: String = 'Shift (move) column';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -28,7 +28,7 @@ export class ShiftColumnComponent implements OnInit {
   private pipelineEvent: any = { startEdit: false };
 
   private previewedDataSubscription: Subscription;
-  private previewedDataColumns: any[] = [];
+  previewedDataColumns: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -59,11 +59,11 @@ export class ShiftColumnComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
-            return { id: idx, value: v.substring(1, v.length) };
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
           });
         }
       });
@@ -75,7 +75,7 @@ export class ShiftColumnComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editShiftColumnFunction(this.currentlySelectedFunction);
@@ -136,7 +136,7 @@ export class ShiftColumnComponent implements OnInit {
     this.docstring = 'Shift (move) column';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

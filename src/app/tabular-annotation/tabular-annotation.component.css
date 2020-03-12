@@ -28,6 +28,18 @@
   margin-bottom: 0.2em !important;
 }
 
+>>> .ann-info-error {
+  color: red !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
+>>> .ann-info-reconciliations {
+  color: #737373 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.2em !important;
+}
+
 >>> .ann-info-prop {
   color: #5264AE !important;
   margin-top: 0 !important;
@@ -54,11 +66,23 @@
   bottom: 0;
 }
 
-.spinner {
-  margin-top: 10%;
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hot-hidden {
   visibility: hidden
 }
 
+>>> .alerts {
+  z-index: 99;
+}

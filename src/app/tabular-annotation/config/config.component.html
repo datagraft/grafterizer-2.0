@@ -1,36 +1,61 @@
-<h1 mat-dialog-title>ABSTAT Suggestions Configurator</h1>
+<h1 mat-dialog-title>ASIA Configuration</h1>
 <div mat-dialog-content>
-  <p>Which summaries do you prefer?</p>
-  <div class="form-group">
-  <tag-input [(ngModel)]="summaries"
-             [onlyFromAutocomplete]="true"
-             [placeholder]="'+ Summary'"
-             [secondaryPlaceholder]="'Summary'">
-    <tag-input-dropdown [autocompleteObservable]='abstatAvailableSummaries'
-                        [identifyBy]="'summary_name'" [displayBy]="'summary_name'"></tag-input-dropdown>
-  </tag-input>
-  </div>
+  <h3 class="mat-h3"> Annotation properties </h3>
+  <mat-form-field class="full-width">
+    <input matInput placeholder="Default URIfy prefix" [formControl]="urifyURLFormControl">
+    <mat-error *ngIf="urifyURLFormControl.hasError('invalidURL')">
+      {{urifyURLFormControl.errors['invalidURL']['errorMessage']}}
+    </mat-error>
+  </mat-form-field>
 
-  <form #configForm="ngForm">
+  <h3 class="mat-h3"> Vocabulary Suggestions</h3>
+  <mat-form-field>
+    <mat-label>Suggester</mat-label>
+    <mat-select [(value)]="suggester" (selectionChange)="update()">
+      <mat-option *ngFor="let sugg of suggesters" [value]="sugg">
+        {{sugg  | uppercase}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <div class="toggle-switch">
-      <input [(ngModel)]="advancedSettings" [ngModelOptions]="{standalone: true}" type="checkbox" id="advancedSettings">
-      <label for="advancedSettings">Advanced settings</label>
-    </div>
+  <mat-form-field>
+    <mat-label>Dataset language</mat-label>
+    <mat-select [(value)]="language">
+      <mat-option *ngFor="let lang of languages" [value]="lang">
+        {{lang | uppercase}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <div class="form-group" *ngIf="advancedSettings">
-      <label for="endpoint">ABSTAT endpoint: </label>
-      <div class="select">
-        <select id="endpoint"
-                name="endpoint"
-                [(ngModel)]="selectedEndpoint">
-          <option *ngFor="let endpoint of abstatEndpointsNames" [value]="endpoint">{{endpoint}}</option>
-        </select>
-      </div>
-    </div>
-  </form>
+  <mat-form-field class="chip-list">
+    <mat-chip-list #chipList aria-label="Preferred summaries">
+      <mat-chip
+        *ngFor="let prefSummary of preferredSummaries"
+        [selectable]="selectable"
+        [removable]="removable"
+        (removed)="remove(prefSummary)">
+        {{prefSummary}}
+        <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+      </mat-chip>
+      <input
+        placeholder="Preferred summaries"
+        #summaryInput
+        [formControl]="summaryCtrl"
+        [matAutocomplete]="auto"
+        [matChipInputFor]="chipList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addOnBlur"
+        (matChipInputTokenEnd)="add($event)">
+    </mat-chip-list>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+      <mat-option *ngFor="let summ of filteredSummaries | async" [value]="summ">
+        {{summ}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
 </div>
 <div mat-dialog-actions>
   <button mat-button class="btn btn-sm btn-link" mat-dialog-close>Discard</button>
-  <button mat-button class="btn btn-sm btn-link" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
+  <button mat-button class="btn btn-sm btn-link" [disabled]="urifyURLFormControl.invalid" (click)="save()" mat-dialog-close cdkFocusInitial>Save</button>
 </div>

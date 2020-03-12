@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
@@ -14,14 +14,14 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
-  private takecolumnsmode = 'colnames';
+  modalEnabled: boolean = false;
+  takecolumnsmode = 'colnames';
 
   private columnsArray: any[] = [];
   private indexFrom = null;
   private indexTo = null;
-  private take = true;
-  private docstring: string;
+  take = true;
+  docstring: string = 'Take columns';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -59,15 +59,16 @@ export class TakeColumnsComponent implements OnInit {
       }
       // In case we clicked to add a new data cleaning step
       if (currentEvent.createNew && currentEvent.newStepType === 'ColumnsFunction') {
+        this.takecolumnsmode = 'colnames';
         this.modalEnabled = true;
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
-            return { id: idx, value: v.substring(1, v.length) };
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
           });
         }
       });
@@ -78,10 +79,10 @@ export class TakeColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
-      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+      this.editTakeColumnsFunction(this.currentlySelectedFunction);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -94,11 +95,22 @@ export class TakeColumnsComponent implements OnInit {
         commitEdit: true,
         preview: true
       });
-    }
-    else if (this.pipelineEvent.createNew) {
+    } else if (this.pipelineEvent.createNew) {
       // create object with user input
-      const newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
-        this.indexFrom, this.indexTo, this.take, this.docstring);
+      let newFunction = {};
+      if (this.takecolumnsmode === 'colnames') {
+        newFunction = new transformationDataModel.ColumnsFunction(this.columnsArray,
+          null, null, this.take, this.docstring);
+
+      } else if (this.takecolumnsmode === 'indices') {
+        newFunction = new transformationDataModel.ColumnsFunction([],
+          this.indexFrom, this.indexTo, this.take, this.docstring);
+      } else {
+        // nothing was selected - should not happen!
+        console.error("Error! No mode selected for Take Columns function!");
+        newFunction = new transformationDataModel.ColumnsFunction([],
+          null, null, this.take, this.docstring);
+      }
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -116,12 +128,25 @@ export class TakeColumnsComponent implements OnInit {
     this.resetModal();
   }
 
-  private editDeriveColumnsFunction(instanceObj): any {
-    instanceObj.columnsArray = this.columnsArray;
-    instanceObj.indexFrom = this.indexFrom;
-    instanceObj.indexTo = this.indexTo;
-    instanceObj.take = this.take;
-    instanceObj.docstring = this.docstring;
+  private editTakeColumnsFunction(instanceObj): any {
+    // this check is necessary due to the badly coded ColumnsFunction in the TransformationDataModel (the mode of the function is determined by the attribute values)
+    if (this.takecolumnsmode === 'colnames') {
+      instanceObj.columnsArray = this.columnsArray;
+      instanceObj.indexFrom = null;
+      instanceObj.indexTo = null;
+      instanceObj.take = this.take;
+      instanceObj.docstring = this.docstring;
+    } else if (this.takecolumnsmode === 'indices') {
+      instanceObj.columnsArray = [];
+      instanceObj.indexFrom = parseInt(this.indexFrom);
+      instanceObj.indexTo = parseInt(this.indexTo);
+      instanceObj.take = this.take;
+      instanceObj.docstring = this.docstring;
+    } else {
+      // nothing was selected - should not happen!
+      console.error("Error! No mode selected for Take Columns function!");
+    }
+
   }
 
   private resetModal() {
@@ -131,13 +156,14 @@ export class TakeColumnsComponent implements OnInit {
     });
     this.modalEnabled = false;
     // resets the fields of the modal
+    this.columnsArray = [];
     this.indexFrom = null;
     this.indexTo = null;
     this.take = true;
-    this.docstring = null;
+    this.docstring = 'Take columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

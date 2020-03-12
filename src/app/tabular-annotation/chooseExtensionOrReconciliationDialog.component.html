@@ -1,0 +1,22 @@
+<h1 mat-dialog-title>Choose form  </h1>
+  <div mat-dialog-content>
+
+    <div class="radio-inline">
+      <input type="radio" name="formChoice" id='reconciliationForm'  value="1" [(ngModel)]="choose">
+        <label for="reconciliationForm">Reconciliation Form</label>
+    </div>
+      <br>
+      <br>
+    <div class="radio-inline">
+      <input type="radio" name="formChoice" id='extensionForm'  value="2" [(ngModel)]="choose">
+        <label for="extensionForm">Extension Form</label>
+    </div>
+    <br>
+    <br>
+    <button mat-button class="btn btn-sm btn-link" [mat-dialog-close]="0"><span class="red"> Discard </span></button>
+
+    <button mat-button class="btn btn-sm btn-link" (click)="submit()" [disabled]="choose === 0" >
+      open
+    </button>
+
+  </div>

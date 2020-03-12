@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
@@ -14,7 +14,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class MergeColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,11 +24,11 @@ export class MergeColumnsComponent implements OnInit {
 
   private previewedDataSubscription: Subscription;
 
-  private separator: string;
-  private newColName: string;
-  private docstring: string = 'Merge columns';
-  private previewedDataColumns: string[] = [];
-  private colsToMerge: any[] = [];
+  separator: string;
+  newColName: string;
+  docstring: string = 'Merge columns';
+  previewedDataColumns: string[] = [];
+  colsToMerge: any[] = [];
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -57,11 +57,11 @@ export class MergeColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
           this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
-            return { id: idx, value: v.substring(1, v.length) };
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
           });
         }
       });
@@ -72,7 +72,7 @@ export class MergeColumnsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.editMergeColumnsFunction(this.currentlySelectedFunction);
@@ -129,7 +129,7 @@ export class MergeColumnsComponent implements OnInit {
     this.docstring = 'Merge columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

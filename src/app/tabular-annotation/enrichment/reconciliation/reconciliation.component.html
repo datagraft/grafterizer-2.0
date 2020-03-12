@@ -1,0 +1,410 @@
+<h1 mat-dialog-title>Column Reconciliation </h1>
+
+
+<div mat-dialog-content>
+  <ng-container *ngIf="!form_hidden">
+    <form [formGroup]="reconciliationForm">
+      <section class="form-block">
+        <div class="form-group">
+          <label class="required" for="service-group">Service group: </label>
+          <div class="select">
+            <select id="service-group" name="service-group" formControlName="selectedGroup"
+              (change)="updateServicesForSelectedGroup();">
+              <option *ngFor="let group of servicesGroups" [value]="group">{{group}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" *ngIf="this.reconciliationForm.get('selectedGroup').value !== ''">
+          <label for="service">Services: </label>
+          <div class="select">
+            <select id="service" name="service" formControlName="selectedService">
+              <option *ngFor="let service of servicesForSelectedGroup" [value]="service.getId()">{{service.getName()}}
+                Reconciliation
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="column-name">New column name </label>
+          <input type="text" id="column-name"
+            placeholder="{{header}}_{{reconciliationForm.get('selectedService').value}}" size="45"
+            formControlName="newColumnName" name="newColumnName">
+          <!-- <clr-checkbox *ngIf="colIndex < annotationService.headers.length - 1" name="shiftColumn" id="shiftColumn"
+            formControlName="shiftColumn">
+            New column next to <i>{{header}}</i>
+          </clr-checkbox> -->
+        </div>
+      </section>
+
+      <!-- <div class="toggle-switch">
+        <input [(ngModel)]="reconcileWithProperties" [ngModelOptions]="{standalone: true}" type="checkbox"
+          id="reconcileWithProperties" [disabled]="!this.reconciliationForm.get('selectedService').value">
+        <label for="reconcileWithProperties">Specify properties to constrain results</label>
+      </div> -->
+
+      <section class="form-block" *ngIf="reconcileWithProperties">
+        <div formArrayName="items" *ngFor="let ctrl of reconciliationForm.get('items').controls; let i = index;">
+          <div [formGroupName]="i" style="display: flex">
+            <div class="form-group">
+              <div class="input">
+                <label for="sourceColumn_{{i}}" class="required" aria-haspopup="true" role="tooltip"
+                  class="tooltip tooltip-validation tooltip-sm" aria-haspopup="true" role="tooltip"
+                  class="tooltip tooltip-validation tooltip-sm" [class.invalid]="ctrl.get('sourceColumn').invalid
+                            && (ctrl.get('sourceColumn').dirty || ctrl.get('sourceColumn').touched) ||
+                            ctrl.hasError('invalidSubject')">
+                  Select a source
+                  <input id="sourceColumn_{{i}}" #z type="text" matInput formControlName="sourceColumn"
+                    [matAutocomplete]="f" (keyup)="filter(i)">
+                  <mat-autocomplete #f="matAutocomplete" (opened)="filter(i)">
+                    <mat-option *ngFor="let source of filteredOptions " [value]="source"><span> {{source}} </span>
+                    </mat-option>
+                  </mat-autocomplete>
+                  <span *ngIf="ctrl.get('sourceColumn').hasError('invalidColumn')" class="tooltip-content">
+                    {{ctrl.get('sourceColumn').errors['invalidColumn'].errorMessage}}
+                  </span>
+                  <span *ngIf="ctrl.get('sourceColumn').hasError('invalidSource')" class="tooltip-content">
+                    {{ctrl.get('sourceColumn').errors['invalidSource'].errorMessage}}
+                  </span>
+                  <span *ngIf="ctrl.hasError('invalidSubject')" class="tooltip-content">
+                    {{ctrl.errors['invalidSubject'].errorMessage}}
+                  </span>
+                </label>
+              </div>
+              <div class="input">
+                <label for="property_{{i}}">Property</label>
+                <label for="property_{{i}}" aria-haspopup="true" role="tooltip"
+                  class="tooltip tooltip-validation tooltip-sm" [class.invalid]="ctrl.get('property').invalid
+                            && (ctrl.get('property').dirty || ctrl.get('property').touched) ||
+                            ctrl.hasError('invalidProperty')" auto-complete [source]="propertyAutocomplete"
+                  [list-formatter]="autocompleteListFormatter" value-property-name="suggestion"
+                  display-property-name="suggestion" select-value-of="suggestion" loading-text="Querying ABSTAT..."
+                  (valueChanged)="reconciliationForm.get('items').controls[i].get('property').setValue($event)"
+                  min-chars="2">
+                  <input id="property_{{i}}" type="text" formControlName="property"
+                    placeholder="Insert relationship property" size="45">
+                  <span *ngIf="ctrl.get('property').hasError('invalidURL')" class="tooltip-content">
+                    {{ctrl.get('property').errors['invalidURL'].errorMessage}}
+                  </span>
+                  <span *ngIf="ctrl.hasError('invalidProperty')" class="tooltip-content">
+                    {{ctrl.errors['invalidProperty'].errorMessage}}
+                  </span>
+                </label>
+              </div>
+
+              <div class="mat-icon">
+                <mat-icon style="margin-top: .25rem;" (click)="addItem(i)"> add_circle_outline</mat-icon>
+                <mat-icon style="margin-top: .25rem;" *ngIf="reconciliationForm.get('items').controls.length > 1"
+                  (click)="deleteItem(i)">remove_circle_outline
+                </mat-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </form>
+    <ng-container *ngIf="showPreview && form_hidden === false">
+      hide form
+      <button mat-icon-button class="btn btn-sm btn-link" (click)="hide_form()">
+        <mat-icon aria-label="">expand_less</mat-icon>
+      </button>
+      <hr>
+    </ng-container>
+
+
+  </ng-container>
+
+  <ng-container *ngIf="showPreview && form_hidden">
+    show form
+    <button mat-icon-button class="btn btn-sm btn-link" (click)="show_form()">
+      <mat-icon>expand_more</mat-icon>
+    </button>
+    <hr>
+  </ng-container>
+
+
+  <div id="preview" class="preview" *ngIf="showPreview">
+    <div class="preview_settings">
+      <div class="col_1">
+        <h3> Preview </h3>
+        <ng-container *ngIf="guessedType != null">
+          Inferred type: <a href="{{guessedTypeSchemaSpace}}{{guessedType.id}}" class="label label-orange clickable"
+            target="_blank">{{guessedType.name}}</a>
+        </ng-container>
+      </div>
+      <div class="col_2">
+        <div class="threshold">
+          <label for="threshold">Threshold: </label>
+          <input type="number" size="5" id="threshold" step="0.01" max="1.0" min="0.0" style="width: 75px"
+            [(ngModel)]="threshold" (change)="updateThreshold()">
+        </div>
+
+        <div class="icons">
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">verified_user</i>
+                {{matchedCount}}
+              </div>
+              <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
+                <span>Reconciled entity automatically matched </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger><i class="material-icons" style="color:DeepSkyBlue;">check_circle_outline</i>
+                {{manualMatched.length}}
+              </div>
+              <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
+                <span>Reconciled entity matched by user </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger><i class="material-icons" style="color:green;">check_circle</i>
+                {{maxThresholdCount}}
+              </div>
+              <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                <span>Reconciled entity with score >= threshold </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger>
+                <i class="material-icons" style="color:red	;">error</i> {{skippedCount}}
+              </div>
+              <clr-tooltip-content clrPosition="top-right" clrSize="sm" *clrIfOpen>
+                <span>Reconciled entity with score < threshold </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="specific_icon">
+            <clr-tooltip>
+              <div clrTooltipTrigger>
+                <i class="material-icons" style="color:Gold	;">warning</i> {{notReconciledCount}}
+              </div>
+              <clr-tooltip-content clrPosition="top-left" clrSize="sm" *clrIfOpen>
+                <span> row not reconciled </span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+        </div>
+
+      </div>
+      <hr>
+    </div>
+    <div class="action_table">
+      <div class="search">
+        <mat-form-field>
+          <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search entity">
+        </mat-form-field>
+      </div>
+      <div class="matchedButton">
+        <mat-dialog-actions>
+          <button mat-button class="btn btn-sm  btn-link custom-width" [disabled]="maxThresholdCount === 0"
+            (click)="setAllMaxThresholdAsMatched()">
+
+            <i class="material-icons margin_top" fontsize="8" style="color:green;">check_circle</i>
+            <i class="material-icons margin_top" fontsize="8">arrow_forward</i>
+            <i class="material-icons" style="color:DeepSkyBlue;">verified_user</i>
+          </button>
+        </mat-dialog-actions>
+      </div>
+      <div class="filter">
+
+        <mat-form-field>
+          <mat-select [(value)]="filter_column" placeholder="filter by matching"
+            (selectionChange)="apply_column_filter(filter_column);">
+
+            <mat-option [value]="0">
+              none
+            </mat-option>
+
+            <mat-option *ngIf="matchedCount > 0" [value]="1">
+              automatic Matched
+            </mat-option>
+
+            <mat-option *ngIf="manualMatched.length > 0" [value]="5">
+              Matched by user
+            </mat-option>
+
+            <mat-option *ngIf="maxThresholdCount > 0" [value]="2">
+              >= threshold
+            </mat-option>
+
+            <mat-option *ngIf="skippedCount > 0" [value]="3">
+              < threshold </mat-option>
+                <mat-option *ngIf="notReconciledCount > 0" [value]="4">
+                  not reconciled
+                </mat-option>
+
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div *ngIf="dataLoading" class="loading-shade">
+      <mat-spinner *ngIf="dataLoading"></mat-spinner>
+    </div>
+    <div class="table-container">
+
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" class="mat-table">
+
+        <!-- Original query (the column selected by the user) -->
+        <ng-container matColumnDef="{{header}}">
+          <th mat-header-cell *matHeaderCellDef> {{header}}</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.reconciliationQuery.query}}
+          </td>
+        </ng-container>
+
+        <!-- All the columns selected by the user as additional columns -->
+        <!-- !!! sourceArray and getPropertyValues() are in the same order !!! -->
+        <ng-container matColumnDef="{{column}}" *ngFor="let column of sourceArray; let i=index">
+          <th mat-header-cell *matHeaderCellDef> {{column}}</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.reconciliationQuery.getPropertyValues()[i].getValue()}}
+          </td>
+        </ng-container>
+
+        <!-- Reconciled entity column -->
+        <ng-container matColumnDef="reconciled_entity">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header><span class="left_margin">reconciled entity </span></th>
+          <td mat-cell *matCellDef="let element let i= index">
+
+            <ng-container *ngIf="element.results.length > 0">
+              <mat-accordion>
+                <mat-expansion-panel _ngcontent-c0="" [expanded]="close" class="" #mep="matExpansionPanel">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      <div class="entity_reconciled_name">
+                        <a href="{{services.get(reconciliationForm.get('selectedService').value).getIdentifierSpace()}}{{element.results[0].id}}"
+                          target="blank"> {{element.results[0].name}} </a>
+                        <sub> ({{element.results[0].score}}) </sub>
+                      </div>
+                      <div class="entity_reconciled_icon">
+                        <ng-container
+                          *ngIf="element.results[0].match && manualMatched.indexOf(element.results[0].id) === -1">
+                          <mat-icon mat-list-icon style="color: DeepSkyBlue;">verified_user</mat-icon>
+                        </ng-container>
+
+                        <ng-container *ngIf="manualMatched.indexOf(element.results[0].id) !== -1">
+                          <mat-icon mat-list-icon style="color: DeepSkyBlue;">check_circle_outline</mat-icon>
+                        </ng-container>
+
+                        <ng-container *ngIf="!element.results[0].match && element.results[0].score >= threshold">
+                          <mat-icon mat-list-icon class="sin-success-color">check_circle</mat-icon>
+                        </ng-container>
+
+                        <ng-container *ngIf="!element.results[0].match && element.results[0].score < threshold">
+                          <mat-icon mat-list-icon class="sin-error-color">error</mat-icon>
+                        </ng-container>
+                      </div>
+
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+
+                  <ng-container *ngIf="element.results.length > 1">
+                    <mat-form-field>
+                      <mat-select [(value)]="selected" placeholder="change reconciled entity"
+                        (selectionChange)="setManualMatchFromSelection(i,selected);">
+                        <mat-option *ngFor="let option of element.results let index_results = index"
+                          [value]="index_results">
+                          <p *ngIf="index_results >= 0 && index_results < 5">
+                            {{option.name}} <sub> ({{option.score}}) </sub>
+                          </p>
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </ng-container>
+                  <p> add entity:
+                    <button mat-icon-button class="btn btn-sm btn-link" (click)="openAddEntityDialog(i)">
+                      <mat-icon aria-label="add icon">add</mat-icon>
+                    </button>
+                  </p>
+                </mat-expansion-panel>
+
+              </mat-accordion>
+            </ng-container>
+
+
+            <ng-container *ngIf="element.results.length === 0">
+              <mat-accordion>
+                <mat-expansion-panel _ngcontent-c0="" #mep="matExpansionPanel">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      <div class="entity_reconciled_name">
+                        no entities found
+                      </div>
+                      <div class="entity_reconciled_icon">
+                        <mat-icon mat-list-icon style="color:Gold;">warning</mat-icon>
+                      </div>
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <p> add entity:
+                    <button mat-button class="btn btn-sm btn-link" (click)="openAddEntityDialog(i)">
+                      <mat-icon aria-label="add icon">add</mat-icon>
+                    </button>
+                  </p>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <!-- Action button column -->
+        <ng-container matColumnDef="set matching">
+          <th mat-header-cell *matHeaderCellDef><span class="setMatchingHeader">set matching</span></th>
+          <td mat-cell *matCellDef="let element let i=index">
+            <ng-container *ngIf="element.results.length >0">
+              <ng-container *ngIf="element.results[0].match && element.results[0].score >= threshold">
+                <span class="setMatching" (click)="removeMatched(i,element)">
+                  <i class="material-icons margin_top" fontsize="8">arrow_forward</i>
+                  <mat-icon mat-list-icon class="sin-success-color">check_circle</mat-icon>
+                </span>
+              </ng-container>
+
+              <ng-container *ngIf="element.results[0].match && element.results[0].score < threshold">
+                <span class="setMatching" (click)="removeMatched(i,element)">
+                  <i class="material-icons margin_top" fontsize="8">arrow_forward</i>
+                  <mat-icon mat-list-icon class="sin-error-color">error</mat-icon>
+                </span>
+              </ng-container>
+
+
+              <ng-container *ngIf="!element.results[0].match &&
+                          (element.results[0].score < threshold || element.results[0].score >= threshold)">
+                <span class="setMatching" (click)="addManualMatched(i,element)">
+                  <i class="material-icons margin_top" fontsize="8">arrow_forward</i>
+                  <mat-icon mat-list-icon style="color: DeepSkyBlue;">
+                    check_circle_outline
+                  </mat-icon>
+                </span>
+              </ng-container>
+            </ng-container>
+
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns; "></tr>
+      </table>
+    </div>
+    <mat-paginator [pageSize]="5" showFirstLastButtons></mat-paginator>
+  </div>
+
+
+  <button mat-button class="btn btn-sm btn-link" mat-dialog-close><span> Discard </span></button>
+  <button *ngIf="this.currentAnnotation" mat-button class="btn btn-sm btn-link" mat-dialog-close
+    (click)="removeCurrentReconciliation()"><span class="red"> Delete loaded reconciliation </span></button>
+
+  <button mat-button class="btn btn-sm btn-link"
+    [disabled]="!reconciliationForm.get('selectedService').value || dataLoading || reconciliationForm.invalid"
+    (click)="reconcile()" cdkFocusInitial>Reconcile
+  </button>
+  <button mat-button class="btn btn-sm btn-link"
+    [disabled]=" (matchedCount === 0 && manualMatched.length === 0 ) || dataLoading || threshold == null || threshold > 1 || threshold < 0 || validMappingsCount === 0"
+    (click)="applyReconciliation()" *ngIf="showPreview">Apply
+  </button>
+</div>

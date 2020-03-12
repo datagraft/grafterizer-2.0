@@ -4,8 +4,10 @@
 
 #btn {
     padding: 10px;
-    padding-top: 20px;
-    padding-bottom: 50px;
+}
+
+button:focus {
+    outline: 0;
 }
 
 .title {
@@ -14,9 +16,17 @@
     size: 130%;
 }
 
-#load-distribution{
-    padding-top: 100px;  
-    padding-left: 400px;
+.alerts {
+    z-index: 10;
+}
+
+.load-distribution {
+    display: flex;
+    align-items: left;
+    justify-content: center;
+    position: absolute;
+    top: 85%;
+    right: 5%;
   }
 
 .content-area-no-padding {
@@ -42,6 +52,51 @@
 }
 
 .spinner {
-    margin-top: 200px;
-    margin-left: 800px;    
+    margin-top: 250px;
+    margin-left: 650px;    
   }
+
+  .sin-nav-icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding-left: 20px;
+    padding-right: 10px;
+  }
+
+.material-icons.md-light { color: rgba(255, 255, 255, 1); }
+.material-icons.md-22 { font-size: 22px; }
+
+#rdf {
+    padding-top: 10px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+
+#jar {
+    padding-top: 10px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+
+#container {
+    padding-bottom: 15px;
+}
+
+#paragraph {
+    border: 1px solid black;
+    border-radius: 2px;
+    background-color: #E6E6FA;
+    padding-top: 5px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+}
+
+.sin-disable {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+    background-color: black;
+    opacity: 0.3;
+}

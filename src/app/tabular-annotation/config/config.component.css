@@ -1,1 +1,11 @@
->>> .ng2-dropdown-menu { z-index: 9999 !important; }
+mat-form-field {
+  margin-right: 12px;
+}
+
+.chip-list {
+  display: block;
+}
+
+.full-width {
+  width: 100%;
+}

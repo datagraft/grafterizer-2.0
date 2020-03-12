@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "./app/clr-overrides.scss";
 .ng-select.sin-literal-column-select .ng-control .ng-value-container .ng-input>input,
 .ng-select.sin-column-datatype .ng-control .ng-value-container .ng-input>input,
 .ng-select.sin-condition-column-select .ng-control .ng-value-container .ng-input>input,
@@ -35,3 +36,6 @@ ng-select.sin-column-datatype {
 .mat-vertical-stepper-header {
     padding: 14px !important;
 }
+.material-icons.sin-error-color { color: crimson; }
+.material-icons.sin-success-color { color: mediumseagreen; }
+.material-icons.sin-warning-color { color:#FFD51D; }

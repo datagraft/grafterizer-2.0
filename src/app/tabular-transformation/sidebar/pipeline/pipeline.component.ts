@@ -1,9 +1,12 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { TransformationService } from '../../../transformation.service';
 import { PipelineEventsService } from '../../pipeline-events.service';
-import { Subscription } from 'rxjs/Subscription';
+import { DispatchService } from '../../../dispatch.service';
+import { Subscription } from 'rxjs';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
 import { MatVerticalStepper } from '@angular/material/stepper';
+import { ActivatedRoute } from '@angular/router';
+import { DataGraftMessageService } from '../../../data-graft-message.service';
 
 
 @Component({
@@ -19,8 +22,9 @@ export class PipelineComponent implements OnInit, OnDestroy {
   @ViewChild('pipelineElement') pipelineElement: MatVerticalStepper;
 
   private transformationObj: any;
-  private steps: Array<any>;
-  private showPipeline: boolean;
+  steps: Array<any>;
+  disableButton: boolean = false;
+  private currentFunctionIndex: number;
 
   // contains the current pipeline event (edit, delete, preview)
   private pipelineEvent: any;
@@ -33,27 +37,20 @@ export class PipelineComponent implements OnInit, OnDestroy {
   private pipelineEventsSubscription: Subscription;
   private currentlySelectedFunctionSubscription: Subscription;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
   private previewedTransformationObj: any;
 
   private deleteFunctionEvent: any;
-  private deleteConfirmationModal = false;
+  deleteConfirmationModal = false;
 
-  constructor(private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService) {
+  constructor(private route: ActivatedRoute, private transformationService: TransformationService, private pipelineEventsSvc: PipelineEventsService, public dispatch: DispatchService, private messageSvc: DataGraftMessageService) {
     this.steps = [];
-    this.showPipeline = true; // TODO: not sure why we need this
-  }
-
-  private getIndexOfPreviewedFunction(): number {
-    for (let i = 0; i < this.steps.length; ++i) {
-      if (this.steps[i].isPreviewed) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   ngOnInit() {
-    this.transformationSubscription = this.transformationService.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationService.transformationObjSource.subscribe((transformation) => {
       if (transformation.pipelines.length) {
         // ;-(
         // TODO - not sure how to avoid having both the transformation and the steps
@@ -70,6 +67,24 @@ export class PipelineComponent implements OnInit, OnDestroy {
       this.pipelineEvent = currentEvent;
     });
 
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
+        switch (this.currentDataGraftState) {
+          case 'transformations.readonly':
+            this.disableButton = true;
+            break;
+          case 'transformations.transformation':
+          case 'transformations.transformation.preview':
+          case 'transformations.transformation.preview.wizard':
+          case 'transformations.new':
+          case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
+            this.disableButton = false;
+            break;
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -79,57 +94,64 @@ export class PipelineComponent implements OnInit, OnDestroy {
   }
 
   selectFunction(event) {
-    console.log('selection changed');
     const index = event.selectedIndex;
 
     // establish the function being changed
-    const currentFunctionIndex = parseInt(index, 10);
-    if (currentFunctionIndex === undefined) {
+    this.currentFunctionIndex = parseInt(index, 10);
+    if (this.currentFunctionIndex === undefined) {
       console.log('ERROR: Something bad and unexpected has happened!');
       return;
     }
     this.pipelineEventsSvc.changeSelectedFunction({
-      currentFunction: this.steps[currentFunctionIndex],
+      currentFunction: this.steps[this.currentFunctionIndex],
       changedFunction: {}
     });
   }
 
-  verboseLabels(label) {
-    switch (label) {
-      case 'ColumnsFunction':
-        return 'Columns deleted'
+  verboseLabels(pipelineFunc) {
+    switch (pipelineFunc.__type) {
       case 'MakeDatasetFunction':
-        return 'Headers created'
-      case 'UtilityFunction':
-        return 'Utility'
-      case 'DropRowsFunction':
-        return 'Rows deleted'
-      case 'MapcFunction':
-        return 'Columns mapped'
+        return 'Headers created';
+      case 'GroupRowsFunction':
+        return 'Grouped and aggregated';
       case 'MeltFunction':
-        return 'Dataset reshaped'
-      case 'DeriveColumnFunction':
-        return 'Column derived'
-      case 'AddColumnsFunction':
-        return 'Column added'
-      case 'AddRowFunction':
-        return 'Row(s) added'
-      case 'RenameColumnsFunction':
-        return 'Header title(s) changed'
-      case 'GrepFunction':
-        return 'Row(s) filtered'
-      case 'ShiftColumnFunction':
-        return 'Column shifted'
-      case 'ShiftRowFunction':
-        return 'Row shifted'
-      case 'SplitFunction':
-        return 'Column splitted'
-      case 'MergeColumnsFunction':
-        return 'Columns merged'
+        return 'Dataset reshaped';
       case 'SortDatasetFunction':
-        return 'Columns sorted'
+        return 'Columns sorted';
+      case 'DeriveColumnFunction':
+        return 'Column derived';
+      case 'MapcFunction':
+        return 'Columns mapped';
+      case 'AddColumnsFunction':
+        return 'Column added';
+      case 'ColumnsFunction':
+        return 'Columns deleted';
+      case 'ShiftColumnFunction':
+        return 'Column shifted';
+      case 'MergeColumnsFunction':
+        return 'Columns merged';
+      case 'SplitFunction':
+        return 'Column split';
+      case 'RenameColumnsFunction':
+        return 'Header title(s) changed';
+      case 'AddRowFunction':
+        return 'Row(s) added';
+      case 'ShiftRowFunction':
+        return 'Row shifted';
+      case 'DropRowsFunction':
+        return 'Rows deleted';
+      case 'GrepFunction':
+        return 'Row(s) filtered';
+      case 'RemoveDuplicatesFunction':
+        return 'Duplicates removed';
+      case 'UtilityFunction':
+        return 'Utility';
+      case 'ReconciliationFunction':
+        return 'Reconcile data';
+      case 'ExtensionFunction':
+        return 'Extend data';
       default:
-        return label;
+        return pipelineFunc.__type;
     }
   }
 
@@ -156,7 +178,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
         // change the previewed transformation if we toggled preview on
         if (this.pipelineEvent.preview === true) {
-          this.transformationService.changePreviewedTransformationObj(
+          this.transformationService.previewedTransformationObjSource.next(
             this.transformationObj.getPartialTransformation(currentFunction)
           );
           // reset isPreviewed for other functions
@@ -167,17 +189,23 @@ export class PipelineComponent implements OnInit, OnDestroy {
           });
         } else {
           // reset preview if we clicked preview of the already previewed element
-          this.transformationService.changePreviewedTransformationObj(this.transformationObj);
+          this.transformationService.previewedTransformationObjSource.next(this.transformationObj);
         }
 
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
       case 'edit':
+        // if pipeline steps have not been clicked/ activated yet by user, set currentFunction to first function in pipeline
+        if (!this.currentFunctionIndex) {
+          this.pipelineEventsSvc.changeSelectedFunction({
+            currentFunction: this.steps[0],
+            changedFunction: {}
+          });
+        }
         // edit event triggered; keep preview until this step
         this.pipelineEvent.startEdit = true;
         this.pipelineEvent.commitEdit = false;
         this.pipelineEvent.delete = false;
-        //        console.log(this.pipelineElement.selectedIndex);
         //        this.pipelineElement.selectedIndex++;
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
@@ -188,14 +216,30 @@ export class PipelineComponent implements OnInit, OnDestroy {
         this.pipelineEvent.startEdit = false;
         this.pipelineEvent.commitEdit = false;
 
+
+        if (currentFunction instanceof transformationDataModel.ReconciliationFunction) {
+          // if the function is a reconciliation function, remove the corresponding annotation
+          this.transformationObj.removeAnnotationById(currentFunction.annotationId);
+        } else if (currentFunction instanceof transformationDataModel.ExtensionFunction) {
+          this.transformationObj.removeExtensionById(currentFunction.extensionId);
+        }
         this.transformationObj.pipelines[0].remove(currentFunction);
-        this.transformationService.changePreviewedTransformationObj(this.transformationObj);
-        this.transformationService.changeTransformationObj(this.transformationObj);
+        this.transformationService.previewedTransformationObjSource.next(this.transformationObj);
+        this.transformationService.transformationObjSource.next(this.transformationObj);
         this.pipelineElement.selectedIndex = this.transformationObj.pipelines[0].functions.length - 1;
         this.pipelineElement._stateChanged();
         this.pipelineEventsSvc.changePipelineEvent(this.pipelineEvent);
         break;
     }
+  }
+
+  getIndexOfPreviewedFunction(): number {
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (this.steps[i].isPreviewed) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   openDeleteConfirmationModal(event) {
@@ -213,12 +257,10 @@ export class PipelineComponent implements OnInit, OnDestroy {
 
   confirmDelete() {
     this.triggerPipelineEvent(this.deleteFunctionEvent);
-    console.log(this.deleteConfirmationModal);
   }
 
   cancelDelete() {
     this.deleteConfirmationModal = false;
-    console.log(this.deleteConfirmationModal);
   }
 
 }

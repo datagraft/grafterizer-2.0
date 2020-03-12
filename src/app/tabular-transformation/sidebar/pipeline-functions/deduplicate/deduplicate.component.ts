@@ -1,78 +1,132 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
-import { RemoveDuplicatesFunction } from '../../../../../assets/transformationdatamodel.js';
+import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
+import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
+import { TransformationService } from 'app/transformation.service';
 
 @Component({
-  selector: 'deduplicate',
-  templateUrl: './deduplicate.component.html',
-  styleUrls: ['./deduplicate.component.css']
+  selector: "deduplicate-function",
+  templateUrl: "./deduplicate.component.html",
+  styleUrls: ["./deduplicate.component.css"]
 })
-export class DeduplicateComponent implements OnInit, OnChanges {
 
-  @Input() modalEnabled;
-  @Input() function: any;
-  @Input() columns: any[] = [];
-  //private columns = ["col1", "col2"]
-  @Output() emitter = new EventEmitter();
-  private showMessage: boolean = false;
-  private mode;
-  private colnames;
-  private docstring: String;
+export class DeduplicateComponent implements OnInit {
 
-  constructor() { }
+  private currentlySelectedFunctionSubscription: Subscription;
+  private currentlySelectedFunction: any;
+
+  private pipelineEventsSubscription: Subscription;
+  private pipelineEvent: any = { startEdit: false };
+
+  private previewedDataSubscription: Subscription;
+
+  modalEnabled: boolean = false;
+  deduplicateMode: string = 'full';
+  previewedDataColumns: any = [];
+  colNames: any[] = [];
+  separator: string = null;
+  docstring: string = 'Remove duplicates';
+
+  constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
   ngOnInit() {
-    //should be removed when column names are provided from the outside
-    //this.columns = ["Weather", "Temperature", "Rain"];
 
+    this.currentlySelectedFunctionSubscription = this.pipelineEventsSvc.currentlySelectedFunction.subscribe((selFunction) => {
+      this.currentlySelectedFunction = selFunction.currentFunction;
+    });
+
+    this.pipelineEventsSubscription = this.pipelineEventsSvc.currentPipelineEvent.subscribe((currentEvent) => {
+      this.pipelineEvent = currentEvent;
+      // In case we clicked edit
+      if (currentEvent.startEdit && this.currentlySelectedFunction.__type === 'RemoveDuplicatesFunction') {
+        this.modalEnabled = true;
+        this.deduplicateMode = this.currentlySelectedFunction.mode;
+        this.colNames = this.currentlySelectedFunction.colNames;
+        this.separator = this.currentlySelectedFunction.separator;
+        this.docstring = this.currentlySelectedFunction.docstring;
+      }
+      // In case we clicked to add a new data cleaning step
+      if (currentEvent.createNew && currentEvent.newStepType === 'RemoveDuplicatesFunction') {
+        this.modalEnabled = true;
+      }
+    });
+
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
+      .subscribe((previewedData) => {
+        if (previewedData[':column-names']) {
+          this.previewedDataColumns = previewedData[':column-names'].map((v, idx) => {
+
+            return { id: idx, value: v.charAt(0) == ':' ? v.substr(1) : v };
+          });
+        }
+      });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.columns) {
-      // Before dataset is loaded and headers are known
-      if (!this.columns) this.columns = [];
-    }
-    if (changes.function) {
-      if (!this.function) {
-        this.mode = "full";
-        this.colnames = [];
-        this.docstring = "";
-        this.function = new RemoveDuplicatesFunction(null, [], null, null);
-      } else {
-        this.mode = this.function.mode;
-        this.colnames = this.function.columns.map(o => o.value);
-        this.docstring = this.function.docstring;
-      }
-
-    }
-
+  ngOnDestroy() {
+    this.pipelineEventsSubscription.unsubscribe();
+    this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
   accept() {
-    // console.log(this.mode, this.colnames);
-    if (this.mode == "columns" && this.colnames.length < 1) {
-      this.showMessage = true;
+    if (this.pipelineEvent.startEdit) {
+      // change currentlySelectedFunction according to the user choices
+      this.editDeduplicateFunction(this.currentlySelectedFunction);
+
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: this.currentlySelectedFunction
+      });
+
+      // notify of that we finished editing
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitEdit: true,
+        preview: true
+      });
     }
-    else {
-      this.showMessage = false;
+    else if (this.pipelineEvent.createNew) {
+      // create object with user input
+      const newFunction = new transformationDataModel.RemoveDuplicatesFunction(this.deduplicateMode, this.colNames, this.separator, this.docstring);
 
-      this.function.mode = this.mode;
-      this.function.columns = [];
-      for (let c of this.colnames) {
-        this.function.columns.push({ id: 0, value: c });
-      }
+      // notify of change in selected function
+      this.pipelineEventsSvc.changeSelectedFunction({
+        currentFunction: this.currentlySelectedFunction,
+        changedFunction: newFunction
+      });
 
-      this.function.docstring = this.docstring;
-
-      // console.log(this.function);
-      this.emitter.emit(this.function);
-      this.modalEnabled = false;
+      // notify of that we finished creating
+      this.pipelineEventsSvc.changePipelineEvent({
+        commitCreateNew: true
+      });
+    } else {
+      console.log('ERROR! Something bad happened!');
     }
+    this.resetModal();
+  }
 
+  private editDeduplicateFunction(instanceObj): any {
+    instanceObj.mode = this.deduplicateMode;
+    instanceObj.colNames = this.colNames;
+    instanceObj.separator = this.separator;
+    instanceObj.docstring = this.docstring;
+  }
+
+  private resetModal() {
+    // resets modal selection from selectbox
+    this.pipelineEventsSvc.changePipelineEvent({
+      cancel: true
+    });
+    this.modalEnabled = false;
+    // resets the fields of the modal
+    this.deduplicateMode = 'full';
+    this.colNames = null;
+    this.separator = null;
+    this.docstring = 'Remove duplicates';
   }
 
   cancel() {
-    this.modalEnabled = false;
+    this.resetModal();
   }
 
 }

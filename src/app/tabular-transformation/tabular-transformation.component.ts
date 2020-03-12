@@ -7,10 +7,9 @@ import { DispatchService } from '../dispatch.service';
 import { TransformationService } from 'app/transformation.service';
 import { RoutingService } from '../routing.service';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import * as transformationDataModel from 'assets/transformationdatamodel.js';
-import * as generateClojure from 'assets/generateclojure.js';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
+import { DataGraftMessageService } from '../data-graft-message.service';
 
 @Component({
   selector: 'app-tabular-transformation',
@@ -33,6 +32,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private showHandsonTableProfiling: boolean = true;
   private showHandsontable: boolean = true;
   private showProfiling: boolean = true;
+  showPipelineOnly: boolean = false;
 
   private metadata: any;
   private title: string;
@@ -50,40 +50,51 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
   private previewErrorSubscription: Subscription;
   private previewError: string;
 
+  private currentDataGraftStateSubscription: Subscription;
+  private currentDataGraftState: string;
+
   @ViewChild(HandsontableComponent) handsonTable: HandsontableComponent;
   @ViewChild(PipelineComponent) pipelineComponent: PipelineComponent;
   @ViewChild(ProfilingComponent) profilingComponent: ProfilingComponent;
 
   constructor(private recommenderService: RecommenderService, private dispatch: DispatchService,
     private transformationSvc: TransformationService, private routingService: RoutingService,
-    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService) {
+    private route: ActivatedRoute, private router: Router, private globalErrorSvc: GlobalErrorReportingService, public messageSvc: DataGraftMessageService) {
     this.recommendations = [
-      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
-      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
-      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
-      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
-      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
-      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
-      // { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
-      // { label: 'Add row', value: { id: 'AddRowFunction', defaultParams: null } },
       { label: 'Make dataset', value: { id: 'MakeDatasetFunction', defaultParams: null } },
-      // { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
+      { label: 'Group and aggregate', value: { id: 'GroupRowsFunction', defaultParams: null } },
+      { label: 'Reshape dataset', value: { id: 'MeltFunction', defaultParams: null } },
       { label: 'Sort dataset', value: { id: 'SortDatasetFunction', defaultParams: null } },
+      { label: 'Derive column', value: { id: 'DeriveColumnFunction', defaultParams: null } },
+      { label: 'Map columns', value: { id: 'MapcFunction', defaultParams: null } },
+      { label: 'Add columns', value: { id: 'AddColumnsFunction', defaultParams: null } },
+      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } },
+      { label: 'Shift column', value: { id: 'ShiftColumnFunction', defaultParams: null } },
+      { label: 'Merge columns', value: { id: 'MergeColumnsFunction', defaultParams: null } },
+      { label: 'Split column', value: { id: 'SplitFunction', defaultParams: null } },
+      { label: 'Rename columns', value: { id: 'RenameColumnsFunction', defaultParams: null } },
+      { label: 'Add rows', value: { id: 'AddRowFunction', defaultParams: null } },
+      { label: 'Shift row', value: { id: 'ShiftRowFunction', defaultParams: null } },
       { label: 'Take rows', value: { id: 'DropRowsFunction', defaultParams: null } },
-      { label: 'Take columns', value: { id: 'ColumnsFunction', defaultParams: null } }
+      { label: 'Filter rows', value: { id: 'GrepFunction', defaultParams: null } },
+      { label: 'Deduplicate', value: { id: 'RemoveDuplicatesFunction', defaultParams: null } },
+      { label: 'Utility function', value: { id: 'UtilityFunction', defaultParams: null } }
     ];
-    route.url.subscribe(() => this.routingService.concatURL(route));
+    route.url.subscribe((result) => {
+      this.routingService.concatURL(route);
+    });
   }
 
   ngOnInit() {
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe(previewedData => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe(previewedData => {
       if (previewedData) {
         this.graftwerkData = previewedData;
-        if (this.profilingComponent !== undefined) {
+        if (this.profilingComponent) {
           this.profilingComponent.loadJSON(this.graftwerkData);
           this.profilingComponent.refresh(this.handsontableSelection);
         }
-        this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.substring(1, o.length));
+        this.loadedDataHeaders = this.graftwerkData[':column-names'].map(o => o.charAt(0) == ':' ? o.substr(1) : o);
+
       }
     });
 
@@ -95,19 +106,50 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
       }
     });
 
+    this.currentDataGraftStateSubscription = this.messageSvc.currentDataGraftStateSrc.subscribe((state) => {
+      if (state.mode) {
+        this.currentDataGraftState = state.mode;
+        switch (this.currentDataGraftState) {
+          case 'transformations.readonly':
+            this.showPipelineOnly = true;
+            this.showHandsonTableProfiling = false;
+            break;
+          case 'transformations.transformation':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = false;
+            break;
+          case 'transformations.new':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = false;
+            break;
+          case 'transformations.new.preview':
+          case 'transformations.new.preview.wizard':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = true;
+            break;
+          case 'transformations.transformation.preview':
+          case 'transformations.transformation.preview.wizard':
+            this.showPipelineOnly = false;
+            this.showHandsonTableProfiling = true;
+            break;
+        }
+      }
+    });
+
     const paramMap = this.route.snapshot.paramMap;
     if (paramMap.has('publisher') && paramMap.has('transformationId')) {
-      if (!paramMap.has('filestoreId')) {
-        this.showSelectbox = true;
-        this.showPipelineMetadataTabs = false;
-        this.showHandsonTableProfiling = false;
+      if (paramMap.has('filestoreId')) {
+        this.showHandsonTableProfiling = true;
       }
       this.dispatch.getTransformation(paramMap.get('publisher'), paramMap.get('transformationId'))
         .then(
           (result) => {
-            this.transformationSvc.changeTransformationMetadata(result);
-            this.transformationSvc.currentTransformationMetadata.subscribe(metadata => this.metadata = result);
-            console.log(result)
+            this.transformationSvc.transformationMetadata.next(result);
+            this.transformationSvc.transformationMetadata.subscribe((metadata) => this.metadata = metadata);
+            if (this.profilingComponent && this.graftwerkData) {
+              this.profilingComponent.loadJSON(this.graftwerkData);
+              this.profilingComponent.refresh(this.handsontableSelection);
+            }
             this.title = result.title;
             this.description = result.description;
             this.keywords = result.keywords;
@@ -117,10 +159,6 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
             console.log(error);
           });
     }
-    else if (paramMap.has('publisher') && !paramMap.has('transformationId')) {
-      this.showHandsonTableProfiling = false;
-    }
-
   }
 
   ngOnDestroy() {
@@ -132,19 +170,19 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     if (this.metadata !== undefined) {
       if (this.title !== this.metadata.title) {
         this.metadata.title = this.title;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.description !== this.metadata.description) {
         this.metadata.description = this.description;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.keywords !== this.metadata.keywords) {
         this.metadata.keywords = this.keywords;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
       else if (this.isPublic !== this.metadata.isPublic) {
         this.metadata.isPublic = this.isPublic;
-        this.transformationSvc.changeTransformationMetadata(this.metadata);
+        this.transformationSvc.transformationMetadata.next(this.metadata);
       }
     }
   }
@@ -168,6 +206,7 @@ export class TabularTransformationComponent implements OnInit, OnDestroy, DoChec
     const recommend = this.recommenderService.getRecommendationWithParams(
       newSelection.row, newSelection.col, newSelection.row2, newSelection.col2,
       newSelection.totalRows, newSelection.totalCols, data, headers);
+
     this.recommendations = recommend;
   }
 

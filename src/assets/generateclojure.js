@@ -100,6 +100,9 @@ var prefixers = [];
 /* Holds the jsedn list of user functions. Used to render them in Clojure code. */
 var userFunctions = [];
 
+/** */
+var extensionFunctions = [];
+
 /* Interface for alerts about errors. To be used to connect to other interface components when we integrate the GUI. */
 function alertInterface(error, errorString) {
   /*
@@ -128,7 +131,7 @@ function addGrafterPrefixer(name, prefixString, parentPrefix) {
   if (parentPrefix.toString().trim() === '') {
     prefixer = new jsedn.List([
       jsedn.sym('def'),
-      jsedn.sym(name),
+      jsedn.sym(name.replace(/\./g, '-')),
       new jsedn.List([jsedn.sym('prefixer'), prefixString])
     ]);
 
@@ -136,7 +139,7 @@ function addGrafterPrefixer(name, prefixString, parentPrefix) {
 
     prefixer = new jsedn.List([
       jsedn.sym('def'),
-      jsedn.sym(name),
+      jsedn.sym(name.replace(/\./g, '-')),
       new jsedn.List(
         [jsedn.sym('prefixer'), new jsedn.List([jsedn.sym(parentPrefix), prefixString])])
     ]);
@@ -211,8 +214,6 @@ function addPipelineFunction(jsednFunction) {
 
 /* Constructs and returns the data transformation pipeline. */
 function constructPipeline() {
-  //      console.log($rootScope.CSVdelim);
-  //     var separator = $rootScope.CSVdelim?$rootScope.CSVdelim:'\\,';
   var readDatasetFunct = new jsedn.List([
     new jsedn.sym('read-dataset'),
     new jsedn.sym('data-file')
@@ -348,9 +349,7 @@ export function constructRDFGraphFunction(transformation) {
   // var currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), 'TODO not used']);
   for (i = 0; i < transformation.graphs.length; ++i) {
     currentGraph = transformation.graphs[i];
-    if (i === 0) {
-      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
-    }
+    currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI || "http://example.com/"]);
     // construct a vector for each of the roots and add it to the graph jsedn
     for (j = 0; j < currentGraph.graphRoots.length; ++j) {
       currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph);
@@ -529,7 +528,6 @@ function constructNodeVectorEdn(node, containingGraph) {
                 var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
                 parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-                //                    console.log(parsedConditions.length);
                 if (parsedConditions.length === 1) {
                   allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
                 } else {
@@ -600,7 +598,6 @@ function constructNodeVectorEdn(node, containingGraph) {
                 var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
                 parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
 
-                //                    console.log(parsedConditions.length);
                 if (parsedConditions.length === 1) {
                   allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
                 } else {
@@ -723,15 +720,12 @@ function constructColumnURINodeJsEdn(colURINode, containingGraph) {
     if (isSupportedPrefix(nodePrefix.trim())) {
       // supported prefix - no need to use prefixer - simple library call
       // nodePrefix:nodeValue (e.g. vcard:Address)
-      //        alertInterface('Cannot associate column \'' + nodeValue + '\' with prefix \'' + nodePrefix + '\'!');
-
-      //                return;
       return new jsedn.sym(nodePrefix + ':' + nodeValue);
     } else {
       // TODO make a check if we have defined the prefix
       // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
       // both are symbols and we get (nodePrefix nodeValue) as a result
-      return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue)]);
+      return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue.replace(/\./g, '-'))]);
     }
   }
 
@@ -760,7 +754,7 @@ function constructConstantURINodeJsEdn(constURINode, containingGraph) {
       // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
       // both are symbols and we get (nodePrefix nodeValue) as a result
 
-      return new jsedn.sym(nodePrefix + ':' + nodeValue);
+      return new jsedn.sym(nodePrefix + ':' + nodeValue.replace(/\./g, '-'));
     }
   }
 
@@ -948,7 +942,7 @@ function getConcept(element, str, containingGraph, prefixersInGUI) {
     if (element.__type === 'ConstantURI') {
       if (!isConceptExist(element.prefix, element.constant)) {
         if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.constant)) {
-          str += '(def ' + element.prefix + ':' + element.constant + ' (' + element.prefix + ' "' + element.constant +
+          str += '(def ' + element.prefix + ':' + element.constant.replace(/\./g, '-') + ' (' + element.prefix + ' "' + element.constant +
             '"))';
           str += '\n';
         }
@@ -964,7 +958,19 @@ function getConcept(element, str, containingGraph, prefixersInGUI) {
   return str;
 }
 
-function generateGrafterCode(transformation) {
+function generateASIAFunctionDeclarationsText(asiaEndpointUrl) {
+  let text = '';
+
+  text += '(defn reconcileAsia [label type threshold conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.reconcile asia-client label type threshold conciliator)))' + '\n';
+  text += '(defn extendAsia [id propertyName conciliator] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extend asia-client id propertyName conciliator)))' + '\n';
+  text += '(defn extendWeatherAsia [regionGeonamesId date aggregator weatherParamName offsetDays] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.extendWeather asia-client regionGeonamesId date aggregator weatherParamName offsetDays)))' + '\n';
+  text += '(defn extendSameAsAsia [id source target] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.geoExactMatch asia-client id source target)))' + '\n';
+  text += '(defn extendKeywordCategories [keyword] (let [asia-client (it.unimib.disco.asia.ASIA4JFactory/getClient "' + asiaEndpointUrl + '" it.unimib.disco.asia.ASIAHashtableClient)] (.keywordClustering  asia-client keyword)))' + '\n';
+
+  return text;
+}
+
+function generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl) {
   /* Grafter Declarations */
 
   // TODO those are not needed here; may be needed afterwards?
@@ -1024,12 +1030,56 @@ function generateGrafterCode(transformation) {
   /* Pipeline Function */
   transformation.pipelines.forEach(function (pipeline) {
     pipeline.functions.forEach(function (genericFunction) {
-      addPipelineFunction(genericFunction);
+      var generatedPipelineFunctionClojureFunctionsArray = [];
+      switch (genericFunction.__type) {
+        case 'ReconciliationFunction':
+          var annotationOfReconciliation = transformation.getAnnotationById(genericFunction.annotationId);
+          if (annotationOfReconciliation) {
+            var reconciliation = annotationOfReconciliation.reconciliation;
+            if (reconciliation) {
+              generatedPipelineFunctionClojureFunctionsArray = reconciliation.generatePipelineFunctionClojureFunctions(annotationOfReconciliation.columnName);
+              if (generatedPipelineFunctionClojureFunctionsArray) {
+                pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[0]));
+              } else {
+                console.error("Error getting parameters of reconciliation function");
+                console.log(genericFunction);
+              }
+            } else {
+              console.error("Error getting parameters of reconciliation function");
+              console.log(genericFunction);
+            }
+          } else {
+            console.error("Error getting parameters of reconciliation function");
+            console.log(genericFunction);
+          }
+          break;
+        case 'ExtensionFunction':
+          var extension = transformation.getExtensionById(genericFunction.extensionId);
+          var annotationOfExtension = transformation.getAnnotationByExtensionId(genericFunction.extensionId);
+          if (extension && annotationOfExtension) {
+            generatedPipelineFunctionClojureFunctionsArray = extension.generatePipelineFunctionClojureFunctions(annotationOfExtension.columnName);
+            for (i = 0; i < generatedPipelineFunctionClojureFunctionsArray.length; ++i) {
+              pipelineFunctions.val.push(parseEdnFromString(generatedPipelineFunctionClojureFunctionsArray[i]));
+            }
+          } else {
+            console.error("Error getting parameters for extension function");
+            console.log(genericFunction);
+          }
+          break;
+        default:
+          addPipelineFunction(genericFunction);
+          break;
+      }
     });
   });
 
   var resultingPipeline = constructPipeline();
   var textStr = '';
+
+  // add ASIA service code (if used)
+  if (isAsiaServiceCode) {
+    textStr += generateASIAFunctionDeclarationsText(asiaEndpointUrl);
+  }
 
   if (grafterPrefixers.length) {
     for (i = 0; i < grafterPrefixers.length; ++i) {
@@ -1058,6 +1108,24 @@ function generateGrafterCode(transformation) {
     textStr += (grafterCustomFunctions[i].ednEncode() + '\n');
   }
 
+  var enrichments = transformation.getAllEnrichments() || [];
+  for (i = 0; i < enrichments.length; ++i) {
+    // dummy code for now
+    if (enrichments[i].__type === 'SingleColumnReconciliation') {
+      var reconciliationAnnotation = transformation.getAnnotationForReconciledColumn(enrichments[i].columnName);
+      console.info(reconciliationAnnotation);
+      textStr += parseEdnFromString(enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode, reconciliationAnnotation.conciliatorServiceName)[0]).ednEncode();
+    }
+    if (enrichments[i].__type === 'ReconciliationServiceExtension' || enrichments[i].__type === 'ECMWFWeatherExtension' || enrichments[i].__type === 'SameAsExtension' || enrichments[i].__type === 'KeywordsCategoriesExtension' || enrichments[i].__type === 'CustomEventIDExtension' || enrichments[i].__type === 'CustomEventExtension') {
+      // retrieve all Clojure functions
+      var clojureFunctionsArray = enrichments[i].generateEnrichmentClojureFunctions(isAsiaServiceCode);
+      // add each Clojure function to the declarations code
+      for (var j = 0; j < clojureFunctionsArray.length; ++j) {
+        textStr += parseEdnFromString(clojureFunctionsArray[j]).ednEncode();
+      }
+    }
+  }
+
   textStr += graphTemplate.ednEncode();
 
   textStr += '\n';
@@ -1069,12 +1137,13 @@ function generateGrafterCode(transformation) {
 
   textStr +=
     '(defgraft my-graft "Transformation that converts input CSV data into RDF graph data." my-pipe make-graph)';
+
   return textStr;
 }
 
-export function fromTransformation(transformation) {
+export function fromTransformation(transformation, isAsiaServiceCode, asiaEndpointUrl) {
   try {
-    var generatedCode = generateGrafterCode(transformation);
+    var generatedCode = generateGrafterCode(transformation, isAsiaServiceCode, asiaEndpointUrl);
 
     return generatedCode;
   } catch (e) {

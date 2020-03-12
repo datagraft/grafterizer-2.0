@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 import { TransformationService } from 'app/transformation.service';
 
@@ -13,7 +13,7 @@ import { TransformationService } from 'app/transformation.service';
 
 export class AddColumnsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -24,8 +24,8 @@ export class AddColumnsComponent implements OnInit {
   private previewedDataSubscription: Subscription;
   private previewedDataColumns: any;
 
-  private columnsArray: any = [];
-  private docstring: string = 'Add columns';
+  columnsArray: any = [];
+  docstring: string = 'Add columns';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 
@@ -51,24 +51,27 @@ export class AddColumnsComponent implements OnInit {
       }
     });
 
-    this.previewedDataSubscription = this.transformationSvc.currentGraftwerkData
+    this.previewedDataSubscription = this.transformationSvc.graftwerkDataSource
       .subscribe((previewedData) => {
         if (previewedData[':column-names']) {
-          this.previewedDataColumns = previewedData[':column-names'].map(o => o.substring(1, o.length));
+
+          this.previewedDataColumns = previewedData[':column-names'].map(o => {
+            return o.charAt(0) == ':' ? o.substr(1) : o;
+          });
         }
       });
   }
 
-  private addColumn() {
+  addColumn() {
     var newColSpec = new transformationDataModel.NewColumnSpec(null, null, null, null);
     this.columnsArray.push(newColSpec);
   }
 
-  private removeColumn(id: number) {
+  removeColumn(id: number) {
     this.columnsArray.splice(id, 1);
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
       this.createAddColumnsFunction(this.currentlySelectedFunction);
@@ -125,7 +128,7 @@ export class AddColumnsComponent implements OnInit {
     this.docstring = 'Add columns';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 

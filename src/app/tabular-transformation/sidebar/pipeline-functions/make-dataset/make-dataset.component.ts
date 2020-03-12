@@ -3,7 +3,7 @@ import { MatChipInputEvent } from '@angular/material';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
 import { TransformationService } from 'app/transformation.service';
 
@@ -21,7 +21,7 @@ export class MakeDatasetComponent implements OnInit {
   private addOnBlur: boolean = true;
   private separatorKeysCodes = [ENTER, COMMA];
 
-  private modalEnabled = false;
+  modalEnabled = false;
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -29,12 +29,12 @@ export class MakeDatasetComponent implements OnInit {
   private pipelineEventsSubscription: Subscription;
   private pipelineEvent: any = { startEdit: false };
 
-  private makedatasetmode: String = 'colnames';
+  makedatasetmode: String = 'colnames';
   private columnsArray: Array<any> = [];
   private useLazy = false;
   private moveFirstRowToHeader: boolean;
   private numberOfColumns: Number = undefined;
-  private docstring: String = 'Create headers';
+  docstring: String = 'Create headers';
 
   constructor(private pipelineEventsSvc: PipelineEventsService, private transformationSvc: TransformationService) { }
 

@@ -1,7 +1,5 @@
 import { ErrorHandler, Injectable, Injector } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { GlobalErrorReportingService } from 'app/global-error-reporting.service';
 
 @Injectable()
@@ -15,7 +13,6 @@ export class GlobalErrorHandler implements ErrorHandler {
   constructor(private injector: Injector, private globalErrorRepSvc: GlobalErrorReportingService) {
     this.globalErrorRepSvc = new GlobalErrorReportingService();
     if (globalErrorRepSvc !== undefined) {
-      console.log(globalErrorRepSvc);
     }
     this.globalErrorsSubscription = this.globalErrorRepSvc.globalErrorObs.subscribe((globalErrors) => {
       this.globalErrors = globalErrors;

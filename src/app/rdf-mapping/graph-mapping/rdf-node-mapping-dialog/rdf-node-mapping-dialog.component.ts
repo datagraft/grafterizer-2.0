@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, ViewChildren, QueryList, OnDestroy } from '@angular/core';
 import { FormControl, Validators, ValidationErrors, AbstractControl, FormGroup } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { startWith } from 'rxjs/operators/startWith';
 import { map } from 'rxjs/operators/map';
 import { MatAutocomplete } from '@angular/material';
@@ -18,21 +18,21 @@ import { ConstantLiteral } from 'assets/transformationdatamodel.js';
 export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
 
   // The mapping node that is edited (in case of editing)
-  private editedNode: any;
+  editedNode: any;
 
   // The parent node in case we are creating a new node
-  private parentNode: any;
+  parentNode: any;
 
   // The sibling node in case we are adding a new node after an existing node
-  private siblingNode: any;
+  siblingNode: any;
 
   // Opening mapping dialog is controlled using this variables
-  private openNodeMappingDialog = true;
+  openNodeMappingDialog = true;
 
   // Boolean attributes that determine which tab has been selected in the dialog
-  private uriNodeTabSelected: boolean;
-  private literalNodeTabSelected: boolean;
-  private blankNodeSelected: boolean;
+  uriNodeTabSelected: boolean;
+  literalNodeTabSelected: boolean;
+  blankNodeSelected: boolean;
 
   private selectedSourceType = 'dataset-col';
 
@@ -318,7 +318,7 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
         this.prefixes.push(rdfVocab.name);
       });
     });
-    this.dataSubscription = this.transformationSvc.currentGraftwerkData.subscribe((graftwerkData) => {
+    this.dataSubscription = this.transformationSvc.graftwerkDataSource.subscribe((graftwerkData) => {
       if (graftwerkData[':column-names']) {
         this.columns = graftwerkData[':column-names'].map((columnName) => {
           if (columnName.indexOf(':') === 0) {
@@ -330,7 +330,7 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.transformationSubscription = this.transformationSvc.currentTransformationObj.subscribe((transformation) => {
+    this.transformationSubscription = this.transformationSvc.transformationObjSource.subscribe((transformation) => {
       this.transformationObj = transformation;
     });
   }
@@ -486,17 +486,17 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
           // Edit existing node
           newNode = new transformationDataModel.ColumnURI(prefix, columnName, nodeCondition, this.editedNode.subElements);
           this.parentNode.replaceChild(this.editedNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode && this.siblingNode) {
           // Add a sibling node
           newNode = new transformationDataModel.ColumnURI(prefix, columnName, nodeCondition, null);
           this.parentNode.addNodeAfter(this.siblingNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode) {
           // Add node as a child to a node
           newNode = new transformationDataModel.ColumnURI(prefix, columnName, nodeCondition, null);
           this.parentNode.addChild(newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         }
       } else if (this.selectedSourceType === 'free-defined') {
         // Constant URI node
@@ -522,17 +522,17 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
           // Edit existing node
           newNode = new transformationDataModel.ConstantURI(prefix, constantURIText, nodeCondition, this.editedNode.subElements);
           this.parentNode.replaceChild(this.editedNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode && this.siblingNode) {
           // Add a sibling node
           newNode = new transformationDataModel.ConstantURI(prefix, constantURIText, nodeCondition, null);
           this.parentNode.addNodeAfter(this.siblingNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode) {
           // Add node as a child to a node
           newNode = new transformationDataModel.ConstantURI(prefix, constantURIText, nodeCondition, null);
           this.parentNode.addChild(newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         }
       }
     } else if (!this.uriNodeTabSelected && this.literalNodeTabSelected && !this.blankNodeSelected) {
@@ -566,17 +566,17 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
           // Edit existing node
           newNode = new transformationDataModel.ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition);
           this.parentNode.replaceChild(this.editedNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode && this.siblingNode) {
           // Add a sibling node
           newNode = new transformationDataModel.ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition);
           this.parentNode.addNodeAfter(this.siblingNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode) {
           // Add node as a child to a node
           newNode = new transformationDataModel.ColumnLiteral(literalText, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition);
           this.parentNode.addChild(newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         }
       } else if (this.selectedSourceType === 'free-defined') {
         // Constant Literal node
@@ -593,17 +593,17 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
           // Edit existing node
           newNode = new transformationDataModel.ConstantLiteral(literalText, nodeCondition);
           this.parentNode.replaceChild(this.editedNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode && this.siblingNode) {
           // Add a sibling node
           newNode = new transformationDataModel.ConstantLiteral(literalText, nodeCondition);
           this.parentNode.addNodeAfter(this.siblingNode, newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         } else if (this.parentNode) {
           // Add node as a child to a node
           newNode = new transformationDataModel.ConstantLiteral(literalText, nodeCondition);
           this.parentNode.addChild(newNode);
-          this.transformationSvc.changeTransformationObj(this.transformationObj);
+          this.transformationSvc.transformationObjSource.next(this.transformationObj);
         }
       }
     } else if (!this.uriNodeTabSelected && !this.literalNodeTabSelected && this.blankNodeSelected) {
@@ -615,17 +615,17 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
         // Edit existing node
         newNode = new transformationDataModel.BlankNode(nodeCondition, this.editedNode.subElements);
         this.parentNode.replaceChild(this.editedNode, newNode);
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
       } else if (this.parentNode && this.siblingNode) {
         // Add a sibling node
         newNode = new transformationDataModel.BlankNode(nodeCondition, []);
         this.parentNode.addNodeAfter(this.siblingNode, newNode);
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
       } else if (this.parentNode) {
         // Add node as a child to a node
         newNode = new transformationDataModel.BlankNode(nodeCondition, []);
         this.parentNode.addChild(newNode);
-        this.transformationSvc.changeTransformationObj(this.transformationObj);
+        this.transformationSvc.transformationObjSource.next(this.transformationObj);
       }
     }
   }

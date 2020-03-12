@@ -1,8 +1,8 @@
 import { Injectable, OnChanges } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import 'rxjs/add/operator/map';
 import { AppConfig } from './app.config';
 import * as transformationDataModel from 'assets/transformationdatamodel.js';
@@ -13,55 +13,28 @@ export class TransformationService {
 
   private dispatchPath: string;
   private graftwerkCachePath: string;
-  // GLOBAL TRANSFORMATION OBJECT
-  //  private transformationObj: any;
-  //  private graftwerkData: any;
 
-  private previewedTransformationObjSource: BehaviorSubject<any>;
-  public currentPreviewedTransformationObj: Observable<any>;
+  public previewedTransformationObjSource: BehaviorSubject<any>;
 
-  private transformationObjSource: BehaviorSubject<any>;
-  public currentTransformationObj: Observable<any>;
+  public transformationObjSource: BehaviorSubject<any>;
 
-  private graftwerkDataSource: BehaviorSubject<any>;
-  public currentGraftwerkData: Observable<any>;
+  public graftwerkDataSource: BehaviorSubject<any>;
 
-  private transformationMetadata: BehaviorSubject<any>;
-  public currentTransformationMetadata: Observable<any>;
-
-  public changePreviewedTransformationObj(message: any) {
-    this.previewedTransformationObjSource.next(message);
-  }
-
-  public changeTransformationObj(message: any) {
-    this.transformationObjSource.next(message);
-  }
-
-  public changeGraftwerkData(message: any) {
-    this.graftwerkDataSource.next(message);
-  }
-
-  public changeTransformationMetadata(message: any) {
-    this.transformationMetadata.next(message);
-  }
+  public transformationMetadata: BehaviorSubject<any>;
 
   constructor(private http: Http, private config: AppConfig) {
     // We use the Dispatch service as a proxy to Graftwerk
     this.dispatchPath = this.config.getConfig('dispatch-path');
     // Caching service for Graftwerk - caches intermediate results of transformations
     this.graftwerkCachePath = this.config.getConfig('graftwerk-cache-path');
-    const emptyTransformation = new transformationDataModel.Transformation();
+    const emptyTransformation = new transformationDataModel.Transformation([], [], [new transformationDataModel.Pipeline([])], [new transformationDataModel.Graph("http://example.com/", []), new transformationDataModel.Graph("http://example.com/", [])], []);
     this.transformationObjSource = new BehaviorSubject<any>(emptyTransformation);
+    this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
     this.graftwerkDataSource = new BehaviorSubject<any>({
       ':column-names': [],
       ':rows': []
     });
-    this.previewedTransformationObjSource = new BehaviorSubject<any>(emptyTransformation);
     this.transformationMetadata = new BehaviorSubject<any>({});
-    this.currentTransformationObj = this.transformationObjSource.asObservable();
-    this.currentGraftwerkData = this.graftwerkDataSource.asObservable();
-    this.currentPreviewedTransformationObj = this.previewedTransformationObjSource.asObservable();
-    this.currentTransformationMetadata = this.transformationMetadata.asObservable();
   }
 
   public fillDataGraftWizard(filestoreID: string, transformationID: string, wizardID: string, transformationType): Promise<any> {
@@ -166,38 +139,35 @@ export class TransformationService {
     const resultUrl = this.graftwerkCachePath + '/graftermemcache/' + hash;
     const options = new RequestOptions({ withCredentials: true });
 
-    const obs = new Observable(observer => {
-      observer.next();
-    })
-      .switchMap(() => this.http.get(statusUrl, options))
-      .map((response) => response.json());
     return new Promise((resolve, reject) => {
-      const sub = obs.subscribe(
-        (result) => {
-          if (!result.processing) {
-            sub.unsubscribe();
-            this.http.get(resultUrl, options)
-              .map((responseCache) => {
-                // if transformation is a pipe (pipeline), then we parse the response using JSEDN
-                if (transformationType === 'pipe') {
-                  return jsedn.toJS(jsedn.parse(responseCache.text()));
-                } else {
-                  // if transformation is a graft (or undefined), we pass the response as plain text
-                  // to download a csv file after the transformation has been applied, we pass the response as plain text
-                  return responseCache.text();
-                }
-              })
-              .toPromise()
-              .then(
-                (transformationResult) => {
-                  resolve(transformationResult);
-                },
-                (error) => reject(error));
+      const sub = Observable.interval(2000).startWith(1)
+        .mergeMap(() => this.http.get(statusUrl, options))
+        .map((response) => response.json())
+        .subscribe((response) => {
+          // null safety first
+          if (response) {
+            if (!response.processing) {
+              sub.unsubscribe();
+              this.http.get(resultUrl, options)
+                .map((responseCache) => {
+                  // if transformation is a pipe (pipeline), then we parse the response using JSEDN
+                  if (transformationType === 'pipe') {
+                    return jsedn.toJS(jsedn.parse(responseCache.text()));
+                  } else {
+                    // if transformation is a graft (or undefined), we pass the response as plain text
+                    // to download a csv file after the transformation has been applied, we pass the response as plain text
+                    return responseCache.text();
+                  }
+                })
+                .toPromise()
+                .then(
+                  (transformationResult) => {
+                    resolve(transformationResult);
+                  },
+                  (error) => reject(error));
+            }
           }
-        },
-        (error) => {
-          return reject(error);
-        });
+        })
     });
   }
 

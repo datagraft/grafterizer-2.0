@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 import * as transformationDataModel from '../../../../../assets/transformationdatamodel.js';
 import { PipelineEventsService } from 'app/tabular-transformation/pipeline-events.service';
@@ -13,12 +13,12 @@ import { TransformationService } from 'app/transformation.service';
 
 export class TakeRowsComponent implements OnInit {
 
-  private modalEnabled: boolean = false;
+  modalEnabled: boolean = false;
 
-  private indexFrom: string = null;
-  private indexTo: string = null;
-  private take: boolean = true;
-  private docstring: string;
+  indexFrom: string = null;
+  indexTo: string = null;
+  take: boolean = true;
+  docstring: string = 'Take or drop rows';
 
   private currentlySelectedFunctionSubscription: Subscription;
   private currentlySelectedFunction: any;
@@ -56,10 +56,10 @@ export class TakeRowsComponent implements OnInit {
     this.currentlySelectedFunctionSubscription.unsubscribe();
   }
 
-  private accept() {
+  accept() {
     if (this.pipelineEvent.startEdit) {
       // change currentlySelectedFunction according to the user choices
-      this.editDeriveColumnsFunction(this.currentlySelectedFunction);
+      this.editTakeRowsFunction(this.currentlySelectedFunction);
 
       // notify of change in selected function
       this.pipelineEventsSvc.changeSelectedFunction({
@@ -93,7 +93,7 @@ export class TakeRowsComponent implements OnInit {
     this.resetModal();
   }
 
-  private editDeriveColumnsFunction(instanceObj): any {
+  private editTakeRowsFunction(instanceObj): any {
     instanceObj.indexFrom = parseInt(this.indexFrom);
     instanceObj.indexTo = parseInt(this.indexTo);
     instanceObj.take = this.take;
@@ -110,10 +110,10 @@ export class TakeRowsComponent implements OnInit {
     this.indexFrom = null;
     this.indexTo = null;
     this.take = true;
-    this.docstring = null;
+    this.docstring = 'Take or drop rows';
   }
 
-  private cancel() {
+  cancel() {
     this.resetModal();
   }
 
