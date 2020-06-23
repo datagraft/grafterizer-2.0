@@ -2558,52 +2558,279 @@ export function LiteralNodeAnnotation(columnName, subjectAnnotationId,
 
 LiteralNodeAnnotation.prototype = Object.create(Annotation.prototype);
 LiteralNodeAnnotation.prototype.getGraphNode = function () {
-
   var codDt = 'unknown';
   if (this.columnDatatype) {
     switch (this.columnDatatype.trim()) {
       case 'http://www.w3.org/2001/XMLSchema#byte':
-        codDt = 'byte';
+        codDt = {
+          id: 0,
+          name: 'byte'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#short':
-        codDt = 'short';
+        codDt = {
+          id: 1,
+          name: 'short'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#int':
       case 'http://www.w3.org/2001/XMLSchema#integer':
-        codDt = 'integer';
+        codDt = {
+          id: 2,
+          name: 'integer'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#long':
-        codDt = 'long';
+        codDt = {
+          id: 3,
+          name: 'long'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#decimal':
-        codDt = 'decimal';
+        codDt = {
+          id: 4,
+          name: 'decimal'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#float':
-        codDt = 'float';
+        codDt = {
+          id: 5,
+          name: 'float'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#double':
-        codDt = 'double';
+        codDt = {
+          id: 6,
+          name: 'double'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#boolean':
-        codDt = 'boolean';
+        codDt = {
+          id: 7,
+          name: 'boolean'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#dateTime':
-        codDt = 'date';
+        codDt = {
+          id: 8,
+          name: 'datetime'
+        };
         break;
       case 'http://www.w3.org/2001/XMLSchema#string':
-        codDt = 'string';
+        codDt = {
+          id: 9,
+          name: 'string'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#date':
+        codDt = {
+          id: 11,
+          name: 'date'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#time':
+        codDt = {
+          id: 12,
+          name: 'time'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#dateTimeStamp':
+        codDt = {
+          id: 13,
+          name: 'dateTimeStamp'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#gYear':
+        codDt = {
+          id: 14,
+          name: 'gYear'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#gMonth':
+        codDt = {
+          id: 15,
+          name: 'gMonth'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#gDay':
+        codDt = {
+          id: 16,
+          name: 'gDay'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#gYearMonth':
+        codDt = {
+          id: 17,
+          name: 'gYearMonth'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#gMonthDay':
+        codDt = {
+          id: 18,
+          name: 'gMonthDay'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#duration':
+        codDt = {
+          id: 19,
+          name: 'duration'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#yearMonthDuration':
+        codDt = {
+          id: 20,
+          name: 'yearMonthDuration'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#dayTimeDuration':
+        codDt = {
+          id: 21,
+          name: 'dayTimeDuration'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#byte':
+        codDt = {
+          id: 22,
+          name: 'byte'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#short':
+        codDt = {
+          id: 23,
+          name: 'short'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#int':
+        codDt = {
+          id: 24,
+          name: 'int'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#long':
+        codDt = {
+          id: 25,
+          name: 'long'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#unsignedByte':
+        codDt = {
+          id: 26,
+          name: 'unsignedByte'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#unsignedShort':
+        codDt = {
+          id: 27,
+          name: 'unsignedShort'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#unsignedInt':
+        codDt = {
+          id: 28,
+          name: 'unsignedInt'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#unsignedLong':
+        codDt = {
+          id: 29,
+          name: 'unsignedLong'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#positiveInteger':
+        codDt = {
+          id: 30,
+          name: 'positiveInteger'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#nonNegativeInteger':
+        codDt = {
+          id: 31,
+          name: 'nonNegativeInteger'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#negativeInteger':
+        codDt = {
+          id: 32,
+          name: 'negativeInteger'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#nonPositiveInteger':
+        codDt = {
+          id: 33,
+          name: 'nonPositiveInteger'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#hexBinary':
+        codDt = {
+          id: 34,
+          name: 'hexBinary'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#base64Binary':
+        codDt = {
+          id: 35,
+          name: 'base64Binary'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#anyURI':
+        codDt = {
+          id: 36,
+          name: 'anyURI'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#language':
+        codDt = {
+          id: 37,
+          name: 'language'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#normalizedString':
+        codDt = {
+          id: 38,
+          name: 'normalizedString'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#token':
+        codDt = {
+          id: 39,
+          name: 'token'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#NMTOKEN':
+        codDt = {
+          id: 40,
+          name: 'NMTOKEN'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#Name':
+        codDt = {
+          id: 41,
+          name: 'Name'
+        };
+        break;
+      case 'https://www.w3.org/TR/xmlschema11-2/#NCName':
+        codDt = {
+          id: 42,
+          name: 'NCName'
+        };
         break;
       default:
-        codDt = 'custom'
+        codDt = {
+          id: 10,
+          name: 'custom'
+        }
         break;
     }
   } else {
-    codDt = 'unspecified'
+    codDt = {
+      id: 0,
+      name: 'unspecified'
+    };
   }
 
   var notEmptyCondition = new Condition({ 'id': 0, 'value': this.columnName }, { 'id': 0, 'name': 'Not empty' }, '', null);
 
-  return new ColumnLiteral(this.columnName, this.codDt, null, null, this.langTag, this.columnDatatype, notEmptyCondition);
+  return new ColumnLiteral(this.columnName, codDt, null, null, this.langTag, this.columnDatatype, notEmptyCondition);
 }
 LiteralNodeAnnotation.revive = function (data) {
   var i;
@@ -3162,7 +3389,10 @@ _this.Property = Property;
 export function ColumnLiteral(columnName, datatype, onEmpty, onError, langTag, datatypeURI, nodeCondition) {
   RDFElement.call(this, []);
   this.literalValue = columnName;
-  this.datatype = datatype;
+  this.datatype = datatype ? datatype : {
+    name: 'unspecified',
+    id: 0
+  };
   this.onEmpty = onEmpty;
   this.onError = onError;
   this.langTag = langTag;
@@ -3178,7 +3408,7 @@ ColumnLiteral.revive = function (data) {
     id: 0,
     value: data.literalValue
   };
-  var datatype = data.hasOwnProperty('datatype') ? data.datatype : {
+  var datatype = data.datatype ? data.datatype : {
     name: 'unspecified',
     id: 0
   };
