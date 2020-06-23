@@ -457,7 +457,10 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
         return this.dataTypes[i];
       }
     }
-    return null;
+    return {
+      name: 'unspecified',
+      id: 0
+    };
   }
 
   createAndAddNewNode(): any {
@@ -540,7 +543,10 @@ export class RdfNodeMappingDialogComponent implements OnInit, OnDestroy {
         // Column Literal node
         const literalText = this.selectedColumn ? this.selectedColumn : '';
 
-        let datatype = null;
+        let datatype = {
+          name: 'unspecified',
+          id: 0
+        };
         let onEmpty = null;
         let onError = null;
         let langTag = null;
