@@ -381,12 +381,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         );
       } else if (valuesType === ColumnTypes.URI) {
         // we keep the conciliator service name, extensions and reconciliations for URI node annotations
+        let currentAnnotationPrefix = '';
+        if (this.annotationService.getUrifyDefault()) {
+          currentAnnotationPrefix = this.annotationService.getPrefixForNamespace(this.annotationService.getUrifyDefault(), this.transformationObj);
+        }
+
         this.currentAnnotation = new tdm.URINodeAnnotation(
           this.header,
           0,
           [],
           [],
-          this.annotationService.getUrifyDefault(),
+          currentAnnotationPrefix,
           false,
           tdm.AnnotationStatus.valid,
           this.currentAnnotation.id,
@@ -410,12 +415,17 @@ export class AnnotationFormComponent implements OnInit, OnDestroy {
         } else {
           // If the column has not been annotated yet, create an empty URI node annotation, add it and set the new ID
           const newAnnotationId = this.transformationObj.getUniqueId();
+          let newAnnotationPrefix = '';
+          if (this.annotationService.getUrifyDefault()) {
+            newAnnotationPrefix = this.annotationService.getPrefixForNamespace(this.annotationService.getUrifyDefault(), this.transformationObj);
+          }
+
           const newAnnotationForSubject = new tdm.URINodeAnnotation(
             this.annotationForm.get('relationship.subject').value,
             null,
             [],
             [],
-            this.annotationService.getUrifyDefault(),
+            newAnnotationPrefix,
             true,
             '',
             newAnnotationId,
